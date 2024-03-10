@@ -25,7 +25,7 @@ const Space = () => {
     rendererRef.current = renderer;
 
     const asteroids = [];
-    const numAsteroids = 800;
+    const numAsteroids = 2000; // Increase the number of asteroids
 
     const redColor = new THREE.Color(0xff0000); // Red color
     const brownColor = new THREE.Color(0x964B00); // Brown color
@@ -41,7 +41,7 @@ const Space = () => {
       const geometry = new THREE.SphereGeometry(radius, 8, 8);
       const wireframeGeom = new THREE.WireframeGeometry(geometry);
       const asteroid = new THREE.LineSegments(wireframeGeom, wireframeMat);
-      asteroid.position.set(Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10); // Spread out asteroids
+      asteroid.position.set(Math.random() * 40 - 20, Math.random() * 40 - 20, Math.random() * 40 - 20); // Spread out asteroids more
       asteroids.push(asteroid);
       scene.add(asteroid);
     }
