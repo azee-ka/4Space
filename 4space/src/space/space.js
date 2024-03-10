@@ -25,11 +25,11 @@ const Space = () => {
     rendererRef.current = renderer;
 
     const asteroids = [];
-    const numAsteroids = 500;
+    const numAsteroids = 800;
 
     const redColor = new THREE.Color(0xff0000); // Red color
-const brownColor = new THREE.Color(0x964B00); // Brown color
-const mixColor = redColor.clone().lerp(brownColor, 0.7); // Mix red and brown colors evenly
+    const brownColor = new THREE.Color(0x964B00); // Brown color
+    const mixColor = redColor.clone().lerp(brownColor, 0.6); // Mix red and brown colors evenly
 
     const wireframeMat = new THREE.LineBasicMaterial({
       color: mixColor, // Blue color
@@ -41,7 +41,7 @@ const mixColor = redColor.clone().lerp(brownColor, 0.7); // Mix red and brown co
       const geometry = new THREE.SphereGeometry(radius, 8, 8);
       const wireframeGeom = new THREE.WireframeGeometry(geometry);
       const asteroid = new THREE.LineSegments(wireframeGeom, wireframeMat);
-      asteroid.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+      asteroid.position.set(Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10); // Spread out asteroids
       asteroids.push(asteroid);
       scene.add(asteroid);
     }
@@ -66,8 +66,6 @@ const mixColor = redColor.clone().lerp(brownColor, 0.7); // Mix red and brown co
         camera.translateZ(-movementSpeed);
         camera.position.x += (mousePosRef.current.x - window.innerWidth / 2) * sensitivity; // Follow mouse X movement
         camera.position.y -= (mousePosRef.current.y - window.innerHeight / 2) * sensitivity; // Follow mouse Y movement
-        camera.position.x = Math.min(Math.max(camera.position.x, -2), 2); // Limit camera's movement range
-        camera.position.y = Math.min(Math.max(camera.position.y, -2), 2); // Limit camera's movement range
         camera.updateProjectionMatrix();
       }
     };
