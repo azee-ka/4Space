@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 
 const Space = () => {
   const spaceRef = useRef(null);
@@ -27,12 +28,8 @@ const Space = () => {
     const asteroids = [];
     const numAsteroids = 2000; // Increase the number of asteroids
 
-    const redColor = new THREE.Color(0xff0000); // Red color
-    const brownColor = new THREE.Color(0x964B00); // Brown color
-    const mixColor = redColor.clone().lerp(brownColor, 0.6); // Mix red and brown colors evenly
-
     const wireframeMat = new THREE.LineBasicMaterial({
-      color: mixColor, // Blue color
+      color: 0xffffff, // Initial color
       metalness: 0.8, // High metalness for metallic look
       roughness: 0.2 // Low roughness for slight shininess
     });
@@ -40,15 +37,25 @@ const Space = () => {
       const radius = Math.random() * 0.2 + 0.1;
       const geometry = new THREE.SphereGeometry(radius, 8, 8);
       const wireframeGeom = new THREE.WireframeGeometry(geometry);
-      const asteroid = new THREE.LineSegments(wireframeGeom, wireframeMat);
+      const asteroid = new THREE.LineSegments(wireframeGeom, wireframeMat.clone()); // Clone material for each asteroid
       asteroid.position.set(Math.random() * 40 - 20, Math.random() * 40 - 20, Math.random() * 40 - 20); // Spread out asteroids more
       asteroids.push(asteroid);
       scene.add(asteroid);
+      
+      // Tween the color of each asteroid to a random color
+      new TWEEN.Tween(asteroid.material.color)
+        .to({ r: Math.random(), g: Math.random(), b: Math.random() }, 2000) // Transition to a random color over 2000ms
+        .easing(TWEEN.Easing.Quadratic.InOut) // Use quadratic easing for smooth transition
+        .repeat(Infinity) // Repeat the animation indefinitely
+        .yoyo(true) // Ping-pong the animation (back and forth)
+        .start(); // Start the animation
     }
 
     const animate = () => {
       requestAnimationFrame(animate);
+      TWEEN.update(); // Update all tweens
       renderer.render(scene, camera);
+
       asteroids.forEach((asteroid) => {
         asteroid.rotation.x += 0.01;
         asteroid.rotation.y += 0.01;
