@@ -25,8 +25,17 @@ const Space = () => {
     rendererRef.current = renderer;
 
     const asteroids = [];
-    const numAsteroids = 50;
-    const wireframeMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const numAsteroids = 500;
+
+    const redColor = new THREE.Color(0xff0000); // Red color
+const brownColor = new THREE.Color(0x964B00); // Brown color
+const mixColor = redColor.clone().lerp(brownColor, 0.7); // Mix red and brown colors evenly
+
+    const wireframeMat = new THREE.LineBasicMaterial({
+      color: mixColor, // Blue color
+      metalness: 0.8, // High metalness for metallic look
+      roughness: 0.2 // Low roughness for slight shininess
+    });
     for (let i = 0; i < numAsteroids; i++) {
       const radius = Math.random() * 0.2 + 0.1;
       const geometry = new THREE.SphereGeometry(radius, 8, 8);
@@ -45,10 +54,20 @@ const Space = () => {
         asteroid.rotation.y += 0.01;
       });
 
+      const sensitivity = 0.00005; // Sensitivity for camera angle movement
+
+      camera.rotation.y -= (mousePosRef.current.x - window.innerWidth / 2) * sensitivity; // Rotate around Y-axis
+      camera.rotation.x -= (mousePosRef.current.y - window.innerHeight / 2) * sensitivity; // Rotate around X-axis
+      camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x)); // Clamp rotation around X-axis to prevent camera flipping
+      camera.updateProjectionMatrix();
+
       if (isMouseDownRef.current) {
-        const movementSpeed = 0.1;
-        const moveVector = new THREE.Vector3(0, 0, -movementSpeed); // Move forward
+        const movementSpeed = 0.05;
         camera.translateZ(-movementSpeed);
+        camera.position.x += (mousePosRef.current.x - window.innerWidth / 2) * sensitivity; // Follow mouse X movement
+        camera.position.y -= (mousePosRef.current.y - window.innerHeight / 2) * sensitivity; // Follow mouse Y movement
+        camera.position.x = Math.min(Math.max(camera.position.x, -2), 2); // Limit camera's movement range
+        camera.position.y = Math.min(Math.max(camera.position.y, -2), 2); // Limit camera's movement range
         camera.updateProjectionMatrix();
       }
     };
@@ -63,12 +82,19 @@ const Space = () => {
       isMouseDownRef.current = false;
     };
 
+    const handleMouseMove = (event) => {
+      mousePosRef.current.x = event.clientX;
+      mousePosRef.current.y = event.clientY;
+    };
+
     space.addEventListener('mousedown', handleMouseDown);
     space.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
       space.removeEventListener('mousedown', handleMouseDown);
       space.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMouseMove);
       space.removeChild(renderer.domElement);
     };
   }, []);
