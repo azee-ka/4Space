@@ -355,34 +355,39 @@
 .expand-post-overlay-interact-container {
     width: 60px;
     height: 300px;
-    background-color: rgb(0, 126, 128, 0);
     display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.expand-post-overlay-interact-container-inner {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: rgba(37, 35, 35, 0.574);
     border-radius: 8px;
     backdrop-filter: blur(20px);
     border: 1px solid rgba(128, 128, 128, 0.17);
+}
+
+.expand-post-overlay-interact-container-inner {
+    width: 30px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     gap: 10px;
 }
 
 .expanded-post-overlay-like-img,
 .expanded-post-overlay-unlike-img {
-    width: 20px;
-    height: 20px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: rgba(255, 0, 0, 0);
 }
 
 .expanded-post-overlay-like-img img,
 .expanded-post-overlay-unlike-img img {
-    width: 20px;
-    height: 20px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.expanded-post-overlay-like-img img:hover,
+.expanded-post-overlay-unlike-img img:hover {
+    cursor: pointer;
 }

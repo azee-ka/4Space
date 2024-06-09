@@ -97,9 +97,10 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
               setPost(data);
     
               // Check if user data is available
+              console.log(data);
               if (user && user.username) {
-                setIsLiked(data.likes.find(like => like.username === user.username && isDisliked));
-                setIsDisliked((data.dislikes.find(dislike => dislike.username === user.username)) && isLiked);
+                setIsLiked(data.likes.find(like => like.username === user.username && !isDisliked));
+                setIsDisliked((data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
               } else {
                 console.warn('User data not available yet.');
               }
@@ -108,7 +109,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
               console.error('Error fetching expanded post:', error);
             });
         }
-      }, [postId, user, isDisliked, isLiked, loading]);
+      }, [postId]);
     
 
     const handlePreviousMedia = () => {
@@ -136,7 +137,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
             setComment('');
             setPost((prevPost) => ({
                 ...prevPost,
-                comments: [...prevPost.comments, data], // assuming data is the new comment object
+                comments: [...prevPost.comments, response.data], // assuming data is the new comment object
               }));
         } catch (error) {
             console.error("Error fetching post data", error);
@@ -148,7 +149,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
         // Update the post state with the new dislike information
         setIsDisliked(!isDisliked); // Toggle the state for dislike
         // If the user disliked the post, ensure that the like state is set to false
-        setIsLiked(!isLiked && isDisliked);
+        setIsLiked(isLiked && isDisliked);
     
         const method = (isDisliked === true) ? 'DELETE' : 'POST';
         fetch(`${API_BASE_URL}api/post/${postIdForOverlay}/dislike/`, {
@@ -171,7 +172,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
         // Update the post state with the new like information
         setIsLiked(!isLiked); // Toggle the state for dislike
         // If the user disliked the post, ensure that the like state is set to false
-        setIsDisliked(!isDisliked && isLiked);
+        setIsDisliked(isDisliked && isLiked);
     
         const method = (isLiked === true) ? 'DELETE' : 'POST';
         fetch(`${API_BASE_URL}api/post/${postIdForOverlay}/like/`, {
