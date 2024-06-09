@@ -1,0 +1,75 @@
+.register-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom right, #1a1a1ad3, #2929298a);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+
+.register-form {
+    width: 400px;
+    padding: 40px;
+    border-radius: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.register-form h2 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.register-name-fields {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"] {
+    margin: 10px 0;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.register-form button {
+    margin: 20px 0;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: #2ecc71;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.register-form button:hover {
+    background-color: #27ae60;
+}
+
+
+.redirect-to-login {
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+}
+.redirect-to-login a {
+    color: #bfbfbf; /* Set the text color to white */
+    text-decoration: none; /* Remove the underline */
+}

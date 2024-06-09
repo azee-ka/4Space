@@ -1,0 +1,134 @@
+/* userListOverlay.css */
+
+.user-list-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0%;
+    z-index: 7500;
+  }
+
+  .user-close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    width: 3%;
+    height: 36px;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0);
+    border: 0;
+    top: 1%;
+    left: 90%;
+  }
+
+  .no-user {
+    font-size: 20px;
+    width: 100%;
+    height: 70%;
+    display: flex;
+    justify-content: center !important;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0);
+  }
+
+  .user-close-button:hover{
+    border: 0px solid gray;
+  }
+  .user-close-button:active{
+    background-color: rgba(0, 87, 104, 0);
+  }
+  .user-close-button img {
+    width: 15px !important;
+    height: 15px !important;
+    vertical-align: middle;
+  }
+
+  .user-close-button {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    right: 0.5% !important;
+  }
+
+
+  .user-overlay-line-seperator{
+    height: 0.5px;
+    background-color: rgba(128, 128, 128, 0.336);
+  }
+
+  .user-list-container{
+    width: 23%;
+    height: 50%;
+    border-radius: 10px;
+    border: 1px solid rgba(68, 62, 62, 0.107);
+    background-color: rgba(85, 85, 85, 0.287);
+    backdrop-filter: blur(100px);
+  }
+  
+  .user-list-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+    font-size: 10px;
+  }
+  
+  .user-list {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    gap: 0px;
+    margin-right: 4.6%;
+    text-decoration: none;
+  }
+
+  .user-list a {
+    text-decoration: none;
+  }
+  
+  .user-list-item {
+    background-color: rgb(96, 17, 17, 0);
+    width: 100%;
+    border-radius: 0px;
+    height: 50px;
+    font-size: 14px;
+    padding-left: 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 0px solid rgba(255, 255, 255, 0.26);
+    text-decoration: none;
+  }
+  .user-list-item:hover {
+    background-color: rgba(196, 196, 196, 0.097);
+  }
+  
+  .user-list-item img {
+    width: 40px; /* Adjust the width of the profile picture */
+    height: 40px; /* Adjust the height of the profile picture */
+    border-radius: 50%;
+    margin-right: 10px;
+    text-decoration: none;
+  }
+  
+  .user-list-item span {
+    color: white;
+  }
+  
+  .user-list-header button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .user-list-header button:hover {
+    text-decoration: none;
+  }
+  

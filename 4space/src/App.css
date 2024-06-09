@@ -1,0 +1,23 @@
+.App {
+  background-color: black !important;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+}
+
+.App.private {
+  background: radial-gradient(circle at top, rgba(153, 102, 255, 0.15), rgba(153, 102, 255, 0));
+
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+}
+
+a {
+  color: white;
+  text-decoration: none;
+}

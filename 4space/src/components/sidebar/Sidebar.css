@@ -1,0 +1,94 @@
+.sidebar-container {
+    backdrop-filter: blur(100px) !important;
+    background-color: rgba(31, 31, 31, 0.100);
+    background-color: rgba(16, 16, 16, 0.427);
+    position: fixed;
+    width: 280px;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 4;
+    display: flex;
+    align-items: flex-end;
+    box-shadow: 0px 0px 7px 1px rgba(98, 98, 98, 0.409);
+    transition: transform 0.4s ease;
+    transform: translateX(0);
+}
+
+.sidebar-container.close {
+    transform: translateX(-280px);
+}
+
+.sidebar-container-content {
+    height: 90%;
+    width: 100%;
+}
+
+.sidebar-container-content-inner {
+    background-color: rgba(0, 87, 128, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.sidebar-menu {
+    background-color: rgba(163, 168, 38, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    align-self: center;
+    gap: 10px;
+    height: 95%;
+    width: 100%;
+}
+
+.sidebar-menu-item {
+    height: 40px;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: right;
+    background-color: rgb(189, 34, 34, 0);
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    font-size: 18px;
+}
+
+.sidebar-menu-item:hover {
+    background-color: rgba(50, 50, 50, 0.65);
+    cursor: pointer;
+}
+.sidebar-menu-item button:hover{
+    cursor: pointer;
+}
+
+.sidebar-menu-item div {
+    height: 100%;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+    background-color: rgba(17, 158, 148, 0);
+    color: gray !important;
+}
+
+.sidebar-menu-item button {
+    border: 0;
+    background-color: transparent;
+    font-size: 18px;
+    width: 100%;
+    text-align: right;
+}
+
+.sidebar-menu-item button,
+.sidebar-menu-item div a {
+    color: rgb(230, 230, 230) !important;
+}

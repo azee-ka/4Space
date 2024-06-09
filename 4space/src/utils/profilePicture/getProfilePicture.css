@@ -1,0 +1,6 @@
+.profile-picture {
+    border-radius: 100%;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* background-color: rgba(168, 168, 168, 0.313); */
+}

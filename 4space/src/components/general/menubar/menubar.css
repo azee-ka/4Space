@@ -1,0 +1,166 @@
+.profile-menubar {
+    position: absolute;
+    width: 310px;
+    min-height: 300px;
+    padding-top: 25px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+    top: 9.5%;
+    right: 1%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(110, 95, 95, 0.214);
+    backdrop-filter: blur(100px);
+    border: 1px solid rgba(128, 128, 128, 0.174);
+    box-shadow: 0px 0px 7px 1px rgba(98, 98, 98, 0.409);
+}
+
+.profile-menubar-inner {
+    background-color: rgba(255, 255, 255, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: top;
+    align-items: center;
+    width: 95%;
+    height: 95%;
+    gap: 12px;
+}
+
+.profile-menu-user-info {
+    width: 90%;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    background-color: rgba(0, 0, 255, 0);
+    background-color: rgba(255, 255, 255, 0.113);
+
+}
+.profile-menu-user-info:hover {
+    background-color: rgba(255, 255, 255, 0.219);
+}
+
+.profile-menu-user-info a {
+    background-color: rgba(128, 0, 117, 0);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start !important;
+    width: 90% !important;
+    height: 90%;
+}
+.profile-menu-user-info-inner {
+    background-color: rgba(128, 0, 117, 0);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    height: 100%;
+    gap: 10px;
+}
+
+.profile-menu-profile-picture {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 0, 0, 0);
+}
+.profile-menu-profile-picture img {
+    width: 60px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-menu-user-demo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0px;
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 100%;
+}
+.first-last-name {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(0, 128, 0, 0);
+    font-size: 16px;
+}
+.user-email-demo {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 255, 0);
+    font-size: 14px;
+    color: rgb(157, 157, 157);
+}
+
+.profile-menu-btns {
+    display: flex;
+    flex-direction: column;
+    justify-content: top;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    /* height: 200px; */
+    background-color: rgba(255, 0, 0, 0);
+}
+.profile-menu-btns div {
+    width: 80%;
+    height: 40px;
+    background-color: rgb(0, 195, 255, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+}
+.profile-menu-btns div:hover {
+    background-color: rgba(255, 255, 255, 0.169);
+}
+.profile-menu-btns div a {
+    width: 80%;
+    height: 90%;
+    background-color: rgba(0, 255, 106, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
+.sign-out-btn {
+    background-color: #03948a00;
+    color: #ffffff;
+    border: none;
+    width: 80%;
+    height: 40px;
+    /* padding: 13px 18px; */
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* border: 1px solid rgba(128, 128, 128, 0.405); */
+    background-color: rgba(207, 203, 203, 0.139);
+
+}
+
+.sign-out-btn:hover {
+    background-color: rgba(255, 255, 255, 0.169);
+    border: 1px solid rgba(128, 128, 128, 0);
+}
+

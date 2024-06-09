@@ -1,0 +1,41 @@
+
+.menu-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
+    background-color: rgba(128, 128, 128, 0);
+}
+.menu-icon:hover {
+    cursor: pointer;
+}
+
+.menu-line {
+    width: 100%;
+    height: 2px;
+    background-color: #ffffff;
+    transition: transform 0.4s, opacity 0.3s;
+}
+.menu-line:nth-child(3) {
+    width: 70%;
+    align-self: flex-start;
+}
+
+.menu-line:nth-child(2) {
+    margin: 6px;
+}
+
+.open:nth-child(1) {
+    transform: rotate(90deg) translate(11px, 8px);
+}
+
+.open:nth-child(2) {
+    transform: rotate(90deg) translate(3px, 0px);
+}
+
+.open:nth-child(3) {
+    transform: rotate(90deg) translate(-8px, -12px);
+}
