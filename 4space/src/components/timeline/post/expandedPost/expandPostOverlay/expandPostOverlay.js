@@ -44,8 +44,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
             const response = await axios.get(`${API_BASE_URL}api/post/${id}`, config);
             setPost(response.data);
             setLoading(false);
-            console.log(response.data);
-            const data = response.data;
+            // console.log(response.data);
         } catch (error) {
             console.error("Error fetching post data", error);
             setLoading(false);
@@ -74,14 +73,9 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
     
     
       useEffect(() => {
-        //    setOriginalUrl(window.location.href);
-        // fetchUserData();
         setLoading(false); // Set loading to false once user data is fetched
-    
       }, [setLoading]);
-    
-      // console.log(post);
-    
+        
       useEffect(() => {
         if (!loading) {
 
@@ -97,7 +91,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
               setPost(data);
     
               // Check if user data is available
-              console.log(data);
+            //   console.log(data);
               if (user && user.username) {
                 setIsLiked(data.likes.find(like => like.username === user.username && !isDisliked));
                 setIsDisliked((data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
@@ -133,7 +127,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
         const data = { text: comment }
         try {
             const response = await axios.post(`${API_BASE_URL}api/post/${postIdForOverlay}/comment/`, data, config);
-            console.log(response.data);
+            // console.log(response.data);
             setComment('');
             setPost((prevPost) => ({
                 ...prevPost,
@@ -161,8 +155,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
         })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
-
+            // console.log(data);
             setPost(data);
           })
           .catch(error => console.error('Error toggling like:', error));
@@ -184,7 +177,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
         })
           .then(response => response.json())
           .then(data => {
-            console.log(data);
+            // console.log(data);
             setPost(data);
           })
           .catch(error => console.error('Error toggling like:', error));

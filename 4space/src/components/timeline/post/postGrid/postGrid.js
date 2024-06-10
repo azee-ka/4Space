@@ -22,13 +22,15 @@ const PostsGrid = ({ posts, handleShowExpandedOverlayPost}) => {
         <div className='post-grid'>
             <div className="post-grid-inner">
                 {posts.map((post) => (
-                    <div className='post-item' key={post.id} onClick={() => handlePostClick(post.id)}>
-                        <img src={`${API_BASE_URL}${post.media_files.file}`} />
-                    </div>
+                    post.media_files.file && (
+                        <div className='post-item' key={post.id} onClick={() => handlePostClick(post.id)}>
+                            <img src={`${API_BASE_URL}${post.media_files.file}`} alt={`Post ${post.id}`} />
+                        </div>
+                    )
                 ))}
             </div>
         </div>
-    );
+    );    
 };
 
 export default PostsGrid;

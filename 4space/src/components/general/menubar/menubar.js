@@ -11,7 +11,7 @@ const Menubar = ({ userInfo }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const buttonsData = [
-        { path: '/perferences', label: 'Perferences' },
+        { path: '/preferences', label: 'Preferences' },
         { path: '/servers', label: 'Servers' },
         { path: '/profile', label: 'Profile' }
     ];

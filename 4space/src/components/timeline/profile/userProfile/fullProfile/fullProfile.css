@@ -24,8 +24,7 @@
     align-items: center;
     flex-direction: column;
     background-color: rgba(255, 0, 0, 0);
-    gap: 25px;
-
+    gap: 5px;
 }
 
 .full-profile-page-header {
@@ -53,7 +52,7 @@
     flex-direction: column;
 }
 .full-profile-picture-container-inner {
-    width: 47%;
+    width: 43%;
     aspect-ratio: 1 / 1;
     display: flex;
     flex-direction: column;
@@ -70,6 +69,21 @@
     align-items: center;
 }
 
+.full-profile-user-info-container {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: rgb(212, 212, 212);
+}
+.full-profile-user-info-container p:hover {
+    cursor: pointer;
+    color: rgb(160, 160, 160);
+}
+
 .full-profile-interact-stats {
     width: 100%;
     background-color: rgba(127, 255, 212, 0);
@@ -80,6 +94,7 @@
     gap: 8px;
     font-size: 17px;
     color: rgb(189, 189, 189);
+    margin-top: 15px;
 }
 
 .full-profile-follow-following div:hover,
@@ -95,6 +110,37 @@
     flex-direction: row;
     gap: 15px;
 }
+
+.full-profile-follow-connect-btn {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+.full-profile-follow-connect-btn button {
+    background-color: rgb(17, 139, 139);
+    padding: 10px 17px 10px 17px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    border-radius: 6px;
+    color: white;
+    font-size: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.full-profile-follow-connect-btn button:hover {
+    background-color: rgb(19, 167, 167, 0.4);
+    box-shadow: 0px 0px 4px 4px rgba(0, 255, 255, 0.441);
+    cursor: pointer;
+}
+
 
 
 

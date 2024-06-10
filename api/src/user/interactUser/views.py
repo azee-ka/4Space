@@ -28,38 +28,34 @@ def profile_view(request, username):
     try:
         profile_owner = InteractUser.objects.get(username=username)
         is_private = profile_owner.is_private_profile
-        
+
+        serializer_context = {'request': request}
+
         if request.user.is_authenticated:
-            requesting_user = request.user.interactuser  # Assuming the request user has a one-to-one relation with InteractUser
+            requesting_user = request.user.interactuser
 
             if requesting_user == profile_owner:
-                # If the requesting user is the profile owner, use the InteractUserSerializer
-                serializer = InteractUserSerializer(profile_owner)
+                serializer = InteractUserSerializer(profile_owner, context=serializer_context)
                 return Response({
                     'profile': serializer.data,
                     'viewable': 'self'
                 })
 
             if is_private:
-                # Check if the requesting user is following or connected to the profile owner
                 is_following = profile_owner.followers.filter(id=requesting_user.id).exists()
                 is_connected = profile_owner.connections.filter(id=requesting_user.id).exists()
 
                 if not (is_following or is_connected):
-                    # If not following or connected, return only public data
-                    serializer = PublicProfileSerializer(profile_owner)
+                    serializer = PublicProfileSerializer(profile_owner, context=serializer_context)
                     return Response({
                         'profile': serializer.data,
                         'viewable': 'partial'
                     })
 
-        else:
-            # If the user is not authenticated and the profile is private, return unauthorized
-            if is_private:
-                return Response({'error': 'Unauthorized access to private profile'}, status=status.HTTP_401_UNAUTHORIZED)
+        if is_private and not request.user.is_authenticated:
+            return Response({'error': 'Unauthorized access to private profile'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # If the profile is public or the user is allowed to view the private profile
-        serializer = PrivateProfileSerializer(profile_owner)
+        serializer = PrivateProfileSerializer(profile_owner, context=serializer_context)
         return Response({
             'profile': serializer.data,
             'viewable': 'full'
@@ -67,3 +63,88 @@ def profile_view(request, username):
 
     except InteractUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+    
+    
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_profile_visibility_status(request):
+    try:
+        # Assuming the request user has a one-to-one relation with InteractUser
+        user = request.user.interactuser
+
+        return Response({
+            'is_private_profile': user.is_private_profile
+        }, status=status.HTTP_200_OK)
+    except InteractUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_profile_visibility(request):
+    try:
+        # Assuming the request user has a one-to-one relation with InteractUser
+        user = request.user.interactuser
+        user.is_private_profile = not user.is_private_profile
+        user.save()
+
+        return Response({
+            'message': 'Profile visibility toggled successfully',
+            'is_private_profile': user.is_private_profile
+        }, status=status.HTTP_200_OK)
+    except InteractUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    
+    
+    
+    
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def follow_unfollow_user(request, user_id):
+    try:
+        target_user = InteractUser.objects.get(id=user_id)
+        current_user = request.user.interactuser
+
+        if target_user == current_user:
+            return Response({'error': 'You cannot follow/unfollow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if target_user.followers.filter(id=current_user.id).exists():
+            target_user.remove_follower(current_user)
+            message = 'Unfollowed user successfully'
+        else:
+            target_user.add_follower(current_user)
+            message = 'Followed user successfully'
+
+        return Response({'message': message}, status=status.HTTP_200_OK)
+    
+    except InteractUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def connect_disconnect_user(request, user_id):
+    try:
+        target_user = InteractUser.objects.get(id=user_id)
+        current_user = request.user.interactuser
+
+        if target_user == current_user:
+            return Response({'error': 'You cannot connect/disconnect with yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if target_user.connections.filter(id=current_user.id).exists():
+            target_user.remove_connection(current_user)
+            message = 'Disconnected user successfully'
+        else:
+            target_user.add_connection(current_user)
+            message = 'Connected with user successfully'
+
+        return Response({'message': message}, status=status.HTTP_200_OK)
+    
+    except InteractUser.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)

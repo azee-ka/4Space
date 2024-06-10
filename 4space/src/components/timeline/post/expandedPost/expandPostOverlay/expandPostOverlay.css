@@ -86,7 +86,7 @@
 
 .expand-post-overlay-user-info-comments {
     width: 400px;
-    height: 620px;
+    height: 650px;
     background-color: rgba(0, 128, 0, 0);
     display: flex;
     flex-direction: column;
@@ -154,13 +154,13 @@
 .expand-post-overlay-list-comments {
     background-color: rgba(37, 35, 35, 0.288);
     backdrop-filter: blur(70px);
+    border: 1px solid rgba(128, 128, 128, 0.17);
     width: 100%;
-    height: 450px;
+    height: 480px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     border-radius: 8px;
-    border: 1px solid rgba(128, 128, 128, 0.17);
     overflow-y: auto;
 }
 .expand-post-overlay-list-comments-inner {
@@ -178,11 +178,11 @@
 
 .expand-post-overlay-per-comment {
     width: 100%;
-    min-height: 100px;
+    min-height: 90px;
     height: auto;
     max-height: 900px;
     background-color: rgba(0, 128, 0, 0);
-    border-bottom: 1px solid rgba(128, 128, 128, 0.203);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.146);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -196,7 +196,7 @@
 .expand-post-overlay-comment-user-info {
     background-color: rgba(0, 0, 255, 0);
     width: 98%;
-    height: 45px;
+    height: 40px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -235,7 +235,7 @@
 }
 
 .expand-post-overlay-comment-text {
-    width: 94%;
+    width: 93%;
     flex-grow: 1;
     background-color: rgba(128, 0, 128, 0);
     color: rgb(228, 228, 228);
@@ -253,6 +253,8 @@
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
+    font-size: 16px;
+    color: rgb(207, 207, 207);
 }
 
 

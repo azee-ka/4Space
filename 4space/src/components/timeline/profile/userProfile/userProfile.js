@@ -5,6 +5,7 @@ import API_BASE_URL from "../../../../config";
 import GetConfig from "../../../general/Authentication/utils/config";
 import { useAuthState } from "../../../general/Authentication/utils/AuthProvider";
 import FullProfile from "./fullProfile/fullProfile";
+import PartialProfile from "./partialProfile/partialProfile";
 
 
 const UserProfile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) => {
@@ -30,12 +31,10 @@ const UserProfile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) =
     }, []);
 
 
-    return profileData.viewable === 'full' ? (
+    return (profileData.viewable === "full") ? (
         <FullProfile userData={profileData.profile} handleUserListTrigger={handleUserListTrigger} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />
     ) : (
-        <div>
-
-        </div>
+            <PartialProfile userData={profileData.profile}/>
     )
 }
 

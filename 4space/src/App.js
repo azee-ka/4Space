@@ -12,6 +12,7 @@ import Profile from './components/timeline/profile/profile.js';
 
 import ExpandPostPage from './components/timeline/post/expandedPost/expandPost/expandPostPage.js';
 import CreatePost from './components/timeline/post/createPost/createPost.js';
+import Preferences from './components/general/preferences/preferences.js';
 
 const App = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -67,6 +68,11 @@ const App = () => {
       path: '/post/:post_id',
       name: 'Post',
       element: <ExpandPostPage />
+    },
+    {
+      path: '/preferences',
+      name: 'Preferences',
+      element: <Preferences />
     },
     
   ];
