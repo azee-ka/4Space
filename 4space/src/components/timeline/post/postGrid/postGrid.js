@@ -18,7 +18,7 @@ const PostsGrid = ({ posts, handleShowExpandedOverlayPost}) => {
         window.history.replaceState(null, '', `/post/${post_id}`);
     };
 
-    return (
+    return posts ?  (
         <div className='post-grid'>
             <div className="post-grid-inner">
                 {posts.map((post) => (
@@ -30,7 +30,9 @@ const PostsGrid = ({ posts, handleShowExpandedOverlayPost}) => {
                 ))}
             </div>
         </div>
-    );    
+    ) : (
+        <div>Loading...</div>
+    )  
 };
 
 export default PostsGrid;

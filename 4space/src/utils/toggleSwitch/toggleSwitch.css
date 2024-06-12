@@ -14,7 +14,7 @@
     display: block;
     overflow: hidden;
     cursor: pointer;
-    border: 2px solid #dddddd;
+    border: 2px solid #c1c1c15a;
     border-radius: 20px;
 }
 
@@ -23,6 +23,8 @@
     width: 200%;
     margin-left: -100%;
     transition: margin 0.35s ease-in 0s;
+    color: red;
+    background-color: red;
 }
 
 .toggle-switch-inner:before, .toggle-switch-inner:after {
@@ -42,14 +44,14 @@
 .toggle-switch-inner:before {
     content: "";
     padding-left: 10px;
-    background-color: #34c1bf;
+    background-color: #00a3a0;
     color: #FFFFFF;
 }
 
 .toggle-switch-inner:after {
     content: "";
     padding-right: 10px;
-    background-color: #EEEEEE;
+    background-color: #cacaca;
     color: #999999;
     text-align: right;
 }
@@ -58,12 +60,12 @@
     display: block;
     width: 18px;
     margin: 2px;
-    background: #FFFFFF;
+    background: #dedede;
     position: absolute;
     top: 0;
     bottom: 0;
     right: 24px;
-    border: 2px solid #dddddd;
+    border: 2px solid #aeaeae;
     border-radius: 20px;
     transition: all 0.35s ease-in 0s;
 }

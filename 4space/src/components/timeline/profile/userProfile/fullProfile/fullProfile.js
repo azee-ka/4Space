@@ -117,7 +117,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
                             </div>
                         </div>
                         <div>
-                            {profileData && <PostsGrid posts={profileData.posts} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />}
+                            {profileData && profileData.posts && <PostsGrid posts={profileData.posts} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />}
                         </div>
                     </div>
 

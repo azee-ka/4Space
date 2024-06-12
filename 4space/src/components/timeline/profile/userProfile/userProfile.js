@@ -30,11 +30,10 @@ const UserProfile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) =
         handleFetchUserData();
     }, []);
 
-
     return (profileData.viewable === "full") ? (
         <FullProfile userData={profileData.profile} handleUserListTrigger={handleUserListTrigger} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />
     ) : (
-            <PartialProfile userData={profileData.profile}/>
+        <PartialProfile userData={profileData.profile}/>
     )
 }
 
