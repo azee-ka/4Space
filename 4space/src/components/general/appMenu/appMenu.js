@@ -5,8 +5,8 @@ import { FaCog, FaServer, FaUser } from 'react-icons/fa'; // Example icons
 
 const appsData = [
     { path: '/tasks', label: 'Tasks', icon: <FaCog /> },
+    { path: '/messages', label: 'Messages', icon: <FaServer /> },
     { path: '/servers', label: 'Servers', icon: <FaServer /> },
-    { path: '/profile', label: 'Profile', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },

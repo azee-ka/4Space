@@ -13,6 +13,7 @@ import Profile from './components/timeline/profile/profile.js';
 import ExpandPostPage from './components/timeline/post/expandedPost/expandPost/expandPostPage.js';
 import CreatePost from './components/timeline/post/createPost/createPost.js';
 import Preferences from './components/general/preferences/preferences.js';
+import Messages from './components/timeline/messages/messages.js';
 
 const App = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -74,7 +75,16 @@ const App = () => {
       name: 'Preferences',
       element: <Preferences />
     },
-    
+    {
+      path: '/messages',
+      name: 'Messages',
+      element: <Messages />
+    },
+    {
+      path: '/messages/:username/:chat_id',
+      name: 'Messages',
+      element: <Messages />
+    },
   ];
 
   const publicRoutes = [

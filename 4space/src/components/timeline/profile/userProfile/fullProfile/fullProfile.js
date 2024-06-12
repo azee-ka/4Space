@@ -43,6 +43,9 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
             console.log(response.data);
             setIsFollowing(response.data.message === "Followed user successfully");
             handleFetchUserData();
+            if(profileData.is_private) {
+                window.location.reload()
+            }
         } catch (error) {
             console.error("Error toggling unfollow/follow", error);
         }

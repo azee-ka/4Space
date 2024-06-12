@@ -1,0 +1,183 @@
+.new-message-overlay {
+    background-color: rgba(43, 43, 43, 0.758);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.new-message-overlay-card {
+    width: 510px;
+    height: 450px;
+    /* background-color: rgb(33, 33, 33); */
+    background-color: rgb(25, 25, 25);
+    box-shadow: 0 2px 4px rgba(218, 218, 218, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+}
+.new-message-overlay-card-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 90%;
+    height: 90%;
+    background-color: rgba(255, 0, 0, 0);
+}
+
+
+.new-messge-card-title {
+    width: 100%;
+    height: 25px;
+    background-color: rgb(0, 255, 221, 0);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.new-message-card-content {
+    width: 100%;
+    flex-grow: 1;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.new-message-card-content-inner {
+    width: 100%;
+    height: 95%;
+    background-color: rgb(0, 255, 166, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+}
+
+
+.new-message-card-content-inner textarea,
+.new-message-card-content-inner input {
+    background-color: rgb(255, 0, 230, 0);
+    resize: none;
+    border: 1px solid gray;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 17px;
+    color: white;
+    outline: none;
+}
+
+.new-message-card-content-inner textarea:hover,
+.new-message-card-content-inner input:hover {
+    border: 1px solid rgb(0, 210, 186);
+}
+
+.new-message-card-content-inner textarea:focus,
+.new-message-card-content-inner input:focus {
+    box-shadow: 0px 0px 3px 2px rgb(0, 159, 143);
+    border: 1px solid rgb(0, 210, 186);
+}
+
+
+.new-message-card-message-to-field {
+    width: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.new-message-card-message-to-field input {
+    width: 100%;
+    height: 20px;
+}
+
+.new-message-user-search-list {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+.users-search-list-item {
+    height: 55px;
+    width: 100%;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    color: white;
+}
+.users-search-list-item:hover {
+    background-color: rgba(123, 123, 123, 0.387);
+    cursor: pointer;
+}
+
+.users-search-list-item-inner {
+    background-color: rgba(0, 128, 0, 0);
+    height: 90%;
+    width: 94%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+.users-search-list-item-profile-picture {
+    height: 100%;
+    aspect-ratio: 1 / 1;
+}
+.users-search-list-item-profile-picture-inner {
+    height: 100%;
+    width: 100%;
+}
+.users-search-list-item-profile-picture-inner {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+.new-send-card-send-message-button {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;   
+}
+
+.new-send-card-send-message-button-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(255, 0, 0, 0);
+}
+
+
+.new-send-card-send-message-button-inner button {
+    height: 35px;
+    padding: 8px;
+    border: 0px solid white;
+    border-radius: 6px;
+    background-color: rgba(0, 145, 147, 0.9);
+    color: white;
+    font-size: 14px;
+}
+.new-send-card-send-message-button-inner button:hover {
+    background-color: rgb(0, 0, 0);
+    box-shadow: 0px 0px 4px 2px rgb(0, 171, 169);
+    cursor: pointer;
+}
