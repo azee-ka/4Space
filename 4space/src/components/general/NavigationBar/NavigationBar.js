@@ -4,7 +4,7 @@ import './NavigationBar.css';
 import { useAuthDispatch, useAuthState } from '../Authentication/utils/AuthProvider';
 import Sidebar from '../../sidebar/Sidebar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTh } from '@fortawesome/free-solid-svg-icons'; // Import the grid icon
+import { faTh, faBell } from '@fortawesome/free-solid-svg-icons'; // Import the grid icon
 import API_BASE_URL from '../../../config';
 
 import Menubar from '../menubar/menubar';
@@ -14,8 +14,8 @@ import AppMenu from '../appMenu/appMenu';
 import SidebarMenuIcon from '../../../utils/icons/sidebar-menu-icon/sidebar-menu-icon';
 import GetConfig from '../Authentication/utils/config';
 
-function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOpen, setSidebarOpen }) {
-    const { isAuthenticated, logout } = useAuthDispatch();
+function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, handleNotificationsMenuToggle, sidebarOpen, setSidebarOpen }) {
+    const { isAuthenticated } = useAuthDispatch();
     const { token } = useAuthState();
     const config = GetConfig(token);
 
@@ -36,7 +36,7 @@ function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOp
 
     const profileMenuRef = useRef(null);
     const appMenuRef = useRef(null);
-
+    const notificationsMenuRef = useRef(null);
 
 
     return (
@@ -58,6 +58,13 @@ function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOp
                             ))}
                         </div>
                         <div className='navigaton-utils'>
+                        {isAuthenticated &&
+                                <div className='navigation-bar-notifications-menu' ref={notificationsMenuRef} onClick={(e) => e.stopPropagation()}>
+                                    <button onClick={handleNotificationsMenuToggle}>
+                                        <FontAwesomeIcon icon={faBell} />
+                                    </button>
+                                </div>
+                            }
                             {isAuthenticated &&
                                 <div className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
                                     <button onClick={handleAppMenuToggle}>

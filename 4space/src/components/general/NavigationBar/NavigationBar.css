@@ -133,6 +133,12 @@
 
 
 
+.navigation-bar-notifications-menu button {
+    background-color: transparent;
+    border: 0;
+    font-size: 21px;
+    color: white;
+}
 
 
 .navigation-links {

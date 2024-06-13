@@ -7,6 +7,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import InteractUser
 from .serializers import InteractUserSerializer, InteractUserBriefSerializer
 from .serializers import PublicProfileSerializer, PrivateProfileSerializer
+from ...components.notification.models import Notification
+from ...components.notification.serializers import NotificationSerializer
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -102,7 +106,6 @@ def toggle_profile_visibility(request):
     
     
     
-    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def follow_unfollow_user(request, user_id):
@@ -117,13 +120,55 @@ def follow_unfollow_user(request, user_id):
             target_user.remove_follower(current_user)
             message = 'Unfollowed user successfully'
         else:
-            target_user.add_follower(current_user)
-            message = 'Followed user successfully'
+            if target_user.is_private_profile:
+                target_user.send_follow_request(current_user)
+                # Notify the target user via WebSocket
+                notification = Notification.objects.create(
+                    recipient=target_user,
+                    actor=current_user,
+                    verb='sent you a follow request'
+                )
+                serializer = NotificationSerializer(notification)
+                channel_layer = get_channel_layer()  # Get the channel_layer instance
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{target_user.id}",
+                    {
+                        'type': 'send_notification',
+                        'notification': serializer.data
+                    }
+                )
+                message = 'Follow request sent successfully'
+            else:
+                target_user.add_follower(current_user)
+                message = 'Followed user successfully'
 
         return Response({'message': message}, status=status.HTTP_200_OK)
-    
+
     except InteractUser.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def follow_unfollow_user(request, user_id):
+#     try:
+#         target_user = InteractUser.objects.get(id=user_id)
+#         current_user = request.user.interactuser
+
+#         if target_user == current_user:
+#             return Response({'error': 'You cannot follow/unfollow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         if target_user.followers.filter(id=current_user.id).exists():
+#             target_user.remove_follower(current_user)
+#             message = 'Unfollowed user successfully'
+#         else:
+#             target_user.add_follower(current_user)
+#             message = 'Followed user successfully'
+
+#         return Response({'message': message}, status=status.HTTP_200_OK)
+    
+#     except InteractUser.DoesNotExist:
+#         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     
     
     

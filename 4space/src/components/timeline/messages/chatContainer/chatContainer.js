@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
@@ -192,7 +193,11 @@ const ChatContainer = () => {
                         <ProfilePicture src={otherUserChatInfo.other_user.profile_picture} />
                     </div>
                     <div className='other-user-chat-info'>
-                        <p>{`${otherUserChatInfo.other_user.first_name} ${otherUserChatInfo.other_user.last_name}`}</p>
+                        <p>
+                            <Link to={`/profile/${otherUserChatInfo.other_user.username}`}>
+                                {`${otherUserChatInfo.other_user.first_name} ${otherUserChatInfo.other_user.last_name}`}
+                            </Link>
+                        </p>
                     </div>
                 </div>
             </div>

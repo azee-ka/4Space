@@ -13,6 +13,7 @@ import Menubar from '../../components/general/menubar/menubar';
 import UserListOverlay from '../../components/timeline/userListOverlay/userListOverlay';
 import CreatePostOverlay from '../../components/timeline/post/createPost/createPostOverlay';
 import ExpandPostOverlay from '../../components/timeline/post/expandedPost/expandPostOverlay/expandPostOverlay';
+import Notifications from '../../components/general/notifications/notifications';
 
 const Layout = ({ children, userList, userListTitle, showUserList, setShowUserList, showExpandedPostOverlay, setShowExpandedPostOverlay, expandPostPreviousLocation, postId, prevPostId, nextPostId, setPostId, setPrevPostId, setNextPostId }) => {
     const { token, isAuthenticated } = useAuthState();
@@ -25,6 +26,7 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
     const [menuOpen, setMenuOpen] = useState(false);
     const [appMenuOpen, setAppMenuOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
 
     const [showCreatePostOverlay, setShowCreatePostOverlay] = useState(false);
 
@@ -40,15 +42,25 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
 
     const handleProfileMenuToggle = () => {
         setMenuOpen(!menuOpen);
-        if (appMenuOpen) {
+        if (appMenuOpen || notificationsMenuOpen) {
             setAppMenuOpen(false);
+            setNotificationsMenuOpen(false);
         }
     };
 
     const handleAppMenuToggle = () => {
         setAppMenuOpen(!appMenuOpen);
-        if (menuOpen) {
+        if (menuOpen || notificationsMenuOpen) {
             setMenuOpen(false);
+            setNotificationsMenuOpen(false);
+        }
+    };
+
+    const handleNotificationsMenuToggle = () => {
+        setNotificationsMenuOpen(!notificationsMenuOpen);
+        if (menuOpen || appMenuOpen) {
+            setMenuOpen(false);
+            setAppMenuOpen(false);
         }
     };
 
@@ -74,6 +86,7 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
         setSidebarOpen(false);
         setMenuOpen(false);
         setAppMenuOpen(false);
+        setNotificationsMenuOpen(false);
     };
 
     useEffect(() => {
@@ -86,6 +99,7 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
                 <NavigationBar
                     handleProfileMenuToggle={handleProfileMenuToggle}
                     handleAppMenuToggle={handleAppMenuToggle}
+                    handleNotificationsMenuToggle={handleNotificationsMenuToggle}
                     sidebarOpen={sidebarOpen}
                     setSidebarOpen={setSidebarOpen} />
             </div>
@@ -97,9 +111,10 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
 
             {menuOpen && <Menubar userInfo={userInfo} />}
             {appMenuOpen && <AppMenu />}
+            {notificationsMenuOpen && <Notifications />}
             {showUserList && <UserListOverlay userList={userList} title={userListTitle} onClose={() => setShowUserList(false)} />}
             {showCreatePostOverlay && <CreatePostOverlay onClose={() => setShowCreatePostOverlay(false)} />}
-            {showExpandedPostOverlay && <ExpandPostOverlay onClose={handleExpandPostOverlayClose} postId={postId} prevPostId={prevPostId} nextPostId={nextPostId} setPostId={setPostId} setPrevPostId={setPrevPostId} setNextPostId={setNextPostId}  />}
+            {showExpandedPostOverlay && <ExpandPostOverlay onClose={handleExpandPostOverlayClose} postId={postId} prevPostId={prevPostId} nextPostId={nextPostId} setPostId={setPostId} setPrevPostId={setPrevPostId} setNextPostId={setNextPostId} />}
         </div>
     );
 };
