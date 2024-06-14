@@ -10,7 +10,6 @@ const PartialProfile = ({ userData }) => {
     const [profileData, setProfileData] = useState(userData);
     const { token } = useAuthState();
     const config = GetConfig(token);
-    console.log(userData)
 
     const [isFollowing, setIsFollowing] = useState(false);
 
@@ -46,9 +45,6 @@ const PartialProfile = ({ userData }) => {
         }
     };
 
-
-
-    console.log(userData);
 
     return userData ? (
         <div className="partial-profile-page">

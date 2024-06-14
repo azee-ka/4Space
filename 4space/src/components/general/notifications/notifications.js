@@ -4,7 +4,7 @@ import GetConfig from '../Authentication/utils/config';
 import { useAuthState } from '../Authentication/utils/AuthProvider';
 
 const Notifications = () => {
-    const { token } = useAuthState();
+    const { token, user } = useAuthState();
     const config = GetConfig(token);
     const [notifications, setNotifications] = useState([]);
 
@@ -15,7 +15,7 @@ const Notifications = () => {
     useEffect(() => {
         if (!socketInitialized) {
 
-            websocket.current = new WebSocket(`ws://localhost:8000/ws/notifications/`, [], config);
+            websocket.current = new WebSocket(`ws://localhost:8000/ws/notifications/${user.id}/`, [], config);
             setSocketInitialized(true);
 
             websocket.current.onopen = () => {
@@ -24,9 +24,9 @@ const Notifications = () => {
 
             websocket.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+                console.log(data);
                 setNotifications(prevNotifications => [data, ...prevNotifications]);
             };
-
         }
         websocket.current.onclose = () => {
             console.log('WebSocket closed');
