@@ -3,54 +3,61 @@ import './notifications.css';
 import GetConfig from '../Authentication/utils/config';
 import { useAuthState } from '../Authentication/utils/AuthProvider';
 
-const Notifications = () => {
+const Notifications = ({ notifications }) => {
     const { token, user } = useAuthState();
     const config = GetConfig(token);
-    const [notifications, setNotifications] = useState([]);
+    // const [notifications, setNotifications] = useState([]);
 
-    const websocket = useRef(null);
-    const [socketInitialized, setSocketInitialized] = useState(false); // Track WebSocket initialization
+    // const websocket = useRef(null);
+    // const isWebSocketInitialized = useRef(false); // Track WebSocket initialization
 
+    // useEffect(() => {
+    //     if (!isWebSocketInitialized.current) {
+    //         websocket.current = new WebSocket(`ws://localhost:8000/ws/notifications/${user.id}/`, [], config);
+    //         isWebSocketInitialized.current = true;
 
-    useEffect(() => {
-        if (!socketInitialized) {
+    //         websocket.current.onopen = () => {
+    //             console.log('WebSocket connection established');
+    //         };
 
-            websocket.current = new WebSocket(`ws://localhost:8000/ws/notifications/${user.id}/`, [], config);
-            setSocketInitialized(true);
+    //         websocket.current.onmessage = (event) => {
+    //             const data = JSON.parse(event.data);
+    //             console.log(data);
 
-            websocket.current.onopen = () => {
-                console.log('WebSocket connection established');
-            };
+    //             // Check for duplicates before updating the notifications state
+    //             setNotifications(prevNotifications => {
+    //                 const isDuplicate = prevNotifications.some(notification => notification.id === data.id);
+    //                 if (!isDuplicate) {
+    //                     return [data, ...prevNotifications];
+    //                 }
+    //                 return prevNotifications;
+    //             });
+    //         };
 
-            websocket.current.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                console.log(data);
-                setNotifications(prevNotifications => [data, ...prevNotifications]);
-            };
-        }
-        websocket.current.onclose = () => {
-            console.log('WebSocket closed');
-        };
+    //         websocket.current.onclose = () => {
+    //             console.log('WebSocket closed');
+    //             isWebSocketInitialized.current = false; // Allow reconnection if needed
+    //         };
 
-        websocket.current.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
+    //         websocket.current.onerror = (error) => {
+    //             console.error('WebSocket error:', error);
+    //         };
+    //     }
 
-
-        // Cleanup function
-        return () => {
-            if (websocket && websocket.readyState === WebSocket.OPEN) {
-                websocket.close();
-            }
-        };
-    }, [config, socketInitialized]);
+    //     // Cleanup function
+    //     return () => {
+    //         if (websocket.current && websocket.current.readyState === WebSocket.OPEN) {
+    //             websocket.current.close();
+    //         }
+    //     };
+    // }, [config, user.id]);
 
     return (
         <div className="notifications-card" onClick={(e) => e.stopPropagation()} >
             <ul>
                 {notifications.map((notification, index) => (
                     <li key={index}>
-                        {notification.actor} {notification.verb}
+                        {notification.actor_username} {notification.verb}
                     </li>
                 ))}
             </ul>

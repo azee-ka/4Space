@@ -126,7 +126,7 @@ def follow_unfollow_user(request, user_id):
                 notification = Notification.objects.create(
                     recipient=target_user,
                     actor=current_user,
-                    verb='sent you a follow request'
+                    verb=f'sent you a follow request'
                 )
                 serializer = NotificationSerializer(notification)
                 channel_layer = get_channel_layer()  # Get the channel_layer instance

@@ -10,6 +10,7 @@ import API_BASE_URL from '../../../../config';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import GetConfig from '../../../general/Authentication/utils/config';
 import moment from 'moment';
+import useWebSocket from '../../../../utils/websocket/websocket';
 
 const ChatContainer = () => {
     const { chat_id } = useParams();
@@ -21,6 +22,7 @@ const ChatContainer = () => {
 
     const websocket = useRef(null);
     const [socketInitialized, setSocketInitialized] = useState(false); // Track WebSocket initialization
+    const isWebSocketInitialized = useRef(false);
 
     const messagesEndRef = useRef(null);
     const chatContainerRef = useRef(null);
@@ -69,11 +71,11 @@ const ChatContainer = () => {
     // }, [messages]);
 
     useEffect(() => {
-        if (!socketInitialized) {
+        if (!isWebSocketInitialized.current) {
 
             websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${chat_id}/`, [], config);
             setSocketInitialized(true);
-
+            isWebSocketInitialized.current = true;
             websocket.current.onopen = () => {
                 console.log('WebSocket connection established');
             };
@@ -94,6 +96,7 @@ const ChatContainer = () => {
 
         websocket.current.onclose = () => {
             console.log('WebSocket closed');
+            isWebSocketInitialized.current = false;
         };
 
         websocket.current.onerror = (error) => {

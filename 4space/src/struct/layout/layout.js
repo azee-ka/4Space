@@ -14,9 +14,9 @@ import UserListOverlay from '../../components/timeline/userListOverlay/userListO
 import CreatePostOverlay from '../../components/timeline/post/createPost/createPostOverlay';
 import ExpandPostOverlay from '../../components/timeline/post/expandedPost/expandPostOverlay/expandPostOverlay';
 import Notifications from '../../components/general/notifications/notifications';
-
+import usePersistentWebSocket from '../../utils/websocket/websocket';
 const Layout = ({ children, userList, userListTitle, showUserList, setShowUserList, showExpandedPostOverlay, setShowExpandedPostOverlay, expandPostPreviousLocation, postId, prevPostId, nextPostId, setPostId, setPrevPostId, setNextPostId }) => {
-    const { token, isAuthenticated } = useAuthState();
+    const { token, isAuthenticated, user } = useAuthState();
     const config = GetConfig(token);
     const location = useLocation();
     const navigate = useNavigate();
@@ -29,6 +29,8 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
     const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
 
     const [showCreatePostOverlay, setShowCreatePostOverlay] = useState(false);
+
+    const [notifications, setNotifications] = useState([]);
 
     const handleExpandPostOverlayClose = () => {
         setShowExpandedPostOverlay(false);
@@ -91,7 +93,21 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
 
     useEffect(() => {
         handleCloseOverlays();
-    }, [location])
+    }, [location]);
+
+    usePersistentWebSocket(
+        isAuthenticated ? `ws://localhost:8000/ws/notifications/${user.id}/` : null,
+        config,
+        (data) => {
+            setNotifications((prevNotifications) => {
+                const isDuplicate = prevNotifications.some((notification) => notification.id === data.id);
+                if (!isDuplicate) {
+                    return [data, ...prevNotifications];
+                }
+                return prevNotifications;
+            });
+        }
+    );
 
     return (
         <div className='layout-page' onClick={handleCloseOverlays}>
@@ -111,7 +127,7 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
 
             {menuOpen && <Menubar userInfo={userInfo} />}
             {appMenuOpen && <AppMenu />}
-            {notificationsMenuOpen && <Notifications />}
+            {notificationsMenuOpen && <Notifications notifications={notifications} />}
             {showUserList && <UserListOverlay userList={userList} title={userListTitle} onClose={() => setShowUserList(false)} />}
             {showCreatePostOverlay && <CreatePostOverlay onClose={() => setShowCreatePostOverlay(false)} />}
             {showExpandedPostOverlay && <ExpandPostOverlay onClose={handleExpandPostOverlayClose} postId={postId} prevPostId={prevPostId} nextPostId={nextPostId} setPostId={setPostId} setPrevPostId={setPrevPostId} setNextPostId={setNextPostId} />}
