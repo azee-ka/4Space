@@ -31,7 +31,8 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
     const [showCreatePostOverlay, setShowCreatePostOverlay] = useState(false);
 
     const [notifications, setNotifications] = useState([]);
-
+    const [notificationCount, setNotificationCount] = useState(0);
+    
     const handleExpandPostOverlayClose = () => {
         setShowExpandedPostOverlay(false);
         navigate(`${expandPostPreviousLocation}`);
@@ -117,7 +118,9 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
                     handleAppMenuToggle={handleAppMenuToggle}
                     handleNotificationsMenuToggle={handleNotificationsMenuToggle}
                     sidebarOpen={sidebarOpen}
-                    setSidebarOpen={setSidebarOpen} />
+                    setSidebarOpen={setSidebarOpen}
+                    notificationCount={notifications.length + notificationCount}
+                />
             </div>
             <div className='layout-page-content'>
                 {children}
@@ -127,7 +130,7 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
 
             {menuOpen && <Menubar userInfo={userInfo} />}
             {appMenuOpen && <AppMenu />}
-            {notificationsMenuOpen && <Notifications notifications={notifications} />}
+            {notificationsMenuOpen && <Notifications notifications={notifications} setNotificationCount={setNotificationCount} />}
             {showUserList && <UserListOverlay userList={userList} title={userListTitle} onClose={() => setShowUserList(false)} />}
             {showCreatePostOverlay && <CreatePostOverlay onClose={() => setShowCreatePostOverlay(false)} />}
             {showExpandedPostOverlay && <ExpandPostOverlay onClose={handleExpandPostOverlayClose} postId={postId} prevPostId={prevPostId} nextPostId={nextPostId} setPostId={setPostId} setPrevPostId={setPrevPostId} setNextPostId={setNextPostId} />}

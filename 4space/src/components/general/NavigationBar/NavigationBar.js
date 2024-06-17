@@ -14,11 +14,10 @@ import AppMenu from '../appMenu/appMenu';
 import SidebarMenuIcon from '../../../utils/icons/sidebar-menu-icon/sidebar-menu-icon';
 import GetConfig from '../Authentication/utils/config';
 
-function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, handleNotificationsMenuToggle, sidebarOpen, setSidebarOpen }) {
+function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, handleNotificationsMenuToggle, sidebarOpen, setSidebarOpen, notificationCount }) {
     const { isAuthenticated } = useAuthDispatch();
     const { token } = useAuthState();
     const config = GetConfig(token);
-
 
     const privatePages = [
         { label: 'MechFlow', path: '/mechFlow' },
@@ -58,11 +57,16 @@ function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, handleNot
                             ))}
                         </div>
                         <div className='navigaton-utils'>
-                        {isAuthenticated &&
+                            {isAuthenticated &&
                                 <div className='navigation-bar-notifications-menu' ref={notificationsMenuRef} onClick={(e) => e.stopPropagation()}>
                                     <button onClick={handleNotificationsMenuToggle}>
                                         <FontAwesomeIcon icon={faBell} />
                                     </button>
+                                    {notificationCount > 0 && (
+                                        <span className="notification-count">
+                                            {notificationCount > 9 ? '9+' : notificationCount}
+                                        </span>
+                                    )}
                                 </div>
                             }
                             {isAuthenticated &&
@@ -82,7 +86,7 @@ function NavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, handleNot
                         </div>
                     </div>
                 </div>
-            </div>        
+            </div>
         </nav>
     );
 }

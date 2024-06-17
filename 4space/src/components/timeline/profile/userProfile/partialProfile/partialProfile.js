@@ -15,12 +15,11 @@ const PartialProfile = ({ userData }) => {
 
     const handleFetchUserData = async () => {
         try {
-            if(userData) {
+            if (userData) {
                 const response = await axios.get(`${API_BASE_URL}api/user/profile/${userData.user.username}`, config);
                 setProfileData(response.data.profile);
                 console.log(response.data);
             }
-
         } catch (error) {
             console.error('Failed to fetch profile interact data', error);
         }
@@ -37,14 +36,13 @@ const PartialProfile = ({ userData }) => {
             console.log(response.data);
             setIsFollowing(response.data.message === "Followed user successfully");
             handleFetchUserData();
-            if(!profileData.is_private) {
+            if (!profileData.is_private) {
                 window.location.reload();
             }
         } catch (error) {
             console.error("Error toggling unfollow/follow", error);
         }
     };
-
 
     return userData ? (
         <div className="partial-profile-page">
@@ -85,7 +83,7 @@ const PartialProfile = ({ userData }) => {
         </div>
     ) : (
         <div>Loading...</div>
-    )
+    );
 }
 
 export default PartialProfile;

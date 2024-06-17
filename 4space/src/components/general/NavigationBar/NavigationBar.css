@@ -140,6 +140,23 @@
     color: white;
 }
 
+.navigation-bar-notifications-menu {
+    position: relative;
+}
+
+.notification-count {
+    position: absolute;
+    top: -3px;
+    right: -2px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
 
 .navigation-links {
     display: flex;

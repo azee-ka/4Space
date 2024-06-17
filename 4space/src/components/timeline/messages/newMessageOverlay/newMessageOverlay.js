@@ -30,30 +30,28 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay }) => {
 
     const handleSubmitSearch = (e) => {
         // Make an API request to search for users
-
         axios.get(`${API_BASE_URL}api/components/search/user-search/?query=${searchQuery}`, config)
-    .then((response) => {
-        setSearchResults(response.data);
-    })
-    .catch((error) => {
-        console.error('Error searching for users:', error);
-    });
-
+            .then((response) => {
+                setSearchResults(response.data);
+            })
+            .catch((error) => {
+                console.error('Error searching for users:', error);
+            });
     };
 
 
     const handleSelectUserToStartChat = async (usernameToChatWith) => {
         console.log(usernameToChatWith);
 
-        try { 
+        try {
             const response = await axios.post(`${API_BASE_URL}api/apps/chats/create/${usernameToChatWith}/`, null, config);
             console.log(response.data);
-            
+
         } catch (error) {
             console.error('Error sending message:', error);
         }
     };
-    
+
 
 
     return (

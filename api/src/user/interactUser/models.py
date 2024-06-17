@@ -25,17 +25,10 @@ class InteractUser(BaseUser):
         
     def send_follow_request(self, user):
         self.follow_requests.add(user)
-        from ...components.notification.models import Notification
-        Notification.objects.create(
-            recipient=user,
-            actor=self,
-            verb='sent you a follow request'
-        )
 
     def accept_follow_request(self, user):
         self.follow_requests.remove(user)
         self.add_follower(user)
 
-
     def __str__(self):
-        return self.base_user.username
+        return self.username
