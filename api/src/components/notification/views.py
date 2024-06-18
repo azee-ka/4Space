@@ -1,8 +1,10 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Notification
 from .serializers import NotificationSerializer
+from ...user.interactUser.models import InteractUser
 
 @api_view(['GET'])
 def user_notifications(request):
@@ -29,3 +31,76 @@ def mark_notification_as_read(request, id):
     except Exception as e:
         print(f"An error occurred: {e}")
         return Response({'error': 'An error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_follow_request(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, recipient=request.user.interactuser)
+        sender = notification.actor
+        recipient = notification.recipient
+
+        if notification.verb != 'sent you a follow request':
+            return Response({'error': 'Invalid notification type'}, status=status.HTTP_400_BAD_REQUEST)
+
+        recipient.accept_follow_request(sender)
+        notification.delete()
+
+        return Response({'message': 'Follow request accepted'}, status=status.HTTP_200_OK)
+    except Notification.DoesNotExist:
+        return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reject_follow_request(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, recipient=request.user.interactuser)
+        sender = notification.actor
+        recipient = notification.recipient
+
+        if notification.verb != 'sent you a follow request':
+            return Response({'error': 'Invalid notification type'}, status=status.HTTP_400_BAD_REQUEST)
+
+        recipient.follow_requests.remove(sender)
+        notification.delete()
+
+        return Response({'message': 'Follow request rejected'}, status=status.HTTP_200_OK)
+    except Notification.DoesNotExist:
+        return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def withdraw_follow_request(request, recipient_id):
+    try:
+        # Get the recipient user by id
+        recipient = InteractUser.objects.get(id=recipient_id)
+        current_user = request.user.interactuser
+
+        # Find the notification related to the follow request
+        notification = Notification.objects.get(
+            recipient=recipient,
+            actor=current_user,
+            verb='sent you a follow request'
+        )
+
+        # Check if the notification type is correct
+        if notification.verb != 'sent you a follow request':
+            return Response({'error': 'Invalid notification type'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Remove the follow request and delete the notification
+        recipient.follow_requests.remove(current_user)
+        notification.delete()
+
+        return Response({'message': 'Follow request withdrawn'}, status=status.HTTP_200_OK)
+    except InteractUser.DoesNotExist:
+        return Response({'error': 'Recipient user not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Notification.DoesNotExist:
+        return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)

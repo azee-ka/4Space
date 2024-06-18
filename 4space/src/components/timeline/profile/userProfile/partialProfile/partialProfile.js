@@ -12,12 +12,14 @@ const PartialProfile = ({ userData }) => {
     const config = GetConfig(token);
 
     const [isFollowing, setIsFollowing] = useState(false);
+    const [followRequested, setFollowRequested] = useState(false);
 
     const handleFetchUserData = async () => {
         try {
             if (userData) {
                 const response = await axios.get(`${API_BASE_URL}api/user/profile/${userData.user.username}`, config);
                 setProfileData(response.data.profile);
+                setFollowRequested(response.data.profile.follow_request_status);
                 console.log(response.data);
             }
         } catch (error) {
@@ -32,12 +34,20 @@ const PartialProfile = ({ userData }) => {
 
     const handleFollowUnfollowToggle = async () => {
         try {
-            const response = await axios.post(`${API_BASE_URL}api/user/${profileData.user.id}/follow/`, null, config);
-            console.log(response.data);
-            setIsFollowing(response.data.message === "Followed user successfully");
-            handleFetchUserData();
-            if (!profileData.is_private) {
-                window.location.reload();
+            if (!isFollowing && followRequested) {
+                // Withdraw follow request
+                const response = await axios.delete(`${API_BASE_URL}api/components/notifications/withdraw-follow-request/${profileData.user.id}/`, config);
+                console.log(response.data);
+                setFollowRequested(false);
+            } else {
+                // Send follow request or follow directly
+                const response = await axios.post(`${API_BASE_URL}api/user/${profileData.user.id}/follow/`, null, config);
+                console.log(response.data);
+                setIsFollowing(response.data.message === "Followed user successfully");
+                handleFetchUserData();
+                if (!profileData.is_private) {
+                    window.location.reload();
+                }
             }
         } catch (error) {
             console.error("Error toggling unfollow/follow", error);
@@ -54,7 +64,7 @@ const PartialProfile = ({ userData }) => {
             <div className="partial-profile-content">
                 <div className="partial-profile-content-inner">
                     <div className='partial-profile-announce'>
-                        <p>This profile is private. <button onClick={() => handleFollowUnfollowToggle()}>{isFollowing ? "Requested" : `Follow`}</button> them to view their content.</p>
+                        <p>This profile is private. <button onClick={() => handleFollowUnfollowToggle()}>{!isFollowing && followRequested ? "Requested" : `Follow`}</button> them to view their content.</p>
                     </div>
                     <div className="partial-profile-user-profile">
                         <div className="partial-profile-user-profile-inner">

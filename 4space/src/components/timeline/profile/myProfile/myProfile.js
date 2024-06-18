@@ -131,7 +131,7 @@ const MyProfile = ({ handleUserListTrigger }) => {
                                 <div className='profile-interaction-stats-content-inner'>
                                     <div className='profile-interact-stats'>
                                         <div className="profile-connections" onClick={() => handleUserListTrigger(userInteractData.connections_list, "Connections")}>
-                                            {userInteractData.followers_count} connections
+                                            {userInteractData.connections_count} connections
                                         </div>
                                         <div className="profile-follow-following">
                                             <div onClick={() => handleUserListTrigger(userInteractData.following_list, "Following")}>

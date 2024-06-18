@@ -98,7 +98,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
                             <div onClick={() => handleUserListTrigger(profileData.following_list, "Following")}>
                                 {profileData.following_count} Following
                             </div>
-                            <div onClick={() => handleUserListTrigger(profileData.following_list, "Followers")}>
+                            <div onClick={() => handleUserListTrigger(profileData.followers_list, "Followers")}>
                                 {profileData.followers_count} Followers
                             </div>
                         </div>

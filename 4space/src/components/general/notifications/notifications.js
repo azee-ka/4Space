@@ -83,6 +83,33 @@ const Notifications = ({ notifications: notificationsIncoming, setNotificationCo
         };
     }, [notifications, handleIntersect]);
 
+
+    const handleAccept = async (notificationId) => {
+        try {
+            // Call your API to accept the follow request
+            await axios.post(`${API_BASE_URL}api/components/notifications/accept-follow-request/${notificationId}/`, {}, config);
+            // Update the notification state accordingly
+            setNotifications(notifications.map(notification =>
+                notification.id === notificationId ? { ...notification, unread: false } : notification
+            ));
+            setNotificationCount(prevCount => Math.max(prevCount - 1, 0));
+            console.log('accepted');
+        } catch (error) {
+            console.error('Failed to accept follow request', error);
+        }
+    };
+
+    const handleReject = async (notificationId) => {
+        try {
+            // Call your API to reject the follow request
+            await axios.post(`${API_BASE_URL}api/components/notifications/reject-follow-request/${notificationId}/`, {}, config);
+            // Update the notification state accordingly
+            setNotifications(notifications.filter(notification => notification.id !== notificationId));
+        } catch (error) {
+            console.error('Failed to reject follow request', error);
+        }
+    };
+
     return (
         <div className="notifications-card" onClick={(e) => e.stopPropagation()} >
             {notifications.length === 0 ? (
@@ -98,6 +125,12 @@ const Notifications = ({ notifications: notificationsIncoming, setNotificationCo
                             </div>
                             <div className='notification-actor-username-message'>
                                 <p>{notification.actor.username} {notification.verb}</p>
+                                {notification.notification_type === 'action' && (
+                                    <div className="notification-actions">
+                                        <button onClick={() => handleAccept(notification.id)}>Accept</button>
+                                        <button onClick={() => handleReject(notification.id)}>Reject</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

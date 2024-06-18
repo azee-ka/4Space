@@ -43,7 +43,7 @@ const UserListOverlay = ({ userList, onClose, title }) => {
                         {userList.map((thisUser) => (
                             <a href={myUsernameIsNotSameUser(thisUser.username) ? `http://localhost:3000/profile/${thisUser.username}` : `http://localhost:3000/profile`} key={thisUser.id}>
                                 <div className="user-list-item">
-                                    <ProfilePicture src={`${API_BASE_URL}/${thisUser.profile_picture}`} />
+                                    <ProfilePicture src={thisUser.profile_picture} />
                                     <span>{thisUser.username}</span>
                                 </div>
                             </a>

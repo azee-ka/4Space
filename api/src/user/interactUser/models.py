@@ -7,7 +7,7 @@ class InteractUser(BaseUser):
     connections = models.ManyToManyField('self', symmetrical=True)
     is_private_profile = models.BooleanField(default=False)
     posts = models.ManyToManyField(Post, related_name='posted_by', blank=True)
-    follow_requests = models.ManyToManyField('self', symmetrical=False, related_name='follow_requests_received', blank=True)
+    follow_requests = models.ManyToManyField('self', symmetrical=False, related_name='sent_follow_requests', blank=True)
     
     def add_follower(self, user):
         self.followers.add(user)
