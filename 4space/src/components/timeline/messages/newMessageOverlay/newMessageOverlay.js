@@ -6,7 +6,7 @@ import './newMessageOverlay.css';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import GetConfig from '../../../general/Authentication/utils/config';
 
-const NewMessageOverlay = ({ setSendNewMessageOverlay }) => {
+const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) => {
     const { token } = useAuthState();
     const config = GetConfig(token);
     const [sendMessageToField, setSendMessageToField] = useState('');
@@ -46,7 +46,8 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay }) => {
         try {
             const response = await axios.post(`${API_BASE_URL}api/apps/chats/create/${usernameToChatWith}/`, null, config);
             console.log(response.data);
-
+            setSendNewMessageOverlay(false);
+            handlePerProfileChat(response.data);
         } catch (error) {
             console.error('Error sending message:', error);
         }

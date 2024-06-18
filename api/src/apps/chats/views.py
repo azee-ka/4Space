@@ -49,7 +49,7 @@ def create_chat(request, username):
             # Now serialize the other user's information and return the response
             other_user_info = MessageBaseUserSerializer(other_user).data
             response_data = {
-                "chat_id": chat_instance.id,
+                "id": chat_instance.id,
                 "other_user": other_user_info,
             }
             return Response(response_data, status=status.HTTP_201_CREATED)

@@ -15,6 +15,7 @@ import CreatePostOverlay from '../../components/timeline/post/createPost/createP
 import ExpandPostOverlay from '../../components/timeline/post/expandedPost/expandPostOverlay/expandPostOverlay';
 import Notifications from '../../components/general/notifications/notifications';
 import usePersistentWebSocket from '../../utils/websocket/websocket';
+import SmallSidebar from '../../components/sidebar/smallSidebar/smallSidebar';
 const Layout = ({ children, userList, userListTitle, showUserList, setShowUserList, showExpandedPostOverlay, setShowExpandedPostOverlay, expandPostPreviousLocation, postId, prevPostId, nextPostId, setPostId, setPrevPostId, setNextPostId }) => {
     const { token, isAuthenticated, user } = useAuthState();
     const config = GetConfig(token);
@@ -123,6 +124,9 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
                 />
             </div>
             <div className='layout-page-content'>
+                <div className={`layout-small-sidebar ${sidebarOpen ? 'large-sidebar-open' : ''}`}>
+                    <SmallSidebar setShowCreatePostOverlay={setShowCreatePostOverlay} />
+                </div>
                 {children}
             </div>
 

@@ -1,9 +1,8 @@
 .sidebar-container {
     backdrop-filter: blur(100px) !important;
-    background-color: rgba(31, 31, 31, 0.100);
     background-color: rgba(16, 16, 16, 0.427);
     position: fixed;
-    width: 280px;
+    width: 270px;
     height: 100%;
     top: 0px;
     left: 0px;
@@ -50,27 +49,30 @@
     height: 40px;
     width: 80%;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     text-align: right;
     background-color: rgb(189, 34, 34, 0);
     border-radius: 6px;
     transition: background-color 0.3s ease;
     font-size: 18px;
+    background-color: rgba(255, 0, 0, 0);
 }
 
 .sidebar-menu-item:hover {
     background-color: rgba(50, 50, 50, 0.65);
     cursor: pointer;
 }
-.sidebar-menu-item button:hover{
+
+.sidebar-menu-item button:hover {
     cursor: pointer;
 }
 
-.sidebar-menu-item div {
+
+.sidebar-menu-item div:last-child {
     height: 100%;
-    width: 80%;
+    width: 75%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -78,6 +80,16 @@
     text-align: right;
     background-color: rgba(17, 158, 148, 0);
     color: gray !important;
+    margin-left: 12px;
+    margin-right: 12px;
+}
+.sidebar-menu-item div:first-child {
+    width: 45px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(94, 152, 149, 0);
 }
 
 .sidebar-menu-item button {
@@ -86,9 +98,22 @@
     font-size: 18px;
     width: 100%;
     text-align: right;
+    padding: 0;
 }
 
 .sidebar-menu-item button,
 .sidebar-menu-item div a {
     color: rgb(230, 230, 230) !important;
+}
+
+
+.sidebar-menu-icon {
+    height: 40px !important;
+    width: 30px !important;
+}
+
+.sidebar-menu-icon .svg-inline--fa {
+    color: rgb(168, 168, 168);
+    background-color: rgba(255, 0, 0, 0);
+    font-size: 23px;
 }

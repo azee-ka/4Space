@@ -43,15 +43,16 @@ const Messages = () => {
         }
     };
 
+    const handlePerProfileChat = (per_message_element) => {
+        setChatToViewObj(per_message_element);
+        navigate('/messages/' + per_message_element.other_user.username + '/' + per_message_element.id, { replace: true });
+        fetchUserMessagesList();
+    };
 
     useEffect(() => {
         fetchUserMessagesList();
     }, []);
 
-    const handlePerProfileChat = (per_message_element) => {
-        setChatToViewObj(per_message_element);
-        navigate('/messages/' + per_message_element.other_user.username + '/' + per_message_element.id, { replace: true });
-    };
 
     return (
         <div className={`personal-messages-container`}>
@@ -136,7 +137,7 @@ const Messages = () => {
                 </div>
             </div>
             {sendNewMessageOverlay &&
-                <NewMessageOverlay setSendNewMessageOverlay={setSendNewMessageOverlay} />
+                <NewMessageOverlay setSendNewMessageOverlay={setSendNewMessageOverlay} handlePerProfileChat={handlePerProfileChat} />
             }
         </div>
     );
