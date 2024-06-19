@@ -11,6 +11,7 @@ import ChatContainer from './chatContainer/chatContainer';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import GetConfig from '../../general/Authentication/utils/config';
 import { useNavigate, useParams } from 'react-router-dom';
+import RequestChatsList from './requestChats/requestChats';
 
 const Messages = () => {
     const { username, chat_id } = useParams();
@@ -27,6 +28,7 @@ const Messages = () => {
 
     const [sendNewMessageOverlay, setSendNewMessageOverlay] = useState(false);
 
+    const [showRequestChats, setShowRequestChats] = useState(false);
 
     const handleCollapseToggle = () => {
         setCollapsed(!collapsed);
@@ -51,7 +53,21 @@ const Messages = () => {
 
     useEffect(() => {
         fetchUserMessagesList();
+        if (window.location.pathname.includes('requests')) {
+            setShowRequestChats(true);
+        }
     }, []);
+
+
+    const handleRequestChatsViewToggle = () => {
+        if (showRequestChats) {
+            setShowRequestChats(false);
+            navigate('/messages');
+        } else {
+            setShowRequestChats(true);
+            navigate('/messages/requests/recieved');
+        }
+    };
 
 
     return (
@@ -84,50 +100,63 @@ const Messages = () => {
                             </div>
                         }
                         <div className={`personal-messages-content-inner-inner`}>
-                            <div className='personal-messages-left-container'>
-                                <div className='personal-messages-send-new'>
-                                    <div className='personal-messages-send-new-inner'>
-                                        <FontAwesomeIcon
-                                            className='send-new-message-icon'
-                                            icon={faPlus}
-                                            onClick={() => setSendNewMessageOverlay(true)}
-                                        />
+                            {showRequestChats ? (
+                                <RequestChatsList
+                                    handleRequestChatsViewToggle={handleRequestChatsViewToggle}
+                                    chatToViewObj={chatToViewObj}
+                                    setChatToViewObj={setChatToViewObj}
+                                    handlePerProfileChat={handlePerProfileChat}
+                                />
+                            ) : (
+                                <div className='personal-messages-left-container'>
+                                    <div className='personal-messages-send-new'>
+                                        <div className='personal-messages-send-new-inner'>
+                                            <div className='requested-chats-button'>
+                                                <button onClick={() => handleRequestChatsViewToggle()}>Requests</button>
+                                            </div>
+                                            <FontAwesomeIcon
+                                                className='send-new-message-icon'
+                                                icon={faPlus}
+                                                onClick={() => setSendNewMessageOverlay(true)}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className='personal-messages-list-container'>
-                                    <div className='personal-messages-list-container-inner'>
-                                    <div className='personal-messages-per-list'>
-                                        <div className='personal-messages-per-list-inner'>
-                                            {messagesList.map((per_message_element, index) => (
-                                                <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.other_user.username}`}  >
-                                                    <div className='personal-messages-list-per-message-inner'>
-                                                        <div className='personal-messages-list-per-message-inner-inner'>
-                                                            <div className='personal-messages-per-user-profile-picture-container'>
-                                                                <ProfilePicture src={per_message_element.other_user.profile_picture} />
-                                                            </div>
-                                                            <div className='personal-messages-per-user-info'>
-                                                                <div className='personal-messages-per-user-info-inner'>
-                                                                    <div>
-                                                                        {`${per_message_element.other_user.first_name} ${per_message_element.other_user.last_name}`}
+                                    <div className='personal-messages-list-container'>
+                                        <div className='personal-messages-list-container-inner'>
+                                            <div className='personal-messages-per-list'>
+                                                <div className='personal-messages-per-list-inner'>
+                                                    {messagesList.map((per_message_element, index) => (
+                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.other_user.username}`}  >
+                                                            <div className='personal-messages-list-per-message-inner'>
+                                                                <div className='personal-messages-list-per-message-inner-inner'>
+                                                                    <div className='personal-messages-per-user-profile-picture-container'>
+                                                                        <ProfilePicture src={per_message_element.other_user.profile_picture} />
                                                                     </div>
-                                                                    <div>
-                                                                        @{per_message_element.other_user.username}
+                                                                    <div className='personal-messages-per-user-info'>
+                                                                        <div className='personal-messages-per-user-info-inner'>
+                                                                            <div>
+                                                                                {`${per_message_element.other_user.first_name} ${per_message_element.other_user.last_name}`}
+                                                                            </div>
+                                                                            <div>
+                                                                                @{per_message_element.other_user.username}
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    ))}
                                                 </div>
-                                            ))}
+                                            </div>
                                         </div>
                                     </div>
-                                    </div>
                                 </div>
-                            </div>
+                            )
+                            }
                             <div className='personal-messages-right-container'>
                                 {(chat_id !== undefined) ? (
                                     <ChatContainer />
-                                    ) : (
+                                ) : (
                                     <div></div>
                                 )
                                 }

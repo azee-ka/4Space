@@ -33,7 +33,7 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
 
     const [notifications, setNotifications] = useState([]);
     const [notificationCount, setNotificationCount] = useState(0);
-    
+
     const handleExpandPostOverlayClose = () => {
         setShowExpandedPostOverlay(false);
         navigate(`${expandPostPreviousLocation}`);
@@ -124,9 +124,11 @@ const Layout = ({ children, userList, userListTitle, showUserList, setShowUserLi
                 />
             </div>
             <div className='layout-page-content'>
-                <div className={`layout-small-sidebar ${sidebarOpen ? 'large-sidebar-open' : ''}`}>
-                    <SmallSidebar setShowCreatePostOverlay={setShowCreatePostOverlay} />
-                </div>
+                {isAuthenticated &&
+                    <div className={`layout-small-sidebar ${sidebarOpen ? 'large-sidebar-open' : ''}`}>
+                        <SmallSidebar setShowCreatePostOverlay={setShowCreatePostOverlay} />
+                    </div>
+                }
                 {children}
             </div>
 

@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Chat, Message
-from .serializers import ChatSerializer, MessageSerializer, UserChatSerializer, MessageBaseUserSerializer
+from .serializers import ChatSerializer, MessageSerializer, UserChatSerializer, MessageBaseUserSerializer, RestrictedChatSerializer
 from ...user.baseUser.models import BaseUser
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
@@ -34,25 +34,36 @@ def create_chat(request, username):
         }
         return Response(response_data, status=status.HTTP_200_OK)
     else:
-        chat_serializer = ChatSerializer(data={})
-        if chat_serializer.is_valid():
-            chat_instance = chat_serializer.save()  # Save the chat instance first
+        # Create a new chat
+        chat = Chat.objects.create()
+        chat.participants.add(user, other_user)
 
-            # Add participants to the chat
-            chat_instance.participants.add(user, other_user)
+        # Allow user to send messages to themselves
+        if user == other_user:
+            # Assume the user can only send messages to themselves
+            chat.participants.add(other_user)
 
-            # Allow user to send messages to themselves
-            if user == other_user:
-                # Assume the user can only send messages to themselves
-                chat_instance.participants.add(other_user)
+        # Now serialize the other user's information and return the response
+        other_user_info = MessageBaseUserSerializer(other_user).data
+        response_data = {
+            "id": chat.id,
+            "other_user": other_user_info,
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
-            # Now serialize the other user's information and return the response
-            other_user_info = MessageBaseUserSerializer(other_user).data
-            response_data = {
-                "id": chat_instance.id,
-                "other_user": other_user_info,
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_chat_invitation(request, chat_id):
+    user = request.user.interactuser
+    chat = get_object_or_404(Chat, pk=chat_id, participants=user, restricted=True)
+
+    # Update the chat to mark it as unrestricted
+    chat.restricted = False
+    chat.save()
+
+    return Response({"message": "Chat is now unrestricted"}, status=status.HTTP_200_OK)
 
 
 
@@ -74,23 +85,14 @@ def list_past_messages(request, chat_id):
     return paginator.get_paginated_response(serializer.data)
 
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def list_past_messages(request, chat_id):
-#     chat = get_object_or_404(Chat, pk=chat_id)
-#     messages = Message.objects.filter(chat=chat)
-#     serializer = MessageSerializer(messages, many=True)
-#     return Response(serializer.data)
-
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_user_chats(request):
     user = request.user
 
-    # Retrieve all chats where the user is a participant
-    user_chats = Chat.objects.filter(participants=user)
+    # Retrieve all chats where the user is a participant and the invitation is accepted
+    user_chats = Chat.objects.filter(participants=user, restricted=False)
 
     # Extract unique chat IDs from the queryset
     chat_ids = user_chats.values_list('id', flat=True)
@@ -102,6 +104,40 @@ def list_user_chats(request):
     serializer = UserChatSerializer(unique_chats, many=True, context={'request': request})
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+from django.db.models import Exists, OuterRef, Count
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pending_received_chat_invitations(request):
+    user = request.user.interactuser
+    # Chats where the first message is not sent by the user
+    pending_invitations = Chat.objects.filter(participants=user, restricted=True).annotate(
+        first_message_sender=Count('messages', filter=Q(messages__sender=user))
+    ).filter(first_message_sender=0)
+    # Filter out chats that do not have any messages
+    pending_invitations = pending_invitations.annotate(has_messages=Exists(Message.objects.filter(chat_id=OuterRef('id')))).filter(has_messages=True)
+    serializer = UserChatSerializer(pending_invitations, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pending_sent_chat_invitations(request):
+    user = request.user.interactuser
+    # Chats where the first message is sent by the user
+    pending_invitations = Chat.objects.filter(participants=user, restricted=True).annotate(
+        first_message_sender=Count('messages', filter=Q(messages__sender=user))
+    ).filter(first_message_sender__gt=0)
+    # Filter out chats that do not have any messages
+    pending_invitations = pending_invitations.annotate(has_messages=Exists(Message.objects.filter(chat_id=OuterRef('id')))).filter(has_messages=True)
+    serializer = UserChatSerializer(pending_invitations, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
 
 
 @api_view(['GET'])

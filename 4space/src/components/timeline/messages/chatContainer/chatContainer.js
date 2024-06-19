@@ -132,8 +132,12 @@ const ChatContainer = () => {
 
 
     useEffect(() => {
-        handleFetchOtherUserInfo();
-        fetchPastMessages();
+        if (chat_id) {
+            handleFetchOtherUserInfo();
+            fetchPastMessages();
+        } else if (window.location.pathname.includes('request')) {
+
+        }
         // eslint-disable-next-line
     }, [chat_id]);
 

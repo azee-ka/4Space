@@ -49,3 +49,16 @@ class UserChatSerializer(serializers.ModelSerializer):
             return MessageBaseUserSerializer(other_user).data
         return None
     
+    
+    
+class RestrictedChatSerializer(serializers.ModelSerializer):
+    participants = serializers.SerializerMethodField()
+    messages = MessageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Chat
+        fields = ['id', 'participants', 'created_at', 'messages']
+
+    def get_participants(self, obj):
+        participants = obj.participants.all()
+        return MessageBaseUserSerializer(participants, many=True).data
