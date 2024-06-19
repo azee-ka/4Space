@@ -1,0 +1,17 @@
+/* explore.css */
+
+.timeline-container {
+    text-align: left; /* Center-align the title */
+    color: white !important;
+    font-size: 24px !important;
+    z-index: 10 !important;
+    padding: 50px;
+    padding-top: 0%;
+    margin-bottom: 5%;
+    width: 127vh;
+    height: 85%;
+    overflow: auto !important;
+    background-color: rgba(255, 255, 255, 0);
+
+  }
+

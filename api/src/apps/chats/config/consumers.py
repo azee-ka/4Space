@@ -70,6 +70,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat = await sync_to_async(Chat.objects.get)(pk=self.chat_id)
             sender = await sync_to_async(InteractUser.objects.get)(pk=user_id)
             
+            if chat.restricted:
+                # Check if the chat is restricted and the message limit is reached
+                message_count = await sync_to_async(Message.objects.filter(chat=chat).count)()
+                if message_count >= 3:
+                    raise Exception("Message limit reached for this chat.")
+
             message_instance = Message(chat=chat, sender=sender, content=message)
 
             await sync_to_async(message_instance.save)()
@@ -86,6 +92,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"chat_id={self.chat_id} user_pk={user_id}. An error occurred: {e}")
         return None
+
 
 
     async def chat_message(self, event):

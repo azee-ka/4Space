@@ -77,11 +77,12 @@ def reject_chat_invitation(request, chat_id):
     chat.participants.remove(user)
 
     # If there are no more participants, delete the chat
-    if chat.participants.count() == 0:
+    if chat.participants.count() == 1:
         chat.delete()
         return Response({"message": "Chat deleted"}, status=status.HTTP_200_OK)
 
     return Response({"message": "Chat invitation rejected"}, status=status.HTTP_200_OK)
+
 
 # Block and report chat invitation view
 @api_view(['POST'])

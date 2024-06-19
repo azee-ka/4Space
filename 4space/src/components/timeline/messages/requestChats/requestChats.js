@@ -102,9 +102,10 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
                             </div>
                         }
                         {/* {!showSentRequests ? ( */}
-                            <div className='requested-chat-per-list-inner'>
-                                {(showSentRequests ? sentRequestChats : receivedRequestChats).map((per_message_element, index) => (
-                                    <div className='requested-chat-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.other_user.username}`}>
+                        <div className='requested-chat-per-list-inner'>
+                            {(showSentRequests ? sentRequestChats : receivedRequestChats).map((per_message_element, index) => (
+                                <div className='requested-chat-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}>
+                                    {per_message_element.other_user &&
                                         <div className='requested-chat-list-per-message-inner'>
                                             <div className='requested-chat-list-per-message-inner-inner'>
                                                 <div className='requested-chat-per-user-profile-picture-container'>
@@ -122,9 +123,10 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    }
+                                </div>
+                            ))}
+                        </div>
                         {/* ) : (
                                 <div className='no-requests-default'>
                                 No Requests

@@ -71,7 +71,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             console.log(response.data);
             setOtherUserChatInfo(response.data);
             const messageCount = await fetchPastMessages();
-            setIsRestricted(response.data.restricted && response.data.other_user.username !== user.username && messageCount !== 0 && fetchedMessages[0].sender.username !== user.username);
+            setIsRestricted(response.data.restricted && response.data.other_user && response.data.other_user.username !== user.username && messageCount !== 0 && fetchedMessages[0].sender.username !== user.username);
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
@@ -89,7 +89,6 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
 
             websocket.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-
 
                 // Update messages state without duplicates
                 setMessages((prevMessages) => {
@@ -134,7 +133,6 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             setMessageToSend('');
         }
         console.log('messages', messages);
-
     };
 
 
@@ -210,6 +208,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         try {
             const response = await axios.post(`${API_BASE_URL}api/apps/chats/reject-chat-invitation/${chat_id}/`, null, config);
             console.log(response.data);
+            navigate('/messages');
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
@@ -219,12 +218,13 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         try {
             const response = await axios.post(`${API_BASE_URL}api/apps/chats/block-report-chat-invitation/${chat_id}/`, null, config);
             console.log(response.data);
+            navigate('/messages');
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
     }
 
-    return otherUserChatInfo ? (
+    return otherUserChatInfo && otherUserChatInfo.other_user ? (
         <div className="chat-container">
             <div className='user-chat-details'>
                 <div className='user-chat-details-inner'>
@@ -243,24 +243,25 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             <div className='chat-space-messages' ref={chatContainerRef}>
                 <div className='chat-space-messages-inner'>
                     {messages.map((message, index) => (
-                        <React.Fragment key={`${message.id}-${index}`}>
-                            {(index === 0 || shouldShowTime(messages[index - 1], message)) && (
-                                <div className="message-time">{formatDate(message.timestamp)}</div>
-                            )}
-                            <div
-                                className={`message-bubble ${message.sender && message.sender.id === user.id ? 'sent' : 'received'} ${shouldIncreaseSpacing(messages[index - 1], message) ? 'increased-spacing' : ''}`}
-                                key={`${message.id}-${index}`}
-                            >
-                                {message.content}
-                            </div>
-                        </React.Fragment>
+                        message.sender.id && (
+                            <React.Fragment key={`${message.id}-${index}`}>
+                                {(index === 0 || shouldShowTime(messages[index - 1], message)) && (
+                                    <div className="message-time">{formatDate(message.timestamp)}</div>
+                                )}
+                                <div
+                                    className={`message-bubble ${message.sender.id === user.id ? 'sent' : 'received'} ${shouldIncreaseSpacing(messages[index - 1], message) ? 'increased-spacing' : ''}`}
+                                >
+                                    {message.content}
+                                </div>
+                            </React.Fragment>
+                        )
                     ))}
                     <div ref={messagesEndRef} />
                 </div>
             </div>
             {otherUserChatInfo.restricted && !isRestricted &&
                 <div className='inform-user-about-restriction'>
-                    <p>You can only send one message until accepted by the user. Remember to be mindful and respectful.</p>
+                    <p>You can only send three message until accepted by the user. Remember to be mindful and respectful.</p>
                 </div>
             }
             {!isRestricted ? (
