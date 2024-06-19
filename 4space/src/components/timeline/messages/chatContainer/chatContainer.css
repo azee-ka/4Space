@@ -243,3 +243,16 @@
 .restricted-chat-interact-container-inner-inner button:last-child {
     color: red;
 }
+
+
+.inform-user-about-restriction {
+    height: 40px;
+    width: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 13px;
+    color: gray;
+    border-top: 1px solid rgba(128, 128, 128, 0.268);
+}

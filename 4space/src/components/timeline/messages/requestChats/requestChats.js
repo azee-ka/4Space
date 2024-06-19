@@ -49,6 +49,7 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
 
     useEffect(() => {
         fetchReceivedRequestChatList();
+        fetchSentRequestChatList();
     }, []);
 
     // const handlePerProfileChat = (per_message_element) => {
@@ -84,43 +85,52 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
             <div className='requested-chat-list-container'>
                 <div className='requested-chat-list-container-inner'>
                     <div className='requested-chat-per-list'>
-                        <div className='recieve-sent-filters'>
-                            <button 
-                                className={`${showSentRequests ? '' : 'active'}`}
-                                onClick={() => handleToggleShowSentRequests()}
-                            >
-                                Recieved
-                            </button>
-                            <button
-                                className={`${showSentRequests ? 'active' : ''}`}
-                                onClick={() => handleToggleShowSentRequests()}
-                            >
-                                Sent
-                            </button>
-                        </div>
-                        <div className='requested-chat-per-list-inner'>
-                            {(showSentRequests ? sentRequestChats : receivedRequestChats).map((per_message_element, index) => (
-                                <div className='requested-chat-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.other_user.username}`}>
-                                    <div className='requested-chat-list-per-message-inner'>
-                                        <div className='requested-chat-list-per-message-inner-inner'>
-                                            <div className='requested-chat-per-user-profile-picture-container'>
-                                                <ProfilePicture src={per_message_element.other_user.profile_picture} />
-                                            </div>
-                                            <div className='requested-chat-per-user-info'>
-                                                <div className='requested-chat-per-user-info-inner'>
-                                                    <div>
-                                                        {`${per_message_element.other_user.first_name} ${per_message_element.other_user.last_name}`}
-                                                    </div>
-                                                    <div>
-                                                        @{per_message_element.other_user.username}
+                        {sentRequestChats.length !== 0 &&
+                            <div className='recieve-sent-filters'>
+                                <button
+                                    className={`${showSentRequests ? '' : 'active'}`}
+                                    onClick={() => handleToggleShowSentRequests()}
+                                >
+                                    Recieved
+                                </button>
+                                <button
+                                    className={`${showSentRequests ? 'active' : ''}`}
+                                    onClick={() => handleToggleShowSentRequests()}
+                                >
+                                    Sent
+                                </button>
+                            </div>
+                        }
+                        {/* {!showSentRequests ? ( */}
+                            <div className='requested-chat-per-list-inner'>
+                                {(showSentRequests ? sentRequestChats : receivedRequestChats).map((per_message_element, index) => (
+                                    <div className='requested-chat-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.other_user.username}`}>
+                                        <div className='requested-chat-list-per-message-inner'>
+                                            <div className='requested-chat-list-per-message-inner-inner'>
+                                                <div className='requested-chat-per-user-profile-picture-container'>
+                                                    <ProfilePicture src={per_message_element.other_user.profile_picture} />
+                                                </div>
+                                                <div className='requested-chat-per-user-info'>
+                                                    <div className='requested-chat-per-user-info-inner'>
+                                                        <div>
+                                                            {`${per_message_element.other_user.first_name} ${per_message_element.other_user.last_name}`}
+                                                        </div>
+                                                        <div>
+                                                            @{per_message_element.other_user.username}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        {/* ) : (
+                                <div className='no-requests-default'>
+                                No Requests
+                            </div>
+                            
+                        )} */}
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +13,7 @@ import moment from 'moment';
 import useWebSocket from '../../../../utils/websocket/websocket';
 
 const ChatContainer = ({ fetchUserMessagesList }) => {
+    const navigate = useNavigate();
     const { chat_id } = useParams();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
@@ -34,6 +35,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     const [offset, setOffset] = useState(0);
     const limit = 20;
 
+    let fetchedMessages;
+
     const fetchPastMessages = async (newOffset = 0, append = false) => {
         let countMessage = 0;
         if (loading) return;
@@ -47,6 +50,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                 },
             });
             const newMessages = response.data.results;
+            fetchedMessages = newMessages;
             console.log('newMessages', response.data)
             countMessage = response.data.count;
             if (newMessages.length < limit) setHasMore(false);
@@ -67,7 +71,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             console.log(response.data);
             setOtherUserChatInfo(response.data);
             const messageCount = await fetchPastMessages();
-            setIsRestricted(response.data.restricted && response.data.other_user.username !== user.username && messageCount !== 0);
+            setIsRestricted(response.data.restricted && response.data.other_user.username !== user.username && messageCount !== 0 && fetchedMessages[0].sender.username !== user.username);
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
@@ -195,8 +199,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         try {
             const response = await axios.post(`${API_BASE_URL}api/apps/chats/accept-chat-invitation/${chat_id}/`, null, config);
             console.log(response.data);
-            // handleFetchOtherUserInfo();
-            const messageCount = fetchUserMessagesList();
+            handleFetchOtherUserInfo();
+            // navigate(`/messages/${otherUserChatInfo.other_user.username}/${chat_id}`);
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
@@ -254,8 +258,14 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                     <div ref={messagesEndRef} />
                 </div>
             </div>
+            {otherUserChatInfo.restricted && !isRestricted &&
+                <div className='inform-user-about-restriction'>
+                    <p>You can only send one message until accepted by the user. Remember to be mindful and respectful.</p>
+                </div>
+            }
             {!isRestricted ? (
                 <div className='new-message-field-container'>
+
                     <div className='textarea-field-container'>
                         <div className='textarea-field-container-inner'>
                             <textarea

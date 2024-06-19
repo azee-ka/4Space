@@ -35,8 +35,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         chat = await sync_to_async(Chat.objects.get)(pk=self.chat_id)
         first_message = await sync_to_async(Message.objects.filter(chat=chat).order_by('timestamp').first)()
 
-        # Allow the message to be sent if the user is the first message sender or if the chat is not restricted
-        if first_message is None or first_message.sender.id == user_id or not chat.restricted:
+        # Check if the user is allowed to send messages
+        allow_message = first_message is None or (first_message.sender_id == user_id) or not chat.restricted
+
+
+        if allow_message:
             # Save message to database
             message_instance = await self.save_message_to_database(message, user_id)
             from ..serializers import MessageSerializer
@@ -56,6 +59,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                 'error': 'You are not allowed to send messages in this chat.'
             }))
+
 
 
     async def save_message_to_database(self, message, user_id):

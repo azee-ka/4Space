@@ -5,13 +5,14 @@ import { useAuthState } from '../../general/Authentication/utils/AuthProvider';
 import './messages.css';
 import API_BASE_URL from '../../../config';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp, faPaperPlane, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faPaperPlane, faPlus, faCommentDots } from '@fortawesome/free-solid-svg-icons';
 import NewMessageOverlay from './newMessageOverlay/newMessageOverlay';
 import ChatContainer from './chatContainer/chatContainer';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import GetConfig from '../../general/Authentication/utils/config';
 import { useNavigate, useParams } from 'react-router-dom';
 import RequestChatsList from './requestChats/requestChats';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 const Messages = () => {
     const { username, chat_id } = useParams();
@@ -46,9 +47,11 @@ const Messages = () => {
     };
 
     const handlePerProfileChat = (per_message_element) => {
-        setChatToViewObj(per_message_element);
-        navigate('/messages/' + per_message_element.other_user.username + '/' + per_message_element.id, { replace: true });
-        fetchUserMessagesList();
+        if (window.location.pathname !== '/messages/' + per_message_element.other_user.username + '/' + per_message_element.id) {
+            setChatToViewObj(per_message_element);
+            navigate('/messages/' + per_message_element.other_user.username + '/' + per_message_element.id, { replace: true });
+            fetchUserMessagesList();
+        }
     };
 
     useEffect(() => {
@@ -156,9 +159,14 @@ const Messages = () => {
                             }
                             <div className='personal-messages-right-container'>
                                 {(chat_id !== undefined) ? (
-                                    <ChatContainer />
+                                    <ChatContainer fetchUserMessagesList={fetchUserMessagesList} />
                                 ) : (
-                                    <div></div>
+                                    <div className='personal-messages-chat-default'>
+                                        <ChatBubbleLeftRightIcon className='chat-icon'/>
+                                        <p>Messages</p>
+                                        <button onClick={() => setSendNewMessageOverlay(true)}>Send Message</button>
+                                        <p>Send a message to start a chat.</p>
+                                    </div>
                                 )
                                 }
                             </div>

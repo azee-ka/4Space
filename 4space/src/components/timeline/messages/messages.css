@@ -373,3 +373,55 @@
     box-shadow: 3px 0px 5px 0px rgba(158, 158, 158, 0.127);
     background-color: rgba(79, 79, 79, 0.153);
 }
+
+
+
+
+.personal-messages-chat-default {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    color: rgb(189, 189, 189);
+}
+
+.personal-messages-chat-default p {
+    background-color: rgba(255, 0, 0, 0);
+    height: 23px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.personal-messages-chat-default p:nth-child(2) {
+    font-size: 20px !important;
+}
+.personal-messages-chat-default p:last-child {
+    font-size: 14px;
+}
+
+.personal-messages-chat-default .chat-icon {
+    width: 70px;
+    aspect-ratio: 1 / 1;
+    color: #d5d5d5;
+}
+
+
+.personal-messages-chat-default button {
+    background-color: rgba(108, 8, 208, 0.9);
+    padding: 10px;
+    border: 0;
+    border-radius: 6px;
+    font-size: 16px;
+    color: white;
+}
+
+.personal-messages-chat-default button:hover {
+    background-color: rgb(131, 26, 236);
+    cursor: pointer;
+}
