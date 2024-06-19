@@ -12,13 +12,15 @@ import GetConfig from '../../../general/Authentication/utils/config';
 import moment from 'moment';
 import useWebSocket from '../../../../utils/websocket/websocket';
 
-const ChatContainer = () => {
+const ChatContainer = ({ fetchUserMessagesList }) => {
     const { chat_id } = useParams();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
     const [messageToSend, setMessageToSend] = useState();
     const [otherUserChatInfo, setOtherUserChatInfo] = useState();
     const [messages, setMessages] = useState([]);
+
+    const [isRestricted, setIsRestricted] = useState(false);
 
     const websocket = useRef(null);
     const [socketInitialized, setSocketInitialized] = useState(false); // Track WebSocket initialization
@@ -33,6 +35,7 @@ const ChatContainer = () => {
     const limit = 20;
 
     const fetchPastMessages = async (newOffset = 0, append = false) => {
+        let countMessage = 0;
         if (loading) return;
         setLoading(true);
         try {
@@ -45,6 +48,7 @@ const ChatContainer = () => {
             });
             const newMessages = response.data.results;
             console.log('newMessages', response.data)
+            countMessage = response.data.count;
             if (newMessages.length < limit) setHasMore(false);
             setMessages((prevMessages) => append ? [...newMessages, ...prevMessages] : newMessages);
             setOffset(newOffset + limit);
@@ -53,22 +57,21 @@ const ChatContainer = () => {
         } finally {
             setLoading(false);
         }
+        return countMessage;
     };
 
 
     const handleFetchOtherUserInfo = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}api/apps/chats/${chat_id}/`, config);
-            // console.log(response.data);
+            console.log(response.data);
             setOtherUserChatInfo(response.data);
+            const messageCount = await fetchPastMessages();
+            setIsRestricted(response.data.restricted && response.data.other_user.username !== user.username && messageCount !== 0);
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
     }
-
-    // useEffect(() => {
-    //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    // }, [messages]);
 
     useEffect(() => {
         if (!isWebSocketInitialized.current) {
@@ -135,8 +138,6 @@ const ChatContainer = () => {
         if (chat_id) {
             handleFetchOtherUserInfo();
             fetchPastMessages();
-        } else if (window.location.pathname.includes('request')) {
-
         }
         // eslint-disable-next-line
     }, [chat_id]);
@@ -190,7 +191,34 @@ const ChatContainer = () => {
     }, [handleScroll]);
 
 
+    const handleAcceptChatInvitation = async () => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}api/apps/chats/accept-chat-invitation/${chat_id}/`, null, config);
+            console.log(response.data);
+            // handleFetchOtherUserInfo();
+            const messageCount = fetchUserMessagesList();
+        } catch (error) {
+            console.error('Error fetching chat information:', error);
+        }
+    }
 
+    const handleRejectChatInvitation = async () => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}api/apps/chats/reject-chat-invitation/${chat_id}/`, null, config);
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error fetching chat information:', error);
+        }
+    }
+
+    const handleBlockReportChatInvitation = async () => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}api/apps/chats/block-report-chat-invitation/${chat_id}/`, null, config);
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error fetching chat information:', error);
+        }
+    }
 
     return otherUserChatInfo ? (
         <div className="chat-container">
@@ -226,23 +254,50 @@ const ChatContainer = () => {
                     <div ref={messagesEndRef} />
                 </div>
             </div>
-            <div className='new-message-field-container'>
-                <div className='textarea-field-container'>
-                    <div className='textarea-field-container-inner'>
-                        <textarea
-                            placeholder='Message...'
-                            value={messageToSend}
-                            onChange={(e) => setMessageToSend(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                        />
+            {!isRestricted ? (
+                <div className='new-message-field-container'>
+                    <div className='textarea-field-container'>
+                        <div className='textarea-field-container-inner'>
+                            <textarea
+                                placeholder='Message...'
+                                value={messageToSend}
+                                onChange={(e) => setMessageToSend(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                        </div>
+                    </div>
+                    <div className='send-message-btn-container'>
+                        <button onClick={handleSendMessage}>
+                            <FontAwesomeIcon icon={faPaperPlane} />
+                        </button>
                     </div>
                 </div>
-                <div className='send-message-btn-container'>
-                    <button onClick={handleSendMessage}>
-                        <FontAwesomeIcon icon={faPaperPlane} />
-                    </button>
+            ) : (
+                <div className='restricted-chat-interact-container'>
+                    {isRestricted &&
+                        <div className='inform-restriction-description'>
+                            <p>
+                                Accept message request from <Link to={`/profile/${otherUserChatInfo.other_user.username}`}>
+                                    {otherUserChatInfo.other_user.username}
+                                </Link>?
+                            </p>
+                        </div>
+                    }
+                    <div className='restricted-chat-interact-container-inner'>
+                        <div className='restricted-chat-interact-container-inner-inner'>
+                            <button onClick={() => handleAcceptChatInvitation()}>
+                                Accept
+                            </button>
+                            <button onClick={() => handleRejectChatInvitation()}>
+                                Reject
+                            </button>
+                            <button onClick={() => handleBlockReportChatInvitation()}>
+                                Block & Report
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     ) : (
         <div>Loading...</div>

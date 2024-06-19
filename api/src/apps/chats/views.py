@@ -53,6 +53,7 @@ def create_chat(request, username):
 
 
 
+# Accept chat invitation view
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def accept_chat_invitation(request, chat_id):
@@ -65,6 +66,45 @@ def accept_chat_invitation(request, chat_id):
 
     return Response({"message": "Chat is now unrestricted"}, status=status.HTTP_200_OK)
 
+# Reject chat invitation view
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reject_chat_invitation(request, chat_id):
+    user = request.user.interactuser
+    chat = get_object_or_404(Chat, pk=chat_id, participants=user, restricted=True)
+
+    # Remove the user from the chat participants
+    chat.participants.remove(user)
+
+    # If there are no more participants, delete the chat
+    if chat.participants.count() == 0:
+        chat.delete()
+        return Response({"message": "Chat deleted"}, status=status.HTTP_200_OK)
+
+    return Response({"message": "Chat invitation rejected"}, status=status.HTTP_200_OK)
+
+# Block and report chat invitation view
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def block_report_chat_invitation(request, chat_id):
+    user = request.user.interactuser
+    chat = get_object_or_404(Chat, pk=chat_id, participants=user, restricted=True)
+
+    # Assuming there's a block model or method to handle blocking users
+    other_user = chat.participants.exclude(id=user.id).first()
+    if other_user:
+        # Block the other user
+        user.blocked_users.add(other_user)
+
+    # Remove the user from the chat participants
+    chat.participants.remove(user)
+
+    # If there are no more participants, delete the chat
+    if chat.participants.count() == 0:
+        chat.delete()
+        return Response({"message": "Chat deleted and user blocked"}, status=status.HTTP_200_OK)
+
+    return Response({"message": "User blocked and chat invitation rejected"}, status=status.HTTP_200_OK)
 
 
 
@@ -153,6 +193,7 @@ def get_chat_user_details(request, chat_id):
     response_data = {
         "chat_id": chat.id,
         "other_user": other_user_info,
+        "restricted": chat.restricted,
     }
     return Response(response_data, status=status.HTTP_200_OK)
 
@@ -164,3 +205,10 @@ def get_user_by_username(username):
         return user
     except BaseUser.DoesNotExist:
         return None
+
+
+
+
+
+
+

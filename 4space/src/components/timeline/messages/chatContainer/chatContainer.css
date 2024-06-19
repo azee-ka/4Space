@@ -37,9 +37,11 @@
     /* justify-content: center; */
     align-items: center;
     width: 100%;
-    height: 490px;
     background-color: rgba(0, 128, 0, 0);
     overflow-y: auto;
+    gap: 10px;
+    min-height: 460px;
+    max-height: 490px;
 }
 
 .chat-space-messages-inner {
@@ -51,6 +53,7 @@
     background-color: rgba(0, 0, 255, 0);
     margin-top: 10px;
     margin-bottom: 10px;
+    
 }
 
 .message-bubble {
@@ -160,4 +163,83 @@
 }
 .send-message-btn-container button:hover {
     cursor: pointer;
+}
+
+
+.inform-restriction-description {
+    background-color: rgb(74, 74, 170, 0);
+    width: 100%;
+    height: 49px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid rgba(128, 128, 128, 0.27);
+    font-size: 15px;
+    color: rgb(170, 170, 170);
+    /* border-bottom: 1px solid rgba(128, 128, 128, 0.218); */
+}
+.inform-restriction-description a {
+    color: rgb(57, 57, 255);
+}
+
+
+
+.restricted-chat-interact-container {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    /* height: 50px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.restricted-chat-interact-container-inner {
+    width: 100%;
+    height: 98%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid rgba(128, 128, 128, 0.13)
+}
+.restricted-chat-interact-container-inner-inner {
+    width: 100%;
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+}
+
+.restricted-chat-interact-container-inner-inner button {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    background-color: rgba(255, 0, 0, 0);
+    color: rgba(255, 255, 255, 0.749);
+    font-size: 17px;
+}
+
+.restricted-chat-interact-container-inner-inner button:hover {
+    color: rgba(255, 255, 255, 0.749) !important;
+    cursor: pointer;
+}
+
+.restricted-chat-interact-container-inner-inner button:first-child {
+    border-right: 1px solid rgba(128, 128, 128, 0.281);
+    color: rgb(0, 206, 238);
+}
+.restricted-chat-interact-container-inner-inner button:last-child {
+    border-left: 1px solid rgba(128, 128, 128, 0.281);
+}
+
+.restricted-chat-interact-container-inner-inner button:nth-child(2),
+.restricted-chat-interact-container-inner-inner button:last-child {
+    color: red;
 }

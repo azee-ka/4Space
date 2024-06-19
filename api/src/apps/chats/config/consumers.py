@@ -1,6 +1,7 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from asgiref.sync import sync_to_async
+from ..models import Chat, Message
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -30,22 +31,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data['message']
         user_id = data.get('user_id')  # Get the user ID from the message
 
-        # Save message to database
-        message_instance = await self.save_message_to_database(message, user_id)
+        # Fetch the chat and first message sender
+        chat = await sync_to_async(Chat.objects.get)(pk=self.chat_id)
+        first_message = await sync_to_async(Message.objects.filter(chat=chat).order_by('timestamp').first)()
 
-        from ..serializers import MessageSerializer
-        # Serialize the message instance
-        serializer = MessageSerializer(message_instance)
-        message_data = serializer.data
-        # print(f'message_Data: {message_data}')
-        # Send message to chat group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message_data
-            }
-        )
+        # Allow the message to be sent if the user is the first message sender or if the chat is not restricted
+        if first_message is None or first_message.sender.id == user_id or not chat.restricted:
+            # Save message to database
+            message_instance = await self.save_message_to_database(message, user_id)
+            from ..serializers import MessageSerializer
+            serializer = MessageSerializer(message_instance)
+            message_data = serializer.data
+
+            # Send message to chat group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message_data
+                }
+            )
+        else:
+            # Ignore the message or optionally send an error response back to the user
+            await self.send(text_data=json.dumps({
+                'error': 'You are not allowed to send messages in this chat.'
+            }))
 
 
     async def save_message_to_database(self, message, user_id):

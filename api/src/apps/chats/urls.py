@@ -16,5 +16,7 @@ urlpatterns = [
     
     path('<int:chat_id>/', views.get_chat_user_details, name='get-chat-details'),
     
-    path('accept-chat-invitation/<int:chat_id>/', views.accept_chat_invitation, name='accept_chat_invitation')
+    path('accept-chat-invitation/<int:chat_id>/', views.accept_chat_invitation, name='accept_chat_invitation'),
+    path('reject-chat-invitation/<int:chat_id>/', views.reject_chat_invitation, name='reject_chat_invitation'),
+    path('block-report-chat-invitation/<int:chat_id>/', views.block_report_chat_invitation, name='block_report_chat_invitation')
 ]

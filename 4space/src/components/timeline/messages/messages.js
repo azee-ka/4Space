@@ -106,6 +106,7 @@ const Messages = () => {
                                     chatToViewObj={chatToViewObj}
                                     setChatToViewObj={setChatToViewObj}
                                     handlePerProfileChat={handlePerProfileChat}
+                                    fetchUserMessagesList={fetchUserMessagesList}
                                 />
                             ) : (
                                 <div className='personal-messages-left-container'>
