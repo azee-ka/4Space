@@ -81,11 +81,6 @@ const App = () => {
       element: <Messages />
     },
     {
-      path: '/messages/request/:username',
-      name: 'Messages',
-      element: <Messages />
-    },
-    {
       path: '/messages/requests/recieved',
       name: 'Messages',
       element: <Messages />
@@ -96,7 +91,7 @@ const App = () => {
       element: <Messages />
     },
     {
-      path: '/messages/:username/:chat_id',
+      path: '/messages/:uuid',
       name: 'Messages',
       element: <Messages />
     },

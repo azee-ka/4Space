@@ -2,14 +2,16 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from asgiref.sync import sync_to_async
 from ..models import Chat, Message
+from ..serializers import MessageSerializer
+from ....user.interactUser.models import InteractUser
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.chat_id = self.scope['url_route']['kwargs']['id']
-        self.room_group_name = f'chat_{self.chat_id}'
+        self.chat_uuid = self.scope['url_route']['kwargs']['uuid']
+        self.room_group_name = f'chat_{self.chat_uuid}'
         
-        print(f'chatid: {self.chat_id}')
-        print(f'groupname: {self.room_group_name}')
+        print(f'chat uuid: {self.chat_uuid}')
+        print(f'group name: {self.room_group_name}')
         
         # Join chat group
         await self.channel_layer.group_add(
@@ -32,42 +34,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user_id = data.get('user_id')  # Get the user ID from the message
 
         # Fetch the chat and first message sender
-        chat = await sync_to_async(Chat.objects.get)(pk=self.chat_id)
+        chat = await sync_to_async(Chat.objects.get)(uuid=self.chat_uuid)
         first_message = await sync_to_async(Message.objects.filter(chat=chat).order_by('timestamp').first)()
 
         # Check if the user is allowed to send messages
         allow_message = first_message is None or (first_message.sender_id == user_id) or not chat.restricted
 
-
         if allow_message:
             # Save message to database
             message_instance = await self.save_message_to_database(message, user_id)
-            from ..serializers import MessageSerializer
-            serializer = MessageSerializer(message_instance)
-            message_data = serializer.data
+            if message_instance:
+                message_data = MessageSerializer(message_instance).data
 
-            # Send message to chat group
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'chat_message',
-                    'message': message_data
-                }
-            )
+                # Send message to chat group
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_message',
+                        'message': message_data
+                    }
+                )
         else:
             # Ignore the message or optionally send an error response back to the user
             await self.send(text_data=json.dumps({
                 'error': 'You are not allowed to send messages in this chat.'
             }))
 
-
-
     async def save_message_to_database(self, message, user_id):
         try:
-            from ..models import Chat, Message
-            from ....user.interactUser.models import InteractUser
-
-            chat = await sync_to_async(Chat.objects.get)(pk=self.chat_id)
+            chat = await sync_to_async(Chat.objects.get)(uuid=self.chat_uuid)
             sender = await sync_to_async(InteractUser.objects.get)(pk=user_id)
             
             if chat.restricted:
@@ -90,16 +85,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except InteractUser.DoesNotExist:
             print(f"BaseUser with pk={user_id} does not exist")
         except Exception as e:
-            print(f"chat_id={self.chat_id} user_pk={user_id}. An error occurred: {e}")
+            print(f"chat_uuid={self.chat_uuid} user_pk={user_id}. An error occurred: {e}")
         return None
-
-
 
     async def chat_message(self, event):
         message = event['message']
 
         # Send message to WebSocket
-        # await self.send(text_data=json.dumps(message))
         await self.send(text_data=json.dumps({
             'message': message
         }))

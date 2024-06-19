@@ -1,5 +1,3 @@
-# views.py
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,58 +5,55 @@ from .models import Chat, Message
 from .serializers import ChatSerializer, MessageSerializer, UserChatSerializer, MessageBaseUserSerializer, RestrictedChatSerializer
 from ...user.baseUser.models import BaseUser
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Q
+from django.db.models import Q, Count, Exists, OuterRef
 from django.shortcuts import get_object_or_404
-
+from rest_framework.pagination import LimitOffsetPagination
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_chat(request, username):
+def create_chat(request):
     user = request.user.interactuser
-    other_user = get_user_by_username(username).interactuser
+    usernames = request.data.get('usernames', [])
 
-    if not other_user:
-        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    if not usernames:
+        return Response({"error": "No participants specified"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Check if a chat already exists between these participants
-    existing_chat_1 = Chat.objects.filter(participants=user).filter(participants=other_user).distinct().first()
-    existing_chat_2 = Chat.objects.filter(participants=other_user).filter(participants=user).distinct().first()
+    participants = [user]
+    for username in usernames:
+        participant = get_user_by_username(username)
+        if not participant:
+            return Response({"error": f"User '{username}' not found"}, status=status.HTTP_404_NOT_FOUND)
+        participants.append(participant.interactuser)
 
-    if existing_chat_1 or existing_chat_2:
-        # If a chat already exists, return information about the other user and chat id
-        existing_chat = existing_chat_1 or existing_chat_2
-        other_user_info = MessageBaseUserSerializer(other_user).data
-        response_data = {
-            "id": existing_chat.id,
-            "other_user": other_user_info,
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
-    else:
-        # Create a new chat
-        chat = Chat.objects.create()
-        chat.participants.add(user, other_user)
+    # Find or create a chat with the exact set of participants
+    participants_set = set(participants)
+    existing_chats = Chat.objects.annotate(num_participants=Count('participants')).filter(num_participants=len(participants_set))
 
-        # Allow user to send messages to themselves
-        if user == other_user:
-            # Assume the user can only send messages to themselves
-            chat.participants.add(other_user)
+    for chat in existing_chats:
+        chat_participants = set(chat.participants.all())
+        if chat_participants == participants_set:
+            response_data = {
+                "uuid": chat.uuid,
+                "participants": MessageBaseUserSerializer(chat.participants.all(), many=True).data,
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
 
-        # Now serialize the other user's information and return the response
-        other_user_info = MessageBaseUserSerializer(other_user).data
-        response_data = {
-            "id": chat.id,
-            "other_user": other_user_info,
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+    # Create a new chat
+    chat = Chat.objects.create()
+    chat.participants.set(participants)
+    chat.save()
 
+    response_data = {
+        "uuid": chat.uuid,
+        "participants": MessageBaseUserSerializer(chat.participants.all(), many=True).data,
+    }
+    return Response(response_data, status=status.HTTP_201_CREATED)
 
-
-# Accept chat invitation view
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def accept_chat_invitation(request, chat_id):
+def accept_chat_invitation(request, chat_uuid):
     user = request.user.interactuser
-    chat = get_object_or_404(Chat, pk=chat_id, participants=user, restricted=True)
+    chat = get_object_or_404(Chat, uuid=chat_uuid, participants=user, restricted=True)
 
     # Update the chat to mark it as unrestricted
     chat.restricted = False
@@ -66,12 +61,11 @@ def accept_chat_invitation(request, chat_id):
 
     return Response({"message": "Chat is now unrestricted"}, status=status.HTTP_200_OK)
 
-# Reject chat invitation view
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def reject_chat_invitation(request, chat_id):
+def reject_chat_invitation(request, chat_uuid):
     user = request.user.interactuser
-    chat = get_object_or_404(Chat, pk=chat_id, participants=user, restricted=True)
+    chat = get_object_or_404(Chat, uuid=chat_uuid, participants=user, restricted=True)
 
     # Remove the user from the chat participants
     chat.participants.remove(user)
@@ -83,13 +77,11 @@ def reject_chat_invitation(request, chat_id):
 
     return Response({"message": "Chat invitation rejected"}, status=status.HTTP_200_OK)
 
-
-# Block and report chat invitation view
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def block_report_chat_invitation(request, chat_id):
+def block_report_chat_invitation(request, chat_uuid):
     user = request.user.interactuser
-    chat = get_object_or_404(Chat, pk=chat_id, participants=user, restricted=True)
+    chat = get_object_or_404(Chat, uuid=chat_uuid, participants=user, restricted=True)
 
     # Assuming there's a block model or method to handle blocking users
     other_user = chat.participants.exclude(id=user.id).first()
@@ -107,25 +99,19 @@ def block_report_chat_invitation(request, chat_id):
 
     return Response({"message": "User blocked and chat invitation rejected"}, status=status.HTTP_200_OK)
 
-
-
-from rest_framework.pagination import LimitOffsetPagination
-
 class MessagePagination(LimitOffsetPagination):
     default_limit = 20
     max_limit = 50
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def list_past_messages(request, chat_id):
-    chat = get_object_or_404(Chat, pk=chat_id)
+def list_past_messages(request, chat_uuid):
+    chat = get_object_or_404(Chat, uuid=chat_uuid)
     paginator = MessagePagination()
     messages = Message.objects.filter(chat=chat).order_by('-timestamp')
     result_page = paginator.paginate_queryset(messages, request)
     serializer = MessageSerializer(result_page, many=True)
     return paginator.get_paginated_response(serializer.data)
-
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -135,69 +121,47 @@ def list_user_chats(request):
     # Retrieve all chats where the user is a participant and the invitation is accepted
     user_chats = Chat.objects.filter(participants=user, restricted=False)
 
-    # Extract unique chat IDs from the queryset
-    chat_ids = user_chats.values_list('id', flat=True)
+    # Extract unique chat UUIDs from the queryset
+    chat_uuids = user_chats.values_list('uuid', flat=True)
 
-    # Retrieve unique chats based on the extracted IDs
-    unique_chats = Chat.objects.filter(id__in=chat_ids)
+    # Retrieve unique chats based on the extracted UUIDs
+    unique_chats = Chat.objects.filter(uuid__in=chat_uuids)
 
     # Use the new serializer for the user-specific chat listing
     serializer = UserChatSerializer(unique_chats, many=True, context={'request': request})
 
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-from django.db.models import Exists, OuterRef, Count
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pending_received_chat_invitations(request):
     user = request.user.interactuser
-    # Chats where the first message is not sent by the user
+    # Chats where the user is a participant and the chat has messages
     pending_invitations = Chat.objects.filter(participants=user, restricted=True).annotate(
         first_message_sender=Count('messages', filter=Q(messages__sender=user))
     ).filter(first_message_sender=0)
-    # Filter out chats that do not have any messages
-    pending_invitations = pending_invitations.annotate(has_messages=Exists(Message.objects.filter(chat_id=OuterRef('id')))).filter(has_messages=True)
     serializer = UserChatSerializer(pending_invitations, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pending_sent_chat_invitations(request):
     user = request.user.interactuser
-    # Chats where the first message is sent by the user
+    # Chats where the user is a participant and the chat has messages
     pending_invitations = Chat.objects.filter(participants=user, restricted=True).annotate(
         first_message_sender=Count('messages', filter=Q(messages__sender=user))
     ).filter(first_message_sender__gt=0)
-    # Filter out chats that do not have any messages
-    pending_invitations = pending_invitations.annotate(has_messages=Exists(Message.objects.filter(chat_id=OuterRef('id')))).filter(has_messages=True)
     serializer = UserChatSerializer(pending_invitations, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
-
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_chat_user_details(request, chat_id):
-    try:
-        chat = Chat.objects.get(pk=chat_id)
-    except Chat.DoesNotExist:
-        return Response({"error": "Chat not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    other_user = chat.participants.exclude(id=request.user.id).first()
-    other_user_info = MessageBaseUserSerializer(other_user).data if other_user else None
-    response_data = {
-        "chat_id": chat.id,
-        "other_user": other_user_info,
-        "restricted": chat.restricted,
-    }
-    return Response(response_data, status=status.HTTP_200_OK)
-
+def get_chat_user_details(request, chat_uuid):
+    chat = get_object_or_404(Chat, uuid=chat_uuid)
+    serializer = UserChatSerializer(chat, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 def get_user_by_username(username):
@@ -206,10 +170,3 @@ def get_user_by_username(username):
         return user
     except BaseUser.DoesNotExist:
         return None
-
-
-
-
-
-
-

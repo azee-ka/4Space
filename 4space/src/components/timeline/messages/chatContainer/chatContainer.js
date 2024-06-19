@@ -11,10 +11,11 @@ import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import GetConfig from '../../../general/Authentication/utils/config';
 import moment from 'moment';
 import useWebSocket from '../../../../utils/websocket/websocket';
+import UserListOverlay from '../../userListOverlay/userListOverlay';
 
 const ChatContainer = ({ fetchUserMessagesList }) => {
     const navigate = useNavigate();
-    const { chat_id } = useParams();
+    const { uuid } = useParams();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
     const [messageToSend, setMessageToSend] = useState();
@@ -42,7 +43,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         if (loading) return;
         setLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/chats/${chat_id}/messages/`, {
+            const response = await axios.get(`${API_BASE_URL}api/apps/chats/${uuid}/messages/`, {
                 ...config,
                 params: {
                     limit,
@@ -67,11 +68,11 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
 
     const handleFetchOtherUserInfo = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/chats/${chat_id}/`, config);
+            const response = await axios.get(`${API_BASE_URL}api/apps/chats/${uuid}/details`, config);
             console.log(response.data);
             setOtherUserChatInfo(response.data);
             const messageCount = await fetchPastMessages();
-            setIsRestricted(response.data.restricted && response.data.other_user && response.data.other_user.username !== user.username && messageCount !== 0 && fetchedMessages[0].sender.username !== user.username);
+            setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && fetchedMessages[0].sender.username !== user.username);
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
@@ -80,7 +81,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     useEffect(() => {
         if (!isWebSocketInitialized.current) {
 
-            websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${chat_id}/`, [], config);
+            websocket.current = new WebSocket(`ws://localhost:8000/ws/chat/${uuid}/`, [], config);
             setSocketInitialized(true);
             isWebSocketInitialized.current = true;
             websocket.current.onopen = () => {
@@ -117,7 +118,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             }
         };
 
-    }, [chat_id, config, socketInitialized]);
+    }, [uuid, config, socketInitialized]);
 
     // console.log("user", user)
 
@@ -137,12 +138,12 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
 
 
     useEffect(() => {
-        if (chat_id) {
+        if (uuid) {
             handleFetchOtherUserInfo();
             fetchPastMessages();
         }
         // eslint-disable-next-line
-    }, [chat_id]);
+    }, [uuid]);
 
     const formatDate = (date) => {
         return moment(date).format('MMMM Do YYYY, h:mm a');
@@ -195,7 +196,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
 
     const handleAcceptChatInvitation = async () => {
         try {
-            const response = await axios.post(`${API_BASE_URL}api/apps/chats/accept-chat-invitation/${chat_id}/`, null, config);
+            const response = await axios.post(`${API_BASE_URL}api/apps/chats/${uuid}/accept_chat_invitation/`, null, config);
             console.log(response.data);
             handleFetchOtherUserInfo();
             // navigate(`/messages/${otherUserChatInfo.other_user.username}/${chat_id}`);
@@ -206,7 +207,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
 
     const handleRejectChatInvitation = async () => {
         try {
-            const response = await axios.post(`${API_BASE_URL}api/apps/chats/reject-chat-invitation/${chat_id}/`, null, config);
+            const response = await axios.post(`${API_BASE_URL}api/apps/chats/${uuid}/reject_chat_invitation/`, null, config);
             console.log(response.data);
             navigate('/messages');
         } catch (error) {
@@ -216,7 +217,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
 
     const handleBlockReportChatInvitation = async () => {
         try {
-            const response = await axios.post(`${API_BASE_URL}api/apps/chats/block-report-chat-invitation/${chat_id}/`, null, config);
+            const response = await axios.post(`${API_BASE_URL}api/apps/chats/${uuid}/block_report_chat_invitation/`, null, config);
             console.log(response.data);
             navigate('/messages');
         } catch (error) {
@@ -224,19 +225,33 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         }
     }
 
-    return otherUserChatInfo && otherUserChatInfo.other_user ? (
+    return otherUserChatInfo && otherUserChatInfo.participants.length !== 0 ? (
         <div className="chat-container">
             <div className='user-chat-details'>
                 <div className='user-chat-details-inner'>
-                    <div className='other-user-chat-profile-picture'>
-                        <ProfilePicture src={otherUserChatInfo.other_user.profile_picture} />
+                    <div className='user-chat-participants-profile-pics'>
+                        {otherUserChatInfo.participants.map((participant, index) => (
+                            <div key={index} className='other-user-chat-profile-picture'>
+                                <ProfilePicture src={participant.profile_picture} />
+                            </div>
+                        ))}
                     </div>
-                    <div className='other-user-chat-info'>
-                        <p>
-                            <Link to={`/profile/${otherUserChatInfo.other_user.username}`}>
-                                {`${otherUserChatInfo.other_user.first_name} ${otherUserChatInfo.other_user.last_name}`}
-                            </Link>
-                        </p>
+                    <div className='user-chat-participants-usernames'>
+                        {otherUserChatInfo.participants.map((participant, index) => (
+                            <div key={index} className='other-user-chat-username'>
+                                <p>
+                                    <Link to={`/profile/${participant.username}`}>
+                                        {`${participant.first_name}`}
+                                    </Link>
+                                    {index < 5 && index < otherUserChatInfo.participants.length - 1 && ', '}
+                                </p>
+                            </div>
+                        ))}
+                        {otherUserChatInfo.participants.length > 5 && (
+                            <div className='other-user-chat-username'>
+                                <p>and {otherUserChatInfo.participants.length} more</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -288,8 +303,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                     {isRestricted &&
                         <div className='inform-restriction-description'>
                             <p>
-                                Accept message request from <Link to={`/profile/${otherUserChatInfo.other_user.username}`}>
-                                    {otherUserChatInfo.other_user.username}
+                                Accept message request from <Link to={`/profile/${otherUserChatInfo.inviter.username}`}>
+                                    {otherUserChatInfo.inviter.username}
                                 </Link>?
                             </p>
                         </div>

@@ -23,10 +23,11 @@ class MessageSerializer(serializers.ModelSerializer):
 class ChatSerializer(serializers.ModelSerializer):
     participants = serializers.SerializerMethodField()
     messages = MessageSerializer(many=True, read_only=True)
+    uuid = serializers.UUIDField()
 
     class Meta:
         model = Chat
-        fields = ['id', 'participants', 'created_at', 'messages']
+        fields = ['id', 'uuid', 'participants', 'created_at', 'messages']
 
     def get_participants(self, obj):
         participants = obj.participants.all()
@@ -35,18 +36,24 @@ class ChatSerializer(serializers.ModelSerializer):
 
 
 class UserChatSerializer(serializers.ModelSerializer):
-    other_user = serializers.SerializerMethodField()
+    participants = serializers.SerializerMethodField()
+    uuid = serializers.UUIDField()
+    inviter = serializers.SerializerMethodField()
 
     class Meta:
         model = Chat
-        fields = ['id', 'other_user']
+        fields = ['id', 'uuid', 'restricted', 'participants', 'inviter']
 
-    def get_other_user(self, obj):
+    def get_participants(self, obj):
         user = self.context['request'].user
         participants = obj.participants.exclude(id=user.id)  # Exclude the requesting user
-        if participants.exists():
-            other_user = participants.first()
-            return MessageBaseUserSerializer(other_user).data
+        return MessageBaseUserSerializer(participants, many=True).data
+    
+    def get_inviter(self, obj):
+        first_message = obj.messages.order_by('timestamp').first()
+        if first_message:
+            inviter = first_message.sender
+            return MessageBaseUserSerializer(inviter).data
         return None
     
     
@@ -54,10 +61,11 @@ class UserChatSerializer(serializers.ModelSerializer):
 class RestrictedChatSerializer(serializers.ModelSerializer):
     participants = serializers.SerializerMethodField()
     messages = MessageSerializer(many=True, read_only=True)
+    uuid = serializers.UUIDField()
 
     class Meta:
         model = Chat
-        fields = ['id', 'participants', 'created_at', 'messages']
+        fields = ['id', 'uuid', 'participants', 'created_at', 'messages']
 
     def get_participants(self, obj):
         participants = obj.participants.all()

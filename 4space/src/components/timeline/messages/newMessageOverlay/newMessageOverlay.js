@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuthState } from '../../../general/Authentication/utils/AuthProvider';
 import API_BASE_URL from '../../../../config';
@@ -9,12 +9,9 @@ import GetConfig from '../../../general/Authentication/utils/config';
 const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) => {
     const { token } = useAuthState();
     const config = GetConfig(token);
-    const [sendMessageToField, setSendMessageToField] = useState('');
-
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-
-    const [sendMessageContentField, setSendMessageContentField] = useState('');
+    const [selectedUsers, setSelectedUsers] = useState([]);
 
     const handleInputChange = (e) => {
         const inputValue = e.target.value;
@@ -25,11 +22,9 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) =
         } else {
             setSearchResults([]);
         }
-
     };
 
-    const handleSubmitSearch = (e) => {
-        // Make an API request to search for users
+    const handleSubmitSearch = () => {
         axios.get(`${API_BASE_URL}api/components/search/user-search/?query=${searchQuery}`, config)
             .then((response) => {
                 setSearchResults(response.data);
@@ -39,21 +34,28 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) =
             });
     };
 
+    const handleSelectUser = (usernameToChatWith) => {
+        if (selectedUsers.includes(usernameToChatWith)) {
+            setSelectedUsers(selectedUsers.filter(user => user !== usernameToChatWith));
+        } else {
+            setSelectedUsers([...selectedUsers, usernameToChatWith]);
+        }
+    };
 
-    const handleSelectUserToStartChat = async (usernameToChatWith) => {
-        console.log(usernameToChatWith);
+    const handleStartChat = async () => {
+        if (selectedUsers.length === 0) {
+            return;
+        }
 
         try {
-            const response = await axios.post(`${API_BASE_URL}api/apps/chats/create/${usernameToChatWith}/`, null, config);
+            const response = await axios.post(`${API_BASE_URL}api/apps/chats/create/`, { usernames: selectedUsers }, config);
             console.log(response.data);
             setSendNewMessageOverlay(false);
             handlePerProfileChat(response.data);
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('Error creating chat:', error);
         }
     };
-
-
 
     return (
         <div className='new-message-overlay' onClick={() => setSendNewMessageOverlay(false)}>
@@ -69,11 +71,11 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) =
                                     placeholder='Send Message To...'
                                     value={searchQuery}
                                     onChange={handleInputChange}
-                                ></input>
+                                />
                             </div>
                             <div className='new-message-user-search-list'>
                                 {searchResults.map((thisUser, index) => (
-                                    <div className="users-search-list-item" onClick={() => handleSelectUserToStartChat(thisUser.username)} key={`${thisUser.username}-${index}`}>
+                                    <div className="users-search-list-item" key={`${thisUser.username}-${index}`}>
                                         <div className="users-search-list-item-inner">
                                             <div className="users-search-list-item-profile-picture">
                                                 <div className="users-search-list-item-profile-picture-inner">
@@ -83,16 +85,26 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) =
                                             <div className="users-search-list-item-username">
                                                 <p>{thisUser.username}</p>
                                             </div>
+                                            <div className="users-search-list-item-checkbox">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedUsers.includes(thisUser.username)}
+                                                    onChange={() => handleSelectUser(thisUser.username)}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
+                            <button onClick={handleStartChat} disabled={selectedUsers.length === 0}>
+                                Start Chat
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default NewMessageOverlay;

@@ -15,13 +15,13 @@ import RequestChatsList from './requestChats/requestChats';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 const Messages = () => {
-    const { username, chat_id } = useParams();
+    const { uuid } = useParams();
     const navigate = useNavigate();
     const { token } = useAuthState();
     const config = GetConfig(token);
     const [serversList, setServersList] = useState([])
 
-    const [messagesList, setMessagesList] = useState([]);
+    const [chatsList, setChatsList] = useState([]);
 
     const [chatToViewObj, setChatToViewObj] = useState(null);
 
@@ -37,8 +37,8 @@ const Messages = () => {
 
     const fetchUserMessagesList = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/chats/list-chats/`, config);
-            setMessagesList(response.data);
+            const response = await axios.get(`${API_BASE_URL}api/apps/chats/list_user_chats/`, config);
+            setChatsList(response.data);
             console.log(response.data);
 
         } catch (error) {
@@ -47,9 +47,9 @@ const Messages = () => {
     };
 
     const handlePerProfileChat = (per_message_element) => {
-        if (window.location.pathname !== '/messages/' + per_message_element.other_user.username + '/' + per_message_element.id) {
+        if (window.location.pathname !== '/messages/' + per_message_element.uuid) {
             setChatToViewObj(per_message_element);
-            navigate('/messages/' + per_message_element.other_user.username + '/' + per_message_element.id, { replace: true });
+            navigate('/messages/' + per_message_element.uuid, { replace: true });
             fetchUserMessagesList();
         }
     };
@@ -129,22 +129,26 @@ const Messages = () => {
                                         <div className='personal-messages-list-container-inner'>
                                             <div className='personal-messages-per-list'>
                                                 <div className='personal-messages-per-list-inner'>
-                                                    {messagesList.map((per_message_element, index) => (
-                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.other_user.username}`}  >
+                                                    {chatsList.map((per_message_element, index) => (
+                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.uuid}`}  >
                                                             <div className='personal-messages-list-per-message-inner'>
                                                                 <div className='personal-messages-list-per-message-inner-inner'>
                                                                     <div className='personal-messages-per-user-profile-picture-container'>
-                                                                        <ProfilePicture src={per_message_element.other_user.profile_picture} />
+                                                                        <ProfilePicture src={per_message_element.inviter.profile_picture} />
                                                                     </div>
                                                                     <div className='personal-messages-per-user-info'>
                                                                         <div className='personal-messages-per-user-info-inner'>
                                                                             <div>
-                                                                                {`${per_message_element.other_user.first_name} ${per_message_element.other_user.last_name}`}
+                                                                                {`${per_message_element.inviter.first_name} ${per_message_element.inviter.last_name}`}
                                                                             </div>
                                                                             <div>
-                                                                                @{per_message_element.other_user.username}
+                                                                                <p>@{per_message_element.inviter.username}</p>
+                                                                                {per_message_element.participants.length >= 2 &&
+                                                                <p>and {per_message_element.participants.length} more</p>
+                                                            }
                                                                             </div>
                                                                         </div>
+                                                                       
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -158,11 +162,11 @@ const Messages = () => {
                             )
                             }
                             <div className='personal-messages-right-container'>
-                                {(chat_id !== undefined) ? (
+                                {(uuid !== undefined) ? (
                                     <ChatContainer fetchUserMessagesList={fetchUserMessagesList} />
                                 ) : (
                                     <div className='personal-messages-chat-default'>
-                                        <ChatBubbleLeftRightIcon className='chat-icon'/>
+                                        <ChatBubbleLeftRightIcon className='chat-icon' />
                                         <p>Messages</p>
                                         <button onClick={() => setSendNewMessageOverlay(true)}>Send Message</button>
                                         <p>Send a message to start a chat.</p>

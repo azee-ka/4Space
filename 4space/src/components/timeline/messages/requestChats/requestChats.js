@@ -25,7 +25,7 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
 
     const fetchReceivedRequestChatList = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/chats/pending-received-list-chats/`, config);
+            const response = await axios.get(`${API_BASE_URL}api/apps/chats/pending_received_list_chats/`, config);
             setReceivedRequestedChats(response.data);
             console.log(response.data);
 
@@ -37,7 +37,7 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
 
     const fetchSentRequestChatList = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/chats/pending-sent-list-chats/`, config);
+            const response = await axios.get(`${API_BASE_URL}api/apps/chats/pending_sent_list_chats/`, config);
             setSentRequestedChats(response.data);
             console.log(response.data);
 
@@ -105,19 +105,22 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
                         <div className='requested-chat-per-list-inner'>
                             {(showSentRequests ? sentRequestChats : receivedRequestChats).map((per_message_element, index) => (
                                 <div className='requested-chat-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}>
-                                    {per_message_element.other_user &&
+                                    {per_message_element.inviter &&
                                         <div className='requested-chat-list-per-message-inner'>
                                             <div className='requested-chat-list-per-message-inner-inner'>
                                                 <div className='requested-chat-per-user-profile-picture-container'>
-                                                    <ProfilePicture src={per_message_element.other_user.profile_picture} />
+                                                    <ProfilePicture src={per_message_element.inviter.profile_picture} />
                                                 </div>
                                                 <div className='requested-chat-per-user-info'>
                                                     <div className='requested-chat-per-user-info-inner'>
                                                         <div>
-                                                            {`${per_message_element.other_user.first_name} ${per_message_element.other_user.last_name}`}
+                                                            {`${per_message_element.inviter.first_name} ${per_message_element.inviter.last_name}`}
                                                         </div>
                                                         <div>
-                                                            @{per_message_element.other_user.username}
+                                                            <p>@{per_message_element.inviter.username}</p>
+                                                            {per_message_element.participants.length >= 2 &&
+                                                                <p>and {per_message_element.participants.length} more</p>
+                                                            }
                                                         </div>
                                                     </div>
                                                 </div>
