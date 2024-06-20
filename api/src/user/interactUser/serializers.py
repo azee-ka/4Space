@@ -14,10 +14,11 @@ class InteractUserSerializer(serializers.ModelSerializer):
     followers_list = serializers.SerializerMethodField()
     following_list = serializers.SerializerMethodField()
     connections_list = serializers.SerializerMethodField()
+    posts = serializers.SerializerMethodField()
 
     class Meta(BaseUserSerializer.Meta):
         model = InteractUser
-        fields = ['user', 'followers_count', 'following_count', 'followers_list', 'following_list', 'connections_count', 'connections_list']
+        fields = ['user', 'followers_count', 'following_count', 'followers_list', 'following_list', 'connections_count', 'connections_list', 'posts']
 
     def get_followers_count(self, obj):
         return obj.followers.count()
@@ -36,6 +37,11 @@ class InteractUserSerializer(serializers.ModelSerializer):
     
     def get_connections_list(self, obj):
         return UserSerializer(obj.connections.all(), many=True).data
+    
+    def get_posts(self, obj):
+        posts = obj.posts.all()
+        return MinimalPostSerializer(posts, many=True).data
+    
 
 
 class InteractUserBriefSerializer(serializers.ModelSerializer):

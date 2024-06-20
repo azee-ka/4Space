@@ -1,6 +1,6 @@
 import React from "react";
 import './postGrid.css';
-import API_BASE_URL from "../../../../config";
+import API_BASE_URL from "../../../general/Authentication/utils/apiConfig";
 import { useNavigate } from "react-router-dom";
 
 const PostsGrid = ({ posts, handleShowExpandedOverlayPost}) => {

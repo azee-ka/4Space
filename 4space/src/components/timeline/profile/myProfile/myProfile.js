@@ -21,32 +21,32 @@ const MyProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverl
 
 
     return profileData ? (
-        <div className='full-profile-page'>
-            <div className='full-profile-page-content'>
-                <div className="full-profile-left-side">
-                    <div className='full-profile-page-header'>
-                        <div className='full-profile-page-header-inner'>
-                            <div className='full-profile-page-title'>
-                                <div className='full-profile-page-title-inner'>
+        <div className='my-profile-page'>
+            <div className='my-profile-page-content'>
+                <div className="my-profile-left-side">
+                    <div className='my-profile-page-header'>
+                        <div className='my-profile-page-header-inner'>
+                            <div className='my-profile-page-title'>
+                                <div className='my-profile-page-title-inner'>
                                     <h2>My Profile</h2>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className='full-profile-picture-container'>
-                        <div className='full-profile-picture-container-inner'>
+                    <div className='my-profile-picture-container'>
+                        <div className='my-profile-picture-container-inner'>
                             <ProfilePicture src={profileData.user.profile_picture} />
                         </div>
                     </div>
-                    <div className="full-profile-user-info-container">
+                    <div className="my-profile-user-info-container">
                         <p onClick={() => handleRedirect(`/profile/${profileData.user.username}`)}>{profileData.user.username}</p>
                         <p></p>
                     </div>
-                    <div className='full-profile-interact-stats'>
-                        <div className="full-profile-connections" onClick={() => handleUserListTrigger(profileData.connections_list, "Connections")}>
+                    <div className='my-profile-interact-stats'>
+                        <div className="my-profile-connections" onClick={() => handleUserListTrigger(profileData.connections_list, "Connections")}>
                             {profileData.connections_count} connections
                         </div>
-                        <div className="full-profile-follow-following">
+                        <div className="my-profile-follow-following">
                             <div onClick={() => handleUserListTrigger(profileData.following_list, "Following")}>
                                 {profileData.following_count} Following
                             </div>
@@ -56,14 +56,14 @@ const MyProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverl
                         </div>
                     </div>
                 </div>
-                <div className='full-profile-right-side'>
-                    <div className='full-profile-right-side-inner'>
-                        <div className='full-profile-page-date-joined'>
-                            <div className='full-profile-page-date-joined-inner'>
+                <div className='my-profile-right-side'>
+                    <div className='my-profile-right-side-inner'>
+                        <div className='my-profile-page-date-joined'>
+                            <div className='my-profile-page-date-joined-inner'>
                                 <p>Member since {formatDate(profileData.user.date_joined, false, true)}</p>
                             </div>
                         </div>
-                        <div>
+                        <div className='my-profile-display-posts-grid'>
                             {profileData && profileData.posts && <PostsGrid posts={profileData.posts} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />}
                         </div>
                     </div>
