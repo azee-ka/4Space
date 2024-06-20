@@ -11,7 +11,7 @@ import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import GetConfig from '../../../general/Authentication/utils/config';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChatToViewObj, handlePerProfileChat }) => {
+const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChatToViewObj, handlePerProfileChat, determineUserIsInviterItself }) => {
     const { username, chat_id } = useParams();
     const navigate = useNavigate();
     const { token } = useAuthState();
@@ -109,17 +109,17 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
                                         <div className='requested-chat-list-per-message-inner'>
                                             <div className='requested-chat-list-per-message-inner-inner'>
                                                 <div className='requested-chat-per-user-profile-picture-container'>
-                                                    <ProfilePicture src={per_message_element.inviter.profile_picture} />
+                                                    <ProfilePicture src={(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).profile_picture} />
                                                 </div>
                                                 <div className='requested-chat-per-user-info'>
                                                     <div className='requested-chat-per-user-info-inner'>
                                                         <div>
-                                                            {`${per_message_element.inviter.first_name} ${per_message_element.inviter.last_name}`}
+                                                            {`${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).first_name} ${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).last_name}`}
                                                         </div>
                                                         <div>
-                                                            <p>@{per_message_element.inviter.username}</p>
+                                                            <p>@{(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).username}</p>
                                                             {per_message_element.participants.length >= 2 &&
-                                                                <p>and {per_message_element.participants.length} more</p>
+                                                                <p>and {per_message_element.participants.length-1} more</p>
                                                             }
                                                         </div>
                                                     </div>

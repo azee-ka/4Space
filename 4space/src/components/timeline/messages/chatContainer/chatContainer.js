@@ -52,11 +52,12 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             });
             const newMessages = response.data.results;
             fetchedMessages = newMessages;
-            console.log('newMessages', response.data)
+            console.log('newMessages', response.data);
             countMessage = response.data.count;
             if (newMessages.length < limit) setHasMore(false);
             setMessages((prevMessages) => append ? [...newMessages, ...prevMessages] : newMessages);
             setOffset(newOffset + limit);
+
         } catch (error) {
             console.error('Error fetching messages:', error);
         } finally {
@@ -65,14 +66,14 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         return countMessage;
     };
 
-
     const handleFetchOtherUserInfo = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}api/apps/chats/${uuid}/details`, config);
             console.log(response.data);
             setOtherUserChatInfo(response.data);
             const messageCount = await fetchPastMessages();
-            setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && fetchedMessages[0].sender.username !== user.username);
+
+            setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.username !== user.username);
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
@@ -90,7 +91,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
 
             websocket.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-
+                console.log(data);
+                if(!data.error) {
                 // Update messages state without duplicates
                 setMessages((prevMessages) => {
                     if (!prevMessages.some((msg) => msg.id === data.message.id)) {
@@ -98,7 +100,13 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                     }
                     return prevMessages;
                 });
+                } else {
+                    console.error(data.error);
+                }
             };
+            
+            
+            
         }
 
         websocket.current.onclose = () => {
@@ -232,7 +240,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                     <div className='user-chat-participants-profile-pics'>
                         {otherUserChatInfo.participants.map((participant, index) => (
                             <div key={index} className='other-user-chat-profile-picture'>
-                                <ProfilePicture src={participant.profile_picture} />
+                                <ProfilePicture src={participant.participant.profile_picture} />
                             </div>
                         ))}
                     </div>
@@ -240,8 +248,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                         {otherUserChatInfo.participants.map((participant, index) => (
                             <div key={index} className='other-user-chat-username'>
                                 <p>
-                                    <Link to={`/profile/${participant.username}`}>
-                                        {`${participant.first_name}`}
+                                    <Link to={`/profile/${participant.participant.username}`}>
+                                        {`${participant.participant.first_name}`}
                                     </Link>
                                     {index < 5 && index < otherUserChatInfo.participants.length - 1 && ', '}
                                 </p>
@@ -258,7 +266,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             <div className='chat-space-messages' ref={chatContainerRef}>
                 <div className='chat-space-messages-inner'>
                     {messages.map((message, index) => (
-                        message.sender.id && (
+                        message && (
                             <React.Fragment key={`${message.id}-${index}`}>
                                 {(index === 0 || shouldShowTime(messages[index - 1], message)) && (
                                     <div className="message-time">{formatDate(message.timestamp)}</div>

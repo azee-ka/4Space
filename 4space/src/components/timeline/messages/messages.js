@@ -17,7 +17,7 @@ import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 const Messages = () => {
     const { uuid } = useParams();
     const navigate = useNavigate();
-    const { token } = useAuthState();
+    const { token, user } = useAuthState();
     const config = GetConfig(token);
     const [serversList, setServersList] = useState([])
 
@@ -30,6 +30,11 @@ const Messages = () => {
     const [sendNewMessageOverlay, setSendNewMessageOverlay] = useState(false);
 
     const [showRequestChats, setShowRequestChats] = useState(false);
+
+
+    const determineUserIsInviterItself = (userInvitier) => {
+        return (userInvitier === user.id);
+    }
 
     const handleCollapseToggle = () => {
         setCollapsed(!collapsed);
@@ -110,6 +115,7 @@ const Messages = () => {
                                     setChatToViewObj={setChatToViewObj}
                                     handlePerProfileChat={handlePerProfileChat}
                                     fetchUserMessagesList={fetchUserMessagesList}
+                                    determineUserIsInviterItself={determineUserIsInviterItself}
                                 />
                             ) : (
                                 <div className='personal-messages-left-container'>
@@ -130,25 +136,25 @@ const Messages = () => {
                                             <div className='personal-messages-per-list'>
                                                 <div className='personal-messages-per-list-inner'>
                                                     {chatsList.map((per_message_element, index) => (
-                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.uuid}`}  >
+                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}  >
                                                             <div className='personal-messages-list-per-message-inner'>
                                                                 <div className='personal-messages-list-per-message-inner-inner'>
                                                                     <div className='personal-messages-per-user-profile-picture-container'>
-                                                                        <ProfilePicture src={per_message_element.inviter.profile_picture} />
+                                                                        <ProfilePicture src={(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.participants[0].participant : per_message_element.inviter).profile_picture} />
                                                                     </div>
                                                                     <div className='personal-messages-per-user-info'>
                                                                         <div className='personal-messages-per-user-info-inner'>
                                                                             <div>
-                                                                                {`${per_message_element.inviter.first_name} ${per_message_element.inviter.last_name}`}
+                                                                                {`${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).first_name} ${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).last_name}`}
                                                                             </div>
                                                                             <div>
-                                                                                <p>@{per_message_element.inviter.username}</p>
+                                                                                <p>@{(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).username}</p>
                                                                                 {per_message_element.participants.length >= 2 &&
-                                                                <p>and {per_message_element.participants.length} more</p>
-                                                            }
+                                                                                    <p>and {per_message_element.participants.length-1} more</p>
+                                                                                }
                                                                             </div>
                                                                         </div>
-                                                                       
+
                                                                     </div>
                                                                 </div>
                                                             </div>
