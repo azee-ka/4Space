@@ -1,6 +1,7 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
+from channels.layers import get_channel_layer
 from ..models import Chat, Message, ChatParticipant
 from ..serializers import MessageSerializer
 from ....user.interactUser.models import InteractUser
@@ -9,14 +10,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.chat_uuid = self.scope['url_route']['kwargs']['uuid']
         self.room_group_name = f'chat_{self.chat_uuid}'
+        self.room_group_name_unrestricted = f'chat_{self.chat_uuid}_unrestricted'
         
         # Join chat group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-
+        # Accept the WebSocket connection
         await self.accept()
+
 
     async def disconnect(self, close_code):
         # Leave chat group
@@ -48,14 +51,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if accepted_invites > 0:
                 # If the inviter and at least one participant have accepted, remove restriction
                 await sync_to_async(ChatParticipant.objects.filter(chat=chat, participant=participant).update)(restricted=False)
+
             elif await sync_to_async(chat.messages.count)() >= 3:
                 # If the inviter has sent 3 messages and no one has accepted, remove restriction for inviter only
                 await sync_to_async(ChatParticipant.objects.filter(chat=chat, participant=participant).update)(restricted=False)
-
+                
+        is_restricted = await sync_to_async(lambda: ChatParticipant.objects.get(chat=chat, participant=participant).restricted)()
+            # Check if the inviter is now unrestricted and add the user to the unrestricted group
+        if not is_restricted:
+            await self.channel_layer.group_add(
+                self.room_group_name_unrestricted,
+                self.channel_name
+            )
+            
         if is_inviter and accepted_invites == 0 and await sync_to_async(chat.messages.count)() < 3:
             # Save message to database
             message_instance = await self.save_message_to_database(message, user_id)
             if message_instance:
+                print("hello232323232")
                 message_data = MessageSerializer(message_instance).data
                 # Send message to chat group
                 await self.channel_layer.group_send(
@@ -66,20 +79,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }
                 )
         elif accepted_invites > 0:
+            print("hello5")
             if not is_restricted:
                 # Save message to database
                 message_instance = await self.save_message_to_database(message, user_id)
                 if message_instance:
                     message_data = MessageSerializer(message_instance).data
-                    if accepted_invites > 0 and not is_restricted:
-                        # Send message to WebSocket
-                        await self.send(text_data=json.dumps({
+                    # Send message to WebSocket
+                    print("hello10121")
+                    await self.channel_layer.group_send(
+                        self.room_group_name_unrestricted,
+                        {
                             'type': 'chat_message',
                             'message': message_data
-                        }))
-                    else:
-                        # Ignore the message
-                        pass
+                        }
+                    )
+                else:
+                    print("Message not sent to unrestricted user. Is the user still restricted?")
             else:
                 # Ignore the message or send an error response back to the user
                 await self.send(text_data=json.dumps({
@@ -90,6 +106,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                 'error': 'You are not allowed to send messages in this chat until at least one participant accepts the invitation.'
             }))
+
+
 
 
 

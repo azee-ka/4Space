@@ -47,6 +47,7 @@ migrations/
 *.mo
 *.db
 *.sqlite3
+*.rdb
 *.dat
 *.csv
 *.venv

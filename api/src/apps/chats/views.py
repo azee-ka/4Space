@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q, Count, Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -53,16 +55,36 @@ def create_chat(request):
     }
     return Response(response_data, status=status.HTTP_201_CREATED)
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def accept_chat_invitation(request, chat_uuid):
-    user = request.user.interactuser
+    user_id = request.user.id
     chat = get_object_or_404(Chat, uuid=chat_uuid)
 
-    # Update the user's status for this chat to mark it as accepted
-    ChatParticipant.objects.filter(chat=chat, participant=user).update(accepted=True, restricted=False)
+    # Get or create the ChatParticipant object for the user in the chat
+    participant, created = ChatParticipant.objects.get_or_create(chat=chat, participant_id=user_id, defaults={'accepted': True, 'restricted': False})
 
+    # Update the user's status for this chat to mark it as accepted and unrestricted
+    if not created:
+        participant.accepted = True
+        participant.restricted = False
+        participant.save()
+
+    # Get the channel layer
+    channel_layer = get_channel_layer()
+
+    # Add the user to the unrestricted group
+    async_to_sync(channel_layer.group_add)(
+        f'chat_{chat_uuid}_unrestricted',
+        f'user_{user_id}'
+    )
+    
     return Response({"message": "Chat invitation accepted"}, status=status.HTTP_200_OK)
+
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
