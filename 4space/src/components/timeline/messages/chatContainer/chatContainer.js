@@ -267,7 +267,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                             <div key={index} className='other-user-chat-username'>
                                 <p>
                                     <Link to={`/profile/${participant.participant.username}`}>
-                                        {`${participant.participant.first_name}`}
+                                        {`${participant.participant.first_name}`} {otherUserChatInfo.participants.length === 1 && participant.participant.last_name}
                                     </Link>
                                     {index < 5 && index < otherUserChatInfo.participants.length - 1 && ', '}
                                 </p>

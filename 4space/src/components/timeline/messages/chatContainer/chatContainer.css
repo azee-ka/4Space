@@ -30,8 +30,8 @@
     justify-content: flex-start;
     align-items: center;
     margin-right: 10px;
-    background-color: rgba(0, 128, 0, 0);
-    min-width: 65px;
+    background-color: rgba(0, 128, 0, 0.3);
+    min-width: 50px;
     max-width: 150px;
 }
 
