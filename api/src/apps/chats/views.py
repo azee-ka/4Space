@@ -55,8 +55,6 @@ def create_chat(request):
     }
     return Response(response_data, status=status.HTTP_201_CREATED)
 
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -72,20 +70,6 @@ def accept_chat_invitation(request, chat_uuid):
         participant.accepted = True
         participant.restricted = False
         participant.save()
-
-    # # Get the channel layer
-    # channel_layer = get_channel_layer()
-
-    # # # Add the user to the unrestricted group
-    # async_to_sync(channel_layer.group_add)(
-    #     f'chat_{chat_uuid}_unrestricted',
-    #     f'user_{user_id}'
-    
-    # Add the user to the unrestricted group
-    # channel_layer = get_channel_layer()
-    # room_group_name_unrestricted = f'chat_{chat_uuid}_unrestricted'
-    # async_to_sync(channel_layer.group_add)(room_group_name_unrestricted, f"user_{user_id}")
-
     
     return Response({"message": "Chat invitation accepted"}, status=status.HTTP_200_OK)
 
@@ -151,6 +135,7 @@ def list_past_messages(request, chat_uuid):
     # Otherwise, get the first 3 messages
     if is_inviter or is_accepted or not is_restricted:
         messages = Message.objects.filter(chat=chat).order_by('timestamp')
+        # messages = list(messages)[::-1]
         paginator = MessagePagination()
         result_page = paginator.paginate_queryset(messages, request)
         serializer = MessageSerializer(result_page, many=True)
@@ -184,8 +169,6 @@ def list_past_messages(request, chat_uuid):
         result_page = paginator.paginate_queryset(messages_to_send, request)
         serializer = MessageSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
-
-
 
 
 

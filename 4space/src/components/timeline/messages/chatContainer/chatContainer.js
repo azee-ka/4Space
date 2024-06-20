@@ -72,7 +72,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             console.log(response.data);
             setOtherUserChatInfo(response.data);
             const messageCount = await fetchPastMessages();
-
+            console.log();
             setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.username !== user.username);
         } catch (error) {
             console.error('Error fetching chat information:', error);
@@ -201,6 +201,16 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         }
     }, [handleScroll]);
 
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     const handleAcceptChatInvitation = async () => {
         try {

@@ -43,11 +43,12 @@ class UserChatSerializer(serializers.ModelSerializer):
     participants = serializers.SerializerMethodField()
     uuid = serializers.UUIDField()
     inviter = serializers.SerializerMethodField()
-    restricted = serializers.SerializerMethodField()  # Add this line
-
+    restricted = serializers.SerializerMethodField()
+    me = serializers.SerializerMethodField()
+    
     class Meta:
         model = Chat
-        fields = ['id', 'uuid', 'restricted', 'participants', 'inviter']
+        fields = ['id', 'uuid', 'restricted', 'participants', 'inviter', 'me']
 
     def get_participants(self, obj):
         user = self.context['request'].user.interactuser
@@ -69,6 +70,11 @@ class UserChatSerializer(serializers.ModelSerializer):
             return participant.restricted
         except ChatParticipant.DoesNotExist:
             return False  # Assuming default behavior if participant not found
+        
+    def get_me(self, obj):
+        user = self.context['request'].user.interactuser
+        # participant = obj.chatparticipant_set.get(participant=user)
+        return MessageBaseUserSerializer(user).data
 
 
 class RestrictedChatSerializer(serializers.ModelSerializer):
