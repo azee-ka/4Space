@@ -25,21 +25,23 @@
 }
 
 .user-chat-participants-profile-pics {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    margin-right: 10px;
-    background-color: rgba(0, 128, 0, 0.3);
-    min-width: 50px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-gap: 0px;
+    background-color: rgba(0, 128, 0, 0.6);
+    min-width: 50px; 
     max-width: 150px;
 }
 
 .other-user-chat-profile-picture {
     height: 50px;
     width: 50px;
-    margin-right: -35px;
 }
+.other-user-chat-profile-picture:not(:first-child) {
+    margin-left: -35px;
+    z-index: 1;
+}
+
 
 .user-chat-participants-usernames {
     display: flex;
