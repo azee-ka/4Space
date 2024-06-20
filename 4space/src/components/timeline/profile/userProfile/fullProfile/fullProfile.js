@@ -15,7 +15,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
     const config = GetConfig(token);
     const navigate = useNavigate();
 
-    const [profileData, setProfileData ] = useState(userData);
+    const [profileData, setProfileData] = useState(userData);
 
     const [isFollowing, setIsFollowing] = useState(userData.is_following);
     const [isConnected, setIsConnected] = useState(userData.is_connected);
@@ -43,14 +43,14 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
             console.log(response.data);
             setIsFollowing(response.data.message === "Followed user successfully");
             handleFetchUserData();
-            if(profileData.is_private) {
+            if (profileData.is_private) {
                 window.location.reload()
             }
         } catch (error) {
             console.error("Error toggling unfollow/follow", error);
         }
     };
-    
+
 
     const handleConnectDisconnectToggle = async () => {
         try {
@@ -62,7 +62,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
             console.error("Error toggling disconnect/connect", error);
         }
     };
-    
+
 
 
     const handleRedirect = (path) => {
@@ -116,7 +116,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
                     <div className='full-profile-right-side-inner'>
                         <div className='full-profile-page-date-joined'>
                             <div className='full-profile-page-date-joined-inner'>
-                                <p>Member since {formatDate(profileData.date_joined, false, true)}</p>
+                                <p>Member since {formatDate(profileData.user.date_joined, false, true)}</p>
                             </div>
                         </div>
                         <div>

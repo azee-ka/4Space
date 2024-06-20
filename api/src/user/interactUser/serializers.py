@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import InteractUser
 from ..baseUser.serializers import BaseUserSerializer
 from ...post.serializers import PostSerializer, MinimalPostSerializer
-from ..baseUser.serializers import UserSerializer
+from ..baseUser.serializers import UserSerializer, PartialUserSerializer
         
         
 class InteractUserSerializer(serializers.ModelSerializer):
@@ -80,12 +80,12 @@ class PartialProfileSerializer(serializers.ModelSerializer):
     is_private = serializers.SerializerMethodField()
     is_following = serializers.SerializerMethodField()
     is_connected = serializers.SerializerMethodField()
-    user = UserSerializer(source='*')
+    user = PartialUserSerializer(source='*')
     follow_request_status = serializers.SerializerMethodField()
 
     class Meta:
         model = InteractUser
-        fields = ['user', 'date_joined', 'followers_count', 'following_count', 'connections_count', 'is_private', 'is_following', 'is_connected', 'follow_request_status']
+        fields = ['user', 'followers_count', 'following_count', 'connections_count', 'is_private', 'is_following', 'is_connected', 'follow_request_status']
 
     def get_followers_count(self, obj):
         return obj.followers.count()
@@ -140,7 +140,7 @@ class FullProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InteractUser
-        fields = ['user', 'is_private', 'date_joined', 'followers_count', 'following_count', 'followers_list', 'following_list', 'connections_count', 'connections_list', 'posts', 'is_following', 'is_connected']
+        fields = ['user', 'is_private', 'followers_count', 'following_count', 'followers_list', 'following_list', 'connections_count', 'connections_list', 'posts', 'is_following', 'is_connected']
 
     def get_followers_count(self, obj):
         return obj.followers.count()

@@ -9,7 +9,13 @@ class UserProfilePictureUpdateSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseUser
-        fields = ['id', 'username', 'profile_picture', 'first_name', 'last_name', 'date_joined', 'profile_picture']
+        fields = ['id', 'username', 'profile_picture', 'first_name', 'last_name', 'date_joined']
+
+class PartialUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseUser
+        fields = ['id', 'username', 'profile_picture']
+
 
 
 class BaseUserSerializer(serializers.ModelSerializer):

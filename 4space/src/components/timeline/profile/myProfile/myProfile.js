@@ -13,23 +13,6 @@ const MyProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverl
     const navigate = useNavigate();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
-
-    // const [profileData, setProfileData] = useState();
-
-
-    // const handleFetchProfileData= async () => {
-    //     try {
-    //         const response = await axios.get(`${API_BASE_URL}api/user/profile/${user.username}`, config);
-    //         setProfileData(response.data.profile);
-    //         console.log(response.data);
-    //     } catch (error) {
-    //         console.error('Failed to fetch profile interact data', error);
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     handleFetchProfileData();
-    // }, []);
     
 
     const handleRedirect = (path) => {
@@ -77,7 +60,7 @@ const MyProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverl
                     <div className='full-profile-right-side-inner'>
                         <div className='full-profile-page-date-joined'>
                             <div className='full-profile-page-date-joined-inner'>
-                                <p>Member since {formatDate(profileData.date_joined, false, true)}</p>
+                                <p>Member since {formatDate(profileData.user.date_joined, false, true)}</p>
                             </div>
                         </div>
                         <div>
