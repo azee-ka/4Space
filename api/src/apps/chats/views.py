@@ -73,14 +73,19 @@ def accept_chat_invitation(request, chat_uuid):
         participant.restricted = False
         participant.save()
 
-    # Get the channel layer
-    channel_layer = get_channel_layer()
+    # # Get the channel layer
+    # channel_layer = get_channel_layer()
 
+    # # # Add the user to the unrestricted group
+    # async_to_sync(channel_layer.group_add)(
+    #     f'chat_{chat_uuid}_unrestricted',
+    #     f'user_{user_id}'
+    
     # Add the user to the unrestricted group
-    async_to_sync(channel_layer.group_add)(
-        f'chat_{chat_uuid}_unrestricted',
-        f'user_{user_id}'
-    )
+    # channel_layer = get_channel_layer()
+    # room_group_name_unrestricted = f'chat_{chat_uuid}_unrestricted'
+    # async_to_sync(channel_layer.group_add)(room_group_name_unrestricted, f"user_{user_id}")
+
     
     return Response({"message": "Chat invitation accepted"}, status=status.HTTP_200_OK)
 

@@ -56,7 +56,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # If the inviter has sent 3 messages and no one has accepted, remove restriction for inviter only
                 await sync_to_async(ChatParticipant.objects.filter(chat=chat, participant=participant).update)(restricted=False)
                 
-        is_restricted = await sync_to_async(lambda: ChatParticipant.objects.get(chat=chat, participant=participant).restricted)()
+        
             # Check if the inviter is now unrestricted and add the user to the unrestricted group
         if not is_restricted:
             await self.channel_layer.group_add(
