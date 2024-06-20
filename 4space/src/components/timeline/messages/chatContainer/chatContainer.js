@@ -31,6 +31,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     const messagesEndRef = useRef(null);
     const chatContainerRef = useRef(null);
 
+    const [isHandlingScroll, setIsHandlingScroll] = useState(false);
+
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [offset, setOffset] = useState(0);
@@ -92,21 +94,21 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             websocket.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 console.log(data);
-                if(!data.error) {
-                // Update messages state without duplicates
-                setMessages((prevMessages) => {
-                    if (!prevMessages.some((msg) => msg.id === data.message.id)) {
-                        return [...prevMessages, data.message];
-                    }
-                    return prevMessages;
-                });
+                if (!data.error) {
+                    // Update messages state without duplicates
+                    setMessages((prevMessages) => {
+                        if (!prevMessages.some((msg) => msg.id === data.message.id)) {
+                            return [...prevMessages, data.message];
+                        }
+                        return prevMessages;
+                    });
                 } else {
                     console.error(data.error);
                 }
             };
-            
-            
-            
+
+
+
         }
 
         websocket.current.onclose = () => {
@@ -179,13 +181,14 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         }
     };
 
+
     const handleScroll = useCallback(() => {
+        setIsHandlingScroll(true); // Set the state to true when handleScroll runs
         if (chatContainerRef.current.scrollTop === 0 && hasMore && !loading) {
             // console.log('Fetching more messages...');
             fetchPastMessages(offset, true);
         }
     }, [offset, hasMore, loading]);
-
 
     useLayoutEffect(() => {
         const chatContainer = chatContainerRef.current;
@@ -201,16 +204,19 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         }
     }, [handleScroll]);
 
-
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        if (!isHandlingScroll) { // Only scroll to bottom if not handling scroll
+            scrollToBottom();
+        }
+    }, [messages, isHandlingScroll]);
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
+        setIsHandlingScroll(false); // Reset the state after scrolling to bottom
     };
+
 
     const handleAcceptChatInvitation = async () => {
         try {

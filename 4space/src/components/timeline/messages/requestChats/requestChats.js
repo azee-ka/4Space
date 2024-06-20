@@ -11,10 +11,10 @@ import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import GetConfig from '../../../general/Authentication/utils/config';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChatToViewObj, handlePerProfileChat, determineUserIsInviterItself }) => {
+const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChatToViewObj, handlePerProfileChat, determineUser }) => {
     const { username, chat_id } = useParams();
     const navigate = useNavigate();
-    const { token } = useAuthState();
+    const { token, user } = useAuthState();
     const config = GetConfig(token);
 
     const [receivedRequestChats, setReceivedRequestedChats] = useState([]);
@@ -51,11 +51,6 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
         fetchReceivedRequestChatList();
         fetchSentRequestChatList();
     }, []);
-
-    // const handlePerProfileChat = (per_message_element) => {
-    //     setChatToViewObj(per_message_element);
-    //     navigate('/messages' + '/request/' + per_message_element.other_user.username, { replace: true });
-    // };
 
 
     const handleToggleShowSentRequests = () => {
@@ -109,17 +104,17 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
                                         <div className='requested-chat-list-per-message-inner'>
                                             <div className='requested-chat-list-per-message-inner-inner'>
                                                 <div className='requested-chat-per-user-profile-picture-container'>
-                                                    <ProfilePicture src={(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).profile_picture} />
+                                                    <ProfilePicture src={determineUser(per_message_element).participant.profile_picture} />
                                                 </div>
                                                 <div className='requested-chat-per-user-info'>
                                                     <div className='requested-chat-per-user-info-inner'>
                                                         <div>
-                                                            {`${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).first_name} ${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).last_name}`}
+                                                            {`${determineUser(per_message_element).participant.first_name} ${determineUser(per_message_element).participant.last_name}`}
                                                         </div>
                                                         <div>
-                                                            <p>@{(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).username}</p>
-                                                            {per_message_element.participants.length >= 2 &&
-                                                                <p>and {per_message_element.participants.length-1} more</p>
+                                                            <p>@{determineUser(per_message_element).participant.username}</p>
+                                                            {per_message_element.participants.length > 2 &&
+                                                                <p>and {per_message_element.participants.length - 1} more</p>
                                                             }
                                                         </div>
                                                     </div>

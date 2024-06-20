@@ -27,6 +27,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        await self.channel_layer.group_discard(
+            self.room_group_name_unrestricted,
+            self.channel_name
+        )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -44,7 +48,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         is_inviter = await sync_to_async(ChatParticipant.objects.filter(chat=chat, participant=participant, is_inviter=True).exists)()
 
         # Check if the user has accepted the invitation
-        accepted_invites = await sync_to_async(ChatParticipant.objects.filter(chat=chat, accepted=True).count)()
+        accepted_invites = await sync_to_async(ChatParticipant.objects.filter(chat=chat, accepted=True).exclude(is_inviter=True).count)()
 
         # Check if the user is allowed to send messages
         if is_inviter:
@@ -79,7 +83,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }
                 )
         elif accepted_invites > 0:
-            print("hello5")
+            print(f"hello5 {accepted_invites}")
             if not is_restricted:
                 # Save message to database
                 message_instance = await self.save_message_to_database(message, user_id)

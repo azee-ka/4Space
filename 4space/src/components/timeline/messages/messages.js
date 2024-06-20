@@ -32,10 +32,6 @@ const Messages = () => {
     const [showRequestChats, setShowRequestChats] = useState(false);
 
 
-    const determineUserIsInviterItself = (userInvitier) => {
-        return (userInvitier === user.id);
-    }
-
     const handleCollapseToggle = () => {
         setCollapsed(!collapsed);
     };
@@ -78,6 +74,13 @@ const Messages = () => {
     };
 
 
+    const determineUser = (message) => {
+        const inviter = message.inviter.participant;
+        return (inviter.id === user.id) ? message.participants[0] : message.inviter;
+    };
+
+
+
     return (
         <div className={`personal-messages-container`}>
             <div className='personal-messages-container-inner'>
@@ -115,7 +118,7 @@ const Messages = () => {
                                     setChatToViewObj={setChatToViewObj}
                                     handlePerProfileChat={handlePerProfileChat}
                                     fetchUserMessagesList={fetchUserMessagesList}
-                                    determineUserIsInviterItself={determineUserIsInviterItself}
+                                    determineUser={determineUser}
                                 />
                             ) : (
                                 <div className='personal-messages-left-container'>
@@ -140,26 +143,26 @@ const Messages = () => {
                                                             <div className='personal-messages-list-per-message-inner'>
                                                                 <div className='personal-messages-list-per-message-inner-inner'>
                                                                     <div className='personal-messages-per-user-profile-picture-container'>
-                                                                        <ProfilePicture src={(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.participants[0].participant : per_message_element.inviter).profile_picture} />
+                                                                        <ProfilePicture src={determineUser(per_message_element).participant.profile_picture} />
                                                                     </div>
                                                                     <div className='personal-messages-per-user-info'>
                                                                         <div className='personal-messages-per-user-info-inner'>
                                                                             <div>
-                                                                                {`${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).first_name} ${(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).last_name}`}
+                                                                                {`${determineUser(per_message_element).participant.first_name} ${determineUser(per_message_element).participant.last_name}`}
                                                                             </div>
                                                                             <div>
-                                                                                <p>@{(determineUserIsInviterItself(per_message_element.inviter) ? per_message_element.inviter : per_message_element.participants[0].participant).username}</p>
-                                                                                {per_message_element.participants.length >= 2 &&
-                                                                                    <p>and {per_message_element.participants.length-1} more</p>
+                                                                                <p>@{determineUser(per_message_element).participant.username}</p>
+                                                                                {per_message_element.participants.length > 2 &&
+                                                                                    <p>and {per_message_element.participants.length - 1} more</p>
                                                                                 }
                                                                             </div>
                                                                         </div>
-
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     ))}
+
                                                 </div>
                                             </div>
                                         </div>

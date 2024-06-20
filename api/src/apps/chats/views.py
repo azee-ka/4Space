@@ -44,7 +44,7 @@ def create_chat(request):
 
     for index, participant in enumerate(participants):
         is_inviter = index == 0
-        ChatParticipant.objects.create(chat=chat, participant=participant, is_inviter=is_inviter, accepted=is_inviter, restricted=not is_inviter)
+        ChatParticipant.objects.create(chat=chat, participant=participant, is_inviter=is_inviter, accepted=is_inviter, restricted=True) #not is_inviter)
 
     response_data = {
         "uuid": chat.uuid,
@@ -62,7 +62,7 @@ def accept_chat_invitation(request, chat_uuid):
     chat = get_object_or_404(Chat, uuid=chat_uuid)
 
     # Get or create the ChatParticipant object for the user in the chat
-    participant, created = ChatParticipant.objects.get_or_create(chat=chat, participant_id=user_id, defaults={'accepted': True, 'restricted': False})
+    participant, created = ChatParticipant.objects.get_or_create(chat=chat, participant_id=user_id)
 
     # Update the user's status for this chat to mark it as accepted and unrestricted
     if not created:
@@ -202,7 +202,7 @@ def pending_received_chat_invitations(request):
     ).filter(has_messages=True).annotate(
         first_message_sender=Count('messages', filter=Q(messages__sender=user))
     ).filter(first_message_sender=0)
-    serializer = UserChatSerializer(pending_invitations, many=True, context={'request': request})
+    serializer = ChatSerializer(pending_invitations, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -215,7 +215,7 @@ def pending_sent_chat_invitations(request):
     ).filter(has_messages=True).annotate(
         first_message_sender=Count('messages', filter=Q(messages__sender=user))
     ).filter(first_message_sender__gt=0)
-    serializer = UserChatSerializer(pending_invitations, many=True, context={'request': request})
+    serializer = ChatSerializer(pending_invitations, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 

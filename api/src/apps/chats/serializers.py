@@ -44,8 +44,9 @@ class ChatSerializer(serializers.ModelSerializer):
         fields = ['id', 'uuid', 'participants', 'created_at', 'messages', 'inviter']
 
     def get_participants(self, obj):
-        participants = obj.chatparticipant_set.all()
-        return ChatParticipantSerializer(participants, many=True, context=self.context).data
+        user = self.context['request'].user.interactuser
+        participants = obj.chatparticipant_set.exclude(participant=user)
+        return ChatParticipantSerializer(participants, many=True).data
     
     def get_inviter(self, obj):
         user = self.context['request'].user.interactuser
