@@ -113,7 +113,7 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
                                                         </div>
                                                         <div>
                                                             <p>@{determineUser(per_message_element).participant.username}</p>
-                                                            {per_message_element.participants.length > 2 &&
+                                                            {per_message_element.participants.length > 1 &&
                                                                 <p>and {per_message_element.participants.length - 1} more</p>
                                                             }
                                                         </div>

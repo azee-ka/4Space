@@ -34,6 +34,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
+        action = data.get('action')
+        
+        if action == 'send_message':
+            await self.handle_send_message(data)
+        elif action == 'accept_invitation':
+            await self.handle_accept_invitation(data)
+        
+    async def handle_send_message(self, data):
         message = data['message']
         user_id = data.get('user_id')  # Get the user ID from the message
 
@@ -111,6 +119,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'error': 'You are not allowed to send messages in this chat until at least one participant accepts the invitation.'
             }))
 
+
+    async def handle_accept_invitation(self, data):
+        user_id = data.get('user_id')
+        chat = await sync_to_async(Chat.objects.get)(uuid=self.chat_uuid)
+        
+        participant, created = await sync_to_async(ChatParticipant.objects.get_or_create)(
+            chat=chat, 
+            participant_id=user_id, 
+            defaults={'accepted': True, 'restricted': False}
+        )
+
+        if not created:
+            participant.accepted = True
+            participant.restricted = False
+            await sync_to_async(participant.save)()
+
+        await self.channel_layer.group_add(
+            self.room_group_name_unrestricted,
+            self.channel_name
+        )
+        print(f"User {user_id} accepted the invitation and was added to unrestricted group {self.room_group_name_unrestricted}")
 
 
 

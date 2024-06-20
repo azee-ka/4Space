@@ -135,6 +135,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     const handleSendMessage = () => {
 
         const dataToSend = {
+            'action': 'send_message',
             'message': messageToSend,
             'user_id': user.id, // Include the user's ID
         };
@@ -218,16 +219,17 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     };
 
 
-    const handleAcceptChatInvitation = async () => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}api/apps/chats/${uuid}/accept_chat_invitation/`, null, config);
-            console.log(response.data);
+    const handleAcceptChatInvitation = () => {
+        const dataToSend = {
+            'action': 'accept_invitation',
+            'user_id': user.id,
+        };
+
+        if (websocket.current) {
+            websocket.current.send(JSON.stringify(dataToSend));
             handleFetchOtherUserInfo();
-            // navigate(`/messages/${otherUserChatInfo.other_user.username}/${chat_id}`);
-        } catch (error) {
-            console.error('Error fetching chat information:', error);
         }
-    }
+    };
 
     const handleRejectChatInvitation = async () => {
         try {
