@@ -55,22 +55,22 @@ def create_chat(request):
 
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def accept_chat_invitation(request, chat_uuid):
-    user_id = request.user.id
-    chat = get_object_or_404(Chat, uuid=chat_uuid)
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def accept_chat_invitation(request, chat_uuid):
+#     user_id = request.user.id
+#     chat = get_object_or_404(Chat, uuid=chat_uuid)
 
-    # Get or create the ChatParticipant object for the user in the chat
-    participant, created = ChatParticipant.objects.get_or_create(chat=chat, participant_id=user_id)
+#     # Get or create the ChatParticipant object for the user in the chat
+#     participant, created = ChatParticipant.objects.get_or_create(chat=chat, participant_id=user_id)
 
-    # Update the user's status for this chat to mark it as accepted and unrestricted
-    if not created:
-        participant.accepted = True
-        participant.restricted = False
-        participant.save()
+#     # Update the user's status for this chat to mark it as accepted and unrestricted
+#     if not created:
+#         participant.accepted = True
+#         participant.restricted = False
+#         participant.save()
     
-    return Response({"message": "Chat invitation accepted"}, status=status.HTTP_200_OK)
+#     return Response({"message": "Chat invitation accepted"}, status=status.HTTP_200_OK)
 
 
 
@@ -83,8 +83,9 @@ def reject_chat_invitation(request, chat_uuid):
     # Remove the user from the chat participants
     ChatParticipant.objects.filter(chat=chat, participant=user).delete()
 
+    print(f'chat.count() { chat.chatparticipant_set.count()}')
     # If there are no more participants, delete the chat
-    if chat.chatparticipant_set.count() == 0:
+    if chat.chatparticipant_set.count() == 1:
         chat.delete()
         return Response({"message": "Chat deleted"}, status=status.HTTP_200_OK)
 

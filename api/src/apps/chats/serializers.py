@@ -38,10 +38,11 @@ class ChatSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True)
     uuid = serializers.UUIDField()
     inviter = serializers.SerializerMethodField()
+    me = serializers.SerializerMethodField()
 
     class Meta:
         model = Chat
-        fields = ['id', 'uuid', 'participants', 'created_at', 'messages', 'inviter']
+        fields = ['id', 'uuid', 'participants', 'created_at', 'messages', 'inviter', 'me']
 
     def get_participants(self, obj):
         user = self.context['request'].user.interactuser
@@ -57,6 +58,14 @@ class ChatSerializer(serializers.ModelSerializer):
             inviter = user
         participant = obj.chatparticipant_set.get(participant=inviter)
         return ChatParticipantSerializer(participant).data
+    
+    def get_me(self, obj):
+        user = self.context['request'].user.interactuser
+        try:
+            participant = obj.chatparticipant_set.get(participant=user)
+            return ChatParticipantSerializer(participant).data
+        except ChatParticipant.DoesNotExist:
+            return None
     
 
 

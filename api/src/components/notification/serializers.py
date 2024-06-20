@@ -1,12 +1,12 @@
 # serializers.py
 from rest_framework import serializers
 from .models import Notification
-from ...user.interactUser.serializers import SimplifiedUserSerializer
+from ...user.baseUser.serializers import UserSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    actor = SimplifiedUserSerializer(read_only=True)
-    recipient = SimplifiedUserSerializer(read_only=True)
+    actor = UserSerializer(read_only=True)
+    recipient = UserSerializer(read_only=True)
     
     class Meta:
         model = Notification

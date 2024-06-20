@@ -5,8 +5,10 @@ import GetConfig from '../Authentication/utils/config';
 import { useAuthState } from '../Authentication/utils/AuthProvider';
 import API_BASE_URL from '../../../config';
 import ToggleSwitch from '../../../utils/toggleSwitch/toggleSwitch';
+import { useNavigate } from 'react-router-dom';
 
 const Preferences = () => {
+    const navigate = useNavigate();
     const { token } = useAuthState();
     const config = GetConfig(token);
     const [profileIsPrivate, setProfileIsPrivate] = useState(false);
@@ -37,8 +39,8 @@ const Preferences = () => {
     };
 
     const sidebarButtons = [
+        { label: 'My Profile', onClick: () => navigate('/profile/edit') },
         { label: 'Profile Visibility', onClick: () => setActiveSetting('profileVisibility') },
-        // Add more buttons here as needed
     ];
 
     return (
@@ -53,7 +55,7 @@ const Preferences = () => {
                     <div className='preferences-sidebar'>
                         <div className='preferences-sidebar-inner'>
                         {sidebarButtons.map((button, index) => (
-                            <button key={index} onClick={button.onClick}>
+                            <button key={index} onClick={button.onClick} >
                                 {button.label}
                             </button>
                         ))}

@@ -147,7 +147,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    border-radius: 8px;
+    border-radius: 15px;
     transition: background-color 0.3s ease;
 }
 

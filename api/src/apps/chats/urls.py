@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path('create/', views.create_chat, name='create_chat'),
-    path('<uuid:chat_uuid>/accept_chat_invitation/', views.accept_chat_invitation, name='accept_chat_invitation'),
+    # path('<uuid:chat_uuid>/accept_chat_invitation/', views.accept_chat_invitation, name='accept_chat_invitation'),
     path('<uuid:chat_uuid>/reject_chat_invitation/', views.reject_chat_invitation, name='reject_chat_invitation'),
     path('<uuid:chat_uuid>/block_report_chat_invitation/', views.block_report_chat_invitation, name='block_report_chat_invitation'),
     path('<uuid:chat_uuid>/messages/', views.list_past_messages, name='list_past_messages'),

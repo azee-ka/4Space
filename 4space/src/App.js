@@ -14,6 +14,7 @@ import ExpandPostPage from './components/timeline/post/expandedPost/expandPost/e
 import CreatePost from './components/timeline/post/createPost/createPost.js';
 import Preferences from './components/general/preferences/preferences.js';
 import Messages from './components/timeline/messages/messages.js';
+import MyProfileEdit from './components/timeline/profile/myProfileEdit/myProfileEdit.js';
 
 const App = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -49,6 +50,11 @@ const App = () => {
       path: '/mechflow',
       name: 'Mech Flow',
       element: <MechFlow />
+    },
+    {
+      path: '/profile/edit',
+      name: 'My Profile Edit',
+      element: <MyProfileEdit handleUserListTrigger={handleUserListTrigger}/>
     },
     {
       path: '/profile',

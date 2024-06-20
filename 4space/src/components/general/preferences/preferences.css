@@ -16,7 +16,7 @@
     align-items: center;
 }
 .preferences-header-inner {
-    width: 96%;
+    width: 80%;
     height: 100%;
     background-color: rgb(0, 51, 255, 0);
     display: flex;
@@ -29,17 +29,22 @@
     width: 100%;
     background-color: rgba(0, 128, 0, 0);
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
 }
 .preferences-page-content-inner {
-    width: 94%;
+    width: 80%;
     height: 100%;
-    background-color: rgb(71, 92, 71, 0);
+    background-color: rgba(193, 193, 193, 0.054);
+    backdrop-filter: blur(100px) !important;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    box-shadow: 0px 0px 4px 4px rgba(128, 128, 128, 0.25);
+    z-index: 3;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
 .preferences-sidebar {
@@ -52,7 +57,7 @@
 }
 .preferences-sidebar-inner {
     width: 80%;
-    height: 100%;
+    height: 93%;
     background-color: rgba(255, 255, 0, 0);
     display: flex;
     flex-direction: column;
@@ -89,11 +94,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    box-shadow: 0px 6px 4px 4px rgba(128, 128, 128, 0.392);
+    box-shadow: -5px 3px 4px 1px rgba(128, 128, 128, 0.192);
 }
 .preferences-settings-inner {
     width: 80%;
-    height: 100%;
+    height: 95%;
     background-color: rgb(154, 63, 63, 0);
     display: flex;
     flex-direction: column;

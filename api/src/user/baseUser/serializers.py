@@ -2,12 +2,6 @@
 from rest_framework import serializers
 from .models import BaseUser
 
-class BaseUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BaseUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'display_name', 'date_joined', 'is_active', 'profile_picture']
-
-
 class UserProfilePictureUpdateSerializer(serializers.Serializer):
     profile_picture = serializers.ImageField()
     
@@ -15,4 +9,11 @@ class UserProfilePictureUpdateSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseUser
-        fields = ['id', 'username', 'profile_picture']
+        fields = ['id', 'username', 'profile_picture', 'first_name', 'last_name', 'date_joined', 'profile_picture']
+
+
+class BaseUserSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = BaseUser
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'profile_picture']

@@ -75,8 +75,11 @@ const Messages = () => {
 
 
     const determineUser = (message) => {
-        const inviter = message.inviter.participant;
-        return (inviter.id === user.id) ? message.participants[0] : message.inviter;
+        // console.log(message);
+        if (message.participants.length !== 0) {
+            const inviter = message.inviter.participant;
+            return (inviter.id === user.id) ? message.participants[0] : message.inviter;
+        }
     };
 
 
@@ -139,7 +142,8 @@ const Messages = () => {
                                             <div className='personal-messages-per-list'>
                                                 <div className='personal-messages-per-list-inner'>
                                                     {chatsList.map((per_message_element, index) => (
-                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}  >
+                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}>
+                                                            {per_message_element.participants.length !== 0 &&
                                                             <div className='personal-messages-list-per-message-inner'>
                                                                 <div className='personal-messages-list-per-message-inner-inner'>
                                                                     <div className='personal-messages-per-user-profile-picture-container'>
@@ -160,9 +164,9 @@ const Messages = () => {
                                                                     </div>
                                                                 </div>
                                                             </div>
+                                                    }
                                                         </div>
                                                     ))}
-
                                                 </div>
                                             </div>
                                         </div>

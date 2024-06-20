@@ -22,6 +22,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     const [otherUserChatInfo, setOtherUserChatInfo] = useState();
     const [messages, setMessages] = useState([]);
 
+    const [chatExists, setChatExists] = useState(false);
+
     const [isRestricted, setIsRestricted] = useState(false);
 
     const websocket = useRef(null);
@@ -38,11 +40,11 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     const [offset, setOffset] = useState(0);
     const limit = 20;
 
-    let fetchedMessages;
 
     const fetchPastMessages = async (newOffset = 0, append = false) => {
         let countMessage = 0;
         if (loading) return;
+        // if(!chatExists) return
         setLoading(true);
         try {
             const response = await axios.get(`${API_BASE_URL}api/apps/chats/${uuid}/messages/`, {
@@ -53,7 +55,6 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                 },
             });
             const newMessages = response.data.results;
-            fetchedMessages = newMessages;
             console.log('newMessages', response.data);
             countMessage = response.data.count;
             if (newMessages.length < limit) setHasMore(false);
@@ -61,24 +62,42 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             setOffset(newOffset + limit);
 
         } catch (error) {
-            console.error('Error fetching messages:', error);
+            if (error.response) {
+                if (error.response.data.detail === "No Chat matches the given query.") {
+                    setChatExists(false);
+                }
+            } else {
+                console.log("err run")
+                console.error('Error fetching messages:', error);
+            }
         } finally {
             setLoading(false);
+            setChatExists(true);
         }
         return countMessage;
     };
 
     const handleFetchOtherUserInfo = async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/chats/${uuid}/details`, config);
-            console.log(response.data);
-            setOtherUserChatInfo(response.data);
-            const messageCount = await fetchPastMessages();
-            console.log();
-            setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.username !== user.username);
-        } catch (error) {
-            console.error('Error fetching chat information:', error);
-        }
+
+            try {
+                const response = await axios.get(`${API_BASE_URL}api/apps/chats/${uuid}/details`, config);
+                console.log(response.data);
+                setOtherUserChatInfo(response.data);
+                const messageCount = await fetchPastMessages();
+                console.log();
+                setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.username !== user.username);
+                setChatExists(true);
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.data.detail === "No Chat matches the given query.") {
+                        setChatExists(false);
+                    }
+                } else {
+                    console.log("err run")
+                    console.error('Error fetching chat information:', error);
+                }
+            }
+        
     }
 
     useEffect(() => {
@@ -352,7 +371,14 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             )}
         </div>
     ) : (
-        <div>Loading...</div>
+        chatExists ? (
+            <div className='chat-container-loading'>Loading...</div>
+        ) : (
+            <div className='chat-container-unauth'>
+                <h4>Error 404 (not found): Unauthorized</h4>
+                <p>You are not allowed to access this chat.</p>
+            </div>
+        )
     )
 }
 

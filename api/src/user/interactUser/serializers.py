@@ -4,34 +4,38 @@ from .models import InteractUser
 from ..baseUser.serializers import BaseUserSerializer
 from ...post.serializers import PostSerializer, MinimalPostSerializer
 from ..baseUser.serializers import UserSerializer
-
-class SimplifiedUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InteractUser
-        fields = ['id', 'username', 'profile_picture'] 
         
         
 class InteractUserSerializer(serializers.ModelSerializer):
+    user = UserSerializer(source='*')
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
+    connections_count = serializers.SerializerMethodField()
     followers_list = serializers.SerializerMethodField()
     following_list = serializers.SerializerMethodField()
+    connections_list = serializers.SerializerMethodField()
 
     class Meta(BaseUserSerializer.Meta):
         model = InteractUser
-        fields = BaseUserSerializer.Meta.fields + ['followers_count', 'following_count', 'followers_list', 'following_list']
+        fields = ['user', 'followers_count', 'following_count', 'followers_list', 'following_list', 'connections_count', 'connections_list']
 
     def get_followers_count(self, obj):
         return obj.followers.count()
 
     def get_following_count(self, obj):
         return obj.following.count()
+    
+    def get_connections_count(self, obj):
+        return obj.connections.count()
 
     def get_followers_list(self, obj):
-        return SimplifiedUserSerializer(obj.followers.all(), many=True).data
+        return UserSerializer(obj.followers.all(), many=True).data
 
     def get_following_list(self, obj):
-        return SimplifiedUserSerializer(obj.following.all(), many=True).data
+        return UserSerializer(obj.following.all(), many=True).data
+    
+    def get_connections_list(self, obj):
+        return UserSerializer(obj.connections.all(), many=True).data
 
 
 class InteractUserBriefSerializer(serializers.ModelSerializer):
@@ -69,7 +73,7 @@ class InteractUserBriefSerializer(serializers.ModelSerializer):
     
     
     
-class PublicProfileSerializer(serializers.ModelSerializer):
+class PartialProfileSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     connections_count = serializers.SerializerMethodField()
@@ -121,7 +125,7 @@ class PublicProfileSerializer(serializers.ModelSerializer):
             return follow_request_sent
         return False
 
-class PrivateProfileSerializer(serializers.ModelSerializer):
+class FullProfileSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     followers_list = serializers.SerializerMethodField()

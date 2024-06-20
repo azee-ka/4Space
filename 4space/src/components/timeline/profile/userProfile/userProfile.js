@@ -6,29 +6,15 @@ import GetConfig from "../../../general/Authentication/utils/config";
 import { useAuthState } from "../../../general/Authentication/utils/AuthProvider";
 import FullProfile from "./fullProfile/fullProfile";
 import PartialProfile from "./partialProfile/partialProfile";
+import MyProfile from "../myProfile/myProfile";
 
 
-const UserProfile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) => {
-    const { token } = useAuthState();
-    const config = GetConfig(token);
-    const { username: paramUsername } = useParams();
+const UserProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverlayPost }) => {
+    // const { token, user } = useAuthState();
+    // const config = GetConfig(token);
+    // const { username: paramUsername } = useParams();
 
-    const [profileData, setProfileData] = useState({});
-
-    const handleFetchUserData = async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}api/user/profile/${paramUsername}`, config);
-            setProfileData(response.data);
-
-            console.log(response.data);
-        } catch (error) {
-            console.error('Failed to fetch profile interact data', error);
-        }
-    };
-
-    useEffect(() => {
-        handleFetchUserData();
-    }, []);
+    // const [profileData, setProfileData] = useState({});
 
 
     return profileData.viewable === "full" ? (
