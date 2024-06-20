@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Chat, Message, ChatParticipant
-from .serializers import ChatSerializer, MessageSerializer, UserChatSerializer, MessageBaseUserSerializer, RestrictedChatSerializer, ChatParticipantSerializer
+from .serializers import ChatSerializer, MessageSerializer, UserChatSerializer, MessageBaseUserSerializer, ChatParticipantSerializer
 from ...user.baseUser.models import BaseUser
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q, Count, Exists, OuterRef
@@ -27,12 +27,11 @@ def create_chat(request):
             return Response({"error": f"User '{username}' not found"}, status=status.HTTP_404_NOT_FOUND)
         participants.append(participant.interactuser)
 
-    # Find or create a chat with the exact set of participants
     participants_set = set(participants)
     existing_chats = Chat.objects.annotate(num_participants=Count('chatparticipant')).filter(num_participants=len(participants_set))
 
     for chat in existing_chats:
-        chat_participants = set(chat.chatparticipant_set.all())
+        chat_participants = set(cp.participant for cp in chat.chatparticipant_set.all())
         if chat_participants == participants_set:
             response_data = {
                 "uuid": chat.uuid,
@@ -40,20 +39,20 @@ def create_chat(request):
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
-    # Create a new chat
     chat = Chat.objects.create()
     chat.save()
 
-    # Add participants to the chat
     for index, participant in enumerate(participants):
-        is_inviter = index == 0  # Assuming the first participant is the inviter
-        ChatParticipant.objects.create(chat=chat, participant=participant, is_inviter=is_inviter)
+        is_inviter = index == 0
+        ChatParticipant.objects.create(chat=chat, participant=participant, is_inviter=is_inviter, accepted=is_inviter, restricted=not is_inviter)
 
     response_data = {
         "uuid": chat.uuid,
         "participants": ChatParticipantSerializer(chat.chatparticipant_set.all(), many=True).data,
     }
     return Response(response_data, status=status.HTTP_201_CREATED)
+
+
 
 
 @api_view(['POST'])
@@ -188,9 +187,10 @@ def list_user_chats(request):
     unique_chats = Chat.objects.filter(uuid__in=chat_uuids)
 
     # Use the new serializer for the user-specific chat listing
-    serializer = UserChatSerializer(unique_chats, many=True, context={'request': request})
+    serializer = ChatSerializer(unique_chats, many=True, context={'request': request})  # Pass request in context
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
