@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuthDispatch } from '../../general/components/Authentication/utils/AuthProvider.js';
 import './timelineApp.css';
-import TimelineLayout from './struct/timelineLayout/timelineLayout.js';
+import TimelineLayout from './timelineLayout/timelineLayout.js';
 
 import Timeline from './pages/timeline/timeline.js';
 import Profile from './pages/profile/profile.js';

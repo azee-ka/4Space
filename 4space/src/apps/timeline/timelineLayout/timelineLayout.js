@@ -2,20 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './timelineLayout.css';
-import GetConfig from '../../../../general/components/Authentication/utils/config';
-import API_BASE_URL from '../../../../config';
-import { useAuthState } from '../../../../general/components/Authentication/utils/AuthProvider';
+import GetConfig from '../../../general/components/Authentication/utils/config';
+import API_BASE_URL from '../../../config';
+import { useAuthState } from '../../../general/components/Authentication/utils/AuthProvider';
 
-import NavigationBar from '../../appComponents/NavigationBar/NavigationBar';
-import Sidebar from '../../appComponents/sidebar/Sidebar';
-import AppMenu from '../../../../general/components/appMenu/appMenu';
-import Menubar from '../../../../general/components/menubar/menubar';
-import UserListOverlay from '../../utils/userListOverlay/userListOverlay';
-import CreatePostOverlay from '../../pages/post/createPost/createPostOverlay';
-import ExpandPostOverlay from '../../pages/post/expandedPost/expandPostOverlay/expandPostOverlay';
-import Notifications from '../../appComponents/notifications/notifications';
-import usePersistentWebSocket from '../../../../general/utils/websocket/websocket';
-import SmallSidebar from '../../appComponents/sidebar/smallSidebar/smallSidebar';
+import NavigationBar from '../appComponents/NavigationBar/NavigationBar';
+import Sidebar from '../appComponents/sidebar/Sidebar';
+import AppMenu from '../../../general/components/appMenu/appMenu';
+import Menubar from '../../../general/components/menubar/menubar';
+import UserListOverlay from '../utils/userListOverlay/userListOverlay';
+import CreatePostOverlay from '../pages/post/createPost/createPostOverlay';
+import ExpandPostOverlay from '../pages/post/expandedPost/expandPostOverlay/expandPostOverlay';
+import Notifications from '../appComponents/notifications/notifications';
+import usePersistentWebSocket from '../../../general/utils/websocket/websocket';
+import SmallSidebar from '../appComponents/sidebar/smallSidebar/smallSidebar';
 
 const TimelineLayout = ({ children, userList, userListTitle, showUserList, setShowUserList, showExpandedPostOverlay, setShowExpandedPostOverlay, expandPostPreviousLocation, postId, prevPostId, nextPostId, setPostId, setPrevPostId, setNextPostId }) => {
     const { token, isAuthenticated, user } = useAuthState();
