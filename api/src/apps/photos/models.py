@@ -33,7 +33,7 @@ class PhotoElement(models.Model):
             print("runnignigigi")
             image = Image.open(self.file)
             exif_data = image._getexif()
-            if exif_data is not None:
+            if exif_data is not None: 
                 for tag, value in exif_data.items():
                     decoded_tag = TAGS.get(tag, tag)
                     if decoded_tag == 'DateTimeOriginal':

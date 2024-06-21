@@ -8,3 +8,4 @@ urlpatterns = [
     path('get-albums/', views.get_albums, name='get_albums'),
     path('get-album-photos/<uuid:album_id>/', views.get_album_photos, name='get_album_photos'),
 ]
+ 

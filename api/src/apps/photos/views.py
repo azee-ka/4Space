@@ -34,7 +34,7 @@ def get_photos(request):
             grouped_photos[date] = {'date': date, 'photos': []}
         grouped_photos[date]['photos'].append(PhotoElementSerializer(photo).data)
 
-    # Sort the grouped photos by date
+    # Sort the grouped photos by date 
     grouped_photos = sorted(grouped_photos.values(), key=lambda x: x['date'], reverse=True)
     
     return Response(grouped_photos, status=status.HTTP_200_OK)

@@ -15,7 +15,7 @@ class MediaSerializer(serializers.Serializer):
 
 class PhotoElementSerializer(serializers.ModelSerializer):
     media = serializers.SerializerMethodField()
-
+ 
     class Meta:
         model = PhotoElement
         fields = ['media', 'uploaded_at', 'original_media_datetime', 'user', 'album', 'title', 'description']
