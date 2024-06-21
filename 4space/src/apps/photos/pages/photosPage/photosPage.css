@@ -1,5 +1,67 @@
 .photos-page {
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 0, 0, 0.0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
+.photos-page-inner {
+    width: 95%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow-y: auto;
+}
+
+.photos-page-header {
+    height: 60px;
+    margin-bottom: 5px;
+}
+
+.photos-page-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.error {
+    color: red;
+    margin-bottom: 20px;
+}
+
+.photo-each-group {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.photo-group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-auto-rows: minmax(100px, auto);
+    gap: 5px;
+}
+
+.photo-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.photo-item img,
+.photo-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s;
+}
+
+.photo-item:hover img,
+.photo-item:hover video {
+    transform: scale(1.1);
+}
+
+
+

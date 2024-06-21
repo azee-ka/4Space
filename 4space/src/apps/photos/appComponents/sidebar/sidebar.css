@@ -58,6 +58,10 @@
     background-color: rgba(118, 118, 118, 0.411);
     cursor: pointer;
 }
+.photos-sidebar-menu-item.active {
+    background-color: rgba(97, 29, 255, 0.577);
+
+}
 
 .photos-sidebar-menu-item button:hover {
     cursor: pointer;
@@ -94,3 +98,6 @@
     color: rgb(205, 205, 205);
     font-size: 18px;
 }
+
+
+

@@ -13,7 +13,7 @@ function PhotosNavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, sid
     const { isAuthenticated } = useAuthDispatch();
 
     const privatePages = [
-        { label: 'Timeline', path: '/timeline' },
+        { label: 'Photos', path: '/photos' },
     ];
 
     const publicPages = [
@@ -32,7 +32,7 @@ function PhotosNavigationBar({ handleProfileMenuToggle, handleAppMenuToggle, sid
             <div className="photos-navbar-bar-inner">
                 {isAuthenticated &&
                     <div className='photos-navbar-side-menubar' onClick={(e) => e.stopPropagation()}>
-                        <SidebarMenuIcon sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+                        <SidebarMenuIcon sidebarOpen={!sidebarOpen} setSidebarOpen={setSidebarOpen} />
                     </div>
                 }
                 <div className='photos-navbar-bar-header'>

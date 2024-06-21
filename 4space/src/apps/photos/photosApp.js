@@ -7,6 +7,7 @@ import PhotosLayout from './photosLayout/photosLayout';
 
 import PhotosPage from './pages/photosPage/photosPage';
 import AlbumsPage from './pages/albumsPage/albumsPage';
+import UploadPhotosPage from './pages/uploadPhotos/uploadPhotosPage';
 
 const PhotosApp = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -21,6 +22,11 @@ const PhotosApp = () => {
         path: '/albums',
         name: 'Photos',
         element: <AlbumsPage />
+      },
+      {
+        path: '/upload',
+        name: 'Photos',
+        element: <UploadPhotosPage />
       },
 
   ];

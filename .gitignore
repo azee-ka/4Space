@@ -35,6 +35,7 @@ node_modules/
 # Django
 api/api/
 api/media
+api/dump.rdb
 
 *.pyc
 *.pyo
@@ -80,4 +81,3 @@ instance/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-api/dump.rdb

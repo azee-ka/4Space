@@ -344,11 +344,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                 <div className='restricted-chat-interact-container'>
                     {isRestricted &&
                         <div className='inform-restriction-description'>
-                            <p>
-                                Accept message request from <Link to={`/profile/${otherUserChatInfo.inviter.username}`}>
-                                    {otherUserChatInfo.inviter.username}
-                                </Link>?
-                            </p>
+                            <p>Accept message request?</p>
                         </div>
                     }
                     <div className='restricted-chat-interact-container-inner'>
