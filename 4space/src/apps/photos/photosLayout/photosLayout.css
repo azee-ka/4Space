@@ -1,0 +1,40 @@
+.photos-layout-page {
+    background-color: rgba(255, 255, 255, 0);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+    text-decoration: none !important;
+    color: white;
+}
+
+.photos-layout-page-content {
+    background-color: rgba(255, 255, 255, 0);
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    margin-bottom: 0%;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.photos-layout-navbar {
+    width: 100%;
+    /* background-color: black; */
+}
+
+.photos-layout-sidebar {
+    width: 250px;
+    height: 100%;
+    background-color: rgba(27, 25, 25, 0);
+}
+
+.photos-layout-component {
+    background-color: rgba(43, 43, 43, 0.16);
+    flex-grow: 1;
+    margin-right: 35px;
+    height: 100%;
+    border-radius: 15px;
+}

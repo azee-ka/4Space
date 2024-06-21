@@ -1,0 +1,96 @@
+.photos-sidebar-container {
+    backdrop-filter: blur(70px) !important;
+    background-color: rgba(16, 16, 16, 0.327);
+    width: 260px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    transition: transform 0.4s ease;
+    overflow-y: auto;
+    background-color: rgba(16, 16, 16, 0);
+}
+
+.photos-sidebar-container-content {
+    height: 97%;
+    /* margin-top: 50px;
+    margin-bottom: 50px; */
+    width: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    /* border-right: 1px solid rgba(128, 128, 128, 0.228); */
+}
+
+.photos-sidebar-container-content-inner {
+    background-color: rgba(0, 87, 128, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 94%;
+    width: 100%;
+}
+
+.photos-sidebar-menu {
+    background-color: rgba(163, 168, 38, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    align-self: center;
+    gap: 10px;
+    height: 95%;
+    width: 100%;
+}
+
+.photos-sidebar-menu-item {
+    height: 40px;
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: right;
+    background-color: rgb(189, 34, 34, 0);
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    background-color: rgba(21, 168, 67, 0);
+}
+
+.photos-sidebar-menu-item:hover {
+    background-color: rgba(118, 118, 118, 0.411);
+    cursor: pointer;
+}
+
+.photos-sidebar-menu-item button:hover {
+    cursor: pointer;
+}
+
+.photos-sidebar-menu-icon {
+    height: 40px !important;
+    width: 30px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.photos-sidebar-menu-icon .svg-inline--fa {
+    color: rgb(168, 168, 168);
+    background-color: rgba(255, 0, 0, 0);
+    font-size: 23px;
+}
+
+
+
+.photos-sidebar-menu-item-inner {
+    height: 40px;
+    width: 85%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    background-color: rgb(189, 34, 34, 0);
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    background-color: rgba(114, 106, 180, 0);
+    color: rgb(205, 205, 205);
+    font-size: 18px;
+}

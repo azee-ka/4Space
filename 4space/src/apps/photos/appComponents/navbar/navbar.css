@@ -1,4 +1,4 @@
-.navigation-bar {
+.photos-navbar-bar {
     background-color: rgba(0, 0, 0, 0.09);
     color: white;
     height: 80px;
@@ -8,11 +8,11 @@
     align-items: center;
     /* position: fixed; */
     z-index: 1;
-    box-shadow: 0 2px 4px rgba(218, 218, 218, 0.1);
+    /* box-shadow: 0 2px 4px rgba(218, 218, 218, 0.1); */
     border-bottom: 0px solid rgba(128, 128, 128, 0.321);
 }
 
-.navigation-bar-inner {
+.photos-navbar-bar-inner {
     height: 100%;
     width: 98%;
     display: flex;
@@ -25,7 +25,7 @@
     position: relative;
 }
 
-.navigation-side-menubar {
+.photos-navbar-side-menubar {
     background-color: rgba(0, 128, 0, 0);
     width: 30px;
     height: 100%;
@@ -33,7 +33,7 @@
     align-items: center;
     justify-content: center;
 }
-.navigation-bar-header {
+.photos-navbar-bar-header {
     background-color: rgba(128, 128, 128, 0);
     flex-grow: 1;
     height: 100%;
@@ -43,17 +43,17 @@
 }
 
 
-.navigation-bar h1 {
+.photos-navbar-bar h1 {
     font-size: 23px;
     font-weight: 100;
 }
 
 
-.navigation-bar ul li:hover {
+.photos-navbar-bar ul li:hover {
     transform: scale(1.15);
 }
 
-.navigation-bar a {
+.photos-navbar-bar a {
     color: white;
     text-decoration: none;
 }
@@ -66,7 +66,7 @@
     transition: width 0.3s;
 }
 
-.navigation-bar-profile-menu {
+.photos-navbar-bar-profile-menu {
     height: 50px;
     aspect-ratio: 1 / 1;
     background-color: rgba(255, 255, 255, 0);
@@ -77,7 +77,7 @@
     border-radius: 50% !important;
 }
 
-.navigation-bar-profile-menu button {
+.photos-navbar-bar-profile-menu button {
     border-radius: 50%;
     height: 100%;
     aspect-ratio: 1 / 1;
@@ -89,13 +89,13 @@
     justify-content: center !important;
 }
 
-.navigation-bar-notifications-menu button,
-.navigation-bar-header button img:hover,
-.navigation-bar-profile-menu button:hover {
+.photos-navbar-bar-notifications-menu button,
+.photos-navbar-bar-header button img:hover,
+.photos-navbar-bar-profile-menu button:hover {
     cursor: pointer !important;
 }
 
-.navigation-bar-header button img {
+.photos-navbar-bar-header button img {
     width: 140%;
     aspect-ratio: 1 / 1;
     border-radius: 50% !important;
@@ -104,23 +104,23 @@
     justify-content: center;
     background-color: rgba(168, 168, 168, 0.313);
 }
-.navigation-bar-header button img:hover {
+.photos-navbar-bar-header button img:hover {
     background-color: rgba(168, 168, 168, 0.632);
     cursor: pointer;
 }
 
-.navigation-bar-menubar-icon {
+.photos-navbar-bar-menubar-icon {
     background-color: rgba(214, 8, 8, 0);
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.navigation-bar-menubar-icon .nine-dot-icon {
+.photos-navbar-bar-menubar-icon .nine-dot-icon {
     font-size: 31px !important;
     background-color: red;
 }
 
-.navigation-bar-menubar-icon button {
+.photos-navbar-bar-menubar-icon button {
     background-color: rgba(214, 8, 8, 0);
     display: flex;
     justify-content: center;
@@ -128,20 +128,20 @@
     border: 0;
     color: white;
 }
-.navigation-bar-menubar-icon button:hover {
+.photos-navbar-bar-menubar-icon button:hover {
     cursor: pointer;
 }
 
 
 
-.navigation-bar-notifications-menu button {
+.photos-navbar-bar-notifications-menu button {
     background-color: transparent;
     border: 0;
     font-size: 21px;
     color: white;
 }
 
-.navigation-bar-notifications-menu {
+.photos-navbar-bar-notifications-menu {
     position: relative;
 }
 
@@ -159,7 +159,7 @@
 
 
 
-.navigation-links {
+.photos-navbar-links {
     display: flex;
     flex-direction: row;
     background-color: rgba(255, 0, 0, 0);
@@ -168,7 +168,7 @@
     gap: 18px;
 }
 
-.navigation-page-links {
+.photos-navbar-page-links {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -177,7 +177,7 @@
     background-color: rgba(0, 128, 0, 0);
     height: 100%;
 }
-.navigaton-utils {
+.photos-navbar-utils {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -186,9 +186,7 @@
     background-color: rgba(0, 0, 255, 0);
 }
 
-
-
-.navigation-bar-app-title {
+.navbar-app-title {
     display: flex;
     flex-direction: row;
     display: flex;
@@ -198,7 +196,7 @@
     background-color: rgba(0, 0, 255, 0);
 }
 
-.navigation-bar-app-title p {
+.navbar-app-title p {
     margin: 0;
     margin-top: 5px;
     font-size: 16px;

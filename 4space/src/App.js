@@ -7,6 +7,7 @@ import Login from './general/components/Authentication/Login/Login.js';
 import Register from './general/components/Authentication/Register/Register.js';
 
 import TimelineApp from './apps/timeline/timelineApp.js';
+import PhotosApp from './apps/photos/photosApp.js';
 
 const App = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -23,7 +24,7 @@ const App = () => {
           {isAuthenticated ? (
             <>
               <Route path="/timeline/*" element={<TimelineApp />} />
-              {/* <Route path="/*" element={<Navigate to="/timeline" />} /> */}
+              <Route path="/photos/*" element={<PhotosApp />} />
             </>
           ) : (
             <>
