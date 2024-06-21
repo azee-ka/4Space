@@ -36,6 +36,7 @@ node_modules/
 api/api/
 api/media
 api/dump.rdb
+*.rdb
 
 *.pyc
 *.pyo
