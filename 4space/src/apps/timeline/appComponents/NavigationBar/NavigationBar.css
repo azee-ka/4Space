@@ -89,6 +89,7 @@
     justify-content: center !important;
 }
 
+.navigation-bar-notifications-menu button,
 .navigation-bar-header button img:hover,
 .navigation-bar-profile-menu button:hover {
     cursor: pointer !important;

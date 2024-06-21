@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import BaseUser
 from .serializers import BaseUserSerializer
 from ..interactUser.models import InteractUser
-from ..interactUser.serializers import InteractUserSerializer
+from ..interactUser.serializers import BaseInteractUserSerializer
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -42,7 +42,7 @@ def login_view(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
-    serializer = InteractUserSerializer(data=request.data)
+    serializer = BaseInteractUserSerializer(data=request.data)
     if serializer.is_valid():
         username = request.data['username']
 
@@ -61,4 +61,3 @@ def register_view(request):
     else:
         print(f"Registration Failed. Errors: {serializer.errors}")
         return Response(serializer.errors, status=400)
-

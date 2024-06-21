@@ -23,24 +23,25 @@ function Register() {
             }
         }
         const data = {
-            first_name : firstName,
-            last_name : lastName,
-            username : username,
+            first_name: firstName,
+            last_name: lastName,
+            username: username,
             email: email,
-            password : password,
-        }
-        
+            password: password,
+        };
+
+
         try {
             await axios.post(`${API_BASE_URL}/api/user/register/`, data, config);
             // Automatically login the user after successful registration
             await login(username, password);
-            navigate('/mechFlow');
+            navigate('/timeline');
             // Redirect to a different page or show a success message
         } catch (error) {
             console.error('Registration failed', error);
         }
     };
-    
+
 
     return (
         <div className='register-container'>

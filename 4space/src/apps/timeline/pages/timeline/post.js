@@ -17,6 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 // import '@fortawesome/fontawesome-free/css/all.css';
 import GetConfig from '../../../../general/components/Authentication/utils/config';
+import ProfilePicture from '../../../../general/utils/profilePicture/getProfilePicture';
 
 const Post = ({ postInfo, handleShowPostOverlay }) => {
 
@@ -185,20 +186,24 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
     setShowLikesOverlay(false);
   }
 
+  const handleRedirect = (username) => {
+    navigate(`/timeline/profile/${username}`)
+  }
+
   return (
     <div className="timeline-post">
       <div className="timeline-per-post">
         <div className='timeline-post-info'>
           <div className='timeline-post-user-info'>
             <div className='timeline-post-user-profile'>
-              <a href={`http://localhost:3000/profile/${post.user.username}`}>
-                <img src={`${API_BASE_URL}${post.user.profile_picture}`} alt={"User Profile Picture"} ></img>
-              </a>
+              <div onClick={() => handleRedirect(post.user.username)}>
+                <ProfilePicture src={post.user.profile_picture} />
+              </div>
             </div>
             <div className='timeline-post-username'>
-              <a href={`http://localhost:3000/profile/${post.user.username}`}>
+              <div onClick={() => handleRedirect(post.user.username)}>
                 {post.user.username}
-              </a>
+              </div>
             </div>
           </div>
           <div className='timeline-post-stats'>

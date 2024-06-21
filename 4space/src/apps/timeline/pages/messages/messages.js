@@ -50,7 +50,7 @@ const Messages = () => {
     const handlePerProfileChat = (per_message_element) => {
         if (window.location.pathname !== '/messages/' + per_message_element.uuid) {
             setChatToViewObj(per_message_element);
-            navigate('/messages/' + per_message_element.uuid, { replace: true });
+            navigate('/timeline/messages/' + per_message_element.uuid, { replace: true });
             fetchUserMessagesList();
         }
     };
@@ -66,10 +66,10 @@ const Messages = () => {
     const handleRequestChatsViewToggle = () => {
         if (showRequestChats) {
             setShowRequestChats(false);
-            navigate('/messages');
+            navigate('/timeline/messages');
         } else {
             setShowRequestChats(true);
-            navigate('/messages/requests/recieved');
+            navigate('/timeline/messages/requests/recieved');
         }
     };
 

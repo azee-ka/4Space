@@ -28,6 +28,7 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) =
         axios.get(`${API_BASE_URL}api/components/search/user-search/?query=${searchQuery}`, config)
             .then((response) => {
                 setSearchResults(response.data);
+                console.log(response.data);
             })
             .catch((error) => {
                 console.error('Error searching for users:', error);
@@ -74,31 +75,36 @@ const NewMessageOverlay = ({ setSendNewMessageOverlay, handlePerProfileChat }) =
                                 />
                             </div>
                             <div className='new-message-user-search-list'>
-                                {searchResults.map((thisUser, index) => (
-                                    <div className="users-search-list-item" key={`${thisUser.username}-${index}`}>
-                                        <div className="users-search-list-item-inner">
-                                            <div className="users-search-list-item-profile-picture">
-                                                <div className="users-search-list-item-profile-picture-inner">
-                                                    <ProfilePicture src={thisUser.profile_picture} />
+                                <div className='new-message-user-search-list-inner'>
+                                    {searchResults.map((thisUser, index) => (
+                                        <div className="users-search-list-item" key={`${thisUser.username}-${index}`} onClick={() => handleSelectUser(thisUser.username)}>
+                                            <div className="users-search-list-item-inner">
+                                                <div className="users-search-list-item-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedUsers.includes(thisUser.username)}
+                                                        onChange={() => handleSelectUser(thisUser.username)}
+                                                    />
+                                                    <span className="custom-checkbox"></span>
+                                                </div>
+                                                <div className="users-search-list-item-profile-picture">
+                                                    <div className="users-search-list-item-profile-picture-inner">
+                                                        <ProfilePicture src={thisUser.profile_picture} />
+                                                    </div>
+                                                </div>
+                                                <div className="users-search-list-item-username">
+                                                    <p>{thisUser.username}</p>
                                                 </div>
                                             </div>
-                                            <div className="users-search-list-item-username">
-                                                <p>{thisUser.username}</p>
-                                            </div>
-                                            <div className="users-search-list-item-checkbox">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedUsers.includes(thisUser.username)}
-                                                    onChange={() => handleSelectUser(thisUser.username)}
-                                                />
-                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                            <button onClick={handleStartChat} disabled={selectedUsers.length === 0}>
-                                Start Chat
-                            </button>
+                            <div className='new-message-start-chat-button'>
+                                <button onClick={handleStartChat} disabled={selectedUsers.length === 0}>
+                                    Start Chat
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

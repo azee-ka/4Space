@@ -57,12 +57,11 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
         if (showSentRequests) {
             setShowSentRequests(false);
             fetchReceivedRequestChatList();
-            navigate('/messages/requests/recieved');
+            navigate('/timeline/messages/requests/recieved');
         } else {
-            console.log("csdsd sent");
             setShowSentRequests(true);
             fetchSentRequestChatList();
-            navigate('/messages/requests/sent');
+            navigate('/timeline/messages/requests/sent');
         }
     }
 

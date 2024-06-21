@@ -1,6 +1,6 @@
 .sidebar-container {
-    backdrop-filter: blur(100px) !important;
-    background-color: rgba(16, 16, 16, 0.427);
+    backdrop-filter: blur(70px) !important;
+    background-color: rgba(16, 16, 16, 0.327);
     position: fixed;
     width: 270px;
     height: 100%;
@@ -61,7 +61,7 @@
 }
 
 .sidebar-menu-item:hover {
-    background-color: rgba(50, 50, 50, 0.65);
+    background-color: rgba(118, 118, 118, 0.411);
     cursor: pointer;
 }
 

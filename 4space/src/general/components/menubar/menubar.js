@@ -10,7 +10,7 @@ const Menubar = ({ userInfo }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const buttonsData = [
-        { path: '/preferences', label: 'Preferences' },
+        { path: '/timeline/preferences', label: 'Preferences' },
         { path: '/servers', label: 'Servers' },
         { path: '/timeline/profile', label: 'Profile' }
     ];
@@ -25,11 +25,13 @@ const Menubar = ({ userInfo }) => {
         }, 500);
     };
 
+    console.log(userInfo)
+
     return (
         <div className='profile-menubar' onClick={(e) => e.stopPropagation()}>
             <div className='profile-menubar-inner'>
                 <div className='profile-menu-user-info'>
-                    <Link to={'/profile'}>
+                    <Link to={'/timeline/profile'}>
                         <div className='profile-menu-user-info-inner'>
                             <div className='profile-menu-profile-picture'>
                                 <ProfilePicture />

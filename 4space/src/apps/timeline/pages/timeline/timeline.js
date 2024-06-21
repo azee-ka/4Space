@@ -28,14 +28,19 @@ const Timeline = ({ handleShowPostOverlay }) => {
 
     return (
         <div className="timeline-container">
-            <p>Timeline</p>
-            {posts.map((post) =>
-                post.media !== null ? (
-                    // Wrap each post with a Link to the ExpandedPost view
-                    <Post postInfo={post} handleShowPostOverlay={handleShowPostOverlay} />
-
-                ) : null
-            )}
+            <div className="timeline-container-inner">
+                <p>Timeline</p>
+                {posts.map((post, index) =>
+                    post.media !== null ? (
+                        // Wrap each post with a Link to the ExpandedPost view
+                        <Post
+                            key={index}
+                            postInfo={post}
+                            handleShowPostOverlay={handleShowPostOverlay}
+                        />
+                    ) : null
+                )}
+            </div>
             <div className="timeline-right-side-container"></div>
 
         </div>

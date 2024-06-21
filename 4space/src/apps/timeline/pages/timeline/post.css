@@ -13,6 +13,8 @@
     gap: 10px !important;
     overflow-y: auto;
     transition: 0.3 ease-out;
+    color: white;
+
 }
 
 .timeline-per-post {
@@ -46,26 +48,34 @@
   margin-top: 1%;
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  align-items: center; 
   gap: 10px;
-  height: 40px;
+  height: 50px;
   background-color: rgba(255, 255, 255, 0);
   padding: 10px;
 }
 .timeline-post-write-comment input {
   border-radius: 10px;
   height: 100%;
-  width: 420px;
+  width: 400px;
   padding: 0px;
   padding-left: 10px;
+  background-color: transparent;
+  border: 1px solid rgba(198, 198, 198, 0.181);
+  font-size: 16px;
+  outline: none;
+  color: white;
 }
 .timeline-post-write-comment button {
   border-radius: 10px;
-  height: 100%;
+  height: 40px;
   flex-grow: 1;
   padding: 0;
   background-color: rgb(0, 98, 81);
   border: 0;
   font-size: 15px;
+  color: white;
 }
 .timeline-post-write-comment button:hover {
   background-color: rgba(0, 98, 82, 0);
@@ -93,11 +103,12 @@
 }
 
 .timeline-post-user-profile img {
-  width: 35px; /* Adjust the width of the profile picture */
-  height: 35px; /* Adjust the height of the profile picture */
+  width: 45px;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 6px;
   text-decoration: none;
+  background-color: rgba(208, 208, 208, 0.281);
 }
 
 .timeline-post-stats{

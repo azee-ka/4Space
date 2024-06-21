@@ -82,8 +82,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                 console.log(response.data);
                 setOtherUserChatInfo(response.data);
                 const messageCount = await fetchPastMessages();
-                console.log();
-                setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.username !== user.username);
+                setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.participant.username !== user.username);
                 setChatExists(true);
             } catch (error) {
                 if (error.response) {
@@ -262,7 +261,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
         try {
             const response = await axios.post(`${API_BASE_URL}api/apps/chats/${uuid}/block_report_chat_invitation/`, null, config);
             console.log(response.data);
-            navigate('/messages');
+            navigate('/timeline/messages');
         } catch (error) {
             console.error('Error fetching chat information:', error);
         }
@@ -283,7 +282,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                         {otherUserChatInfo.participants.map((participant, index) => (
                             <div key={index} className='other-user-chat-username'>
                                 <p>
-                                    <Link to={`/profile/${participant.participant.username}`}>
+                                    <Link to={`/timeline/profile/${participant.participant.username}`}>
                                         {`${participant.participant.first_name}`} {otherUserChatInfo.participants.length === 1 && participant.participant.last_name}
                                     </Link>
                                     {index < 5 && index < otherUserChatInfo.participants.length - 1 && ', '}

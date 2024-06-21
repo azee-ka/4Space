@@ -9,7 +9,7 @@ const SmallSidebar = ({ setShowCreatePostOverlay }) => {
     
     const taskFlow = [
         { icon: <FontAwesomeIcon icon={faEdit} />, label: 'Create Post', onClick: () => setShowCreatePostOverlay(true), type: 'button' },
-        { icon: <ChatBubbleLeftRightIcon className='chat-icon'/>, label: 'Messages', path: '/messages', type: 'link' },
+        { icon: <ChatBubbleLeftRightIcon className='chat-icon'/>, label: 'Messages', path: '/timeline/messages', type: 'link' },
         { icon: <FontAwesomeIcon icon={faCalendar} />, label: 'Calendar', path: '/calendar', type: 'link' },
         { icon: <FontAwesomeIcon icon={faFolder} />, label: 'Categories', path: '/categories', type: 'link' },
         { icon: <FontAwesomeIcon icon={faCog} />, label: 'Settings', path: '/settings', type: 'link' },

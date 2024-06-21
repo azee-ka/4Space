@@ -17,7 +17,6 @@ class PartialUserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'profile_picture']
 
 
-
 class BaseUserSerializer(serializers.ModelSerializer):
     
     class Meta:

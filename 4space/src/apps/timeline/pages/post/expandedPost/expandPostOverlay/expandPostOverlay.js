@@ -58,54 +58,54 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
 
     useEffect(() => {
         if (postIdForOverlay) {
-          setPostId(postIdForOverlay);
-          window.history.replaceState(null, null, `/timeline/post/${postIdForOverlay}`);
-    
-          setPostIdNext(nextPostId);
-          console.log("next p", nextPostId);
-          setPostIdPrevious(previousPostId);
-    
+            setPostId(postIdForOverlay);
+            window.history.replaceState(null, null, `/timeline/post/${postIdForOverlay}`);
+
+            setPostIdNext(nextPostId);
+            console.log("next p", nextPostId);
+            setPostIdPrevious(previousPostId);
+
         } else {
-          setPostId(postIdParam);
+            setPostId(postIdParam);
         }
-    
-      }, [postId]);
-    
-    
-      useEffect(() => {
+
+    }, [postId]);
+
+
+    useEffect(() => {
         setLoading(false); // Set loading to false once user data is fetched
-      }, [setLoading]);
-        
-    
-      useEffect(() => {
+    }, [setLoading]);
+
+
+    useEffect(() => {
         if (!loading) {
 
-          fetch(`${API_BASE_URL}/api/post/${postId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            Authorization: `Token ${token}`
-            },
-          })
-            .then(response => response.json())
-            .then(data => {
-              setPost(data);
-    
-              // Check if user data is available
-            //   console.log(data);
-              if (user && user.username) {
-                setIsLiked(data.likes.find(like => like.username === user.username && !isDisliked));
-                setIsDisliked((data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
-              } else {
-                console.warn('User data not available yet.');
-              }
+            fetch(`${API_BASE_URL}/api/post/${postId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Token ${token}`
+                },
             })
-            .catch(error => {
-              console.error('Error fetching expanded post:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    setPost(data);
+
+                    // Check if user data is available
+                    //   console.log(data);
+                    if (user && user.username) {
+                        setIsLiked(data.likes.find(like => like.username === user.username && !isDisliked));
+                        setIsDisliked((data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
+                    } else {
+                        console.warn('User data not available yet.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching expanded post:', error);
+                });
         }
-      }, [postId]);
-    
+    }, [postId]);
+
 
     const handlePreviousMedia = () => {
         if (currentMediaIndex > 0) {
@@ -133,7 +133,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
             setPost((prevPost) => ({
                 ...prevPost,
                 comments: [...prevPost.comments, response.data], // assuming data is the new comment object
-              }));
+            }));
         } catch (error) {
             console.error("Error fetching post data", error);
         }
@@ -145,44 +145,44 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
         setIsDisliked(!isDisliked); // Toggle the state for dislike
         // If the user disliked the post, ensure that the like state is set to false
         setIsLiked(isLiked && isDisliked);
-    
+
         const method = (isDisliked === true) ? 'DELETE' : 'POST';
         fetch(`${API_BASE_URL}api/post/${postIdForOverlay}/dislike/`, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Token ${token}`
-          },
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Token ${token}`
+            },
         })
-          .then(response => response.json())
-          .then(data => {
-            // console.log(data);
-            setPost(data);
-          })
-          .catch(error => console.error('Error toggling like:', error));
-      }
-    
-      const handleLikeAndUnlike = () => {
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+                setPost(data);
+            })
+            .catch(error => console.error('Error toggling like:', error));
+    }
+
+    const handleLikeAndUnlike = () => {
         // Update the post state with the new like information
         setIsLiked(!isLiked); // Toggle the state for dislike
         // If the user disliked the post, ensure that the like state is set to false
         setIsDisliked(isDisliked && isLiked);
-    
+
         const method = (isLiked === true) ? 'DELETE' : 'POST';
         fetch(`${API_BASE_URL}api/post/${postIdForOverlay}/like/`, {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Token ${token}`
-          },
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Token ${token}`
+            },
         })
-          .then(response => response.json())
-          .then(data => {
-            // console.log(data);
-            setPost(data);
-          })
-          .catch(error => console.error('Error toggling like:', error));
-      };
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+                setPost(data);
+            })
+            .catch(error => console.error('Error toggling like:', error));
+    };
 
 
 
@@ -326,20 +326,20 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
                 </div>
                 <div className="expand-post-overlay-interact-container">
                     <div className="expand-post-overlay-interact-container-inner" onClick={(e) => e.stopPropagation()}>
-                    <div onClick={handleLikeAndUnlike} className='expanded-post-overlay-unlike-img'>
-                      {isLiked ?
-                        <img src={likedImg} alt="Like"></img>
-                        :
-                        <img src={unlikedImg} alt="Unlike"></img>
-                      }
-                    </div>
-                    <div onClick={handleDislikeandUndislike} className='expanded-post-overlay-like-img'>
-                      {isDisliked ?
-                        <img src={dislikedImg} alt="Dislike"></img>
-                        :
-                        <img src={undislikedImg} alt="Undislike"></img>
-                      }
-                    </div>
+                        <div onClick={handleLikeAndUnlike} className='expanded-post-overlay-unlike-img'>
+                            {isLiked ?
+                                <img src={likedImg} alt="Like"></img>
+                                :
+                                <img src={unlikedImg} alt="Unlike"></img>
+                            }
+                        </div>
+                        <div onClick={handleDislikeandUndislike} className='expanded-post-overlay-like-img'>
+                            {isDisliked ?
+                                <img src={dislikedImg} alt="Dislike"></img>
+                                :
+                                <img src={undislikedImg} alt="Undislike"></img>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>

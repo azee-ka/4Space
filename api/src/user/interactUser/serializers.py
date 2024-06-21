@@ -4,7 +4,12 @@ from .models import InteractUser
 from ..baseUser.serializers import BaseUserSerializer
 from ...post.serializers import PostSerializer, MinimalPostSerializer
 from ..baseUser.serializers import UserSerializer, PartialUserSerializer
-        
+    
+class BaseInteractUserSerializer(serializers.ModelSerializer):
+    class Meta(BaseUserSerializer.Meta):
+        model = InteractUser
+        fields = BaseUserSerializer.Meta.fields
+  
         
 class InteractUserSerializer(serializers.ModelSerializer):
     user = UserSerializer(source='*')

@@ -1,17 +1,20 @@
-/* explore.css */
-
 .timeline-container {
-    text-align: left; /* Center-align the title */
-    color: white !important;
-    font-size: 24px !important;
-    z-index: 10 !important;
-    padding: 50px;
-    padding-top: 0%;
-    margin-bottom: 5%;
-    width: 127vh;
-    height: 85%;
-    overflow: auto !important;
-    background-color: rgba(255, 255, 255, 0);
+  width: 100%;
+  overflow: auto;
+  background-color: rgba(255, 255, 255, 0);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  color: white !important;
+  font-size: 24px !important;
+}
 
-  }
 
+.timeline-container-inner {
+  width: 90%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  text-align: left;
+}
