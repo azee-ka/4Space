@@ -5,6 +5,10 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from datetime import datetime
 
+import exifread
+from moviepy.editor import VideoFileClip
+from datetime import datetime
+
 class Album(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(InteractUser, on_delete=models.CASCADE)
@@ -24,26 +28,54 @@ class PhotoElement(models.Model):
     description = models.TextField(blank=True)
 
     def save(self, *args, **kwargs):
-        if not self.original_media_datetime:
-            self.original_media_datetime = self.extract_datetime_from_metadata()
+        extracted_datetime = self.extract_datetime_from_metadata()
+        print(f'extracted_datetime {extracted_datetime}')
+        if extracted_datetime:
+            self.original_media_datetime = extracted_datetime
         super(PhotoElement, self).save(*args, **kwargs)
 
+
+    # def extract_datetime_from_metadata(self):
+    #     try:
+    #         print("Extracting metadata...")
+    #         image = Image.open(self.file)
+    #         exif_data = image._getexif()
+    #         if exif_data is not None:
+    #             for tag, value in exif_data.items():
+    #                 decoded_tag = TAGS.get(tag, tag)
+    #                 if decoded_tag == 'DateTimeOriginal':
+    #                     print(f"Found DateTimeOriginal tag with value: {value}")
+    #                     try:
+    #                         return datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
+    #                     except ValueError:
+    #                         print(f"Error parsing datetime value: {value}")
+    #                         # Log the error but continue processing
+    #                         pass
+    #         else:
+    #             print("No EXIF data found.")
+    #     except Exception as e:
+    #         print(f"Error extracting metadata: {e}")
+    #         # Log the error but continue processing
+    #         pass
+
+    #     print("Using uploaded_at as fallback.")
+    #     return self.uploaded_at
+    
     def extract_datetime_from_metadata(self):
         try:
-            print("runnignigigi")
-            image = Image.open(self.file)
-            exif_data = image._getexif()
-            if exif_data is not None: 
-                for tag, value in exif_data.items():
-                    decoded_tag = TAGS.get(tag, tag)
-                    if decoded_tag == 'DateTimeOriginal':
-                        # Convert EXIF datetime string to Python datetime
-                        print(f"Found DateTimeOriginal tag with value: {value}")
-                        return datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
+            if self.media_type == 'image':
+                with open(self.file.path, 'rb') as f:
+                    tags = exifread.process_file(f, stop_tag='EXIF DateTimeOriginal')
+                    if 'EXIF DateTimeOriginal' in tags:
+                        return datetime.strptime(str(tags['EXIF DateTimeOriginal']), '%Y:%m:%d %H:%M:%S')
+            elif self.media_type == 'video':
+                clip = VideoFileClip(self.file.path)
+                return clip.reader.metadata.get('creation_time', None)
+            
         except Exception as e:
             print(f"Error extracting metadata: {e}")
-            # Raise the exception to see the full traceback
-            raise e
-        # Fall back to uploaded_at if datetime not found or error occurred
+
+        print("Using uploaded_at as fallback.")
         return self.uploaded_at
+
 

@@ -25,11 +25,11 @@ def upload_photo(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_photos(request):
-    photos = PhotoElement.objects.filter(user=request.user).order_by('uploaded_at')
+    photos = PhotoElement.objects.filter(user=request.user).order_by('original_media_datetime')
     grouped_photos = {}
 
     for photo in photos:
-        date = photo.uploaded_at.date()
+        date = photo.original_media_datetime.date()
         if date not in grouped_photos:
             grouped_photos[date] = {'date': date, 'photos': []}
         grouped_photos[date]['photos'].append(PhotoElementSerializer(photo).data)
@@ -38,6 +38,7 @@ def get_photos(request):
     grouped_photos = sorted(grouped_photos.values(), key=lambda x: x['date'], reverse=True)
     
     return Response(grouped_photos, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
