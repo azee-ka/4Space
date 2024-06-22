@@ -18,7 +18,7 @@ class PhotoElementSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = PhotoElement
-        fields = ['media', 'uploaded_at', 'original_media_datetime', 'user', 'album', 'title', 'description']
+        fields = ['media', 'uploaded_at', 'original_media_datetime', 'last_modified_datetime', 'user', 'album', 'title', 'description']
 
     def get_media(self, obj):
         return MediaSerializer({'id': obj.id, 'file': obj.file, 'media_type': obj.media_type}).data

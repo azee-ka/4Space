@@ -28,15 +28,15 @@ const PhotosPage = () => {
     }, []);
 
     const handleRenderMedia = (media) => {
-        if(media){ 
-        if (media.media_type === "image") {
-            return <img src={`${API_BASE_URL}${media.file}`} alt="Photo" />;
-        } else if (media.media_type === "video") {
-            return <video src={`${API_BASE_URL}${media.file}`} controls />;
-        } else {
-            return <p>Unsupported media type</p>;
+        if (media) {
+            if (media.media_type === "image") {
+                return <img src={`${API_BASE_URL}${media.file}`} alt="Photo" />;
+            } else if (media.media_type === "video") {
+                return <video src={`${API_BASE_URL}${media.file}`} controls />;
+            } else {
+                return <p>Unsupported media type</p>;
+            }
         }
-    }
     };
 
     return (

@@ -24,6 +24,7 @@ const UploadPhotosPage = () => {
         }
 
         setSelectedFiles(validFiles);
+        handleUpload();
     };
 
     const handleUpload = async () => {
@@ -60,6 +61,9 @@ const UploadPhotosPage = () => {
     return (
         <div className="upload-photos-page">
             <h1>Upload Photos</h1>
+            <div className='upload-photos-page-inner'>
+
+            </div>
             {error && <div className="error">{error}</div>}
             {successMessage && <div className="success">{successMessage}</div>}
             <input
@@ -68,7 +72,7 @@ const UploadPhotosPage = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 disabled={uploading}
-            />
+            ></input>
             <div className="preview">
                 {selectedFiles.map((file, index) => (
                     <img

@@ -1,24 +1,43 @@
 // Function to convert ISO 8601 date-time to readable format
+// Function to convert ISO 8601 date-time to readable format
 export function formatDate(dateTime, showTime = true, showDate = true, showDayOfWeek = false) {
     const dateObj = new Date(dateTime);
-    const utcDateObj = new Date(dateObj.getUTCFullYear(), dateObj.getUTCMonth(), dateObj.getUTCDate(),
-        dateObj.getUTCHours(), dateObj.getUTCMinutes(), dateObj.getUTCSeconds());
     let formattedDate = "";
     if (showDate) {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        formattedDate = utcDateObj.toLocaleDateString('en-US', options);
+        formattedDate = dateObj.toLocaleDateString('en-US', options);
         if (showDayOfWeek) {
-            const dayOfWeek = utcDateObj.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
             formattedDate = `${dayOfWeek}, ${formattedDate}`;
         }
     }
     if (showTime) {
         const timeOptions = { hour: 'numeric', minute: 'numeric' };
-        const formattedTime = utcDateObj.toLocaleTimeString('en-US', timeOptions);
+        const formattedTime = dateObj.toLocaleTimeString('en-US', timeOptions);
         formattedDate += (formattedDate ? ' ' : '') + formattedTime;
     }
     return formattedDate;
 }
+// export function formatDate(dateTime, showTime = true, showDate = true, showDayOfWeek = false) {
+//     const dateObj = new Date(dateTime);
+//     const utcDateObj = new Date(dateObj.getUTCFullYear(), dateObj.getUTCMonth(), dateObj.getUTCDate(),
+//         dateObj.getUTCHours(), dateObj.getUTCMinutes(), dateObj.getUTCSeconds());
+//     let formattedDate = "";
+//     if (showDate) {
+//         const options = { year: 'numeric', month: 'short', day: 'numeric' };
+//         formattedDate = utcDateObj.toLocaleDateString('en-US', options);
+//         if (showDayOfWeek) {
+//             const dayOfWeek = utcDateObj.toLocaleDateString('en-US', { weekday: 'short' });
+//             formattedDate = `${dayOfWeek}, ${formattedDate}`;
+//         }
+//     }
+//     if (showTime) {
+//         const timeOptions = { hour: 'numeric', minute: 'numeric' };
+//         const formattedTime = utcDateObj.toLocaleTimeString('en-US', timeOptions);
+//         formattedDate += (formattedDate ? ' ' : '') + formattedTime;
+//     }
+//     return formattedDate;
+// }
 
 
 
