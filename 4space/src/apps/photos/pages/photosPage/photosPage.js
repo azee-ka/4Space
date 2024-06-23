@@ -11,6 +11,7 @@ const PhotosPage = () => {
     const config = GetConfig(token);
     const [photos, setPhotos] = useState([]);
     const [error, setError] = useState('');
+    const photoGroupRef = useRef(null);
 
     const fetchPhotos = async () => {
         try {
@@ -26,6 +27,126 @@ const PhotosPage = () => {
     useEffect(() => {
         fetchPhotos();
     }, []);
+
+    const findMaxHeight = (items) => {
+        let maxHeight = 0;
+        items.forEach(item => {
+            // Create off-screen element
+            const offScreenElement = item.cloneNode(true);
+            offScreenElement.style.position = 'absolute';
+            offScreenElement.style.visibility = 'hidden';
+            offScreenElement.style.height = 'auto';
+            offScreenElement.style.width = 'auto';
+
+            // Append off-screen element to document body
+            document.body.appendChild(offScreenElement);
+
+            // Measure natural height
+            const naturalHeight = offScreenElement.offsetHeight;
+
+            // Remove off-screen element from the document
+            document.body.removeChild(offScreenElement);
+
+            // Update max height
+            if (naturalHeight > maxHeight) {
+                maxHeight = naturalHeight;
+            }
+        });
+        return maxHeight;
+    }
+
+    const findTotalRowWidth = (items) => {
+        let totalWidth = 0;
+        items.forEach(item => {
+            // Create off-screen element
+            const offScreenElement = item.cloneNode(true);
+            offScreenElement.style.position = 'absolute';
+            offScreenElement.style.visibility = 'hidden';
+            offScreenElement.style.height = 'auto';
+            offScreenElement.style.width = 'auto';
+
+            // Append off-screen element to document body
+            document.body.appendChild(offScreenElement);
+
+            // Measure natural height
+            const naturalWidth = offScreenElement.offsetWidth;
+
+            // Remove off-screen element from the document
+            document.body.removeChild(offScreenElement);
+
+            // Update max height
+            totalWidth += naturalWidth
+        });
+        return totalWidth;
+    }
+    useEffect(() => {
+        const handleStackItems = () => {
+            const photoGroups = photoGroupRef.current.querySelectorAll('.photo-group-grid');
+
+            photoGroups.forEach(group => {
+                const groupWidth = group.getBoundingClientRect().width;
+                const items = Array.from(group.children);
+                const maxHeight = findMaxHeight(items);
+                console.log('maxHeight', maxHeight);
+                let currentRowItems = [];
+                let currentRowWidth = 0;
+                const rows = [];
+
+                items.forEach((item, index) => {
+                    const media = item.querySelector('img, video');
+                    if (media) {
+                        const aspectRatio = media.naturalWidth / media.naturalHeight;
+                        const newWidth = maxHeight * aspectRatio;
+                        console.log('newWidth', newWidth)
+                        if (currentRowWidth + newWidth > groupWidth) {
+                            rows.push(currentRowItems);
+                            currentRowItems = [];
+                            currentRowWidth = 0;
+                        }
+
+                        currentRowItems.push(item);
+                        currentRowWidth += newWidth;
+                    }
+
+                    if (index === items.length - 1) {
+                        rows.push(currentRowItems);
+                    }
+                });
+                console.log('currentRowItems', currentRowItems);
+                console.log('currentRowWidth', currentRowWidth);
+
+
+                // Render the rows with the correct height and width
+                rows.forEach(row => {
+                    const rowTotalWidth = row.reduce((acc, item) => {
+                        const media = item.querySelector('img, video');
+                        const aspectRatio = media.naturalWidth / media.naturalHeight;
+                        return acc + (maxHeight * aspectRatio);
+                    }, 0);
+                    console.log('rowTotalWidth', rowTotalWidth)
+                    // const scale = groupWidth / rowTotalWidth;
+                    const adjustedHeight = maxHeight //* scale;
+
+                    row.forEach(item => {
+                        const media = item.querySelector('img, video');
+                        if (media) {
+                            const aspectRatio = media.naturalWidth / media.naturalHeight;
+                            const newWidth = adjustedHeight * aspectRatio;
+                            console.log("adjustedHeight", adjustedHeight);
+                            console.log("newWidth", newWidth);
+
+                            media.style.width = `${newWidth}px`;
+                            media.style.height = `${adjustedHeight}px`;
+                        }
+                    });
+                });
+            });
+        };
+
+        handleStackItems();
+    }, [photos]);
+
+
 
     // useEffect(() => {
     //     const handleResize = () => {
@@ -87,7 +208,7 @@ const PhotosPage = () => {
                     <h2>Photos</h2>
                 </div>
                 <div className="photos-page-content">
-                    <div className="photo-grid">
+                    <div className="photo-grid" ref={photoGroupRef}>
                         {photos.map((photosGroup, index) => (
                             <div key={index} className="photo-each-group">
                                 <div className="photo-group-date">
