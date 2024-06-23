@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from 'axios';
 import './photosPage.css';
 import API_BASE_URL from "../../../../general/components/Authentication/utils/apiConfig";
@@ -7,7 +7,7 @@ import { useAuthState } from "../../../../general/components/Authentication/util
 import { formatDate } from "../../../../general/utils/formatDate";
 
 const PhotosPage = () => {
-    const { token } = useAuthState()
+    const { token } = useAuthState();
     const config = GetConfig(token);
     const [photos, setPhotos] = useState([]);
     const [error, setError] = useState('');
@@ -26,6 +26,47 @@ const PhotosPage = () => {
     useEffect(() => {
         fetchPhotos();
     }, []);
+
+    // useEffect(() => {
+    //     const handleResize = () => {
+    //         const photoGroups = document.querySelectorAll('.photo-group-grid');
+    //         photoGroups.forEach(group => {
+    //             const rows = [];
+    //             let currentRow = [];
+    //             let currentRowHeight = 0;
+
+    //             const items = Array.from(group.children);
+    //             items.forEach(item => {
+    //                 item.style.height = 'auto'; // Reset height
+    //                 const itemHeight = item.clientHeight;
+    //                 if (currentRow.length === 0 || currentRowHeight === itemHeight) {
+    //                     currentRow.push(item);
+    //                     currentRowHeight = itemHeight;
+    //                 } else {
+    //                     rows.push(currentRow);
+    //                     currentRow = [item];
+    //                     currentRowHeight = itemHeight;
+    //                 }
+    //             });
+
+    //             if (currentRow.length > 0) {
+    //                 rows.push(currentRow);
+    //             }
+
+    //             rows.forEach(row => {
+    //                 const maxHeight = Math.max(...row.map(item => item.clientHeight));
+    //                 row.forEach(item => {
+    //                     item.style.height = `${maxHeight}px`;
+    //                     item.style.flex = '0 1 auto';
+    //                 });
+    //             });
+    //         });
+    //     };
+
+    //     handleResize();
+    //     window.addEventListener('resize', handleResize);
+    //     return () => window.removeEventListener('resize', handleResize);
+    // }, [photos]);
 
     const handleRenderMedia = (media) => {
         if (media) {
@@ -63,8 +104,8 @@ const PhotosPage = () => {
                         ))}
                     </div>
                 </div>
+                {error && <div className="error">{error}</div>}
             </div>
-            {error && <div className="error">{error}</div>}
         </div>
     );
 };

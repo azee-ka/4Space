@@ -1,0 +1,21 @@
+.ring-progress {
+    transform: rotate(-90deg);
+}
+
+.ring-progress circle {
+    fill: none;
+}
+
+.ring-progress-background {
+    stroke: #f3f3f3;
+    stroke-width: 8;
+}
+
+@keyframes fillAnimation {
+    from {
+        stroke-dashoffset: 0;
+    }
+    to {
+        stroke-dashoffset: var(--offset, 100%);
+    }
+}
