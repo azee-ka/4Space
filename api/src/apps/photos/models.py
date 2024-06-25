@@ -15,6 +15,7 @@ class Album(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)  # Add thumbnail field
 
 class PhotoElement(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -29,11 +30,18 @@ class PhotoElement(models.Model):
     description = models.TextField(blank=True)
 
     def save(self, *args, **kwargs):
-        # Check for a custom attribute to avoid recursion
-        if not hasattr(self, '_metadata_extracted'):
-            # Save the file first to ensure it is available on the filesystem
-            super(PhotoElement, self).save(*args, **kwargs)
+        is_new_photo = self._state.adding  # Check if the photo is being added (not updated)
+
+        # If the photo is being added and is the first photo in the album, set it as the thumbnail
+        if is_new_photo and self.album and not self.album.thumbnail:
+            self.album.thumbnail = self.file
+            print(f'self.file {self.file}')
+            self.album.save()
             
+        # Save the file first to ensure it is available on the filesystem
+        super(PhotoElement, self).save(*args, **kwargs)
+        # Check for a custom attribute to avoid recursion
+        if not hasattr(self, '_metadata_extracted'):   
             # Extract metadata
             extracted_creation_datetime, extracted_modified_datetime = self.extract_datetime_from_metadata()
             print(f'extracted_creation_datetime {extracted_creation_datetime}, extracted_modified_datetime {extracted_modified_datetime}')
@@ -60,8 +68,7 @@ class PhotoElement(models.Model):
 
             # Remove the flag after saving to reset the state
             del self._metadata_extracted
-        else:
-            super(PhotoElement, self).save(*args, **kwargs)
+
 
     def extract_datetime_from_metadata(self):
         creation_datetime = None

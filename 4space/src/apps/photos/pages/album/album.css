@@ -1,0 +1,141 @@
+.album-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.album-page-inner {
+    width: 98%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(0, 128, 0, 0);
+}
+
+.album-page-header {
+    z-index: 2;
+    background-color: rgb(0, 0, 0);
+    height: 70px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    box-shadow: 0px 0px 4px 4px rgba(128, 128, 128, 0.502);
+}
+
+.album-page-header-inner {
+    width: 98%;
+    display: flex;
+    justify-content: space-between;
+    background-color: rgba(128, 128, 128, 0);   
+}
+
+.album-add-photos-button,
+.album-go-back-button {
+    aspect-ratio: 1 / 1;
+    height: 100%;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.album-add-photos-button button,
+.album-go-back-button button {
+    aspect-ratio: 1 / 1;
+    height: 45px;
+    border-radius: 50%;
+    border: 0;
+    font-size: 20px;
+    color: white;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+}
+
+.album-add-photos-button {
+    margin-right: 10px;
+}
+.album-add-photos-button button {
+    border-radius: 8px;
+}
+
+.album-add-photos-button button:hover,
+.album-go-back-button button:hover {
+    background-color: rgba(118, 118, 119, 0.527);
+    cursor: pointer;
+}
+
+.album-page-content {
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+}
+
+.album-page-content-inner {
+    width: 100%;
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.album-page-album-title {
+    width: 100%;
+    height: 210px;
+    background-color: rgba(255, 255, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.album-page-album-title input {
+    width: 98%;
+    height: 65px;
+    background-color: rgba(255, 0, 0, 0);
+    font-size: 45px;
+    color: rgb(214, 214, 214);
+    border: 0;
+    border-bottom: 1px solid transparent;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    transition: border-bottom 0.3s ease;
+}
+
+.album-page-album-title input:focus {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.612);
+}
+
+
+
+.album-drag-drop-photos-message {
+    width: 100%;
+    flex-grow: 1;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+    color: rgb(195, 195, 195);
+}
+
+.album-drag-drop-photos-message p {
+    font-size: 18px;
+    color: rgb(195, 195, 195);
+}

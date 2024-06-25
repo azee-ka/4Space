@@ -8,6 +8,7 @@ import PhotosLayout from './photosLayout/photosLayout';
 import PhotosPage from './pages/photosPage/photosPage';
 import AlbumsPage from './pages/albumsPage/albumsPage';
 import UploadPhotosPage from './pages/uploadPhotos/uploadPhotosPage';
+import Album from './pages/album/album';
 
 const PhotosApp = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -16,45 +17,60 @@ const PhotosApp = () => {
     {
       path: '',
       name: 'Photos',
-      element: <PhotosPage />
+      element: <PhotosPage />,
+      showSidebar: true,
+      showNavbar: true,
     },
     {
-        path: '/albums',
-        name: 'Photos',
-        element: <AlbumsPage />
-      },
-      {
-        path: '/upload',
-        name: 'Photos',
-        element: <UploadPhotosPage />
-      },
+      path: '/albums',
+      name: 'Photos',
+      element: <AlbumsPage />,
+      showSidebar: true,
+      showNavbar: true,
+    },
+    {
+      path: '/upload',
+      name: 'Photos',
+      element: <UploadPhotosPage />,
+      showSidebar: true,
+      showNavbar: true,
+    },
+    {
+      path: '/album/:album_uuid',
+      name: 'Photos',
+      element: <Album />,
+      showSidebar: false,
+      showNavbar: false,
+    },
 
   ];
 
 
   return (
     <div className='photos-app'>
-        <Routes>
-          {isAuthenticated ? (
-            privateRoutes.map((route, index) => (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <PhotosLayout
-                    className={`${route.path.substring(1)}`}
-                    pageName={route.name}
-                  >
-                    {route.element}
-                  </PhotosLayout>
-                }
-              />
-            ))
-          ) : (
-            <Route path="/*" element={<Navigate to="/login" />} />
-          )}
+      <Routes>
+        {isAuthenticated ? (
+          privateRoutes.map((route, index) => (
+            <Route
+              key={index}
+              path={route.path}
+              element={
+                <PhotosLayout
+                  className={`${route.path.substring(1)}`}
+                  pageName={route.name}
+                  showSidebar={route.showSidebar}
+                  showNavbar={route.showNavbar}
+                >
+                  {route.element}
+                </PhotosLayout>
+              }
+            />
+          ))
+        ) : (
           <Route path="/*" element={<Navigate to="/login" />} />
-        </Routes>
+        )}
+        <Route path="/*" element={<Navigate to="/login" />} />
+      </Routes>
     </div>
   );
 };

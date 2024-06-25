@@ -1,0 +1,162 @@
+.albums-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* overflow-y: auto; */
+    z-index: 0;
+}
+
+.albums-page-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: rgba(128, 128, 128, 0);
+    z-index: 1;
+    margin-top: 10px;
+}
+
+.albums-page-header {
+    height: 60px;
+    margin-bottom: 5px;
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.53);
+}
+.albums-page-header-inner {
+    background-color: rgba(255, 0, 0, 0);
+    width: 96%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.albums-create-btns {
+    background-color: rgba(0, 128, 0, 0);
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+.albums-create-btns button {
+    background-color: rgb(80, 98, 80, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    border-radius: 10px;
+    font-size: 15px;
+    color: rgb(181, 181, 181);
+    padding: 8px 10px 8px 10px;
+    transition: background-color 0.3s ease;
+}
+.albums-create-btns button:hover {
+    background-color: rgba(123, 123, 123, 0.287);
+    cursor: pointer;
+}
+
+
+.albums-page-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+
+.albums-page-content-inner {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(28, 149, 28, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.albums-grid {
+    margin-top: 10px;;
+    background-color: rgba(255, 0, 0, 0);
+    width: 98%;
+    height: 100%;
+    display: grid;
+    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.album-item {
+    background-color: rgba(0, 0, 255, 0);
+    width: 265px;
+    height: 295px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+    transition: background-color 0.3s ease;
+}
+
+.album-item-inner {
+    width: 98%;
+    height: 96%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.album-cover-photo {
+    width: 95%;
+    aspect-ratio: 1 / 1;
+    background-color: rgb(80, 80, 80);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.album-more-menu {
+    position: absolute;
+    top: 8px;
+    right: 13px;
+    font-size: 20px;
+    color: rgb(185, 185, 185);
+}
+.album-more-menu:hover {
+    color: rgb(232, 232, 232);
+    cursor: pointer;
+}
+
+.album-title {
+    background-color: rgba(0, 255, 255, 0);
+    width: 95%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 13px;
+    color: rgb(185, 185, 185);
+    font-size: 16px;
+}
+
+.album-title p {
+    margin: 0;
+}

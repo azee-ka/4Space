@@ -4,7 +4,7 @@ from .models import Album, PhotoElement
 class AlbumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Album
-        fields = ['id', 'name', 'description', 'created_at']
+        fields = ['id', 'name', 'description', 'created_at', 'thumbnail']
 
 
 class MediaSerializer(serializers.Serializer):

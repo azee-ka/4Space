@@ -88,10 +88,10 @@
     aspect-ratio: inherit;
     object-fit: cover;
     transition: transform 0.2s;
-    max-height: 270px;
+    max-height: 250px;
 }
 
 .photo-item:hover img,
 .photo-item:hover video {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }

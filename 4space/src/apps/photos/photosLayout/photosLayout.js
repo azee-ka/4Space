@@ -11,7 +11,7 @@ import PhotosSidebar from '../appComponents/sidebar/sidebar';
 import Menubar from '../../../general/components/menubar/menubar';
 import AppMenu from '../../../general/components/appMenu/appMenu';
 
-const PhotosLayout = ({ children }) => {
+const PhotosLayout = ({ children, showSidebar, showNavbar }) => {
     const { token, isAuthenticated, user } = useAuthState();
     const config = GetConfig(token);
     const location = useLocation();
@@ -66,7 +66,7 @@ const PhotosLayout = ({ children }) => {
         setAppMenuOpen(false);
     };
 
-    return (
+    return showSidebar && showNavbar ? (
         <div className='photos-layout-page' onClick={handleCloseOverlays} >
             <div className='photos-layout-navbar'>
                 <PhotosNavigationBar
@@ -89,7 +89,13 @@ const PhotosLayout = ({ children }) => {
             {menuOpen && <Menubar userInfo={userInfo} />}
             {appMenuOpen && <AppMenu />}
         </div>
-    );
+    ) : (
+        <div className='photos-layout-page-no-navbar-sidebar'>
+            <div className='photos-layout-component-no-navbar-sidebar'>
+                {children}
+            </div>
+        </div>
+    )
 };
 
 export default PhotosLayout;
