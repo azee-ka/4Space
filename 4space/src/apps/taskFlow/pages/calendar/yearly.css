@@ -1,0 +1,48 @@
+.yearly-calendar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px; /* Gap between months */
+  padding-top: 15px;
+}
+
+.month {
+  padding: 10px;
+  border: 1px solid rgba(128, 128, 128, 0.534);
+  border-radius: 5px;
+}
+
+.month-name {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  background-color: rgba(211, 211, 211, 0.1);
+}
+
+.weekday-cell {
+  text-align: center;
+  padding: 5px;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.day-cell {
+  text-align: center;
+  padding: 5px;
+}
+
+.today {
+  background-color: #d20400f1;
+}
+
+.empty-cell {
+  width: calc(100% / 7);
+}

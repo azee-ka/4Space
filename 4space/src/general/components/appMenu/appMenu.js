@@ -1,14 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './appMenu.css';
-import { FaCog, FaServer, FaUser } from 'react-icons/fa'; // Example icons
+import { FaCog, FaServer, FaUser, FaTasks, FaStream, FaImages } from 'react-icons/fa'; // Example icons
+import { faStream } from '@fortawesome/free-solid-svg-icons';
 
 const appsData = [
-    { path: '/tasks', label: 'Tasks', icon: <FaCog /> },
+    { path: '/timeline', label: 'Timeline', icon: <FaStream /> },
+    { path: '/taskflow', label: 'Tasks', icon: <FaTasks /> },
+    { path: '/photos', label: 'Photos', icon: <FaImages /> },
     { path: '/servers', label: 'Servers', icon: <FaServer /> },
-    { path: '/photos', label: 'Photos', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },
-    { path: '/profile', label: 'Profile', icon: <FaUser /> },
+    { path: '/profile', label: 'Profile', icon: <FaCog /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },

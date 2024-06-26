@@ -1,0 +1,322 @@
+.task-list-container {
+    width: 100%;
+    height: 100%;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    overflow-y: auto;
+    gap: 15px;
+    position: relative;
+    z-index: 0;
+}
+
+.task-list-container-header {
+    background-color: rgba(135, 159, 155, 0.095);
+    min-width: 50px;
+    width: fit-content;
+    padding: 8px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-radius: 16px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(100px);
+    border: 1px solid rgba(128, 128, 128, 0.087);
+    transition: 0.3s ease-in;
+    position: relative;
+    z-index: 4;
+}
+
+
+.view-toggle-icon {
+    color: #ffffff;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.view-toggle-icon:hover {
+    cursor: pointer;
+}
+
+.task-list-content {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-gap: 20px;
+}
+
+.task-list-content .task-list-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.task-list-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.task-list-header button {
+    background-color: #6a00ff;
+    /* Purplish glow */
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.task-list-header button:hover {
+    background-color: #4d00e6;
+}
+
+.task-list-content .task-card {
+    background-color: rgba(135, 159, 155, 0.095);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(152, 152, 152, 0.1);
+    transition: 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 200px;
+    backdrop-filter: blur(100px);
+    border: 1px solid rgba(128, 128, 128, 0.077);
+    z-index: 0 !important;
+    position: relative;
+}
+
+.task-list-content .task-card:hover {
+    transform: scale(1.05);
+}
+
+.task-list-content .task-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.task-list-content .task-created-at {
+    font-size: 10px;
+    color: gray;
+}
+
+.task-list-content .task-updated-at {
+    font-size: 10px;
+    color: gray;
+}
+
+.task-list-content .task-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.task-list-content .task-description {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #bdc3c7;
+}
+
+.task-list-content .task-status {
+    font-size: 12px;
+    color: #f39c12;
+}
+
+
+
+
+
+
+
+.task-list-content-list {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.task-list-content-list .task-list {
+    border-bottom: 0px solid #ccc;
+    padding: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+    backdrop-filter: blur(100px);
+    background-color: rgba(135, 159, 155, 0.095);
+    border: 1px solid rgba(128, 128, 128, 0.077);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(152, 152, 152, 0.1);
+    transition: 0.3s ease;
+    display: flex;
+    flex-direction: row;
+}
+
+.task-list .task-info-container {
+    display: flex;
+    flex-direction: column;
+    width: 450px;
+}
+
+.task-list-content-list .task-list:hover {
+    transform: scale(1.02);
+}
+
+.task-list-content-list .task-list .task-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.task-list-content-list .task-list .task-description {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #bdc3c7;
+}
+
+.task-list-content-list .task-list .task-status {
+    font-size: 12px;
+    color: #f39c12;
+    background-color: rgba(255, 0, 0, 0);
+    flex-grow: 1;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.task-list-content-list .task-created-at {
+    font-size: 12px;
+    color: gray;
+}
+
+.task-list-content-list .task-updated-at {
+    font-size: 12px;
+    color: gray;
+}
+
+
+
+
+
+
+.sort-dropdown-container {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 140%;
+    left: -10%;
+    z-index: 3;
+    background-color: rgba(23, 23, 23, 0.148);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+    border-radius: 5px;
+    padding: 10px 2px;
+    backdrop-filter: blur(50px);
+    border: 1px solid rgba(128, 128, 128, 0.43);
+    gap: 2px;
+}
+
+.dropdown-content div {
+    padding: 7px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.dropdown-content div:hover {
+    background-color: rgba(150, 150, 150, 0.177);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+
+
+
+
+.task-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+    backdrop-filter: blur(100px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: rgb(0, 208, 0);
+    border: 5px solid rgba(186, 186, 186, 0.233);
+}
+
+.completed {
+    border-color: rgb(0, 208, 0);
+}
+
+
+.in-progress {
+    border-radius: 50%;
+    background-color: #f3f3f300;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress {
+    position: absolute;
+    border-radius: 50%;
+    clip: rect(0, 100px, 100px, 50px);
+    border-left-color: #007bff;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.task-tooltip {
+    position: absolute;
+    background-color: #2a2a2a5d;
+    backdrop-filter: blur(200px);
+    border: 1px solid rgba(128, 128, 128, 0.077);
+    border-radius: 8px;
+    padding: 5px 10px;
+    z-index: 1000;
+    width: 450px;
+    height: 300px;
+    overflow-y: auto;
+    top: 105%;
+    left: 50%;
+}

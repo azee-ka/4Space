@@ -1,0 +1,204 @@
+.task-flow-navbar-bar {
+    background-color: rgba(0, 0, 0, 0.09);
+    color: white;
+    height: 80px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* position: fixed; */
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(218, 218, 218, 0.1);
+
+}
+
+.task-flow-navbar-bar-inner {
+    height: 100%;
+    width: 98%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    font-family: Arial, Helvetica, sans-serif;
+    gap: 15px;
+    z-index: 5;
+    position: relative;
+}
+
+.task-flow-navbar-side-menubar {
+    background-color: rgba(0, 128, 0, 0);
+    width: 30px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.task-flow-navbar-bar-header {
+    background-color: rgba(128, 128, 128, 0);
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+.task-flow-navbar-bar h1 {
+    font-size: 23px;
+    font-weight: 100;
+}
+
+
+.task-flow-navbar-bar ul li:hover {
+    transform: scale(1.15);
+}
+
+.task-flow-navbar-bar a {
+    color: white;
+    text-decoration: none;
+}
+
+
+.loading-bar {
+    height: 4px;
+    background-color: #007bff;
+    width: 0;
+    transition: width 0.3s;
+}
+
+.task-flow-navbar-bar-profile-menu {
+    height: 50px;
+    aspect-ratio: 1 / 1;
+    background-color: rgba(255, 255, 255, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+}
+
+.task-flow-navbar-bar-profile-menu button {
+    border-radius: 50%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    border: 0;
+    background-color: rgba(177, 15, 15, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.task-flow-navbar-bar-notifications-menu button,
+.task-flow-navbar-bar-header button img:hover,
+.task-flow-navbar-bar-profile-menu button:hover {
+    cursor: pointer !important;
+}
+
+.task-flow-navbar-bar-header button img {
+    width: 140%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(168, 168, 168, 0.313);
+}
+.task-flow-navbar-bar-header button img:hover {
+    background-color: rgba(168, 168, 168, 0.632);
+    cursor: pointer;
+}
+
+.task-flow-navbar-bar-menubar-icon {
+    background-color: rgba(214, 8, 8, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.task-flow-navbar-bar-menubar-icon .nine-dot-icon {
+    font-size: 31px !important;
+    background-color: red;
+}
+
+.task-flow-navbar-bar-menubar-icon button {
+    background-color: rgba(214, 8, 8, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    color: white;
+}
+.task-flow-navbar-bar-menubar-icon button:hover {
+    cursor: pointer;
+}
+
+
+
+.task-flow-navbar-bar-notifications-menu button {
+    background-color: transparent;
+    border: 0;
+    font-size: 21px;
+    color: white;
+}
+
+.task-flow-navbar-bar-notifications-menu {
+    position: relative;
+}
+
+.notification-count {
+    position: absolute;
+    top: -3px;
+    right: -2px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
+
+.task-flow-navbar-links {
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(255, 0, 0, 0);
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+}
+
+.task-flow-navbar-page-links {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(0, 128, 0, 0);
+    height: 100%;
+}
+.task-flow-navbar-utils {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(0, 0, 255, 0);
+}
+
+.navbar-app-title {
+    display: flex;
+    flex-direction: row;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(0, 0, 255, 0);
+}
+
+.navbar-app-title p {
+    margin: 0;
+    margin-top: 5px;
+    font-size: 16px;
+    color: gray;
+}

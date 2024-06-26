@@ -1,0 +1,48 @@
+.calendar-grid-weekly {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-gap: 0px;
+  color: white;
+  padding-top: 15px;
+}
+
+.weekly-calendar-cell-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0.1px solid rgb(110, 110, 110);
+  font-size: 20px;
+  background-color: rgba(15, 15, 15, 0.162);
+  padding: 7px;
+}
+
+.weekly-calendar-cell-day:first-child {
+  border-radius: 8px 0 0 0px;
+}
+
+.weekly-calendar-cell-day:nth-child(7){
+  border-radius: 0 8px 0px 0;
+}
+
+.weekly-calendar-cell-content {
+  display: block;
+  align-items: left;
+  border: 0.1px solid rgb(103, 103, 103);
+  font-size: 20px;
+  height: 400px;
+}
+
+.weekly-calendar-cell-content:nth-child(8) {
+  border-radius: 0 0px 0px 8px;
+}
+
+.weekly-calendar-cell-content:last-child {
+    border-radius: 0px 0px 8px 0px;
+}
+
+.weekly-calendar-cell-content:hover {
+  border: 0.5px solid white;
+  cursor: pointer;
+  color: white;
+}

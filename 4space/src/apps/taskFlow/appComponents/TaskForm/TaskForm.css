@@ -1,0 +1,281 @@
+/* TaskForm.css */
+.task-form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Dark semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure the overlay is above other content */
+}
+
+.task-form {
+    background-color: rgb(16, 16, 16); /* Dark background color */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Soft shadow effect */
+    max-width: 500px;
+    height: 500px;
+    width: 100%;
+    color: #ffffff;
+}
+
+.task-form form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.task-form h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+
+.task-form textarea {
+    width: 100%;
+    max-width: 475px;
+    margin-bottom: 10px;
+    background-color: #00b3a700;
+    color: #ffffff; 
+    resize: none;
+    padding: 13px;
+    font-size: 18px;
+    border: none;
+    line-height: 25px;
+    border: 1px solid gray;
+    border-radius: 8px;
+}
+.task-form textarea:hover {
+    border: 1px solid white;
+}
+
+.task-form textarea:focus {
+    outline: none;
+    border: 1px solid #00bdc0;
+}
+
+.task-form-description-field textarea {
+    min-height: 100px;
+    max-height: 300px;
+    height: fit-content;
+}
+
+.task-form-description-field,
+.task-form-title-field {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
+.task-form-description-field label, 
+.task-form-title-field label {
+    position: absolute;
+    top: 13px;
+    left: 10px;
+    transition: 0.3s;
+    pointer-events: none;
+    color: #888;
+    background-color: rgb(23, 23, 23);
+    padding: 2px;
+    font-size: 18px;
+}
+
+.task-form-description-field textarea:focus+label,
+.task-form-description-field textarea:not(:placeholder-shown)+label,
+.task-form-title-field textarea:focus+label,
+.task-form-title-field textarea:not(:placeholder-shown)+label {
+    top: -13px;
+    font-size: 13px;
+    color: #00bdc0;
+}
+
+.task-form-title-field textarea {
+    width: 100%;
+    padding: 13px;
+    font-size: 18px;
+    height: 25px;
+}
+.task-form-description-field textarea {
+    width: 100%;
+    padding: 13px;
+    font-size: 18px;
+    height: 120px;
+}
+
+
+.task-form form button {
+    background-color: #6b46c1; /* Purple button color */
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%; 
+}
+
+.task-form form button:hover {
+    background-color: #5935a1; 
+}
+
+.close-button {
+    position: absolute;
+    top: 135px;
+    right: 455px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ffffff;
+    font-size: 27px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.task-form-overlay-non-overlay {
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    height: 100%;
+    width: 100%;
+}
+
+.task-form-non-overlay {
+    background-color: rgba(135, 159, 155, 0.054); 
+    backdrop-filter: blur(100px);
+    box-shadow: 0 4px 6px rgba(152, 152, 152, 0.1);
+    border: 1px solid rgba(128, 128, 128, 0.077) !important;
+    width: 700px;
+    height: 575px;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.task-form-non-overlay form {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100%;
+    gap: 10px;
+}
+
+.task-form-non-overlay-edit-menu {
+    height: 60px;
+    width: 100%;
+}
+
+
+.task-form-non-overlay textarea {
+    width: 100%;
+    max-width: 575px;
+    min-width: 575px;
+    margin-bottom: 10px;
+    background-color: #00b3a700;
+    color: #ffffff; 
+    resize: none;
+    padding: 13px;
+    font-size: 18px;
+    border: none;
+    line-height: 25px;
+    border: 1px solid gray;
+    border-radius: 8px;
+}
+.task-form-non-overlay textarea:hover {
+    border: 1px solid white;
+}
+
+.task-form-non-overlay textarea:focus {
+    outline: none;
+    border: 1px solid #00bdc0;
+}
+
+.task-form-description-field-non-overlay textarea {
+    min-height: 100px;
+    max-height: 300px;
+    height: fit-content;
+}
+
+.task-form-description-field-non-overlay,
+.task-form-title-field-non-overlay {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
+.task-form-description-field-non-overlay label, 
+.task-form-title-field-non-overlay label {
+    position: absolute;
+    top: 13px;
+    left: 10px;
+    transition: 0.3s;
+    pointer-events: none;
+    color: rgba(136, 136, 136, 0);
+    background-color: rgba(135, 159, 155, 0.0); 
+    padding: 2px;
+    font-size: 18px;
+}
+
+.task-form-description-field-non-overlay textarea:focus+label,
+.task-form-description-field-non-overlay textarea:not(:placeholder-shown)+label,
+.task-form-title-field-non-overlay textarea:focus+label,
+.task-form-title-field-non-overlay textarea:not(:placeholder-shown)+label {
+    top: -13px;
+    font-size: 13px;
+    color: #00bdc0;
+    background-color: rgba(138, 115, 151); 
+}
+
+.task-form-title-field-non-overlay textarea {
+    width: 100%;
+    padding: 13px;
+    font-size: 18px;
+    height: 25px;
+}
+.task-form-description-field-non-overlay textarea {
+    width: 100%;
+    padding: 13px;
+    font-size: 18px;
+    height: 120px;
+}
+
+
+.task-form-non-overlay form button {
+    background-color: #6b46c1; /* Purple button color */
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 600px;
+    min-width: 575px;
+}
+
+.task-form-non-overlay form button:hover {
+    background-color: #5935a1; 
+}
