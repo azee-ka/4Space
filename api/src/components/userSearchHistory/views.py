@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import SearchHistory
 from .serializers import SearchHistorySerializer
-from ...user.interactUser.models import InteractUser
+from ...user.timelineUser.models import TimelineUser
 from django.utils import timezone
 
 @api_view(['POST'])
@@ -14,7 +14,7 @@ def store_search_history(request):
     searched_user_id = request.data.get('searched_user_id')
 
     if searched_user_id:
-        searched_user = get_object_or_404(InteractUser, id=searched_user_id)
+        searched_user = get_object_or_404(TimelineUser, id=searched_user_id)
 
         # Check if the user is already in the search history
         search_entry = SearchHistory.objects.filter(user=request.user, searched_user=searched_user).first()
@@ -50,7 +50,7 @@ def delete_search_history(request):
 
     if username_to_delete:
         # Get the user based on the provided username
-        user_to_delete = get_object_or_404(InteractUser, username=username_to_delete)
+        user_to_delete = get_object_or_404(TimelineUser, username=username_to_delete)
 
         # Delete search history entries for the specified user
         SearchHistory.objects.filter(user=request.user, searched_user=user_to_delete).delete()

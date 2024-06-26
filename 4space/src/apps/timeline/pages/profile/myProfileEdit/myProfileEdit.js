@@ -52,7 +52,7 @@ const MyProfileEdit = ({ handleUserListTrigger }) => {
                 email: email,
             };
 
-            const response = await axios.patch(`${API_BASE_URL}api/update-user-profile/`, updatedData, config);
+            const response = await axios.put(`${API_BASE_URL}api/user/update-profile/`, updatedData, config);
             console.log(response.data);
             setUserData(response.data)
             // Optionally, fetch the profile data again to reflect changes

@@ -15,7 +15,8 @@ class CommentSerializer(serializers.ModelSerializer):
         ]
 
     def get_user(self, obj):
-        user = obj.user
+        timeline_user = obj.user
+        user = timeline_user.interactuser.user
         return {
             'username': user.username,
             'profile_picture': user.profile_picture.url if user.profile_picture else None,
@@ -34,7 +35,9 @@ class PostSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField()
     dislikes = serializers.SerializerMethodField()
     media_files = MediaFileSerializer(many=True, read_only=False, required=False)
-
+    previous_post_uuid = serializers.UUIDField(read_only=True)
+    next_post_uuid = serializers.UUIDField(read_only=True)
+    
     class Meta:
         model = Post
         fields = [
@@ -46,10 +49,13 @@ class PostSerializer(serializers.ModelSerializer):
             'likes',
             'dislikes',
             'comments',
+            'previous_post_uuid',
+            'next_post_uuid',
         ]
 
     def get_user(self, obj):
-        user = obj.user
+        timeline_user = obj.user
+        user = timeline_user.interactuser.user
         custom_user = {
             'username': user.username,
             'profile_picture': user.profile_picture.url if user.profile_picture else None,
@@ -59,8 +65,8 @@ class PostSerializer(serializers.ModelSerializer):
     def get_likes(self, obj):
         return [
             {
-                'username': like.username,
-                'profile_picture': like.profile_picture.url if like.profile_picture else None,
+                'username': like.interactuser.user.username,
+                'profile_picture': like.interactuser.user.profile_picture.url if like.interactuser.user.profile_picture else None,
             }
             for like in obj.likes.all()
         ]
@@ -72,8 +78,8 @@ class PostSerializer(serializers.ModelSerializer):
     def get_dislikes(self, obj):
         return [
             {
-                'username': dislike.username,
-                'profile_picture': dislike.profile_picture.url if dislike.profile_picture else None,
+                'username': dislike.interactuser.user.username,
+                'profile_picture': dislike.interactuser.user.profile_picture.url if dislike.interactuser.user.profile_picture else None,
             }
             for dislike in obj.dislikes.all()
         ]
@@ -81,17 +87,32 @@ class PostSerializer(serializers.ModelSerializer):
     def get_dislikes_count(self, obj):
         return obj.dislikes.count()
     
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Retrieve previous and next post UUIDs based on some ordering (e.g., created_at)
+        previous_post = Post.objects.filter(created_at__lt=instance.created_at).order_by('-created_at').first()
+        next_post = Post.objects.filter(created_at__gt=instance.created_at).order_by('created_at').first()
+
+        representation['previous_post_uuid'] = previous_post.id if previous_post else None
+        representation['next_post_uuid'] = next_post.id if next_post else None
+
+        return representation
+    
     
     
 class MinimalPostSerializer(serializers.ModelSerializer):
     media_files = MediaFileSerializer(many=True, read_only=False, required=False)
-    
+    previous_post_uuid = serializers.UUIDField(read_only=True)
+    next_post_uuid = serializers.UUIDField(read_only=True)
     
     class Meta:
         model = Post
         fields = [
             'media_files',
             'id',
+            'previous_post_uuid',
+            'next_post_uuid',
         ]
         
     def get_media_files(self, obj):
@@ -104,6 +125,13 @@ class MinimalPostSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        # Retrieve previous and next post UUIDs based on some ordering (e.g., created_at)
+        previous_post = Post.objects.filter(created_at__lt=instance.created_at).order_by('-created_at').first()
+        next_post = Post.objects.filter(created_at__gt=instance.created_at).order_by('created_at').first()
+
+        representation['previous_post_uuid'] = previous_post.id if previous_post else None
+        representation['next_post_uuid'] = next_post.id if next_post else None
+
         media_files = representation.get('media_files')
         if isinstance(media_files, list) and media_files:
             # Include only the first media file in the representation

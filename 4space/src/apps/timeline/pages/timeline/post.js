@@ -135,7 +135,7 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
     })
       .then(response => response.json())
       .then(data => {
-        // console.log(data);
+        console.log(data);
         setPost(data);
       })
       .catch(error => console.error('Error toggling like:', error));
@@ -157,7 +157,7 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
     })
       .then(response => response.json())
       .then(data => {
-        // console.log(data);
+        console.log(data);
         setPost(data);
       })
       .catch(error => console.error('Error toggling like:', error));

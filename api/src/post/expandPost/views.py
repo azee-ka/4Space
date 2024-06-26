@@ -30,7 +30,7 @@ def create_comment(request, post_id):
     # Assuming the 'text' for the comment is sent in the request data
     serializer = CommentSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(user=request.user, post=post)
+        serializer.save(user=request.user.interactuser.timeline_user, post=post)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -44,7 +44,7 @@ def create_like(request, post_id):
     except Post.DoesNotExist:
         return Response({'message': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    user = request.user
+    user = request.user.interactuser.timeline_user
 
     if request.method == 'POST':
         # Check if the user has already disliked the post, and remove the dislike
@@ -74,7 +74,7 @@ def create_dislike(request, post_id):
     except Post.DoesNotExist:
         return Response({'message': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    user = request.user
+    user = request.user.interactuser.timeline_user
 
     if request.method == 'POST':
         # Check if the user has already liked the post, and remove the like
@@ -105,7 +105,7 @@ def delete_post(request, post_id):
         return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # Check if the current user is the owner of the post
-    if request.user == post.user:
+    if request.user.interactuser.timeline_user == post.user:
         post.delete()
         return Response({'success': True, 'message': 'Post deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
     else:

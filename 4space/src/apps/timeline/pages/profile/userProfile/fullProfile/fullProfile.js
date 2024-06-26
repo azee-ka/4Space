@@ -22,7 +22,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
 
     const handleFetchUserData = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}api/user/profile/${userData.user.username}`, config);
+            const response = await axios.get(`${API_BASE_URL}api/user/profile/${userData.user.id}`, config);
             setProfileData(response.data.profile);
 
             console.log(response.data);

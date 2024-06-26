@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Notification
 from .serializers import NotificationSerializer
 from ...user.interactUser.models import InteractUser
+from ...user.baseUser.models import BaseUser
 
 @api_view(['GET'])
 def user_notifications(request):
@@ -20,7 +21,7 @@ def user_notifications(request):
 @api_view(['PATCH'])
 def mark_notification_as_read(request, id):
     try:
-        notification = Notification.objects.get(id=id, recipient=request.user)
+        notification = Notification.objects.get(id=id)
         print(f"Notification found: {notification}")
         notification.unread = False
         notification.save()
@@ -42,13 +43,16 @@ def mark_notification_as_read(request, id):
 @permission_classes([IsAuthenticated])
 def accept_follow_request(request, notification_id):
     try:
-        notification = Notification.objects.get(id=notification_id, recipient=request.user.interactuser)
+        notification = Notification.objects.get(id=notification_id, recipient=request.user)
         sender = notification.actor
         recipient = notification.recipient
 
         if notification.verb != 'sent you a follow request':
             return Response({'error': 'Invalid notification type'}, status=status.HTTP_400_BAD_REQUEST)
 
+        recipient = recipient.interactuser.timeline_user
+        sender = sender.interactuser.timeline_user
+        
         recipient.accept_follow_request(sender)
         notification.delete()
 
@@ -60,7 +64,7 @@ def accept_follow_request(request, notification_id):
 @permission_classes([IsAuthenticated])
 def reject_follow_request(request, notification_id):
     try:
-        notification = Notification.objects.get(id=notification_id, recipient=request.user.interactuser)
+        notification = Notification.objects.get(id=notification_id, recipient=request.user)
         sender = notification.actor
         recipient = notification.recipient
 
@@ -81,8 +85,9 @@ def reject_follow_request(request, notification_id):
 def withdraw_follow_request(request, recipient_id):
     try:
         # Get the recipient user by id
-        recipient = InteractUser.objects.get(id=recipient_id)
-        current_user = request.user.interactuser
+        recipient = BaseUser.objects.get(id=recipient_id)
+        print(f'recipient {recipient}')
+        current_user = request.user
 
         # Find the notification related to the follow request
         notification = Notification.objects.get(
@@ -95,6 +100,8 @@ def withdraw_follow_request(request, recipient_id):
         if notification.verb != 'sent you a follow request':
             return Response({'error': 'Invalid notification type'}, status=status.HTTP_400_BAD_REQUEST)
 
+        current_user = current_user.interactuser.timeline_user
+        recipient = recipient.interactuser.timeline_user
         # Remove the follow request and delete the notification
         recipient.follow_requests.remove(current_user)
         notification.delete()

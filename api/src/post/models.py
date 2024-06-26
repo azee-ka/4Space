@@ -8,7 +8,7 @@ import uuid
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey('Post', related_name='comments', on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey('timelineUser.TimelineUser', on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -23,15 +23,15 @@ class MediaFile(models.Model):
     
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey('timelineUser.TimelineUser', on_delete=models.CASCADE)
     text = models.TextField(blank=True)  # Make the text field optional
     media_files = models.ManyToManyField(MediaFile, related_name='post_media', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     likes_count = models.PositiveIntegerField(default=0)  # Field for the number of likes
     comments_count = models.PositiveIntegerField(default=0)  # Field for the number of comments
-    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_posts', blank=True)
+    likes = models.ManyToManyField('timelineUser.TimelineUser', related_name='liked_posts', blank=True)
     dislikes_count = models.PositiveIntegerField(default=0)  # Field for the number of dislikes
-    dislikes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='disliked_posts', blank=True)
+    dislikes = models.ManyToManyField('timelineUser.TimelineUser', related_name='disliked_posts', blank=True)
 
 
     def __str__(self):

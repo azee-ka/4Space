@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async, async_to_sync
 from channels.layers import get_channel_layer
 from ..models import Chat, Message, ChatParticipant
 from ..serializers import MessageSerializer
-from ....user.interactUser.models import InteractUser
+from ....user.timelineUser.models import TimelineUser
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -47,7 +47,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Fetch the chat and check if the user is allowed to send messages
         chat = await sync_to_async(Chat.objects.get)(uuid=self.chat_uuid)
-        participant = await sync_to_async(InteractUser.objects.get)(pk=user_id)
+        participant = await sync_to_async(TimelineUser.objects.get)(pk=user_id)
 
         participant_in_chat = await sync_to_async(ChatParticipant.objects.filter(chat=chat, participant=participant).exists)()
         is_restricted = await sync_to_async(lambda: ChatParticipant.objects.get(chat=chat, participant=participant).restricted)()
@@ -150,13 +150,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def save_message_to_database(self, message, user_id):
         try:
             chat = await sync_to_async(Chat.objects.get)(uuid=self.chat_uuid)
-            sender = await sync_to_async(InteractUser.objects.get)(pk=user_id)
+            sender = await sync_to_async(TimelineUser.objects.get)(pk=user_id)
 
             message_instance = Message(chat=chat, sender=sender, content=message)
             await sync_to_async(message_instance.save)()
 
             return message_instance
-        except InteractUser.DoesNotExist:
+        except TimelineUser.DoesNotExist:
             print(f"InteractUser with pk={user_id} does not exist")
         except Exception as e:
             print(f"chat_uuid={self.chat_uuid} user_pk={user_id}. An error occurred: {e}")

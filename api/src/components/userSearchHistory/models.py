@@ -1,10 +1,10 @@
 # models.py
 from django.db import models
-from ...user.interactUser.models import InteractUser
+from ...user.timelineUser.models import TimelineUser
 
 class SearchHistory(models.Model):
-    user = models.ForeignKey(InteractUser, on_delete=models.CASCADE)
-    searched_user = models.ForeignKey(InteractUser, on_delete=models.CASCADE, related_name='searched_history')
+    user = models.ForeignKey(TimelineUser, on_delete=models.CASCADE)
+    searched_user = models.ForeignKey(TimelineUser, on_delete=models.CASCADE, related_name='searched_history')
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

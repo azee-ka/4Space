@@ -13,13 +13,14 @@ const Profile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) => {
     const config = GetConfig(token);
     const { username: paramUsername } = useParams();
 
+    const [finalUserId, setFinalUserId] = useState();
     const [profileViewData, setProfileViewData] = useState({});
 
 
-    const handleFetchUserData = async () => {
+    const handleFetchUserId = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}api/user/profile/${paramUsername ? paramUsername : user.username}`, config);
-            setProfileViewData(response.data);
+            const response = await axios.get(`${API_BASE_URL}api/user/get-user-id/${paramUsername ? paramUsername : user.username}`, config);
+            setFinalUserId(response.data.user_id);
 
             console.log(response.data);
         } catch (error) {
@@ -27,9 +28,28 @@ const Profile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) => {
         }
     };
 
+    const handleFetchUserData = async () => {
+        if (finalUserId) {
+            try {
+                const response = await axios.get(`${API_BASE_URL}api/user/profile/${finalUserId}`, config);
+                setProfileViewData(response.data);
+
+                console.log(response.data);
+            } catch (error) {
+                console.error('Failed to fetch profile interact data', error);
+            }
+        }
+    };
+
+
+    useEffect(() => {
+        handleFetchUserId();
+    }, []);
+
+
     useEffect(() => {
         handleFetchUserData();
-    }, []);
+    }, [finalUserId]);
 
     useEffect(() => {
         handleFetchUserData();
@@ -37,7 +57,7 @@ const Profile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) => {
         if (user.username === paramUsername) {
             navigate('/profile', { replace: true });
         }
-    }, []);
+    }, [finalUserId]);
 
     return profileViewData ? (
         (profileViewData.view === 'self' || paramUsername === undefined) ? (

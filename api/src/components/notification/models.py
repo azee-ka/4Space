@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from ...user.interactUser.models import InteractUser
+from ...user.baseUser.models import BaseUser
 
 class Notification(models.Model):
     TYPE_CHOICES = [
@@ -8,8 +8,8 @@ class Notification(models.Model):
         ('action', 'Action Required'),
     ]
     
-    recipient = models.ForeignKey(InteractUser, on_delete=models.CASCADE, related_name='notifications')
-    actor = models.ForeignKey(InteractUser, on_delete=models.CASCADE)
+    recipient = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name='notifications')
+    actor = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
     verb = models.CharField(max_length=255)
     unread = models.BooleanField(default=True)
     timestamp = models.DateTimeField(auto_now_add=True)

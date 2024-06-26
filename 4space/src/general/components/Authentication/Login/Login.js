@@ -14,7 +14,7 @@ function Login() {
         e.preventDefault();
         // Perform login logic
         await login(username, password);
-        navigate('/mechFlow');
+        navigate('/timeline');
     };
 
     return (

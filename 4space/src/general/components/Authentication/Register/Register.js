@@ -23,12 +23,15 @@ function Register() {
             }
         }
         const data = {
-            first_name: firstName,
-            last_name: lastName,
-            username: username,
-            email: email,
+            user: {
+                first_name: firstName,
+                last_name: lastName,
+                username: username,
+                email: email,
+            },
             password: password,
         };
+        
 
 
         try {

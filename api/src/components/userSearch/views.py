@@ -8,7 +8,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from ...user.interactUser.models import InteractUser
-from ...user.interactUser.serializers import InteractUserSerializer
 from ...user.baseUser.serializers import PartialUserSerializer
 from rest_framework import status
 

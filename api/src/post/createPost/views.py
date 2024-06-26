@@ -13,7 +13,7 @@ def create_post(request):
     if serializer.is_valid():
         if request.user.is_authenticated:
             # Create a new post
-            post = serializer.save(user=request.user, id=uuid.uuid4())
+            post = serializer.save(user=request.user.interactuser.timeline_user, id=uuid.uuid4())
 
             # Handle multiple media files
             media_files = request.FILES.getlist('media[]')
@@ -26,7 +26,7 @@ def create_post(request):
             post.save()
 
             # Associate the new post with the user's my_posts field
-            request.user.interactuser.posts.add(post)
+            request.user.interactuser.timeline_user.posts.add(post)
 
             # Include the username in the response data
             serialized_data = serializer.data

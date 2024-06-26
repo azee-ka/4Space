@@ -44,7 +44,7 @@ const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: prev
             const response = await axios.get(`${API_BASE_URL}/api/post/${id}`, config);
             setPost(response.data);
             setLoading(false);
-            // console.log(response.data);
+            console.log(response.data);
         } catch (error) {
             console.error("Error fetching post data", error);
             setLoading(false);

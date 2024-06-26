@@ -39,7 +39,7 @@ const Preferences = () => {
     };
 
     const sidebarButtons = [
-        { label: 'My Profile', onClick: () => navigate('/profile/edit') },
+        { label: 'My Profile', onClick: () => navigate('/timeline/profile/edit') },
         { label: 'Profile Visibility', onClick: () => setActiveSetting('profileVisibility') },
     ];
 

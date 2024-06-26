@@ -17,7 +17,7 @@ const PartialProfile = ({ userData }) => {
     const handleFetchUserData = async () => {
         try {
             if (userData) {
-                const response = await axios.get(`${API_BASE_URL}api/user/profile/${userData.user.username}`, config);
+                const response = await axios.get(`${API_BASE_URL}api/user/profile/${userData.user.id}`, config);
                 setProfileData(response.data.profile);
                 setFollowRequested(response.data.profile.follow_request_status);
                 console.log(response.data);
