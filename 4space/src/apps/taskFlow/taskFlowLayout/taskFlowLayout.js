@@ -84,7 +84,9 @@ const TaskFlowLayout = ({ children, showSidebar, showNavbar }) => {
                         <TaskFlowSmallSidebar />
                     </div>
                 }
+                <div className='task-flow-layout-page-content-inner'>
                     {children}
+                </div>
             </div>
             {<TaskFlowSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />}
             {menuOpen && <Menubar userInfo={userInfo} />}

@@ -28,7 +28,7 @@ const TaskList = () => {
 
     const fetchTasks = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/get-tasks/?sort_by=${sortOption}`, config);
+            const response = await axios.get(`${API_BASE_URL}api/apps/taskflow/get-tasks/?sort_by=${sortOption}`, config);
             setTasks(response.data);
 
             console.log('djhfs')
@@ -45,7 +45,7 @@ const TaskList = () => {
         // Fetch user's preferred view from the backend
         const fetchPreferredView = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/get-is-grid-view/`, config);
+                const response = await axios.get(`${API_BASE_URL}api/apps/taskflow/get-is-grid-view/`, config);
                 setIsGridView(response.data.is_grid_view);
             } catch (error) {
                 console.error('Failed to fetch preferred view', error);
@@ -71,7 +71,7 @@ const TaskList = () => {
 
     const updatePreferredView = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/api/update-view-mode/?is_grid_view=${!isGridView}`, null, config);
+            await axios.post(`${API_BASE_URL}api/apps/taskflow/update-view-mode/?is_grid_view=${!isGridView}`, null, config);
         } catch (error) {
             console.error('Failed to update preferred view', error);
         }
@@ -90,7 +90,7 @@ const TaskList = () => {
     const handleSortOptionChange = async (option) => {
         setSortOption(option); // Update the local state
         try {
-            await axios.post(`${API_BASE_URL}/api/update-sort-option/`, { sort_option: option }, config);
+            await axios.post(`${API_BASE_URL}/api/apps/taskflow/update-sort-option/`, { sort_option: option }, config);
             fetchTasks(); // Refetch tasks after updating sort option
         } catch (error) {
             console.error('Failed to update sort option', error);

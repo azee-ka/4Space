@@ -45,9 +45,10 @@ function Calendar() {
 
   return (
     <div className='calendar-container'>
-      <h2>Calendar</h2>
-      <div className='calendar-body'>
-      <div className='calendar-nav'>
+      <div className='calendar-page-header'>
+        <h2>Calendar</h2>
+        <div className='calendar-nav-outer'>
+          <div className='calendar-nav'>
             <a
               href='#monthly'
               className={viewType === 'monthly' ? 'active' : ''}
@@ -80,6 +81,9 @@ function Calendar() {
             </a>
 
           </div>
+        </div>
+      </div>
+      <div className='calendar-body'>
         <div className='calendar-container-inner'>
           <div className='calendar-header'>
             {viewType === 'monthly' && (

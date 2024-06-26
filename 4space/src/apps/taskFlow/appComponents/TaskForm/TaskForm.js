@@ -32,7 +32,7 @@ const TaskForm = ({ onClose, taskFormIsOverlay, fetchTasks}) => {
                 completed: completed,
                 started: started,
             };
-            await axios.post(`${API_BASE_URL}/api/create-task/`, newTaskData, config);
+            await axios.post(`${API_BASE_URL}/api/apps/taskflow/create-task/`, newTaskData, config);
         } catch (error) {
             console.error('Failed to create task', error);
         }

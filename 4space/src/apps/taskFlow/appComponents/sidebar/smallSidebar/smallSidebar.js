@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog, faTasks } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faCalendar, faFolder, faCog, faTasks, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 const TaskFlowSmallSidebar = ({ setShowCreatePostOverlay }) => {
     
     const taskFlow = [
-        { icon: <FontAwesomeIcon icon={faTasks} />, label: 'Tasks', path: '/taskflow', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faChartLine} />, label: 'Tasks', path: '/taskflow', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faTasks} />, label: 'Tasks', path: '/taskflow/tasks', type: 'link' },
         { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Add Task', path: '/taskflow/add-task', type: 'link' },
         { icon: <FontAwesomeIcon icon={faCalendar} />, label: 'Calendar', path: '/taskflow/calendar', type: 'link' },
         { icon: <FontAwesomeIcon icon={faFolder} />, label: 'Categories', path: '/taskflow/categories', type: 'link' },
