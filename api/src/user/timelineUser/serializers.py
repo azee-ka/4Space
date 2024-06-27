@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from .models import TimelineUser
 from ..baseUser.serializers import BaseUserSerializer
-from ...post.serializers import PostSerializer, MinimalPostSerializer
+from ...apps.timeline.post.serializers import PostSerializer, MinimalPostSerializer
 from ..baseUser.serializers import UserSerializer, PartialUserSerializer
     
         
@@ -46,7 +46,8 @@ class TimelineUserSerializer(serializers.ModelSerializer):
     
     def get_posts(self, obj):
         posts = obj.posts.all().order_by('-created_at')
-        return MinimalPostSerializer(posts, many=True).data
+        context = {'current_post': None, 'posts_queryset': posts}
+        return MinimalPostSerializer(posts, many=True, context=context).data
     
 
 
@@ -200,4 +201,5 @@ class FullTimelineProfileSerializer(serializers.ModelSerializer):
 
     def get_posts(self, obj):
         posts = obj.posts.all().order_by('-created_at')
-        return MinimalPostSerializer(posts, many=True).data
+        context = {'current_post': None, 'posts_queryset': posts}
+        return MinimalPostSerializer(posts, many=True, context=context).data

@@ -83,9 +83,10 @@
     transition: 0.3s;
     pointer-events: none;
     color: #888;
-    background-color: rgb(23, 23, 23);
+    background-color: rgb(16, 16, 16);
     padding: 2px;
     font-size: 18px;
+    border-radius: 8px;
 }
 
 .task-form-description-field textarea:focus+label,
@@ -245,7 +246,9 @@
     top: -13px;
     font-size: 13px;
     color: #00bdc0;
-    background-color: rgba(138, 115, 151); 
+    background-color: rgba(20, 1, 30, 0.499);
+    backdrop-filter: blur(100px);
+    border-radius: 8px;
 }
 
 .task-form-title-field-non-overlay textarea {

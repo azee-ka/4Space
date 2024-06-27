@@ -35,7 +35,7 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
 
     const [notifications, setNotifications] = useState([]);
     const [notificationCount, setNotificationCount] = useState(0);
-
+    
     const handleExpandPostClose = () => {
         navigate(previousLocation);
         setShowExpandPost(false);

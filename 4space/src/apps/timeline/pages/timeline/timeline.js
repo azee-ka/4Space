@@ -15,7 +15,7 @@ const Timeline = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
 
     useEffect(() => {
         // Fetch explore page posts from your Django backend using Axios with the token in the headers
-        axios.get(`${API_BASE_URL}api/post/timeline/posts/`, config)
+        axios.get(`${API_BASE_URL}api/apps/timeline/timeline/posts/`, config)
             .then(response => {
                 setPosts(response.data);
                 console.log(response.data);

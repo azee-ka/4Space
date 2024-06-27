@@ -8,7 +8,7 @@ import './TaskForm.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthState } from '../../../../general/components/Authentication/utils/AuthProvider';
 
-const TaskForm = ({ onClose, taskFormIsOverlay, fetchTasks}) => {
+const TaskForm = ({ onClose, taskFormIsOverlay, fetchTasks }) => {
     const { token } = useAuthState();
     const navigate = useNavigate();
     const config = GetConfig(token)
@@ -19,8 +19,7 @@ const TaskForm = ({ onClose, taskFormIsOverlay, fetchTasks}) => {
 
     useEffect(() => {
         if (taskFormIsOverlay) {
-            window.history.replaceState(null, '', '/add-task');
-            // navigate('/add-task', { replace: true })
+            window.history.replaceState(null, '', '/taskflow/add-task');
         }
     }, []);
 
@@ -32,17 +31,19 @@ const TaskForm = ({ onClose, taskFormIsOverlay, fetchTasks}) => {
                 completed: completed,
                 started: started,
             };
-            await axios.post(`${API_BASE_URL}/api/apps/taskflow/create-task/`, newTaskData, config);
+            const response = await axios.post(`${API_BASE_URL}api/apps/taskflow/create-task/`, newTaskData, config);
+            console.log(response.data);
+
         } catch (error) {
             console.error('Failed to create task', error);
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         handleCreateTaskSubmit(title, description, completed, started);
         if (taskFormIsOverlay) {
-            fetchTasks(); // Wait for the tasks to be updated
+            await fetchTasks(); // Wait for the tasks to be updated
             onClose(); // Close the form after submission
         } else {
             navigate('/tasks');

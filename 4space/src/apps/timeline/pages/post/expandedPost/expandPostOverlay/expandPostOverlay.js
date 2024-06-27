@@ -32,9 +32,11 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
 
+    const [prevLocation, setPrevLocation] = useState(window.location.pathname);
+
     const fetchPostData = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/post/${postId}`, config);
+            const response = await axios.get(`${API_BASE_URL}/api/apps/timeline/post/${postId}`, config);
             setPost(response.data);
             console.log(response.data);
         } catch (error) {
@@ -43,11 +45,12 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     };
 
     useEffect(() => {
+        // setPrevLocation(window.location.pathname);
         if (!post_id && !window.location.pathname.includes('post')) {
-            window.history.replaceState(null, '', `/post/${postId}`);
+            window.history.replaceState(null, '', `/timeline/post/${postId}`);
         }
     }, [post_id, postId]);
-    
+
 
     useEffect(() => {
         setCurrentMediaIndex(0);
@@ -165,6 +168,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         window.location.reload();
     };
 
+    // console.log('prevLocation', prevLocation);
 
     return (post && post.user && post !== null) ? (
         <div className='expand-post-overlay' onClick={() => onClose()}>
@@ -172,7 +176,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                 <div className="expand-post-overlay-previous-next-post-btns">
                     <div className="expand-post-overlay-previous-next-post-btns-inner">
                         <div className="expand-post-overlay-previous-post-btn">
-                            {post.next_post_uuid &&
+                            {prevLocation !== '/timeline' && post.next_post_uuid &&
                                 <div onClick={(e) => e.stopPropagation()}>
                                     <button onClick={() => handlePrevPostClick(post.next_post_uuid)}>
                                         <FontAwesomeIcon icon={faChevronLeft} />
@@ -181,7 +185,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                             }
                         </div>
                         <div className="expand-post-overlay-next-post-btn">
-                            {post.previous_post_uuid &&
+                            {prevLocation !== '/timeline' && post.previous_post_uuid &&
                                 <div onClick={(e) => e.stopPropagation()}>
                                     <button onClick={() => handleNextPostClick(post.previous_post_uuid)}>
                                         <FontAwesomeIcon icon={faChevronRight} />
@@ -245,14 +249,14 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                                 )}
                             </div>
                         </div>
-                        <div className="expand-post-overlay-write-comment">
-                            {(comment) && <button onClick={() => handlePostComment()}>Post</button>}
-                            <textarea
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                placeholder="Post a comment..."
-                            />
-                        </div>
+                    </div>
+                    <div className="expand-post-overlay-write-comment" onClick={(e) => e.stopPropagation()}>
+                        {(comment) && <button onClick={() => handlePostComment()}>Post</button>}
+                        <textarea
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            placeholder="Post a comment..."
+                        />
                     </div>
                 </div>
                 <div className="expand-post-overlay-media-conatainer" >

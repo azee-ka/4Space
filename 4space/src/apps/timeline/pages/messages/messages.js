@@ -144,27 +144,27 @@ const Messages = () => {
                                                     {chatsList.map((per_message_element, index) => (
                                                         <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}>
                                                             {per_message_element.participants.length !== 0 &&
-                                                            <div className='personal-messages-list-per-message-inner'>
-                                                                <div className='personal-messages-list-per-message-inner-inner'>
-                                                                    <div className='personal-messages-per-user-profile-picture-container'>
-                                                                        <ProfilePicture src={determineUser(per_message_element).profile_picture} />
-                                                                    </div>
-                                                                    <div className='personal-messages-per-user-info'>
-                                                                        <div className='personal-messages-per-user-info-inner'>
-                                                                            <div>
-                                                                                {`${determineUser(per_message_element).first_name} ${determineUser(per_message_element).last_name}`}
-                                                                            </div>
-                                                                            <div>
-                                                                                <p>@{determineUser(per_message_element).username}</p>
-                                                                                {per_message_element.participants.length > 1 &&
-                                                                                    <p>and {per_message_element.participants.length - 1} more</p>
-                                                                                }
+                                                                <div className='personal-messages-list-per-message-inner'>
+                                                                    <div className='personal-messages-list-per-message-inner-inner'>
+                                                                        <div className='personal-messages-per-user-profile-picture-container'>
+                                                                            <ProfilePicture src={determineUser(per_message_element).profile_picture} />
+                                                                        </div>
+                                                                        <div className='personal-messages-per-user-info'>
+                                                                            <div className='personal-messages-per-user-info-inner'>
+                                                                                <div>
+                                                                                    {`${determineUser(per_message_element).first_name} ${determineUser(per_message_element).last_name}`}
+                                                                                </div>
+                                                                                <div>
+                                                                                    <p>@{determineUser(per_message_element).username}</p>
+                                                                                    {per_message_element.participants.length > 1 &&
+                                                                                        <p>and {per_message_element.participants.length - 1} more</p>
+                                                                                    }
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                    }
+                                                            }
                                                         </div>
                                                     ))}
                                                 </div>

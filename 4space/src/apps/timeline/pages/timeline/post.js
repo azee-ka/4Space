@@ -26,8 +26,6 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
   const config = GetConfig(token);
   const navigate = useNavigate();
 
-  const [comment, setComment] = useState('');
-
   const [commentText, setCommentText] = useState('');
 
   const [isLiked, setIsLiked] = useState(false);
@@ -38,7 +36,7 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
 
   const fetchPostData = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/post/${postId}`, config);
+      const response = await axios.get(`${API_BASE_URL}/api/apps/timeline/post/${postId}`, config);
       setPost(response.data);
       // console.log(response.data);
     } catch (error) {
@@ -75,19 +73,16 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
 
 
   const handlePostComment = async () => {
-    const data = { text: comment }
+    const data = { text: commentText }
     try {
-      const response = await axios.post(`${API_BASE_URL}api/post/${postId}/comment/`, data, config);
-      // console.log(response.data);
-      setComment('');
-      setPost((prevPost) => ({
-        ...prevPost,
-        comments: [...prevPost.comments, response.data], // assuming data is the new comment object
-      }));
+        const response = await axios.post(`${API_BASE_URL}/api/post/${postId}/comment/`, data, config);
+        console.log(response.data);
+        fetchPostData();
+        setCommentText('');
     } catch (error) {
-      console.error("Error fetching post data", error);
+        console.error("Error fetching post data", error);
     }
-  };
+};
 
 
   const handleDislikeandUndislike = () => {
@@ -173,6 +168,10 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
               </div>
             </div>
           </div>
+          {/* {  
+          background-color: rgba(97, 97, 97, 0.197) !important;
+          backdrop-filter: blur(50px) !important;
+  } */}
           <div className='timeline-post-stats'>
             <div className="timeline-post-info-counts">
               <p onClick={() => handleUserListTrigger(post.likes, "Likes")}>
@@ -232,7 +231,7 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
           ></input>
-          <button onClick={() => handlePostComment()}>Post</button>
+          {<button onClick={() => handlePostComment()}>Post</button>}
         </div>
 
 

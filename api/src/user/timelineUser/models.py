@@ -1,6 +1,6 @@
 from django.db import models
 from ..baseUser.models import BaseUser
-from ...post.models import Post
+from ...apps.timeline.post.models import Post
 
 class TimelineUser(models.Model):
     user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, primary_key=True)

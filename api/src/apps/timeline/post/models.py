@@ -13,7 +13,7 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Comment by {self.user.username}"
+        return f"Comment by {self.user.interactuser.user.username}"
 
 class MediaFile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -35,4 +35,4 @@ class Post(models.Model):
 
 
     def __str__(self):
-        return f"Post by {self.user.username}"
+        return f"Post by {self.user.interactuser.user.username}"

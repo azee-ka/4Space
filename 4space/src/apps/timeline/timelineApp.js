@@ -11,6 +11,7 @@ import CreatePost from './pages/post/createPost/createPost.js';
 import Preferences from './pages/preferences/preferences.js';
 import Messages from './pages/messages/messages.js';
 import MyProfileEdit from './pages/profile/myProfileEdit/myProfileEdit.js';
+import Explore from './pages/explore/explore.js';
 
 const TimelineApp = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -23,6 +24,7 @@ const TimelineApp = () => {
   const [previousLocation, setPreviousLocation] = useState('');
 
   const [showExpandPost, setShowExpandPost] = useState(false);
+
 
   const handleExpandPostTrigger = (post, previousLocation) => {
     setShowExpandPost(true);
@@ -57,6 +59,11 @@ const handleNextPostClick = (nextPostId) => {
       path: '',
       name: 'Timeline',
       element: <Timeline handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
+    },
+    {
+      path: '/explore',
+      name: 'Explore',
+      element: <Explore handleExpandPostTrigger={handleExpandPostTrigger} />
     },
     {
       path: '/profile/edit',
