@@ -56,7 +56,7 @@ const handleNextPostClick = (nextPostId) => {
     {
       path: '',
       name: 'Timeline',
-      element: <Timeline />
+      element: <Timeline handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
     },
     {
       path: '/profile/edit',

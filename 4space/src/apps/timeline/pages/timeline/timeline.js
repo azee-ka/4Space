@@ -7,7 +7,7 @@ import Post from './post';
 import { useAuthState } from '../../../../general/components/Authentication/utils/AuthProvider';
 import GetConfig from '../../../../general/components/Authentication/utils/config';
 
-const Timeline = ({ handleShowPostOverlay }) => {
+const Timeline = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
     const { token } = useAuthState();
     const config = GetConfig(token);
 
@@ -35,8 +35,9 @@ const Timeline = ({ handleShowPostOverlay }) => {
                         // Wrap each post with a Link to the ExpandedPost view
                         <Post
                             key={index}
-                            postInfo={post}
-                            handleShowPostOverlay={handleShowPostOverlay}
+                            postId={post.id}
+                            handleExpandPostTrigger={handleExpandPostTrigger}
+                            handleUserListTrigger={handleUserListTrigger}
                         />
                     ) : null
                 )}

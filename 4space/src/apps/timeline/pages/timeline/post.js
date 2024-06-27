@@ -19,23 +19,12 @@ import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons
 import GetConfig from '../../../../general/components/Authentication/utils/config';
 import ProfilePicture from '../../../../general/utils/profilePicture/getProfilePicture';
 
-const Post = ({ postInfo, handleShowPostOverlay }) => {
-
-  const [postLikes, setPostLikes] = useState([]);
-  const [postDislikes, setPostDislikes] = useState([]);
-
-  const [post, setPost] = useState(postInfo);
-
-  const [postId, setPostId] = useState();
+const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
+  const [post, setPost] = useState(null);
 
   const { token, user } = useAuthState();
   const config = GetConfig(token);
   const navigate = useNavigate();
-
-  const [showLikesOverlay, setShowLikesOverlay] = useState(false);
-  const [showDislikesOverlay, setShowDislikesOverlay] = useState(false);
-
-  const [renderMedia, setRenderMedia] = useState(true);
 
   const [comment, setComment] = useState('');
 
@@ -44,69 +33,51 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
 
-
-  const [loading, setLoading] = useState(true);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  useEffect(() => {
-    // fetchUserData();
-    setLoading(false); // Set loading to false once user data is fetched
-    setPostId(postInfo.id)
-  }, []);
 
-  // console.log(post)
-
-  useEffect(() => {
-    if (!loading) {
-
-      fetch(`${API_BASE_URL}/api/post/${postId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
-          setPost(data);
-
-          // Check if user data is available
-          //   console.log(data);
-          if (user && user.username) {
-            setIsLiked(data.likes.find(like => like.username === user.username && !isDisliked));
-            setIsDisliked((data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
-          } else {
-            console.warn('User data not available yet.');
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching expanded post:', error);
-        });
+  const fetchPostData = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/post/${postId}`, config);
+      setPost(response.data);
+      // console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching post data", error);
     }
+  };
+
+
+  useEffect(() => {
+    setCurrentMediaIndex(0);
+    fetchPostData();
   }, [postId]);
+
+  useEffect(() => {
+    if (post && Object.keys(post).length !== 0) {
+      setIsLiked(post.likes.some(like => like.username === user.username));
+      setIsDisliked(post.dislikes.some(dislike => dislike.username === user.username));
+    }
+  }, [post, user.username]);
 
 
   const handlePreviousMedia = () => {
     if (currentMediaIndex > 0) {
       setCurrentMediaIndex((prevIndex) => prevIndex - 1);
-      setRenderMedia(false);
-      setRenderMedia(true);
     }
   };
 
   const handleNextMedia = () => {
     if (currentMediaIndex < post.media_files.length - 1) {
       setCurrentMediaIndex((prevIndex) => prevIndex + 1);
-      setRenderMedia(false);
-      setRenderMedia(true);
     }
   };
+
 
 
   const handlePostComment = async () => {
     const data = { text: comment }
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/post/${postId}/comment/`, data, config);
+      const response = await axios.post(`${API_BASE_URL}api/post/${postId}/comment/`, data, config);
       // console.log(response.data);
       setComment('');
       setPost((prevPost) => ({
@@ -181,16 +152,12 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
     }
   };
 
-  const handleCloseOverlay = () => {
-    setShowDislikesOverlay(false);
-    setShowLikesOverlay(false);
-  }
 
   const handleRedirect = (username) => {
     navigate(`/timeline/profile/${username}`)
   }
 
-  return (
+  return post ? (
     <div className="timeline-post">
       <div className="timeline-per-post">
         <div className='timeline-post-info'>
@@ -208,14 +175,14 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
           </div>
           <div className='timeline-post-stats'>
             <div className="timeline-post-info-counts">
-              <div className="timeline-post-info-count-likes" onClick={() => setShowLikesOverlay(!showLikesOverlay)}>
+              <div className="timeline-post-info-count-likes" onClick={() => handleUserListTrigger(post.likes, "Likes")}>
                 {`${post.likes.length} likes`}
               </div>
-              <div className="timeline-post-info-count-likes" onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>
+              <div className="timeline-post-info-count-likes" onClick={() => handleUserListTrigger(post.dislikes, "Dislikes")}>
                 {`${post.dislikes.length} dislikes`}
               </div>
               <div className="timeline-post-info-count-comments">
-                <div onClick={() => handleShowPostOverlay(post)} className="timeline-post-info-count-comments">
+                <div onClick={() => handleExpandPostTrigger(post, window.location.pathname)} className="timeline-post-info-count-comments">
                   {`${post.comments.length} comments`}
                 </div>
               </div>
@@ -232,14 +199,14 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
           <div className='timline-post-previous-next-media-buttons'>
             <div className='timeline-post-previous-media-button'>
               {currentMediaIndex !== 0 &&
-                <button onClick={handlePreviousMedia}>
+                <button onClick={() => handlePreviousMedia()}>
                   <FontAwesomeIcon icon={faChevronLeft} />
                 </button>
               }
             </div>
             <div className='timeline-post-next-media-button'>
               {currentMediaIndex !== (post.media_files.length - 1) &&
-                <button onClick={handleNextMedia}>
+                <button onClick={() => handleNextMedia()}>
                   <FontAwesomeIcon icon={faChevronRight} />
                 </button>
               }
@@ -248,23 +215,15 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
 
           <div className='timeline-post-each-media'>
             {post.media_files.length > 0 &&
-              (post.media_files[currentMediaIndex].media_type === 'mp4' || post.media_files[currentMediaIndex].media_type === 'MOV' ? (
-                <VideoPlayer
-                  mediaFile={post.media_files[currentMediaIndex]}
-                  onEnded={handleNextMedia}
-                  playable={true}
-                />
-              ) : (
-                <img src={`${API_BASE_URL}${post.media_files[currentMediaIndex].file}`} alt={post.id} />
-              ))}
-
+              renderMediaContent(post.media_files[currentMediaIndex], null)
+            }
           </div>
 
         </div>
 
         {post.text &&
           <div className='timeline-post-text'>
-            <div onClick={() => handleShowPostOverlay(post)} className="timeline-post-info-count-comments">
+            <div onClick={() => handleExpandPostTrigger(post, window.location.pathname)} className="timeline-post-info-count-comments">
               {`${post.text}`}
             </div>
           </div>
@@ -275,28 +234,22 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
           ></input>
-          <button onClick={handlePostComment}>Post</button>
+          <button onClick={() => handlePostComment()}>Post</button>
         </div>
 
 
       </div>
       <div className="timeline-post-info-user-feedback">
         <div className="timeline-post-info-stats">
-          <div onClick={handleLikeAndUnlike} className='timeline-post-like-unlike-imgs'>
-            {isLiked ?
-              <img src={likedImg} alt="Like"></img>
-              :
-              <img src={unlikedImg} alt="Unlike"></img>
-            }
-            <div onClick={handleDislikeandUndislike} className='timeline-post-like-unlike-imgs'>
-              {isDisliked ?
-                <img src={dislikedImg} alt="Dislike"></img>
-                :
-                <img src={undislikedImg} alt="Undislike"></img>
-              }
+          <div className='timeline-post-like-unlike-imgs'>
+            <div onClick={handleLikeAndUnlike}>
+              <img src={isLiked ? likedImg : unlikedImg} alt="Like" />
             </div>
-            <div onClick={handleDislikeandUndislike} className='timeline-post-more-img'>
-              <div onClick={() => handleShowPostOverlay(post)}>
+            <div onClick={handleDislikeandUndislike} >
+              <img src={isDisliked ? dislikedImg : undislikedImg} alt="Dislike" />
+            </div>
+            <div className='timeline-post-more-img'>
+              <div onClick={() => handleExpandPostTrigger(post, window.location.pathname)}>
                 <img src={three_dots_dark} alt="More"></img>
               </div>
             </div>
@@ -304,14 +257,10 @@ const Post = ({ postInfo, handleShowPostOverlay }) => {
         </div>
 
       </div>
-      {showLikesOverlay && (
-        <UserListOverlay userList={post.likes} onClose={handleCloseOverlay} title={'Likes'} username={post.user.username} />
-      )}
-      {showDislikesOverlay && (
-        <UserListOverlay userList={post.dislikes} onClose={handleCloseOverlay} title={'Dislikes'} username={post.user.username} />
-      )}
     </div>
-  );
+  ) : (
+    <div>Loading...</div>
+  )
 };
 
 export default Post;

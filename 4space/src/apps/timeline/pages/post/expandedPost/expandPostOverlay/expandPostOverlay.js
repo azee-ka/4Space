@@ -30,18 +30,11 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
 
-    const [showUserList, setShowUserList] = useState(false);
-
-    const [finalPostId, setFinalPostId] = useState(null);
-
     const fetchPostData = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/post/${postId}`, config);
             setPost(response.data);
             console.log(response.data);
-            setIsLiked(response.data.likes.find(like => like.username === user.username && !isDisliked));
-            setIsDisliked((response.data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
-
         } catch (error) {
             console.error("Error fetching post data", error);
         }
