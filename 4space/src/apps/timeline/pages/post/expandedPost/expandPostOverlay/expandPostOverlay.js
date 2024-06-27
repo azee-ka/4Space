@@ -9,7 +9,7 @@ import VideoPlayer from "../../../../utils/videoPlayer/videoPlayer";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faChevronLeft, faChevronRight, faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
 import ProfilePicture from "../../../../../../general/utils/profilePicture/getProfilePicture";
-import { timeAgo } from "../../../../../../general/utils/formatDate";
+import { formatDate, timeAgo } from "../../../../../../general/utils/formatDate";
 
 import likedImg from '../../../../../../assets/liked.png';
 import unlikedImg from '../../../../../../assets/unliked.png';
@@ -17,6 +17,8 @@ import dislikedImg from '../../../../../../assets/disliked.png';
 import undislikedImg from '../../../../../../assets/undisliked.png';
 
 const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPostClick, handleUserListTrigger }) => {
+    const { post_id } = useParams();
+
     const { token, user } = useAuthState();
     const config = GetConfig(token);
     const navigate = useNavigate();
@@ -40,6 +42,12 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         }
     };
 
+    useEffect(() => {
+        if (!post_id && !window.location.pathname.includes('post')) {
+            window.history.replaceState(null, '', `/post/${postId}`);
+        }
+    }, [post_id, postId]);
+    
 
     useEffect(() => {
         setCurrentMediaIndex(0);
@@ -189,6 +197,9 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                             <p onClick={() => handleUserListTrigger(post.likes, "Likes")} >{post.likes_count} like{post.likes_count === 1 ? '' : 's'}</p>
                             <p onClick={() => handleUserListTrigger(post.dislikes, "Dislikes")}>{post.dislikes_count} dislike{post.dislikes_count === 1 ? '' : 's'}</p>
                             <p>{post.comments_count} comment{post.comments_count === 1 ? '' : 's'}</p>
+                        </div>
+                        <div className="expand-post-overlay-post-stats-inner" onClick={(e) => e.stopPropagation()}>
+                            <p>Posted {timeAgo(post.created_at)}</p>
                         </div>
                     </div>
                     <div className="expand-post-overlay-user-info" onClick={(e) => e.stopPropagation()}>
