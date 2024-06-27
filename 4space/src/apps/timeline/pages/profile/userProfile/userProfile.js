@@ -7,7 +7,7 @@ import PartialProfile from "./partialProfile/partialProfile";
 import MyProfile from "../myProfile/myProfile";
 
 
-const UserProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverlayPost }) => {
+const UserProfile = ({ profileData, handleUserListTrigger, handleExpandPostTrigger }) => {
     // const { token, user } = useAuthState();
     // const config = GetConfig(token);
     // const { username: paramUsername } = useParams();
@@ -19,7 +19,7 @@ const UserProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOve
         <FullProfile
             userData={profileData.profile}
             handleUserListTrigger={handleUserListTrigger}
-            handleShowExpandedOverlayPost={handleShowExpandedOverlayPost}
+            handleExpandPostTrigger={handleExpandPostTrigger}
         />
     ) : (
         <PartialProfile
