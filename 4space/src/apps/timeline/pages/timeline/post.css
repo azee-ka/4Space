@@ -275,9 +275,23 @@
 }
 
 
+.timeline-post-info-counts {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: rgba(255, 0, 0, 0);
+}
 
-.timeline-post-info-count-likes{
-  cursor: grab;
+.timeline-post-info-counts p {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  font-size: 13px;
+}
+.timeline-post-info-counts p:hover {
+  cursor: pointer;
 }
 
 .timeline-post-info-count-comments a {
@@ -322,11 +336,11 @@
 }
 
 
-.timeline-post-info p {
+/* .timeline-post-info p {
   background-color: rgba(45, 24, 202, 0);
   line-height: 0;
   margin-top: 7%;
-}
+} */
 
 
 .timeline-post-text{

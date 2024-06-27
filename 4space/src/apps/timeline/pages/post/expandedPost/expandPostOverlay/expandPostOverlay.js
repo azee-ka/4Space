@@ -74,7 +74,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     const handlePostComment = async () => {
         const data = { text: comment }
         try {
-            const response = await axios.post(`${API_BASE_URL}api/post/${postId}/comment/`, data, config);
+            const response = await axios.post(`${API_BASE_URL}/api/post/${postId}/comment/`, data, config);
             // console.log(response.data);
             setComment('');
             setPost((prevPost) => ({
@@ -181,7 +181,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                                 </div>
                             }
                         </div>
-                    </div> 
+                    </div>
                 </div>
                 <div className='expand-post-overlay-user-info-comments'>
                     <div className="expand-post-overlay-post-stats">
@@ -206,28 +206,32 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                     <div className="expand-post-overlay-comments" onClick={(e) => e.stopPropagation()}>
                         <div className="expand-post-overlay-list-comments">
                             <div className="expand-post-overlay-list-comments-inner">
-                                {post.comments.map((comment, index) => (
-                                    <div className="expand-post-overlay-per-comment" key={index}>
-                                        <div className="expand-post-overlay-comment-user-info">
-                                            <div className="expand-post-overlay-comment-user-info-profile-pic" onClick={() => handleRedirect(`/profile/${post.user.username}`, onClose)}>
-                                                <ProfilePicture src={comment.user.profile_picture} />
-                                            </div>
-                                            <div className="expand-post-overlay-comment-user-info-username">
-                                                <p onClick={() => handleRedirect(`/profile/${comment.user.username}`, onClose)}>
-                                                    {comment.user.username}
-                                                </p>
-                                                <div className="expanded-post-overlay-commented-post">
-                                                    <p>Posted {timeAgo(comment.created_at)}</p>
+                                {post.comments.length > 0 ? (
+                                    post.comments.map((comment, index) => (
+                                        <div className="expand-post-overlay-per-comment" key={index}>
+                                            <div className="expand-post-overlay-comment-user-info">
+                                                <div className="expand-post-overlay-comment-user-info-profile-pic" onClick={() => handleRedirect(`/profile/${post.user.username}`, onClose)}>
+                                                    <ProfilePicture src={comment.user.profile_picture} />
+                                                </div>
+                                                <div className="expand-post-overlay-comment-user-info-username">
+                                                    <p onClick={() => handleRedirect(`/profile/${comment.user.username}`, onClose)}>
+                                                        {comment.user.username}
+                                                    </p>
+                                                    <div className="expanded-post-overlay-commented-post">
+                                                        <p>Posted {timeAgo(comment.created_at)}</p>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div className="expand-post-overlay-comment-text">
+                                                <p>{comment.text}</p>
+                                            </div>
                                         </div>
-                                        <div className="expand-post-overlay-comment-text">
-                                            <p>
-                                                {comment.text}
-                                            </p>
-                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="expand-post-overlay-no-comments">
+                                        <p>No Comments</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                         <div className="expand-post-overlay-write-comment">

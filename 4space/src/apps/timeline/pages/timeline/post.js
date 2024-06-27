@@ -175,17 +175,15 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
           </div>
           <div className='timeline-post-stats'>
             <div className="timeline-post-info-counts">
-              <div className="timeline-post-info-count-likes" onClick={() => handleUserListTrigger(post.likes, "Likes")}>
+              <p onClick={() => handleUserListTrigger(post.likes, "Likes")}>
                 {`${post.likes.length} likes`}
-              </div>
-              <div className="timeline-post-info-count-likes" onClick={() => handleUserListTrigger(post.dislikes, "Dislikes")}>
+              </p>
+              <p onClick={() => handleUserListTrigger(post.dislikes, "Dislikes")}>
                 {`${post.dislikes.length} dislikes`}
-              </div>
-              <div className="timeline-post-info-count-comments">
-                <div onClick={() => handleExpandPostTrigger(post, window.location.pathname)} className="timeline-post-info-count-comments">
-                  {`${post.comments.length} comments`}
-                </div>
-              </div>
+              </p>
+              <p onClick={() => handleExpandPostTrigger(post, window.location.pathname)} className="timeline-post-info-count-comments">
+                {`${post.comments.length} comments`}
+              </p>
             </div>
           </div>
           <div className='timeline-post-stats-info-container'>
