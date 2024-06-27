@@ -72,6 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
         
             # Check if the inviter is now unrestricted and add the user to the unrestricted group
+        print(f"is_restricted {user_id} : {is_restricted}")
         if not is_restricted:
             await self.channel_layer.group_add(
                 self.room_group_name_unrestricted,
@@ -138,6 +139,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user_id = data.get('user_id')
         chat = await sync_to_async(Chat.objects.get)(uuid=self.chat_uuid)
         
+        # Retrieve the inviter's ChatParticipant instance
+        inviter_participant = await sync_to_async(ChatParticipant.objects.get)(
+            chat=chat,
+            is_inviter=True
+        )
+        
+        # Set the inviter's restricted attribute to False if it's True
+        if inviter_participant.restricted:
+            inviter_participant.restricted = False
+            await sync_to_async(inviter_participant.save)()
+            
         participant, created = await sync_to_async(ChatParticipant.objects.get_or_create)(
             chat=chat, 
             participant_id=user_id, 
