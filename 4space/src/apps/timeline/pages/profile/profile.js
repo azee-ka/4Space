@@ -7,7 +7,7 @@ import { useAuthState } from "../../../../general/components/Authentication/util
 import MyProfile from "./myProfile/myProfile";
 import UserProfile from "./userProfile/userProfile";
 
-const Profile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) => {
+const Profile = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
     const navigate = useNavigate();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
@@ -61,9 +61,9 @@ const Profile = ({ handleUserListTrigger, handleShowExpandedOverlayPost }) => {
 
     return profileViewData ? (
         (profileViewData.view === 'self' || paramUsername === undefined) ? (
-            <MyProfile profileData={profileViewData.profile} handleUserListTrigger={handleUserListTrigger} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />
+            <MyProfile profileData={profileViewData.profile} handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
         ) : (
-            <UserProfile profileData={profileViewData} handleUserListTrigger={handleUserListTrigger} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />
+            <UserProfile profileData={profileViewData} handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
         )
     ) : (
         <div>Loading...</div>

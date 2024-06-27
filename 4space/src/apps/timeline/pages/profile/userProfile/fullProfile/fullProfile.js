@@ -9,7 +9,7 @@ import { formatDate } from "../../../../../../general/utils/formatDate";
 import { useNavigate, useParams } from "react-router-dom";
 import PostsGrid from "../../../post/postGrid/postGrid";
 
-const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverlayPost }) => {
+const FullProfile = ({ userData, handleUserListTrigger, handleExpandPostTrigger }) => {
     const { username } = useParams();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
@@ -120,7 +120,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleShowExpandedOverla
                             </div>
                         </div>
                         <div>
-                            {profileData && profileData.posts && <PostsGrid posts={profileData.posts} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />}
+                            {profileData && profileData.posts && <PostsGrid posts={profileData.posts} handleExpandPostTrigger={handleExpandPostTrigger} />}
                         </div>
                     </div>
 

@@ -33,27 +33,3 @@ class TimelineUser(models.Model):
 
     def __str__(self):
         return self.user.username
-
-    def add_follower(self, user):
-        self.followers.add(user)
-
-    def remove_follower(self, user):
-        self.followers.remove(user)
-
-    def add_connection(self, user):
-        self.connections.add(user)
-        user.connections.add(self)
-
-    def remove_connection(self, user):
-        self.connections.remove(user)
-        user.connections.remove(self)
-        
-    def send_follow_request(self, user):
-        self.follow_requests.add(user)
-
-    def accept_follow_request(self, user):
-        self.follow_requests.remove(user)
-        self.add_follower(user)
-
-    def __str__(self):
-        return self.user.username

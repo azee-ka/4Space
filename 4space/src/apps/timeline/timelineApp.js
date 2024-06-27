@@ -19,20 +19,32 @@ const TimelineApp = () => {
   const [userList, setUserList] = useState([]);
   const [userListTitle, setUserListTitle] = useState('');
 
-  const [showExpandedPostOverlay, setShowExpandedPostOverlay] = useState(false);
-  const [expandPostPreviousLocation, setExpandPostPreviousLocation] = useState('');
+  const [postId, setPostId] = useState();
+  const [previousLocation, setPreviousLocation] = useState('');
 
-  const [expandPostId, setExpandPostId] = useState('');
-  const [expandPrevPostId, setExpandPrevPostId] = useState('');
-  const [expandNextPostId, setExpandNextPostId] = useState('');
+  const [showExpandPost, setShowExpandPost] = useState(false);
 
-  const handleShowExpandedOverlayPost = (post_id, expand_post_previous_location, prevPostId, nextPostId) => {
-      setShowExpandedPostOverlay(true);
-      setExpandPostId(post_id);
-      setExpandPrevPostId(prevPostId);
-      setExpandNextPostId(nextPostId);
-      setExpandPostPreviousLocation(expand_post_previous_location);
-  }
+  const handleExpandPostTrigger = (post, previousLocation) => {
+    setShowExpandPost(true);
+    setPostId(post.id);
+    setPreviousLocation(previousLocation);
+  };
+
+
+  const handlePrevPostClick = (prevPostId) => {
+    console.log('prevPostId', prevPostId);
+    setPostId(prevPostId);
+    window.history.replaceState(null, '', `/post/${prevPostId}`);
+    console.log(window.location.pathname)
+}
+
+const handleNextPostClick = (nextPostId) => {
+    console.log('nextPostId', nextPostId);
+    setPostId(nextPostId);
+    window.history.replaceState(null, '', `/post/${nextPostId}`);
+    console.log(window.location.pathname)
+}
+
 
   const handleUserListTrigger = (userListParam, titleParam) => {
     setShowUserList(true);
@@ -54,12 +66,12 @@ const TimelineApp = () => {
     {
       path: '/profile',
       name: 'Profile',
-      element: <Profile handleUserListTrigger={handleUserListTrigger} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />
+      element: <Profile handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
     },
     {
       path: '/profile/:username',
       name: 'User Profile',
-      element: <Profile handleUserListTrigger={handleUserListTrigger} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />
+      element: <Profile handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger}/>
     },
     {
       path: '/createPost',
@@ -115,15 +127,12 @@ const TimelineApp = () => {
                     userListTitle={userListTitle}
                     showUserList={showUserList}
                     setShowUserList={setShowUserList}
-                    showExpandedPostOverlay={showExpandedPostOverlay}
-                    setShowExpandedPostOverlay={setShowExpandedPostOverlay}
-                    expandPostPreviousLocation={expandPostPreviousLocation}
-                    postId={expandPostId}
-                    prevPostId={expandPrevPostId}
-                    nextPostId={expandNextPostId}
-                    setPostId={setExpandPostId}
-                    setPrevPostId={setExpandPrevPostId} 
-                    setNextPostId={setExpandNextPostId}
+                    postId={postId}
+                    previousLocation={previousLocation}
+                    handlePrevPostClick={handlePrevPostClick}
+                    handleNextPostClick={handleNextPostClick}
+                    showExpandPost={showExpandPost}
+                    setShowExpandPost={setShowExpandPost}
                   >
                     {route.element}
                   </TimelineLayout>

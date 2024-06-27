@@ -8,7 +8,7 @@ import { formatDate } from "../../../../../general/utils/formatDate";
 import PostsGrid from "../../post/postGrid/postGrid";
 import { useNavigate } from "react-router-dom";
 
-const MyProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverlayPost }) => {
+const MyProfile = ({ profileData, handleUserListTrigger, handleExpandPostTrigger }) => {
     const navigate = useNavigate();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
@@ -63,7 +63,7 @@ const MyProfile = ({ profileData, handleUserListTrigger, handleShowExpandedOverl
                             </div>
                         </div>
                         <div className='my-profile-display-posts-grid'>
-                            {profileData && profileData.posts && <PostsGrid posts={profileData.posts} handleShowExpandedOverlayPost={handleShowExpandedOverlayPost} />}
+                            {profileData && profileData.posts && <PostsGrid posts={profileData.posts} handleExpandPostTrigger={handleExpandPostTrigger} />}
                         </div>
                     </div>
 

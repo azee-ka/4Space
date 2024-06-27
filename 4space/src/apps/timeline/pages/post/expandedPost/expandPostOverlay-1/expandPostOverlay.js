@@ -16,12 +16,16 @@ import unlikedImg from '../../../../../../assets/unliked.png';
 import dislikedImg from '../../../../../../assets/disliked.png';
 import undislikedImg from '../../../../../../assets/undisliked.png';
 
-const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPostClick }) => {
+const ExpandPostOverlay = ({ onClose, postId: postIdForOverlay, prevPostId: previousPostId, nextPostId, setPostId: setPostIdForOverlay, setPrevPostId, setNextPostId }) => {
     const { token, user } = useAuthState();
     const config = GetConfig(token);
     const navigate = useNavigate();
+
+    const { post_id: postIdParam } = useParams();
+
     const [post, setPost] = useState({});
 
+    const [loading, setLoading] = useState(true);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [renderMedia, setRenderMedia] = useState(true);
 
@@ -30,24 +34,77 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
 
-    const [finalPostId, setFinalPostId] = useState(null);
+    const [postId, setPostId] = useState(null);
+    const [postIdNext, setPostIdNext] = useState(null);
+    const [postIdPrevious, setPostIdPrevious] = useState(null);
 
-    const fetchPostData = async () => {
+    const fetchPostData = async (id) => {
+        setLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/post/${postId}`, config);
+            const response = await axios.get(`${API_BASE_URL}/api/post/${id}`, config);
             setPost(response.data);
+            setLoading(false);
             console.log(response.data);
         } catch (error) {
             console.error("Error fetching post data", error);
+            setLoading(false);
         }
     };
 
+    useEffect(() => {
+        fetchPostData(postIdForOverlay);
+    }, [postIdForOverlay]);
+
 
     useEffect(() => {
-        setCurrentMediaIndex(0);
-        fetchPostData();
+        if (postIdForOverlay) {
+            setPostId(postIdForOverlay);
+            window.history.replaceState(null, null, `/timeline/post/${postIdForOverlay}`);
+
+            setPostIdNext(nextPostId);
+            console.log("next p", nextPostId);
+            setPostIdPrevious(previousPostId);
+
+        } else {
+            setPostId(postIdParam);
+        }
+
     }, [postId]);
 
+
+    useEffect(() => {
+        setLoading(false); // Set loading to false once user data is fetched
+    }, [setLoading]);
+
+
+    useEffect(() => {
+        if (!loading) {
+
+            fetch(`${API_BASE_URL}/api/post/${postId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Token ${token}`
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    setPost(data);
+
+                    // Check if user data is available
+                    //   console.log(data);
+                    if (user && user.username) {
+                        setIsLiked(data.likes.find(like => like.username === user.username && !isDisliked));
+                        setIsDisliked((data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
+                    } else {
+                        console.warn('User data not available yet.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching expanded post:', error);
+                });
+        }
+    }, [postId]);
 
 
     const handlePreviousMedia = () => {
@@ -70,7 +127,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     const handlePostComment = async () => {
         const data = { text: comment }
         try {
-            const response = await axios.post(`${API_BASE_URL}api/post/${postId}/comment/`, data, config);
+            const response = await axios.post(`${API_BASE_URL}api/post/${postIdForOverlay}/comment/`, data, config);
             // console.log(response.data);
             setComment('');
             setPost((prevPost) => ({
@@ -90,7 +147,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         setIsLiked(isLiked && isDisliked);
 
         const method = (isDisliked === true) ? 'DELETE' : 'POST';
-        fetch(`${API_BASE_URL}api/post/${postId}/dislike/`, {
+        fetch(`${API_BASE_URL}api/post/${postIdForOverlay}/dislike/`, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -112,7 +169,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         setIsDisliked(isDisliked && isLiked);
 
         const method = (isLiked === true) ? 'DELETE' : 'POST';
-        fetch(`${API_BASE_URL}api/post/${postId}/like/`, {
+        fetch(`${API_BASE_URL}api/post/${postIdForOverlay}/like/`, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -126,7 +183,6 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
             })
             .catch(error => console.error('Error toggling like:', error));
     };
-
 
 
 
@@ -153,36 +209,49 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         window.location.reload();
     };
 
+    const handleNavigation = (newPostId) => {
+        setPostIdForOverlay(newPostId);
+        navigate(`/timeline/post/${nextPostId}`);
+        fetchPostData(newPostId);
+    };
 
-    return (post && post.user && post !== null) ? (
+    const handlePrevPostClick = () => {
+        if (previousPostId) {
+            handleNavigation(previousPostId);
+        }
+    };
+
+    const handleNextPostClick = () => {
+        if (nextPostId) {
+            handleNavigation(nextPostId);
+        }
+    };
+
+
+
+    return (post && post.media_files) ? (
         <div className='expand-post-overlay' onClick={() => onClose()}>
             <div className="expand-post-overlay-inner">
                 <div className="expand-post-overlay-previous-next-post-btns">
                     <div className="expand-post-overlay-previous-next-post-btns-inner">
                         <div className="expand-post-overlay-previous-post-btn">
-                            {post.next_post_uuid &&
-                                <div onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => handlePrevPostClick(post.next_post_uuid)}>
-                                        <FontAwesomeIcon icon={faChevronLeft} />
-                                    </button>
-                                </div>
-                            }
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => handlePrevPostClick()}>
+                                    <FontAwesomeIcon icon={faChevronLeft} />
+                                </button>
+                            </div>
                         </div>
                         <div className="expand-post-overlay-next-post-btn">
-                            {post.previous_post_uuid &&
-                                <div onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => handleNextPostClick(post.previous_post_uuid)}>
-                                        <FontAwesomeIcon icon={faChevronRight} />
-                                    </button>
-                                </div>
-                            }
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => handleNextPostClick()}>
+                                    <FontAwesomeIcon icon={faChevronRight} />
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
                 <div className='expand-post-overlay-user-info-comments'>
-                    <div className="expand-post-overlay-post-stats">
-                        
-                    </div>
                     <div className="expand-post-overlay-user-info" onClick={(e) => e.stopPropagation()}>
                         <div className="expand-post-overlay-user-info-inner">
                             <div className="expand-post-overlay-user-info-profile-pic" onClick={() => handleRedirect(`/profile/${post.user.username}`, onClose)}>
@@ -277,7 +346,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         </div>
     ) : (
         <div>Loading...</div>
-    );
-}
+    )
+};
 
 export default ExpandPostOverlay;
