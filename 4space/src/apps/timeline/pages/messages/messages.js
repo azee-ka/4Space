@@ -77,8 +77,8 @@ const Messages = () => {
     const determineUser = (message) => {
         // console.log(message);
         if (message.participants.length !== 0) {
-            const inviter = message.inviter.participant;
-            return (inviter.id === user.id) ? message.participants[0] : message.inviter;
+            const inviter = message.inviter.participant.user;
+            return (inviter.id === user.id) ? message.participants[0].participant.user : message.inviter.participant.user;
         }
     };
 
@@ -147,15 +147,15 @@ const Messages = () => {
                                                             <div className='personal-messages-list-per-message-inner'>
                                                                 <div className='personal-messages-list-per-message-inner-inner'>
                                                                     <div className='personal-messages-per-user-profile-picture-container'>
-                                                                        <ProfilePicture src={determineUser(per_message_element).participant.profile_picture} />
+                                                                        <ProfilePicture src={determineUser(per_message_element).profile_picture} />
                                                                     </div>
                                                                     <div className='personal-messages-per-user-info'>
                                                                         <div className='personal-messages-per-user-info-inner'>
                                                                             <div>
-                                                                                {`${determineUser(per_message_element).participant.first_name} ${determineUser(per_message_element).participant.last_name}`}
+                                                                                {`${determineUser(per_message_element).first_name} ${determineUser(per_message_element).last_name}`}
                                                                             </div>
                                                                             <div>
-                                                                                <p>@{determineUser(per_message_element).participant.username}</p>
+                                                                                <p>@{determineUser(per_message_element).username}</p>
                                                                                 {per_message_element.participants.length > 1 &&
                                                                                     <p>and {per_message_element.participants.length - 1} more</p>
                                                                                 }

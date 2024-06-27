@@ -82,7 +82,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                 console.log(response.data);
                 setOtherUserChatInfo(response.data);
                 const messageCount = await fetchPastMessages();
-                setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.participant.username !== user.username);
+                setIsRestricted(response.data.restricted && response.data.participants.length !== 0 && messageCount !== 0 && response.data.inviter.participant.user.username !== user.username);
                 setChatExists(true);
             } catch (error) {
                 if (error.response) {
@@ -274,7 +274,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                     <div className='user-chat-participants-profile-pics'>
                         {otherUserChatInfo.participants.map((participant, index) => (
                             <div key={index} className='other-user-chat-profile-picture'>
-                                <ProfilePicture src={participant.participant.profile_picture} />
+                                <ProfilePicture src={participant.participant.user.profile_picture} />
                             </div>
                         ))}
                     </div>
@@ -282,8 +282,8 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                         {otherUserChatInfo.participants.map((participant, index) => (
                             <div key={index} className='other-user-chat-username'>
                                 <p>
-                                    <Link to={`/timeline/profile/${participant.participant.username}`}>
-                                        {`${participant.participant.first_name}`} {otherUserChatInfo.participants.length === 1 && participant.participant.last_name}
+                                    <Link to={`/timeline/profile/${participant.participant.user.username}`}>
+                                        {`${participant.participant.user.first_name}`} {otherUserChatInfo.participants.length === 1 && participant.participant.user.last_name}
                                     </Link>
                                     {index < 5 && index < otherUserChatInfo.participants.length - 1 && ', '}
                                 </p>
@@ -306,7 +306,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                                     <div className="message-time">{formatDate(message.timestamp)}</div>
                                 )}
                                 <div
-                                    className={`message-bubble ${message.sender.id === user.id ? 'sent' : 'received'} ${shouldIncreaseSpacing(messages[index - 1], message) ? 'increased-spacing' : ''}`}
+                                    className={`message-bubble ${message.sender.user.id === user.id ? 'sent' : 'received'} ${shouldIncreaseSpacing(messages[index - 1], message) ? 'increased-spacing' : ''}`}
                                 >
                                     {message.content}
                                 </div>

@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from ...user.interactUser.models import InteractUser
+from ...user.baseUser.models import BaseUser
 from ...user.baseUser.serializers import PartialUserSerializer
 from rest_framework import status
 
@@ -19,7 +20,7 @@ def search_users(request):
     search_query = request.GET.get('query', '')
 
     try:
-        users = InteractUser.objects.filter(Q(username__icontains=search_query))
+        users = BaseUser.objects.filter(Q(username__icontains=search_query))
         serializer = PartialUserSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except ObjectDoesNotExist:

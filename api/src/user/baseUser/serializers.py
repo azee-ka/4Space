@@ -16,6 +16,13 @@ class UserSerializer(serializers.ModelSerializer):
         model = BaseUser
         fields = ['id', 'username', 'profile_picture', 'first_name', 'last_name', 'date_joined']
 
+
+class IdealUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseUser
+        fields = ['id', 'username', 'profile_picture', 'first_name', 'last_name']
+
+
 class PartialUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseUser

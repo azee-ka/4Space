@@ -103,15 +103,15 @@ const RequestChatsList = ({ handleRequestChatsViewToggle, chatToViewObj, setChat
                                         <div className='requested-chat-list-per-message-inner'>
                                             <div className='requested-chat-list-per-message-inner-inner'>
                                                 <div className='requested-chat-per-user-profile-picture-container'>
-                                                    <ProfilePicture src={determineUser(per_message_element).participant.profile_picture} />
+                                                    <ProfilePicture src={determineUser(per_message_element).profile_picture} />
                                                 </div>
                                                 <div className='requested-chat-per-user-info'>
                                                     <div className='requested-chat-per-user-info-inner'>
                                                         <div>
-                                                            {`${determineUser(per_message_element).participant.first_name} ${determineUser(per_message_element).participant.last_name}`}
+                                                            {`${determineUser(per_message_element).first_name} ${determineUser(per_message_element).last_name}`}
                                                         </div>
                                                         <div>
-                                                            <p>@{determineUser(per_message_element).participant.username}</p>
+                                                            <p>@{determineUser(per_message_element).username}</p>
                                                             {per_message_element.participants.length > 1 &&
                                                                 <p>and {per_message_element.participants.length - 1} more</p>
                                                             }

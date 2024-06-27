@@ -3,14 +3,15 @@
 from rest_framework import serializers
 from .models import Chat, Message, ChatParticipant
 from ...user.baseUser.models import BaseUser
-from ...user.baseUser.serializers import BaseUserSerializer
+from ...user.baseUser.serializers import BaseUserSerializer, IdealUserSerializer
+from ...user.timelineUser.models import TimelineUser
 from django.shortcuts import get_object_or_404
 
 class MessageBaseUserSerializer(serializers.ModelSerializer):
+    user = IdealUserSerializer(read_only=True)
     class Meta:
-        model = BaseUser
-        fields = ['id', 'username', 'profile_picture', 'first_name', 'last_name']
-
+        model = TimelineUser
+        fields = ['user'] 
 
 
 class ChatParticipantSerializer(serializers.ModelSerializer):
@@ -45,12 +46,12 @@ class ChatSerializer(serializers.ModelSerializer):
         fields = ['id', 'uuid', 'participants', 'created_at', 'messages', 'inviter', 'me']
 
     def get_participants(self, obj):
-        user = self.context['request'].user.interactuser
+        user = self.context['request'].user.interactuser.timeline_user
         participants = obj.chatparticipant_set.exclude(participant=user)
         return ChatParticipantSerializer(participants, many=True).data
     
     def get_inviter(self, obj):
-        user = self.context['request'].user.interactuser
+        user = self.context['request'].user.interactuser.timeline_user
         first_message = obj.messages.order_by('timestamp').first()
         if first_message:
             inviter = first_message.sender
@@ -60,7 +61,7 @@ class ChatSerializer(serializers.ModelSerializer):
         return ChatParticipantSerializer(participant).data
     
     def get_me(self, obj):
-        user = self.context['request'].user.interactuser
+        user = self.context['request'].user.interactuser.timeline_user
         try:
             participant = obj.chatparticipant_set.get(participant=user)
             return ChatParticipantSerializer(participant).data
@@ -81,12 +82,12 @@ class UserChatSerializer(serializers.ModelSerializer):
         fields = ['id', 'uuid', 'restricted', 'participants', 'inviter', 'me']
 
     def get_participants(self, obj):
-        user = self.context['request'].user.interactuser
+        user = self.context['request'].user.interactuser.timeline_user
         participants = obj.chatparticipant_set.exclude(participant=user)
         return ChatParticipantSerializer(participants, many=True).data
 
     def get_inviter(self, obj):
-        user = self.context['request'].user.interactuser
+        user = self.context['request'].user.interactuser.timeline_user
         first_message = obj.messages.order_by('timestamp').first()
         if first_message:
             inviter = first_message.sender
@@ -97,7 +98,7 @@ class UserChatSerializer(serializers.ModelSerializer):
 
     def get_restricted(self, obj):
         # Assuming you want to check if the current user is restricted in this chat
-        user = self.context['request'].user.interactuser
+        user = self.context['request'].user.interactuser.timeline_user
         try:
             participant = obj.chatparticipant_set.get(participant=user)
             return participant.restricted
@@ -106,6 +107,6 @@ class UserChatSerializer(serializers.ModelSerializer):
 
         
     def get_me(self, obj):
-        user = self.context['request'].user.interactuser
+        user = self.context['request'].user.interactuser.timeline_user
         participant = obj.chatparticipant_set.get(participant=user)
         return ChatParticipantSerializer(participant).data

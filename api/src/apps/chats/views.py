@@ -14,7 +14,7 @@ from channels.layers import get_channel_layer
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_chat(request):
-    user = request.user.interactuser
+    user = request.user.interactuser.timeline_user
     usernames = request.data.get('usernames', [])
 
     if not usernames:
@@ -25,7 +25,7 @@ def create_chat(request):
         participant = get_user_by_username(username)
         if not participant:
             return Response({"error": f"User '{username}' not found"}, status=status.HTTP_404_NOT_FOUND)
-        participants.append(participant.interactuser)
+        participants.append(participant.interactuser.timeline_user)
 
     participants_set = set(participants)
     existing_chats = Chat.objects.annotate(num_participants=Count('chatparticipant')).filter(num_participants=len(participants_set))
@@ -54,30 +54,10 @@ def create_chat(request):
 
 
 
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def accept_chat_invitation(request, chat_uuid):
-#     user_id = request.user.id
-#     chat = get_object_or_404(Chat, uuid=chat_uuid)
-
-#     # Get or create the ChatParticipant object for the user in the chat
-#     participant, created = ChatParticipant.objects.get_or_create(chat=chat, participant_id=user_id)
-
-#     # Update the user's status for this chat to mark it as accepted and unrestricted
-#     if not created:
-#         participant.accepted = True
-#         participant.restricted = False
-#         participant.save()
-    
-#     return Response({"message": "Chat invitation accepted"}, status=status.HTTP_200_OK)
-
-
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def reject_chat_invitation(request, chat_uuid):
-    user = request.user.interactuser
+    user = request.user.interactuser.timeline_user
     chat = get_object_or_404(Chat, uuid=chat_uuid)
 
     # Remove the user from the chat participants
@@ -95,7 +75,7 @@ def reject_chat_invitation(request, chat_uuid):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def block_report_chat_invitation(request, chat_uuid):
-    user = request.user.interactuser
+    user = request.user.interactuser.timeline_user
     chat = get_object_or_404(Chat, uuid=chat_uuid, chatparticipant__participant=user, chatparticipant__restricted=True)
 
     # Assuming there's a block model or method to handle blocking users
@@ -124,7 +104,7 @@ class MessagePagination(LimitOffsetPagination):
 @permission_classes([IsAuthenticated])
 def list_past_messages(request, chat_uuid):
     chat = get_object_or_404(Chat, uuid=chat_uuid)
-    user = request.user.interactuser
+    user = request.user.interactuser.timeline_user
 
     # Check if the user is the inviter or has accepted the invitation
     is_inviter = ChatParticipant.objects.filter(chat=chat, participant=user, is_inviter=True).exists()
@@ -176,7 +156,7 @@ def list_past_messages(request, chat_uuid):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_user_chats(request):
-    user = request.user.interactuser
+    user = request.user.interactuser.timeline_user
 
     # Retrieve all chats where the user is a participant and the invitation is accepted
     user_chats = Chat.objects.filter(chatparticipant__participant=user, chatparticipant__restricted=False)
@@ -196,7 +176,7 @@ def list_user_chats(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pending_received_chat_invitations(request):
-    user = request.user.interactuser
+    user = request.user.interactuser.timeline_user
     # Chats where the user is a participant and the chat has messages
     pending_invitations = Chat.objects.filter(chatparticipant__participant=user, chatparticipant__restricted=True).annotate(
         has_messages=Exists(Message.objects.filter(chat_id=OuterRef('id')))
@@ -209,7 +189,7 @@ def pending_received_chat_invitations(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pending_sent_chat_invitations(request):
-    user = request.user.interactuser
+    user = request.user.interactuser.timeline_user
     # Chats where the user is a participant and the chat has messages
     pending_invitations = Chat.objects.filter(chatparticipant__participant=user, chatparticipant__restricted=True).annotate(
         has_messages=Exists(Message.objects.filter(chat_id=OuterRef('id')))

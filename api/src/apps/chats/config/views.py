@@ -11,7 +11,7 @@ def save_message(request):
 
         if chat_id and content:
             chat = get_object_or_404(Chat, pk=chat_id)
-            message = Message(chat=chat, sender=request.user, content=content)
+            message = Message(chat=chat, sender=request.user.interactuser.timeline_user, content=content)
             message.save()
 
             return JsonResponse({'success': True})
