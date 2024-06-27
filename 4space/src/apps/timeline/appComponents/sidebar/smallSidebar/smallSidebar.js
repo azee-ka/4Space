@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 const SmallSidebar = ({ setShowCreatePostOverlay }) => {
     
     const taskFlow = [
+        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Timeline', path: '/timeline', type: 'link' },
         { icon: <FontAwesomeIcon icon={faEdit} />, label: 'Create Post', onClick: () => setShowCreatePostOverlay(true), type: 'button' },
         { icon: <ChatBubbleLeftRightIcon className='chat-icon'/>, label: 'Messages', path: '/timeline/messages', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faCalendar} />, label: 'Calendar', path: '/calendar', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faFolder} />, label: 'Categories', path: '/categories', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faCog} />, label: 'Settings', path: '/settings', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faCog} />, label: 'Settings', path: '/timeline/preferences', type: 'link' },
     ];
 
     return (

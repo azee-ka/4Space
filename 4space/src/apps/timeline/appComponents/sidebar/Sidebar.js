@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream } from '@fortawesome/free-solid-svg-icons';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 function Sidebar({ isOpen, onClose, setShowCreatePostOverlay }) {
     const taskFlow = [
+        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Timeline', path: '/timeline', type: 'link' },
         { icon: <FontAwesomeIcon icon={faEdit} />, label: 'Create Post', onClick: () => setShowCreatePostOverlay(true), type: 'button' },
-        { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Add Task', path: '/add-task', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faCalendar} />, label: 'Calendar', path: '/calendar', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faFolder} />, label: 'Categories', path: '/categories', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faCog} />, label: 'Settings', path: '/settings', type: 'link' },
+        { icon: <ChatBubbleLeftRightIcon className='chat-icon'/>, label: 'Messages', path: '/timeline/messages', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faCog} />, label: 'Settings', path: '/timeline/preferences', type: 'link' },
     ];
 
     const [options] = useState(taskFlow);

@@ -55,7 +55,7 @@ const Profile = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
         handleFetchUserData();
 
         if (user.username === paramUsername) {
-            navigate('/profile', { replace: true });
+            navigate('/timeline/profile', { replace: true });
         }
     }, [finalUserId]);
 

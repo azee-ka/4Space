@@ -97,6 +97,7 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
 
     useEffect(() => {
         handleCloseOverlays();
+        setShowUserList(false);
     }, [location]);
 
     usePersistentWebSocket(

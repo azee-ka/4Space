@@ -1,6 +1,6 @@
 // userListOverlay.js
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link, useNavigate } from 'react-router-dom'; // Import Link
 import { useAuthState } from '../../../../general/components/Authentication/utils/AuthProvider';
 import API_BASE_URL from '../../../../config';
 import ProfilePicture from '../../../../general/utils/profilePicture/getProfilePicture';
@@ -8,29 +8,11 @@ import './userListOverlay.css'; // Import the CSS file
 import crossIcon from '../../../../assets/cross-icon.png';
 
 const UserListOverlay = ({ userList, onClose, title }) => {
-    const { user } = useAuthState(); // Use the setUser function from the user context
-
-    useEffect(() => {
-        document.addEventListener('mousedown', handleCloseOverlay);
-        return () => document.removeEventListener('mousedown', handleCloseOverlay);
-    }, []);
-
-    const handleCloseOverlay = (event) => {
-        if (event.target.classList.contains('user-list-overlay')) {
-            onClose();
-        }
-    };
-
-
-    const myUsernameIsNotSameUser = (thisUser) => {
-        return !(user.username === thisUser);
-    }
-
-    // console.log(userList);
+    const navigate = useNavigate();
 
     return userList ? (
-        <div id="user-list-overlay" className="user-list-overlay">
-            <div className='user-list-container'>
+        <div id="user-list-overlay" className="user-list-overlay" onClick={() => onClose()}>
+            <div className='user-list-container' onClick={(e) => e.stopPropagation()} >
                 <button className="user-close-button" onClick={onClose}>
                     <img src={crossIcon} alt="Clear" />
                 </button>
@@ -41,7 +23,7 @@ const UserListOverlay = ({ userList, onClose, title }) => {
                 {userList.length !== 0 && (
                     <div className="user-list">
                         {userList.map((thisUser, index) => (
-                            <a href={myUsernameIsNotSameUser(thisUser.username) ? `http://localhost:3000/profile/${thisUser.username}` : `http://localhost:3000/profile`} key={index}>
+                            <a href={`/timeline/profile/${thisUser.username}`} key={index}>
                                 <div className="user-list-item">
                                     <ProfilePicture src={thisUser.profile_picture} />
                                     <span>{thisUser.username}</span>
