@@ -18,7 +18,7 @@ import usePersistentWebSocket from '../../../general/utils/websocket/websocket';
 import SmallSidebar from '../appComponents/sidebar/smallSidebar/smallSidebar';
 import PostFrame from '../pages/post/expandedPost/postFrame';
 
-const TimelineLayout = ({ children, userList, userListTitle, showUserList, setShowUserList, postId, previousLocation, handlePrevPostClick, handleNextPostClick, showExpandPost, setShowExpandPost }) => {
+const TimelineLayout = ({ children, userList, userListTitle, showUserList, setShowUserList, postId, previousLocation, handlePrevPostClick, handleNextPostClick, showExpandPost, setShowExpandPost, handleUserListTrigger }) => {
     const { token, isAuthenticated, user } = useAuthState();
     const config = GetConfig(token);
     const location = useLocation();
@@ -141,7 +141,7 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
             {notificationsMenuOpen && <Notifications notifications={notifications} setNotificationCount={setNotificationCount} />}
             {showUserList && <UserListOverlay userList={userList} title={userListTitle} onClose={() => setShowUserList(false)} />}
             {showCreatePostOverlay && <CreatePostOverlay onClose={() => setShowCreatePostOverlay(false)} />}
-            {showExpandPost && <PostFrame postId={postId} onClose={handleExpandPostClose} handlePrevPostClick={handlePrevPostClick} handleNextPostClick={handleNextPostClick} />}
+            {showExpandPost && <PostFrame postId={postId} onClose={handleExpandPostClose} handlePrevPostClick={handlePrevPostClick} handleNextPostClick={handleNextPostClick} handleUserListTrigger={handleUserListTrigger} />}
         </div>
     );
 };

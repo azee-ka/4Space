@@ -133,6 +133,7 @@ const handleNextPostClick = (nextPostId) => {
                     handleNextPostClick={handleNextPostClick}
                     showExpandPost={showExpandPost}
                     setShowExpandPost={setShowExpandPost}
+                    handleUserListTrigger={handleUserListTrigger}
                   >
                     {route.element}
                   </TimelineLayout>

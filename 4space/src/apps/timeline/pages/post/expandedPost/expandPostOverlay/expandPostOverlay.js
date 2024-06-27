@@ -16,7 +16,7 @@ import unlikedImg from '../../../../../../assets/unliked.png';
 import dislikedImg from '../../../../../../assets/disliked.png';
 import undislikedImg from '../../../../../../assets/undisliked.png';
 
-const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPostClick }) => {
+const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPostClick, handleUserListTrigger }) => {
     const { token, user } = useAuthState();
     const config = GetConfig(token);
     const navigate = useNavigate();
@@ -30,6 +30,8 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
 
+    const [showUserList, setShowUserList] = useState(false);
+
     const [finalPostId, setFinalPostId] = useState(null);
 
     const fetchPostData = async () => {
@@ -37,6 +39,10 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
             const response = await axios.get(`${API_BASE_URL}/api/post/${postId}`, config);
             setPost(response.data);
             console.log(response.data);
+            if (user && user.username) {
+                setIsLiked(response.data.likes.find(like => like.username === user.username && !isDisliked));
+                setIsDisliked((response.data.dislikes.find(dislike => dislike.username === user.username)) && !isLiked);
+            }
         } catch (error) {
             console.error("Error fetching post data", error);
         }
@@ -47,7 +53,6 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         setCurrentMediaIndex(0);
         fetchPostData();
     }, [postId]);
-
 
 
     const handlePreviousMedia = () => {
@@ -88,44 +93,44 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         setIsDisliked(!isDisliked); // Toggle the state for dislike
         // If the user disliked the post, ensure that the like state is set to false
         setIsLiked(isLiked && isDisliked);
-
+    
         const method = (isDisliked === true) ? 'DELETE' : 'POST';
-        fetch(`${API_BASE_URL}api/post/${postId}/dislike/`, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Token ${token}`
-            },
+        fetch(`${API_BASE_URL}/api/post/${postId}/dislike/`, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`
+          },
         })
-            .then(response => response.json())
-            .then(data => {
-                // console.log(data);
-                setPost(data);
-            })
-            .catch(error => console.error('Error toggling like:', error));
-    }
-
-    const handleLikeAndUnlike = () => {
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            setPost(data);
+          })
+          .catch(error => console.error('Error toggling like:', error));
+      }
+    
+      const handleLikeAndUnlike = () => {
         // Update the post state with the new like information
         setIsLiked(!isLiked); // Toggle the state for dislike
         // If the user disliked the post, ensure that the like state is set to false
         setIsDisliked(isDisliked && isLiked);
-
+    
         const method = (isLiked === true) ? 'DELETE' : 'POST';
-        fetch(`${API_BASE_URL}api/post/${postId}/like/`, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Token ${token}`
-            },
+        fetch(`${API_BASE_URL}/api/post/${postId}/like/`, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`
+          },
         })
-            .then(response => response.json())
-            .then(data => {
-                // console.log(data);
-                setPost(data);
-            })
-            .catch(error => console.error('Error toggling like:', error));
-    };
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            setPost(data);
+          })
+          .catch(error => console.error('Error toggling like:', error));
+      };
 
 
 
@@ -181,7 +186,11 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                 </div>
                 <div className='expand-post-overlay-user-info-comments'>
                     <div className="expand-post-overlay-post-stats">
-                        
+                        <div className="expand-post-overlay-post-stats-inner" onClick={(e) => e.stopPropagation()}>
+                            <p onClick={() => handleUserListTrigger(post.likes, "Likes")} >{post.likes_count} like{post.likes_count === 1 ? '' : 's'}</p>
+                            <p onClick={() => handleUserListTrigger(post.dislikes, "Dislikes")}>{post.dislikes_count} dislike{post.dislikes_count === 1 ? '' : 's'}</p>
+                            <p>{post.comments_count} comment{post.comments_count === 1 ? '' : 's'}</p>
+                        </div>
                     </div>
                     <div className="expand-post-overlay-user-info" onClick={(e) => e.stopPropagation()}>
                         <div className="expand-post-overlay-user-info-inner">
@@ -274,6 +283,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                     </div>
                 </div>
             </div>
+
         </div>
     ) : (
         <div>Loading...</div>

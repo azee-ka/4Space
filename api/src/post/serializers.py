@@ -37,6 +37,9 @@ class PostSerializer(serializers.ModelSerializer):
     media_files = MediaFileSerializer(many=True, read_only=False, required=False)
     previous_post_uuid = serializers.UUIDField(read_only=True)
     next_post_uuid = serializers.UUIDField(read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    dislikes_count = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Post
@@ -51,6 +54,9 @@ class PostSerializer(serializers.ModelSerializer):
             'comments',
             'previous_post_uuid',
             'next_post_uuid',
+            'likes_count',
+            'dislikes_count',
+            'comments_count',
         ]
 
     def get_user(self, obj):
@@ -86,6 +92,9 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_dislikes_count(self, obj):
         return obj.dislikes.count()
+    
+    def get_comments_count(self, obj):
+        return obj.comments.count()
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)

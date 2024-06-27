@@ -95,6 +95,33 @@
     gap: 18px;
 }
 
+.expand-post-overlay-post-stats {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.expand-post-overlay-post-stats-inner {
+    background-color: rgba(37, 35, 35, 0.288);
+    backdrop-filter: blur(50px);
+    border: 1px solid rgba(128, 128, 128, 0.17);
+    width: fit-content;
+    height: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: rgb(184, 184, 184);
+    border-radius: 13px;
+    padding: 1px 16px 1px 16px;
+}
+.expand-post-overlay-post-stats-inner p:not(:last-child) {
+    cursor: pointer;
+}
+
 .expand-post-overlay-user-info {
     background-color: rgba(37, 35, 35, 0.288);
     backdrop-filter: blur(50px);

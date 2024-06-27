@@ -4,7 +4,7 @@ import GetConfig from "../../../../../general/components/Authentication/utils/co
 import ExpandPostOverlay from "./expandPostOverlay/expandPostOverlay";
 import { useEffect, useState } from "react";
 
-const PostFrame = ({ postId, onClose, handlePrevPostClick, handleNextPostClick }) => {
+const PostFrame = ({ postId, onClose, handlePrevPostClick, handleNextPostClick, handleUserListTrigger }) => {
     const { post_id } = useParams();
     const { token, user } = useAuthState();
     const config = GetConfig(token);
@@ -18,7 +18,7 @@ const PostFrame = ({ postId, onClose, handlePrevPostClick, handleNextPostClick }
     }, [postId, post_id]);
 
     return finalPostId ? (
-        <ExpandPostOverlay postId={finalPostId} onClose={onClose} handlePrevPostClick={handlePrevPostClick} handleNextPostClick={handleNextPostClick} />
+        <ExpandPostOverlay postId={finalPostId} onClose={onClose} handlePrevPostClick={handlePrevPostClick} handleNextPostClick={handleNextPostClick} handleUserListTrigger={handleUserListTrigger} />
     ) : (
         <div>Loading...</div>
     )
