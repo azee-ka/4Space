@@ -14,6 +14,7 @@ class ChatParticipant(models.Model):
     is_inviter = models.BooleanField(default=False)
     accepted = models.BooleanField(default=False)
     restricted = models.BooleanField(default=True)
+    channel_name = models.CharField(max_length=255, blank=True, null=True)
 
 
 class Message(models.Model):

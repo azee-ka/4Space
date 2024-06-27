@@ -323,7 +323,6 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             }
             {!isRestricted ? (
                 <div className='new-message-field-container'>
-
                     <div className='textarea-field-container'>
                         <div className='textarea-field-container-inner'>
                             <textarea

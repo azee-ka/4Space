@@ -17,6 +17,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+
         # Accept the WebSocket connection
         await self.accept()
 
@@ -166,11 +167,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         print(f"User {user_id} accepted the invitation and was added to unrestricted group {self.room_group_name_unrestricted}")
-
-
-
-
-
 
 
     async def save_message_to_database(self, message, user_id):
