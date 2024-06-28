@@ -15,13 +15,13 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 18px;
 }
 
 .expand-page-user-comments-stats {
     background-color: rgba(0, 0, 255, 0);
     height: 100%;
-    width: 450px;
+    width: 409px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -308,8 +308,8 @@
 
 .expand-page-each-media video,
 .expand-page-each-media img {
-    max-width: 790px;
-    max-height: 695px;
+    max-width: 810px;
+    max-height: 690px;
     aspect-ratio: inherit;
     border-radius: 5px;
 }

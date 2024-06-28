@@ -81,7 +81,7 @@ const handleNextPostClick = (nextPostId) => {
       element: <Profile handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger}/>
     },
     {
-      path: '/createPost',
+      path: '/create-post',
       name: 'Create Post',
       element: <CreatePost />
     },

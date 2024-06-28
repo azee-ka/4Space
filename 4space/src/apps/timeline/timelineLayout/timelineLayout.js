@@ -32,10 +32,21 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
     const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
 
     const [showCreatePostOverlay, setShowCreatePostOverlay] = useState(false);
+    const [createPostPreviousLocation, setcreatePostPreviousLocation] = useState();
 
     const [notifications, setNotifications] = useState([]);
     const [notificationCount, setNotificationCount] = useState(0);
     
+    const handleShowCreatePostOverlayClick = (createPostPreviousLocation) => {
+        setShowCreatePostOverlay(true);
+        setcreatePostPreviousLocation(createPostPreviousLocation);
+    }
+
+    const handleCloseCreatePostOverlayClick = () => {
+        setShowCreatePostOverlay(false);
+        navigate(createPostPreviousLocation);
+    }
+
     const handleExpandPostClose = () => {
         navigate(previousLocation);
         setShowExpandPost(false);
@@ -129,19 +140,19 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
             <div className='layout-page-content'>
                 {isAuthenticated &&
                     <div className={`layout-small-sidebar ${sidebarOpen ? 'large-sidebar-open' : ''}`}>
-                        <SmallSidebar setShowCreatePostOverlay={setShowCreatePostOverlay} />
+                        <SmallSidebar handleShowCreatePostOverlayClick={handleShowCreatePostOverlayClick} />
                     </div>
                 }
                 {children}
             </div>
 
-            {<Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} setShowCreatePostOverlay={setShowCreatePostOverlay} />}
+            {<Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} handleShowCreatePostOverlayClick={handleShowCreatePostOverlayClick} />}
 
             {menuOpen && <Menubar userInfo={userInfo} />}
             {appMenuOpen && <AppMenu />}
             {notificationsMenuOpen && <Notifications notifications={notifications} setNotificationCount={setNotificationCount} />}
             {showUserList && <UserListOverlay userList={userList} title={userListTitle} onClose={() => setShowUserList(false)} />}
-            {showCreatePostOverlay && <CreatePostOverlay onClose={() => setShowCreatePostOverlay(false)} />}
+            {showCreatePostOverlay && <CreatePostOverlay onClose={() => handleCloseCreatePostOverlayClick()} />}
             {showExpandPost && <PostFrame postId={postId} onClose={handleExpandPostClose} handlePrevPostClick={handlePrevPostClick} handleNextPostClick={handleNextPostClick} handleUserListTrigger={handleUserListTrigger} />}
         </div>
     );

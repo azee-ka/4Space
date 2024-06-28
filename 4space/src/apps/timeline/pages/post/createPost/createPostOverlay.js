@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import './createPostOverlay.css';
 import API_BASE_URL from '../../../../../config';
@@ -19,6 +19,14 @@ const CreatePostOverlay = ({ onClose }) => {
     const [previewMedia, setPreviewMedia] = useState(null);
 
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+
+    useEffect(() => {
+        if (!window.location.pathname.includes('create')) {
+            window.history.replaceState(null, '', `/timeline/create-post`);
+        }
+    }, []);
+
 
     const handleSelectedMedia = (event) => {
         const selectedFiles = event.target.files;
@@ -102,7 +110,7 @@ const CreatePostOverlay = ({ onClose }) => {
             console.log(response.data)
             // Post created successfully, close the overlay and navigate to the new post's page
             onClose();
-            // navigate(`/post/${response.data.id}`);
+            navigate(`/timeline/post/${response.data.id}`);
         } catch (error) {
             console.error('Error creating post:', error);
         }

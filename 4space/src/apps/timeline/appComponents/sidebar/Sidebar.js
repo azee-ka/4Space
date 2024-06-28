@@ -5,13 +5,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faCog, faStream, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
-function Sidebar({ isOpen, onClose, setShowCreatePostOverlay }) {
+function Sidebar({ isOpen, onClose, handleShowCreatePostOverlayClick }) {
     const navigate = useNavigate();
+
 
     const taskFlow = [
         { icon: <FontAwesomeIcon icon={faStream} />, label: 'Timeline', path: '/timeline', type: 'link' },
         { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Explore', path: '/timeline/explore', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faEdit} />, label: 'Create Post', onClick: () => setShowCreatePostOverlay(true), type: 'button' },
+        { icon: <FontAwesomeIcon icon={faEdit} />, label: 'Create Post', onClick: () => handleShowCreatePostOverlayClick(window.location.pathname), type: 'button' },
         { icon: <ChatBubbleLeftRightIcon className='chat-icon'/>, label: 'Messages', path: '/timeline/messages', type: 'link' },
         { icon: <FontAwesomeIcon icon={faCog} />, label: 'Settings', path: '/timeline/preferences', type: 'link' },
     ];

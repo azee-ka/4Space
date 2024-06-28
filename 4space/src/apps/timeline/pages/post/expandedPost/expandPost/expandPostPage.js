@@ -165,7 +165,7 @@ const ExpandPostPage = ({ handleUserListTrigger }) => {
     return (post && post.user && post !== null) ? (
         <div className='expand-page-page'>
             <div className='expand-page-inner'>
-            <div className='expand-page-interaction'>
+                <div className='expand-page-interaction'>
                     <div className="expand-page-interact-container-inner" onClick={(e) => e.stopPropagation()}>
                         <div onClick={handleLikeAndUnlike} className='expand-page-unlike-img'>
                             {isLiked ?
