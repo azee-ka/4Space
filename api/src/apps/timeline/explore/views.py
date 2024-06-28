@@ -1,9 +1,10 @@
+# src/post/views.py
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from ..post.models import Post
-from ..post.models import PostFeatures
+from ..post.models import Post, PostFeatures
 from ..post.serializers import PostSerializer
 
 class PostPagination(PageNumberPagination):
@@ -14,7 +15,7 @@ class PostPagination(PageNumberPagination):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def explore_page(request):
-    # Get all posts
+    # Get all posts with their features
     posts = Post.objects.prefetch_related('features').all()
 
     # Handle posts without features

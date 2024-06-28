@@ -1,8 +1,8 @@
 # tracking/extraction.py
 
 from celery import shared_task
-from .models import UserLike, UserComment, UserShare, UserSave, PostFeatures
-from ..post.models import Post
+from .models import UserLike, UserComment, UserShare, UserSave
+from ..post.models import Post, PostFeatures
 
 @shared_task
 def extract_features():

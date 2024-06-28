@@ -1,0 +1,58 @@
+.spectra-small-sidebar {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(115, 165, 115, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.spectra-small-sidebar-inner {
+    width: 100%;
+    height: 95.5%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    gap: 4.7px;
+}
+
+.spectra-small-sidebar .spectra-small-sidebar-item button {
+    background-color: rgba(255, 0, 0, 0) !important;
+    border: 0;
+}
+
+.spectra-small-sidebar .spectra-small-sidebar-item {
+    width: 45px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.spectra-small-sidebar .spectra-small-sidebar-item button:hover,
+.spectra-small-sidebar .spectra-small-sidebar-item:hover {
+    cursor: pointer;
+    background-color: rgba(50, 50, 50, 0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+}
+
+.spectra-small-sidebar .spectra-small-sidebar-item .svg-inline--fa {
+    font-size: 23px;
+    color: rgb(184, 184, 184);
+    background-color: rgba(255, 0, 0, 0) !important;
+    align-self: center;
+}
+
+
+
+
+.spectra-small-sidebar .chat-icon {
+    width: 29px;
+    aspect-ratio: 1 / 1;
+    color: rgb(184, 184, 184);
+}

@@ -93,7 +93,7 @@ const CreatePostOverlay = ({ onClose }) => {
         }
     
         try {
-            const response = await axios.post(`${API_BASE_URL}api/post/create-post/`, formData, {
+            const response = await axios.post(`${API_BASE_URL}api/apps/timeline/post/create-post/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Token ${token}`,

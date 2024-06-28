@@ -1,4 +1,4 @@
-# In your celery.py or similar configuration file
+#tracking/celery.py
 
 from celery import Celery
 from celery.schedules import crontab
