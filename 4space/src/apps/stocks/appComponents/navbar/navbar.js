@@ -9,7 +9,7 @@ import NineDotIcon from '../../../../general/utils/icons/nine-dot';
 import SidebarMenuIcon from '../../../../general/utils/icons/sidebar-menu-icon/sidebar-menu-icon';
 import GetConfig from '../../../../general/components/Authentication/utils/config';
 
-function SpectraNavbar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOpen, setSidebarOpen }) {
+function StocksNavbar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOpen, setSidebarOpen }) {
     const { isAuthenticated } = useAuthDispatch();
 
     const privatePages = [
@@ -28,36 +28,36 @@ function SpectraNavbar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOp
 
 
     return (
-        <nav className="spectra-navbar-bar">
-            <div className="spectra-navbar-bar-inner">
+        <nav className="task-flow-navbar-bar">
+            <div className="task-flow-navbar-bar-inner">
                 {isAuthenticated &&
-                    <div className='spectra-navbar-side-menubar' onClick={(e) => e.stopPropagation()}>
+                    <div className='task-flow-navbar-side-menubar' onClick={(e) => e.stopPropagation()}>
                         <SidebarMenuIcon sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
                     </div>
                 }
-                <div className='spectra-navbar-bar-header'>
+                <div className='task-flow-navbar-bar-header'>
                     <div className='navbar-app-title'>
                         <h1>4Space</h1>
-                        <p>Spectra</p>
+                        <p>Stocks</p>
                     </div>
-                    <div className='spectra-navbar-links'>
-                        <div className='spectra-navbar-page-links'>
+                    <div className='task-flow-navbar-links'>
+                        <div className='task-flow-navbar-page-links'>
                             {navItems.map((item, index) => (
                                 <div key={index}>
                                     <Link to={item.path}>{item.label}</Link>
                                 </div>
                             ))}
                         </div>
-                        <div className='spectra-navbar-utils'>
+                        <div className='task-flow-navbar-utils'>
                             {isAuthenticated &&
-                                <div className="spectra-navbar-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
+                                <div className="task-flow-navbar-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
                                     <button onClick={handleAppMenuToggle}>
                                         <NineDotIcon style={{ color: 'white', background: 'transparent', fontSize: '24px' }} />
                                     </button>
                                 </div>
                             }
                             {isAuthenticated &&
-                                <div className='spectra-navbar-bar-profile-menu' ref={profileMenuRef} onClick={(e) => e.stopPropagation()}>
+                                <div className='task-flow-navbar-bar-profile-menu' ref={profileMenuRef} onClick={(e) => e.stopPropagation()}>
                                     <button onClick={handleProfileMenuToggle}>
                                         <ProfilePicture />
                                     </button>
@@ -71,4 +71,4 @@ function SpectraNavbar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOp
     );
 }
 
-export default SpectraNavbar;
+export default StocksNavbar;

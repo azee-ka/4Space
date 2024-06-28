@@ -10,6 +10,7 @@ import TimelineApp from './apps/timeline/timelineApp.js';
 import PhotosApp from './apps/photos/photosApp.js';
 import TaskFlowApp from './apps/taskFlow/taskFlowApp.js';
 import SpectraApp from './apps/spectra/spectraApp.js';
+import StocksApp from './apps/stocks/stocksApp.js';
 
 const App = () => {
   const { isAuthenticated } = useAuthDispatch();
@@ -29,6 +30,7 @@ const App = () => {
               <Route path="/photos/*" element={<PhotosApp />} />
               <Route path="/taskFlow/*" element={<TaskFlowApp />} />
               <Route path="/spectra/*" element={<SpectraApp />} />
+              <Route path="/stocks/*" element={<StocksApp />} />
             </>
           ) : (
             <>

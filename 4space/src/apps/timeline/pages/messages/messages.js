@@ -31,6 +31,7 @@ const Messages = () => {
 
     const [showRequestChats, setShowRequestChats] = useState(false);
 
+    const [unreadChats, setUnreadChats] = useState({});
 
     const handleCollapseToggle = () => {
         setCollapsed(!collapsed);
