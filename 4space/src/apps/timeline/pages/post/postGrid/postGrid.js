@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 const PostsGrid = ({ posts, handleExpandPostTrigger}) => {
 
+    console.log(posts);
+
     return posts ? (
         <div className='post-grid'>
             <div className="post-grid-inner">

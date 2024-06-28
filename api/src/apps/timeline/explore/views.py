@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from ..post.models import Post, PostFeatures
-from ..post.serializers import PostSerializer
+from ..post.serializers import PostSerializer, MinimalPostSerializer
 
 class PostPagination(PageNumberPagination):
     page_size = 10  # Number of posts per page
@@ -34,6 +34,6 @@ def explore_page(request):
     # Paginate the posts
     paginator = PostPagination()
     paginated_posts = paginator.paginate_queryset(sorted_posts, request)
-    serialized_posts = PostSerializer(paginated_posts, many=True)
+    serialized_posts = MinimalPostSerializer(paginated_posts, many=True)
 
     return paginator.get_paginated_response(serialized_posts.data)

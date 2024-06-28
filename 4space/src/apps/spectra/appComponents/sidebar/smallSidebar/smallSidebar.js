@@ -2,18 +2,15 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog, faTasks, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faCalendar, faFolder, faCog, faTasks, faHome } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 const SpectraSmallSidebar = ({ }) => {
 
     const taskFlow = [
-        { icon: <FontAwesomeIcon icon={faChartLine} />, label: 'Tasks', path: '/spectra', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faTasks} />, label: 'Tasks', path: '/spectra/tasks', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Add Task', path: '/spectra/add-task', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faCalendar} />, label: 'Calendar', path: '/spectra/calendar', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faFolder} />, label: 'Categories', path: '/spectra/categories', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faCog} />, label: 'Settings', path: '/spectra/settings', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faHome} />, label: 'Home', path: '/spectra', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faTasks} />, label: 'Explore', path: '/spectra/explore', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Uplaod', path: '/spectra/upload', type: 'link' },
     ];
 
     const navigate = useNavigate();

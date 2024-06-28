@@ -1,13 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './appMenu.css';
-import { FaCog, FaServer, FaUser, FaTasks, FaStream, FaImages } from 'react-icons/fa'; // Example icons
+import { FaCog, FaServer, FaUser, FaTasks, FaStream, FaImages, FaPlay } from 'react-icons/fa'; // Example icons
 import { faStream } from '@fortawesome/free-solid-svg-icons';
+import PlayButton from '../../../apps/spectra/utils/playButtons';
 
 const appsData = [
     { path: '/timeline', label: 'Timeline', icon: <FaStream /> },
     { path: '/taskflow', label: 'Tasks', icon: <FaTasks /> },
     { path: '/photos', label: 'Photos', icon: <FaImages /> },
+    { path: '/spectra', label: 'Spectra', icon: <FaPlay /> },
     { path: '/servers', label: 'Servers', icon: <FaServer /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaCog /> },

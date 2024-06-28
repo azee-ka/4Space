@@ -13,7 +13,7 @@ function SpectraNavbar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOp
     const { isAuthenticated } = useAuthDispatch();
 
     const privatePages = [
-        { label: '4Plex', path: '/4plex' },
+        { label: 'Home', path: '/spectra' },
     ];
 
     const publicPages = [
@@ -38,7 +38,7 @@ function SpectraNavbar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarOp
                 <div className='task-flow-navbar-bar-header'>
                     <div className='navbar-app-title'>
                         <h1>4Space</h1>
-                        <p>TaskFlow</p>
+                        <p>Spectra</p>
                     </div>
                     <div className='task-flow-navbar-links'>
                         <div className='task-flow-navbar-page-links'>

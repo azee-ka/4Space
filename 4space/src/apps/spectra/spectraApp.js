@@ -5,6 +5,7 @@ import { useAuthDispatch } from '../../general/components/Authentication/utils/A
 import SpectraLayout from './spectraLayout/spectraLayout';
 
 import Home from './pages/home/home';
+import Explore from './pages/explore/explore';
 
 const SpectraApp = () => {
     const { isAuthenticated } = useAuthDispatch();
@@ -13,6 +14,12 @@ const SpectraApp = () => {
         {
             path: '/',
             element: <Home />,
+            showSidebar: true,
+            showNavbar: true,
+        },
+        {
+            path: '/explore',
+            element: <Explore />,
             showSidebar: true,
             showNavbar: true,
         },
