@@ -149,7 +149,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     // console.log("user", user)
 
     const handleSendMessage = () => {
-
+        scrollToBottom();
         const dataToSend = {
             'action': 'send_message',
             'message': messageToSend,
