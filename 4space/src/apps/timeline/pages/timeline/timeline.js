@@ -29,7 +29,11 @@ const Timeline = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
     return (
         <div className="timeline-container">
             <div className="timeline-container-inner">
-                <p>Timeline</p>
+                <div className='timeline-page-header'>
+                    <div className='timeline-page-header-inner'>
+                        <h2>Timeline</h2>
+                    </div>
+                </div>
                 {posts.map((post, index) =>
                     post.media !== null ? (
                         // Wrap each post with a Link to the ExpandedPost view
@@ -42,8 +46,6 @@ const Timeline = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
                     ) : null
                 )}
             </div>
-            <div className="timeline-right-side-container"></div>
-
         </div>
     );
 };

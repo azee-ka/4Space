@@ -85,7 +85,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
     const handlePostComment = async () => {
         const data = { text: comment }
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/post/${postId}/comment/`, data, config);
+            const response = await axios.post(`${API_BASE_URL}/api/apps/timeline/post/${postId}/comment/`, data, config);
             // console.log(response.data);
             setComment('');
             setPost((prevPost) => ({
@@ -105,7 +105,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         setIsLiked(isLiked && isDisliked);
 
         const method = (isDisliked === true) ? 'DELETE' : 'POST';
-        fetch(`${API_BASE_URL}/api/post/${postId}/dislike/`, {
+        fetch(`${API_BASE_URL}/api/apps/timeline/post/${postId}/dislike/`, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         setIsDisliked(isDisliked && isLiked);
 
         const method = (isLiked === true) ? 'DELETE' : 'POST';
-        fetch(`${API_BASE_URL}/api/post/${postId}/like/`, {
+        fetch(`${API_BASE_URL}/api/apps/timeline/post/${postId}/like/`, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',

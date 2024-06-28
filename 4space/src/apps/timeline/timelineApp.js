@@ -88,7 +88,7 @@ const handleNextPostClick = (nextPostId) => {
     {
       path: '/post/:post_id',
       name: 'Post',
-      element: <ExpandPostPage />
+      element: <ExpandPostPage handleUserListTrigger={handleUserListTrigger} />
     },
     {
       path: '/preferences',

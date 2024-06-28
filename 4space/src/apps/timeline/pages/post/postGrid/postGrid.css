@@ -25,6 +25,7 @@
     height: 300px;
     width: 100%;
     max-width: 325px;
+    border-radius: 5px;
 }
 
 .post-item:hover {
