@@ -1,32 +1,27 @@
 .personal-messages-container {
-    width: 100%;
+    flex-grow: 1;
     height: 100%;
     background-color: rgba(255, 255, 255, 0);
     display: flex;
-    flex-direction: row;
-    justify-content: right;
-    align-items: end;
-    overflow-y: auto;
-    text-align: left;
-    overflow: hidden;
+    justify-content: center;
+    align-items: center;
     color: white;
 }
 
 .personal-messages-container-inner {
-    background-color: rgba(255, 0, 0, 0);
-    width: 98%;
-    height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    text-align: left;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 255, 0);
+    width: 93.5%;
+    height: 95.5%;
 }
 
 .personal-messages-header {
     background-color: rgba(255, 255, 255, 0);
     width: 100%;
-    height: 9%;
+    height: 60px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -42,162 +37,37 @@
 .personal-messages-content {
     background-color: rgba(255, 0, 0, 0);
     width: 100%;
-    height: 91%;
+    /* height: 100%; */
     flex-grow: 1;
-    position: relative;
+    /* position: relative; */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    text-align: center;
+    gap: 25px;
 }
 
 .personal-messages-content-inner {
-    background-color: rgb(0, 136, 255, 0);
+    background-color: rgba(255, 0, 0, 0);
     width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0px;
-}
-
-.personal-messages-content-server-container {
-    background-color: rgba(128, 0, 128, 0);
-    max-width: 100%;
-    /* min-height: 0% !important;
-    max-height: 15% !important; */
-    height: 18% !important;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    text-align: center;
-    gap: 0px;
-    transition: height 1s ease, visibility 0.8s ease !important;
-}
-
-.personal-messages-content-server-container.collapsed {
-    visibility: hidden !important;
-    height: 0% !important;
-    background-color: rgba(255, 255, 255, 0);
-}
-
-.personal-messages-content-server-container-inner {
-    height: 100% !important;
-    background-color: rgba(255, 255, 255, 0) !important;
-}
-
-
-.server-container-closer-icon-container {
-    height: 15px;
-    flex-grow: 1;
-    background-color: rgba(255, 255, 255, 0);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.server-container-closer-icon-container-inner {
-    width: 95%;
-    height: 100%;
-    background-color: rgba(0, 0, 255, 0);
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.personal-messages-content-server-container-inner {
-    background-color: rgba(0, 128, 122, 0);
-    height: 100%;
-    width: 99%;
+    height: 98%;
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-start;
-    text-align: center;
-    overflow-x: auto;
-    gap: 5px;
-}
-
-.chevron-icon {
-    font-size: 20px;
-    color: #8c8c8c;
-    transition: transform 0.8s ease, color 0.3s ease;
-    ;
-}
-
-.chevron-icon:hover {
-    color: #ffffff;
-}
-
-.chevron-icon.collapsed {
-    transform: rotate(180deg);
-}
-
-.personal-messages-content-per-server {
-    width: 90px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
     justify-content: center;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0);
+    gap: 25px;   
 }
 
-.personal-messages-content-per-server-inner {
-    width: 95px;
-    height: 80%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    border-radius: 10px;
-    transition: background-color 0.3s ease;
-}
-
-.personal-messages-content-per-server-inner:hover {
-    background-color: rgba(67, 67, 67, 0.449);
-}
-
-.personal-messages-content-per-server-inner img {
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    background-color: rgba(0, 213, 255, 0.42);
-}
-
-.personal-messages-content-server-title {
-    font-size: 13px;
-    color: rgb(202, 202, 202);
-}
-
-
-.personal-messages-content-inner-inner {
-    background-color: rgba(43, 255, 0, 0);
-    width: 98%;
-    height: 82%;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    justify-content: flex-start;
-    text-align: center;
-    gap: 25px;
-    margin-bottom: 2%;
-}
 
 .personal-messages-left-container {
-    width: 30%;
+    width: 350px;
+    height: 100%;
     background-color: rgba(79, 79, 79, 0.203);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
     text-align: center;
-    overflow-y: auto !important;
     box-shadow: 3px 0px 5px 0px rgba(158, 158, 158, 0.127);
     z-index: 0;
     border: 1px solid rgba(255, 0, 0, 0);
@@ -205,9 +75,20 @@
     border-radius: 9px;
 }
 
+.personal-messages-left-container-inner {
+    width: 100%;
+    height: 96%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow-y: auto !important;
+}
+
 .personal-messages-send-new {
     width: 100%;
-    height: 46px;
+    height: 43px;
     background-color: rgba(77, 77, 77, 0);
     display: flex;
     justify-content: center;
@@ -228,11 +109,12 @@
 
 .personal-messages-list-container {
     width: 90%;
-    height: 100%;
+    margin-top: 5px;
+    flex-grow: 1;
     display: flex;
     flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
+    align-items: flex-start;
+    justify-content: center;
     text-align: center;
     background-color: rgba(0, 0, 255, 0);
 }
@@ -392,6 +274,7 @@
 
 .personal-messages-right-container {
     flex-grow: 1;
+    height: 100%;
     border: 1px solid rgba(255, 0, 0, 0);
     backdrop-filter: blur(100px);
     border-radius: 8px;

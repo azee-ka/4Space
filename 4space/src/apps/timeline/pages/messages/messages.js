@@ -89,31 +89,10 @@ const Messages = () => {
             <div className='personal-messages-container-inner'>
                 <div className='personal-messages-header'>
                     <h2>Messages</h2>
-                    <div className='server-container-closer-icon-container'>
-                        <div className='server-container-closer-icon-container-inner' onClick={handleCollapseToggle}>
-                            <FontAwesomeIcon icon={faChevronUp} className={`chevron-icon ${collapsed ? 'collapsed' : ''}`} />
-                        </div>
-                    </div>
                 </div>
                 <div className='personal-messages-content'>
                     <div className='personal-messages-content-inner'>
-                        {serversList.length !== 0 &&
-                            <div className={`personal-messages-content-server-container ${collapsed ? 'collapsed' : ''}`}>
-                                <div className={`personal-messages-content-server-container-inner`}>
-                                    {serversList.map((server, index) => (
-                                        <div className='personal-messages-content-per-server' key={`${index}-${server.server_name}`}>
-                                            <div className='personal-messages-content-per-server-inner'>
-                                                <img src={`${API_BASE_URL}${server.server_cover_picture}`} alt='server-icon' />
-                                                <div className='personal-messages-content-server-title'>
-                                                    {server.server_name}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        }
-                        <div className={`personal-messages-content-inner-inner`}>
+                        <div className='personal-messages-left-container'>
                             {showRequestChats ? (
                                 <RequestChatsList
                                     handleRequestChatsViewToggle={handleRequestChatsViewToggle}
@@ -124,7 +103,7 @@ const Messages = () => {
                                     determineUser={determineUser}
                                 />
                             ) : (
-                                <div className='personal-messages-left-container'>
+                                <div className='personal-messages-left-container-inner'>
                                     <div className='personal-messages-send-new'>
                                         <div className='personal-messages-send-new-inner'>
                                             <div className='requested-chats-button'>
@@ -138,55 +117,52 @@ const Messages = () => {
                                         </div>
                                     </div>
                                     <div className='personal-messages-list-container'>
-                                        <div className='personal-messages-list-container-inner'>
-                                            <div className='personal-messages-per-list'>
-                                                <div className='personal-messages-per-list-inner'>
-                                                    {chatsList.map((per_message_element, index) => (
-                                                        <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}>
-                                                            {per_message_element.participants.length !== 0 &&
-                                                                <div className='personal-messages-list-per-message-inner'>
-                                                                    <div className='personal-messages-list-per-message-inner-inner'>
-                                                                        <div className='personal-messages-per-user-profile-picture-container'>
-                                                                            <ProfilePicture src={determineUser(per_message_element).profile_picture} />
-                                                                        </div>
-                                                                        <div className='personal-messages-per-user-info'>
-                                                                            <div className='personal-messages-per-user-info-inner'>
-                                                                                <div>
-                                                                                    {`${determineUser(per_message_element).first_name} ${determineUser(per_message_element).last_name}`}
-                                                                                </div>
-                                                                                <div>
-                                                                                    <p>@{determineUser(per_message_element).username}</p>
-                                                                                    {per_message_element.participants.length > 1 &&
-                                                                                        <p>and {per_message_element.participants.length - 1} more</p>
-                                                                                    }
-                                                                                </div>
+                                        <div className='personal-messages-per-list'>
+                                            <div className='personal-messages-per-list-inner'>
+                                                {chatsList.map((per_message_element, index) => (
+                                                    <div className='personal-messages-list-per-message' onClick={() => handlePerProfileChat(per_message_element)} key={`${index}-${per_message_element.id}`}>
+                                                        {per_message_element.participants.length !== 0 &&
+                                                            <div className='personal-messages-list-per-message-inner'>
+                                                                <div className='personal-messages-list-per-message-inner-inner'>
+                                                                    <div className='personal-messages-per-user-profile-picture-container'>
+                                                                        <ProfilePicture src={determineUser(per_message_element).profile_picture} />
+                                                                    </div>
+                                                                    <div className='personal-messages-per-user-info'>
+                                                                        <div className='personal-messages-per-user-info-inner'>
+                                                                            <div>
+                                                                                {`${determineUser(per_message_element).first_name} ${determineUser(per_message_element).last_name}`}
+                                                                            </div>
+                                                                            <div>
+                                                                                <p>@{determineUser(per_message_element).username}</p>
+                                                                                {per_message_element.participants.length > 1 &&
+                                                                                    <p>and {per_message_element.participants.length - 1} more</p>
+                                                                                }
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            }
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            )}
+                        </div>
+                        <div className='personal-messages-right-container'>
+                            {(uuid !== undefined) ? (
+                                <ChatContainer fetchUserMessagesList={fetchUserMessagesList} />
+                            ) : (
+                                <div className='personal-messages-chat-default'>
+                                    <ChatBubbleLeftRightIcon className='chat-icon' />
+                                    <p>Messages</p>
+                                    <button onClick={() => setSendNewMessageOverlay(true)}>Send Message</button>
+                                    <p>Send a message to start a chat.</p>
+                                </div>
                             )
                             }
-                            <div className='personal-messages-right-container'>
-                                {(uuid !== undefined) ? (
-                                    <ChatContainer fetchUserMessagesList={fetchUserMessagesList} />
-                                ) : (
-                                    <div className='personal-messages-chat-default'>
-                                        <ChatBubbleLeftRightIcon className='chat-icon' />
-                                        <p>Messages</p>
-                                        <button onClick={() => setSendNewMessageOverlay(true)}>Send Message</button>
-                                        <p>Send a message to start a chat.</p>
-                                    </div>
-                                )
-                                }
-                            </div>
                         </div>
                     </div>
                 </div>

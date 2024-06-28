@@ -88,7 +88,7 @@ const FullProfile = ({ userData, handleUserListTrigger, handleExpandPostTrigger 
                         </div>
                     </div>
                     <div className="full-profile-user-info-container">
-                        <p onClick={() => handleRedirect(`/profile/${profileData.user.username}`)}>{profileData.user.username}</p>
+                        <p onClick={() => handleRedirect(`/timeline/profile/${profileData.user.username}`)}>{profileData.user.username}</p>
                     </div>
                     <div className='full-profile-interact-stats'>
                         <div className="full-profile-connections" onClick={() => handleUserListTrigger(profileData.connections_list, "Connections")}>
