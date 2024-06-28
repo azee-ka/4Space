@@ -33,6 +33,22 @@ class Post(models.Model):
     dislikes_count = models.PositiveIntegerField(default=0)  # Field for the number of dislikes
     dislikes = models.ManyToManyField('timelineUser.TimelineUser', related_name='disliked_posts', blank=True)
 
-
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        PostFeatures.objects.get_or_create(post=self)
+        
     def __str__(self):
         return f"Post by {self.user.interactuser.user.username}"
+    
+    
+class PostFeatures(models.Model):
+    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='features')
+    like_count = models.PositiveIntegerField(default=0)
+    comment_count = models.PositiveIntegerField(default=0)
+    share_count = models.PositiveIntegerField(default=0)
+    save_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Features of Post {self.post.id}"
