@@ -16,7 +16,7 @@ const Explore = ({ handleExpandPostTrigger }) => {
     const fetchPostData = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}api/apps/timeline/explore/posts/`, config);
-            setExplorePosts(response.data.results);
+            setExplorePosts(response.data);
             console.log(response.data);
         } catch (error) {
             console.error("Error fetching post data", error);
