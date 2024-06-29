@@ -1,23 +1,13 @@
-# models.py
-from django.contrib.auth.models import User
+# stocks/models.py
 from django.db import models
+from ...user.baseUser.models import BaseUser
 
-class FinancialInstrument(models.Model):
-    INSTRUMENT_TYPES = (
-        ('stock', 'Stock'),
-        ('etf', 'ETF'),
-        ('fund', 'Fund'),
-    )
-    ticker = models.CharField(max_length=10, unique=True)
-    name = models.CharField(max_length=255)
-    instrument_type = models.CharField(max_length=10, choices=INSTRUMENT_TYPES)
-
-    def __str__(self):
-        return f"{self.name} ({self.ticker})"
+class Stock(models.Model):
+    symbol = models.CharField(max_length=10, unique=True)
+    description = models.CharField(max_length=255)
+    display_symbol = models.CharField(max_length=10)
+    type = models.CharField(max_length=50)
 
 class Watchlist(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    instruments = models.ManyToManyField(FinancialInstrument)
-
-    def __str__(self):
-        return f"{self.user.username}'s Watchlist"
+    user = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
+    stocks = models.ManyToManyField(Stock)

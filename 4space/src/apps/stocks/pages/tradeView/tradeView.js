@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import { Line } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
 import './tradeView.css';
@@ -197,6 +198,23 @@ const TradeView = () => {
     ]);
 
 
+    const stocksList = async () => {
+        try {
+            console.log(stockConfig.baseUrl);
+            console.log(process.env.REACT_APP_WEBSOCKET_TOKEN)
+            const response = await axios.get(`${stockConfig.baseUrl}/stock/symbol?exchange=US&token=${process.env.REACT_APP_WEBSOCKET_TOKEN}`, {});
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error', error);
+        }
+    };
+    
+
+    useEffect(() => {
+        stocksList();
+    }, []);
+
+
     return (
         <div className="trade-view">
             <div className="trade-view-header">
@@ -212,7 +230,7 @@ const TradeView = () => {
                         </div>
                         <div className="trade-view-my-watch-list-content">
                             {watchList.map((per_stock, index) =>
-                                < div className="per-stock-card">
+                                <div key={index} className="per-stock-card">
                                     <div className="per-stock-card-inner">
                                         <div className="per-stock-header">
                                             <p className="stock-name-text">{per_stock.name}</p>

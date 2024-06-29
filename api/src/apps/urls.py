@@ -5,4 +5,5 @@ urlpatterns = [
     path('photos/', include('src.apps.photos.urls')),
     path('taskflow/', include('src.apps.taskflow.urls')),
     path('timeline/', include('src.apps.timeline.urls')),
+    path('stocks/', include('src.apps.stocks.urls')),
 ]

@@ -1,15 +1,13 @@
-# serializers.py
+# stocks/serializers.py
 from rest_framework import serializers
-from .models import FinancialInstrument, Watchlist
+from .models import Stock, Watchlist
 
-class FinancialInstrumentSerializer(serializers.ModelSerializer):
+class StockSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FinancialInstrument
-        fields = '__all__'
+        model = Stock
+        fields = ['symbol', 'description', 'display_symbol', 'type']
 
 class WatchlistSerializer(serializers.ModelSerializer):
-    instruments = FinancialInstrumentSerializer(many=True)
-
     class Meta:
         model = Watchlist
-        fields = '__all__'
+        fields = ['id', 'stocks']
