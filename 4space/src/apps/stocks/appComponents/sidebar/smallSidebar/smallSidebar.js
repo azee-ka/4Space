@@ -10,7 +10,7 @@ const StocksSmallSidebar = ({ }) => {
     const taskFlow = [
         { icon: <FontAwesomeIcon icon={faHome} />, label: 'Home', path: '/stocks', type: 'link' },
         { icon: <FontAwesomeIcon icon={faTasks} />, label: 'Explore', path: '/stocks/explore', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Uplaod', path: '/portfolio', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Uplaod', path: '/stocks/portfolio', type: 'link' },
     ];
 
     const navigate = useNavigate();

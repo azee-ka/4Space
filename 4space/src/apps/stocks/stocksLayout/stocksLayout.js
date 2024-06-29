@@ -81,14 +81,14 @@ const StocksLayout = ({ children, showSidebar, showNavbar }) => {
             <div className='stocks-layout-page-content'>
                 {isAuthenticated &&
                     <div className={`stocks-layout-small-sidebar ${sidebarOpen ? 'large-sidebar-open' : ''}`}>
-                        <StocksSidebar />
+                        <StocksSmallSidebar />
                     </div>
                 }
                 <div className='stocks-layout-page-content-inner'>
                     {children}
                 </div>
             </div>
-            {<StocksSmallSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />}
+            {<StocksSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />}
             {menuOpen && <Menubar userInfo={userInfo} />}
             {appMenuOpen && <AppMenu />}
         </div>

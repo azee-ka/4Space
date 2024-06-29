@@ -1,0 +1,33 @@
+/* tradeView.css */
+.trade-view {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
+}
+
+.instrument-list, .watchlist {
+    width: 45%;
+}
+
+.instrument-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.instrument-list li {
+    margin-bottom: 10px;
+}
+
+.stock-widget {
+    margin-bottom: 20px;
+}
+
+.stock-widget h3 {
+    margin: 0 0 10px;
+    font-size: 1.2em;
+}
+
+button {
+    margin-top: 10px;
+}
