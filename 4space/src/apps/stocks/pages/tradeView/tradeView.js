@@ -15,118 +15,220 @@ const TradeView = () => {
     const config = GetConfig(token);
 
     const [stockData, setStockData] = useState({});
-    const [watchList, setWatchList] = useState(['AAPL', 'TSLA', 'AMZN']);
     const [newSymbol, setNewSymbol] = useState('');
     const websocket = useRef(null);
     const isWebSocketInitialized = useRef(false);
 
-    useEffect(() => {
-        if (!isWebSocketInitialized.current) {
-            console.log('Initializing WebSocket connection...');
-            websocket.current = new WebSocket(stockConfig.websocketUrl, [], config);
-            isWebSocketInitialized.current = true;
+    // useEffect(() => {
+    //     if (!isWebSocketInitialized.current) {
+    //         console.log('Initializing WebSocket connection...');
+    //         websocket.current = new WebSocket(stockConfig.websocketUrl, [], config);
+    //         isWebSocketInitialized.current = true;
 
-            websocket.current.onopen = () => {
-                console.log('WebSocket connection established');
-                watchList.forEach(symbol => {
-                    websocket.current.send(JSON.stringify({ type: 'subscribe', symbol }));
-                });
-            };
+    //         websocket.current.onopen = () => {
+    //             console.log('WebSocket connection established');
+    //             // watchList.forEach(symbol => {
+    //                 // console.log(symbol);
+    //                 websocket.current.send(JSON.stringify({ type: 'subscribe', symbol: 'TSLA' }))
+    //             // });
+    //         };
 
-            websocket.current.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                console.log('WebSocket message received:', data);
+    //         websocket.current.onmessage = (event) => {
+    //             const data = JSON.parse(event.data);
+    //             console.log('WebSocket message received:', data);
 
-                if (data.type === 'ping') {
-                    console.log('Received ping from server');
-                    websocket.current.send(JSON.stringify({ type: 'pong' })); // Respond to ping
-                } else if (data.type === 'trade') {
-                    data.data.forEach(trade => {
-                        console.log(`Received trade data for ${trade.s}: Price=${trade.p}, Volume=${trade.v}, Time=${trade.t}`);
-                        setStockData(prevState => {
-                            const updatedState = { ...prevState };
-                            if (!updatedState[trade.s]) {
-                                updatedState[trade.s] = [];
-                            }
-                            updatedState[trade.s].push({ price: trade.p, time: trade.t });
-                            return updatedState;
-                        });
-                    });
-                }
-            };
+    //             if (data.type === 'ping') {
+    //                 console.log('Received ping from server');
+    //                 websocket.current.send(JSON.stringify({ type: 'pong' })); // Respond to ping
+    //             } else if (data.type === 'trade') {
+    //                 data.data.forEach(trade => {
+    //                     console.log(`Received trade data for ${trade.s}: Price=${trade.p}, Volume=${trade.v}, Time=${trade.t}`);
+    //                     setStockData(prevState => {
+    //                         const updatedState = { ...prevState };
+    //                         if (!updatedState[trade.s]) {
+    //                             updatedState[trade.s] = [];
+    //                         }
+    //                         updatedState[trade.s].push({ price: trade.p, time: trade.t });
+    //                         return updatedState;
+    //                     });
+    //                 });
+    //             }
+    //         };
 
-            websocket.current.onclose = () => {
-                console.log('WebSocket closed');
-                websocket.current = null;
-            };
+    //         websocket.current.onclose = () => {
+    //             console.log('WebSocket closed');
+    //             websocket.current = null;
+    //         };
 
-            websocket.current.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
+    //         websocket.current.onerror = (error) => {
+    //             console.error('WebSocket error:', error);
+    //         };
 
-            // Cleanup function
-            return () => {
-                if (websocket && websocket.current.readyState === WebSocket.OPEN) {
-                    websocket.current.close();
-                }
-            };
-        }
-    }, [watchList]);
+    //         // Cleanup function
+    //         return () => {
+    //             if (websocket && websocket.current.readyState === WebSocket.OPEN) {
+    //                 websocket.current.close();
+    //             }
+    //         };
+    //     }
+    // }, [watchList]);
 
-    const handleAddSymbol = () => {
-        if (newSymbol && !watchList.includes(newSymbol)) {
-            setWatchList([...watchList, newSymbol]);
-            websocket.current.send(JSON.stringify({ type: 'subscribe', symbol: newSymbol }));
-        }
-        setNewSymbol('');
-    };
+    // const handleAddSymbol = () => {
+    //     if (newSymbol && !watchList.includes(newSymbol)) {
+    //         setWatchList([...watchList, newSymbol]);
+    //         websocket.current.send(JSON.stringify({ type: 'subscribe', symbol: newSymbol }));
+    //     }
+    //     setNewSymbol('');
+    // };
 
-    const chartData = (symbol) => {
-        if (!stockData[symbol]) {
-            return { labels: [], datasets: [] };
-        }
-        const prices = stockData[symbol].map(data => data.price);
-        const times = stockData[symbol].map(data => new Date(data.time).toLocaleTimeString());
-        return {
-            labels: times,
-            datasets: [
-                {
-                    label: `${symbol} Price`,
-                    data: prices,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    fill: false,
-                },
-            ],
-        };
-    };
+    // const chartData = (symbol) => {
+    //     if (!stockData[symbol]) {
+    //         return { labels: [], datasets: [] };
+    //     }
+    //     const prices = stockData[symbol].map(data => data.price);
+    //     const times = stockData[symbol].map(data => new Date(data.time).toLocaleTimeString());
+    //     return {
+    //         labels: times,
+    //         datasets: [
+    //             {
+    //                 label: `${symbol} Price`,
+    //                 data: prices,
+    //                 borderColor: 'rgba(75, 192, 192, 1)',
+    //                 fill: false,
+    //             },
+    //         ],
+    //     };
+    // };
+
+    const [watchList, setWatchList] = useState([
+        {
+            ticker: 'TSLA',
+            name: 'Tesla',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+        {
+            ticker: 'AAPL',
+            name: 'Apple',
+        },
+
+    ]);
+
 
     return (
         <div className="trade-view">
-            <h2>Trade View</h2>
-            <div className="watch-list">
-                <h3>Watch List</h3>
-                <ul>
-                    {watchList.map(symbol => (
-                        <li key={symbol}>{symbol}</li>
-                    ))}
-                </ul>
-                <input
-                    type="text"
-                    value={newSymbol}
-                    onChange={(e) => setNewSymbol(e.target.value.toUpperCase())}
-                    placeholder="Add symbol"
-                />
-                <button onClick={handleAddSymbol}>Add to Watch List</button>
+            <div className="trade-view-header">
+                <div className="trade-view-header-inner">
+                    <h2>Trade View</h2>
+                </div>
             </div>
-            <div className="charts">
-                {watchList.map(symbol => (
-                    <div key={symbol} className="chart-container">
-                        <h3>{symbol} Chart</h3>
-                        <Line data={chartData(symbol)} />
+            <div className="trade-view-content">
+                <div className="trade-view-content-inner">
+                    <div className="trade-view-my-watch-list">
+                        <div className="trade-view-my-watch-list-header">
+                            <h3>My Watchlist</h3>
+                        </div>
+                        <div className="trade-view-my-watch-list-content">
+                            {watchList.map((per_stock, index) =>
+                                < div className="per-stock-card">
+                                    <div className="per-stock-card-inner">
+                                        <div className="per-stock-header">
+                                            <p className="stock-name-text">{per_stock.name}</p>
+                                            <p className="stock-ticker-text">{per_stock.ticker}</p>
+                                        </div>
+                                        <div className="per-stock-graph">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                ))}
+                </div>
             </div>
-        </div>
+        </div >
     );
 };
 

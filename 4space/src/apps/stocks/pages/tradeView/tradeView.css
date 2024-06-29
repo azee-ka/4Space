@@ -1,33 +1,116 @@
-/* tradeView.css */
 .trade-view {
+    height: 100%;
+    flex-grow: 1;
     display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 20px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
 }
 
-.instrument-list, .watchlist {
-    width: 45%;
+.trade-view-header {
+    width: 100%;
+    height: 60px;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.instrument-list ul {
-    list-style-type: none;
-    padding: 0;
+.trade-view-header-inner {
+    width: 95%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0);
 }
 
-.instrument-list li {
+.trade-view-content {
+    flex-grow: 1;
+    width: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
     margin-bottom: 10px;
 }
 
-.stock-widget {
-    margin-bottom: 20px;
+.trade-view-content-inner {
+    width: 95%;
+    height: 100%;
+    background-color: rgba(0, 0, 255, 0);
 }
 
-.stock-widget h3 {
-    margin: 0 0 10px;
-    font-size: 1.2em;
+.trade-view-my-watch-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: rgba(255, 0, 0, 0);
 }
 
-button {
-    margin-top: 10px;
+.trade-view-my-watch-list-header {
+    height: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(0, 128, 0, 0);
+}
+
+.trade-view-my-watch-list-content {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    /* grid-template-rows: repeat(auto-fill, minmax(200px)); */ /* This property is not needed */
+    gap: 9px;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(255, 255, 0, 0);
+}
+
+
+.per-stock-card {
+    background-color: rgba(135, 135, 135, 0.164);
+    backdrop-filter: blur(80px);
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6px;
+}
+
+.per-stock-card-inner {
+    background-color: rgb(28, 12, 27, 0);
+    width: 95%;
+    height: 98%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.per-stock-header {
+    width: 100%;
+    height: 25px;
+    background-color: rgb(0, 255, 136, 0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.stock-name-text {
+    font-size: 11px;
+    color: rgb(164, 164, 164);
+}
+.stock-ticker-text {
+    font-size: 16px;
+    color: rgb(233, 233, 233);
+}
+
+
+.per-stock-graph {
+    width: 100%;
+    height: 100%;
+    background-color: rgb(161, 113, 161, 0);
 }
