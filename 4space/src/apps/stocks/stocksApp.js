@@ -5,6 +5,7 @@ import { useAuthDispatch } from '../../general/components/Authentication/utils/A
 import StocksLayout from './stocksLayout/stocksLayout';
 
 import TradeView from './pages/tradeView/tradeView';
+import ExploreStocks from './pages/explore/explore';
 
 const StocksApp = () => {
     const { isAuthenticated } = useAuthDispatch();
@@ -16,12 +17,12 @@ const StocksApp = () => {
             showSidebar: true,
             showNavbar: true,
         },
-        // {
-        //     path: '/explore',
-        //     element: <Explore />,
-        //     showSidebar: true,
-        //     showNavbar: true,
-        // },
+        {
+            path: '/explore',
+            element: <ExploreStocks />,
+            showSidebar: true,
+            showNavbar: true,
+        },
     ];
 
     return (

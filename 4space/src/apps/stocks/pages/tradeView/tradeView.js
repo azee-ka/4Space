@@ -6,6 +6,7 @@ import './tradeView.css';
 import { useAuthDispatch, useAuthState } from "../../../../general/components/Authentication/utils/AuthProvider";
 import GetConfig from "../../../../general/components/Authentication/utils/config";
 import stockConfig from '../../utils/config';
+import API_BASE_URL from "../../../../config";
 
 // Register chart.js components
 Chart.register(...registerables);
@@ -19,6 +20,8 @@ const TradeView = () => {
     const [newSymbol, setNewSymbol] = useState('');
     const websocket = useRef(null);
     const isWebSocketInitialized = useRef(false);
+
+    const [marketIsOpen, setMarketIsOpen] = useState(false);
 
     // useEffect(() => {
     //     if (!isWebSocketInitialized.current) {
@@ -197,13 +200,60 @@ const TradeView = () => {
 
     ]);
 
+// /stock/market-status?exchange=US
+
+const fetchMarketStatus = async () => {
+    try {
+        const response = await axios.get(`${stockConfig.baseUrl}/stock/market-status?exchange=US&token=${process.env.REACT_APP_WEBSOCKET_TOKEN}`);
+        console.log(response.data);
+        setMarketIsOpen(response.data.isOpen);
+    } catch (error) {
+        console.error('Error', error);
+    }
+};
+
+useEffect(() => {
+    fetchMarketStatus();
+}, [])
+
+
+// Define a function to save console output to a file
+const saveToFile = (data, filename) => {
+    const blob = new Blob([data], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 0);
+};
+
+// Extend console to have a save method
+console.save = (data, filename) => {
+    if (!data) {
+        console.error('Console.save: No data');
+        return;
+    }
+
+    if (!filename) filename = 'console.json';
+
+    if (typeof data === 'object') {
+        data = JSON.stringify(data, undefined, 4);
+    }
+
+    saveToFile(data, filename);
+};
+
 
     const stocksList = async () => {
         try {
-            console.log(stockConfig.baseUrl);
-            console.log(process.env.REACT_APP_WEBSOCKET_TOKEN)
-            const response = await axios.get(`${stockConfig.baseUrl}/stock/symbol?exchange=US&token=${process.env.REACT_APP_WEBSOCKET_TOKEN}`, {});
+            const response = await axios.get(`${API_BASE_URL}api/apps/stocks/stocks/`, config);
             console.log(response.data);
+            // console.save(response.data, 'stocks_data.txt');
         } catch (error) {
             console.error('Error', error);
         }
