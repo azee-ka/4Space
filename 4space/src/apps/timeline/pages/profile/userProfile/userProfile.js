@@ -13,9 +13,9 @@ const UserProfile = ({ profileData, handleUserListTrigger, handleExpandPostTrigg
     // const { username: paramUsername } = useParams();
 
     // const [profileData, setProfileData] = useState({});
+    console.log(profileData)
 
-
-    return profileData.viewable === "full" ? (
+    return (profileData && profileData.viewable === "full") ? (
         <FullProfile
             userData={profileData.profile}
             handleUserListTrigger={handleUserListTrigger}

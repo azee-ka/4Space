@@ -3,10 +3,12 @@
     height: 100%;
     background-color: rgba(115, 165, 115, 0);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
 }
+
+
 
 .small-sidebar-inner {
     width: 100%;
@@ -18,6 +20,7 @@
     flex-direction: column;
     gap: 4.7px;
 }
+
 
 .small-sidebar .small-sidebar-item button {
     background-color: rgba(255, 0, 0, 0) !important;

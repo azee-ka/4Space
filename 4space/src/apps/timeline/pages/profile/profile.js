@@ -44,6 +44,7 @@ const Profile = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
 
     useEffect(() => {
         handleFetchUserId();
+        handleFetchUserData();
     }, []);
 
 
@@ -57,7 +58,7 @@ const Profile = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
         if (user.username === paramUsername) {
             navigate('/timeline/profile', { replace: true });
         }
-    }, [finalUserId]);
+    }, [finalUserId, paramUsername]);
 
     return profileViewData ? (
         (profileViewData.view === 'self' || paramUsername === undefined) ? (

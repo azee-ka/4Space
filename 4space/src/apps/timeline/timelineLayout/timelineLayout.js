@@ -17,6 +17,7 @@ import Notifications from '../appComponents/notifications/notifications';
 import usePersistentWebSocket from '../../../general/utils/websocket/websocket';
 import SmallSidebar from '../appComponents/sidebar/smallSidebar/smallSidebar';
 import PostFrame from '../pages/post/expandedPost/postFrame';
+import SearchSidebar from '../appComponents/sidebar/searchSidebar/searchSidebar';
 
 const TimelineLayout = ({ children, userList, userListTitle, showUserList, setShowUserList, postId, previousLocation, handlePrevPostClick, handleNextPostClick, showExpandPost, setShowExpandPost, handleUserListTrigger }) => {
     const { token, isAuthenticated, user } = useAuthState();
@@ -30,6 +31,8 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
     const [appMenuOpen, setAppMenuOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
+
+    const [searchSidebarOpen, setSearchSidebarOpen] = useState(false);
 
     const [showCreatePostOverlay, setShowCreatePostOverlay] = useState(false);
     const [createPostPreviousLocation, setcreatePostPreviousLocation] = useState();
@@ -54,6 +57,11 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
 
     const handleSidebarClose = () => {
         setSidebarOpen(false);
+    };
+
+
+    const handleOpenSearchSidebar = () => {
+        setSearchSidebarOpen(true);
     };
 
 
@@ -99,11 +107,13 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
         }
     }, [isAuthenticated]);
 
-    const handleCloseOverlays = (event) => {
+    const handleCloseOverlays = () => {
+        console.log('handleCloseOverlays')
         setSidebarOpen(false);
         setMenuOpen(false);
         setAppMenuOpen(false);
         setNotificationsMenuOpen(false);
+        setSearchSidebarOpen(false);
     };
 
     useEffect(() => {
@@ -126,7 +136,7 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
     );
 
     return (
-        <div className='layout-page' onClick={handleCloseOverlays}>
+        <div className='layout-page' onClick={() => handleCloseOverlays()}>
             <div className='layout-navbar'>
                 <NavigationBar
                     handleProfileMenuToggle={handleProfileMenuToggle}
@@ -139,15 +149,14 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
             </div>
             <div className='layout-page-content'>
                 {isAuthenticated &&
-                    <div className={`layout-small-sidebar ${sidebarOpen ? 'large-sidebar-open' : ''}`}>
-                        <SmallSidebar handleShowCreatePostOverlayClick={handleShowCreatePostOverlayClick} />
+                    <div className={`layout-small-sidebar ${sidebarOpen ? 'large-sidebar-open' : ''} ${searchSidebarOpen ? 'search-sidebar-open' : ''}`}>
+                    <SmallSidebar handleShowCreatePostOverlayClick={handleShowCreatePostOverlayClick} handleOpenSearchSidebar={handleOpenSearchSidebar} searchSidebarOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />
                     </div>
                 }
                 {children}
             </div>
 
             {<Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} handleShowCreatePostOverlayClick={handleShowCreatePostOverlayClick} />}
-
             {menuOpen && <Menubar userInfo={userInfo} />}
             {appMenuOpen && <AppMenu />}
             {notificationsMenuOpen && <Notifications notifications={notifications} setNotificationCount={setNotificationCount} />}
