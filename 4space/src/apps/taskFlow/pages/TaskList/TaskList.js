@@ -30,8 +30,6 @@ const TaskList = () => {
         try {
             const response = await axios.get(`${API_BASE_URL}api/apps/taskflow/get-tasks/?sort_by=${sortOption}`, config);
             setTasks(response.data);
-
-            console.log('djhfs')
         } catch (error) {
             console.error('Failed to fetch tasks', error);
         }
@@ -97,37 +95,11 @@ const TaskList = () => {
         }
     };
 
-    // const handleMouseEnter = (event, taskId) => {
-    //     const cardRect = event.target.getBoundingClientRect();
-    //     const tooltipWidth = 450;
-    //     const tooltipHeight = 300;
-    //     const viewportWidth = window.innerWidth;
-    //     const viewportHeight = window.innerHeight;
-
-    //     let left = cardRect.left + window.scrollX + cardRect.width / 2 - tooltipWidth / 2;
-    //     let top = cardRect.bottom + window.scrollY + 10;
-
-    //     // Adjust tooltip position if it goes out of bounds to the right
-    //     if (left + tooltipWidth > viewportWidth) {
-    //         left = viewportWidth - tooltipWidth - 10; // Shift to the left of the card
-    //     }
-
-    //     // Adjust tooltip position if it goes out of bounds to the bottom
-    //     if (top + tooltipHeight > viewportHeight) {
-    //         top = cardRect.top - tooltipHeight - 10; // Place above the card
-    //     }
-
-    //     setTooltipPosition({ top, left });
-    //     setHoveredTaskId(taskId);
-    // };
-
-
-
-    return (
-        <div className="task-list-container" onClick={() => setShowDropdown(false)} >
-            <div className="task-list-container-inner">
-                <div className='task-list-container-header'>
-                    <div className='task-list-container-header-inner'>
+    return tasks ? (
+        <div className='task-list-page' onClick={() => setShowDropdown(false)}>
+            <div className='task-list-page-inner'>
+                <div className='task-list-header'>
+                    <div className='task-list-header-inner'>
                         <FontAwesomeIcon
                             icon={isGridView ? faList : faTh}
                             onClick={toggleView}
@@ -136,7 +108,7 @@ const TaskList = () => {
                         <div className="sort-dropdown-container">
                             <FontAwesomeIcon className="view-toggle-icon" icon={faSort} onClick={(e) => { e.stopPropagation(); setShowDropdown(!showDropdown); }} />
                             {showDropdown && (
-                                <div className="dropdown-content">
+                                <div className="dropdown-content" onClick={(e) => e.stopPropagation()}>
                                     <div onClick={() => handleSortOptionChange('title')}>Sort by Title</div>
                                     <div onClick={() => handleSortOptionChange('description')}>Sort by Description</div>
                                     <div onClick={() => handleSortOptionChange('started')}>Sort by Started</div>
@@ -148,103 +120,115 @@ const TaskList = () => {
                         </div>
                     </div>
                 </div>
-                <div className={`task-list-content${isGridView ? '' : '-list'}`}>
-                    <div className="task-list-header">
-                        <h1>Tasks</h1>
-                        <button onClick={handleCreateTask}>Create Task</button>
-                    </div>
-                    {tasks.map(task => (
-                        <div
-                            key={task.id}
-                            className={isGridView ? `task-card` : 'task-list'}
-                            onMouseEnter={() => setHoveredTaskId(task.id)}
-                            onMouseLeave={() => setHoveredTaskId(null)}
-                        >
-                            <div className='task-info-container'>
-                                {task.created_at === task.updated_at &&
-                                    <p className='task-updated-at'>
-                                        Last Updated {formatDate(task.created_at)}<br />{timeAgo(task.created_at)}
-                                    </p>
-                                }
-                                <h3 className="task-title">{task.title}</h3>
-                                <p className="task-description">{task.description.length <= 25 ? task.description : task.description.substr(0, 25) + '...'}</p>
-                                <p className='task-created-at'>Created {formatDate(task.updated_at)}<br />{timeAgo(task.updated_at)}</p>
+                <div className='task-list-page-content'>
+                    {isGridView ? (
+                        <div className='task-list-page-grid'>
+                            <div className='task-grid-create-button'>
+                                <h2>Tasks</h2>
+                                <button onClick={() => handleCreateTask()}>Create Task</button>
                             </div>
-                            <div className="task-status">
-                                {task.started ? (
-                                    task.completed ? (
-                                        <div className="status-circle completed">
-                                            <FontAwesomeIcon icon={faCheck} className="check-icon" />
+                            {tasks.map((task, index) => (
+                                <div
+                                    key={index}
+                                    className='task-item-in-grid'
+                                    onMouseEnter={() => setHoveredTaskId(task.id)}
+                                    onMouseLeave={() => setHoveredTaskId(null)}
+                                >
+                                    <div className='task-item-in-grid-inner'>
+                                        <div className='task-item-text'>
+                                            {task.created_at === task.updated_at &&
+                                                <p className='task-updated-at'>
+                                                    Last Updated {formatDate(task.created_at)}<br />{timeAgo(task.created_at)}
+                                                </p>
+                                            }
+                                            <h3 className="task-title">{task.title}</h3>
+                                            <p className="task-description">{task.description.length <= 25 ? task.description : task.description.substr(0, 25) + '...'}</p>
+                                            <p className='task-created-at'>Created {formatDate(task.updated_at)}<br />{timeAgo(task.updated_at)}</p>
                                         </div>
-                                    ) : (
-                                        <div className="status-circle in-progress">
-                                            <div
-                                                className="progress"
-                                                style={{
-                                                    transform: `rotate(${(50 / 100) * 360}deg)`,
-                                                    borderLeftColor: 50 >= 50 ? '#007bff' : 'transparent',
-                                                }}
-                                            ></div>
+                                        <div className="task-status">
+                                            {task.started ? (
+                                                task.completed ? (
+                                                    <div className="status-circle completed">
+                                                        <FontAwesomeIcon icon={faCheck} className="check-icon" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="status-circle in-progress">
+                                                        <div
+                                                            className="progress"
+                                                            style={{
+                                                                transform: `rotate(${(50 / 100) * 360}deg)`,
+                                                                borderLeftColor: 50 >= 50 ? '#007bff' : 'transparent',
+                                                            }}
+                                                        ></div>
+                                                    </div>
+                                                )
+                                            ) : (
+                                                <div className="status-circle not-started"></div>
+                                            )}
                                         </div>
-                                    )
-                                ) : (
-                                    <div className="status-circle not-started"></div>
-                                )}
-                            </div>
-                            {isGridView && hoveredTaskId === task.id && (
-                                <div className="task-tooltip">
-                                    <div className="task-tooltip-inner">
-                                        <div className='task-tooltip-header'>
-                                            <div className='task-tooltip-title'>
-                                                <h3>{task.title}</h3>
-                                                <div className='task-tooltip-meta-data'>
-                                                    <p className='task-updated-at'>
-                                                        Last Updated {formatDate(task.created_at)}<br />{timeAgo(task.created_at)}
-                                                    </p>
+                                        {isGridView && hoveredTaskId === task.id && (
+                                            <div className="task-tooltip">
+                                                <div className="task-tooltip-inner">
+                                                    <div className='task-tooltip-header'>
+                                                        <div className='task-tooltip-title'>
+                                                            <h3>{task.title}</h3>
+                                                            <div className='task-tooltip-meta-data'>
+                                                                <p className='task-updated-at'>
+                                                                    Last Updated {formatDate(task.created_at)}<br />{timeAgo(task.created_at)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className='task-tooltip-status'>
+                                                            <div className="task-status">
+                                                                {task.started ? (
+                                                                    task.completed ? (
+                                                                        <div className="status-circle completed">
+                                                                            <FontAwesomeIcon icon={faCheck} className="check-icon" />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="status-circle in-progress">
+                                                                            <div
+                                                                                className="progress"
+                                                                                style={{
+                                                                                    transform: `rotate(${(50 / 100) * 360}deg)`,
+                                                                                    borderLeftColor: 50 >= 50 ? '#007bff' : 'transparent',
+                                                                                }}
+                                                                            ></div>
+                                                                        </div>
+                                                                    )
+                                                                ) : (
+                                                                    <div className="status-circle not-started"></div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className='task-tooltip-content'>
+                                                        <div className='task-tooltip-description-title'>
+                                                            <h4>Notes</h4>
+                                                        </div>
+                                                        <div className='task-tooltip-description-content'>
+                                                            <p>{task.description}</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className='task-tooltip-status'>
-                                                <div className="task-status">
-                                                    {task.started ? (
-                                                        task.completed ? (
-                                                            <div className="status-circle completed">
-                                                                <FontAwesomeIcon icon={faCheck} className="check-icon" />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="status-circle in-progress">
-                                                                <div
-                                                                    className="progress"
-                                                                    style={{
-                                                                        transform: `rotate(${(50 / 100) * 360}deg)`,
-                                                                        borderLeftColor: 50 >= 50 ? '#007bff' : 'transparent',
-                                                                    }}
-                                                                ></div>
-                                                            </div>
-                                                        )
-                                                    ) : (
-                                                        <div className="status-circle not-started"></div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='task-tooltip-content'>
-                                            <div className='task-tooltip-description-title'>
-                                                <h4>Notes</h4>
-                                            </div>
-                                            <div className='task-tooltip-description-content'>
-                                                <p>{task.description}</p>
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
-                            )}
+                            ))}
                         </div>
-                    ))}
+                    ) : (
+                        <div className='task-list-page-list'>
+
+                        </div>
+                    )}
                 </div>
             </div>
             {showTaskForm && <TaskForm onClose={handleCloseTaskForm} taskFormIsOverlay={taskFormIsOverlay} fetchTasks={fetchTasks} />}
         </div>
-    );
+    ) : (
+        <div>Loading...</div>
+    )
 };
 
 export default TaskList;
