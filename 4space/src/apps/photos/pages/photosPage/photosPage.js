@@ -152,8 +152,8 @@ const PhotosPage = () => {
             const aspectRatio = naturalWidth / naturalHeight;
             const photoHeight = 240;
             const photoWidth = photoHeight * aspectRatio;
-            // console.log("currentRowHeight", currentRowHeight)
-            // console.log("aspectRatio", aspectRatio)
+            // console.log("currentRowHeight", currentRowHeight);
+            // console.log("aspectRatio", aspectRatio);
             // console.log('photoWidth1', photoWidth);
             // console.log('photoHeight1', photoHeight);
 
@@ -181,18 +181,18 @@ const PhotosPage = () => {
                     currentRowWidth = 0;
                     currentRowHeight = finalRowHeight;
                 }
-            
-            // console.log('photoWidth', photoWidth);
-            // console.log('photoHeight', photoHeight);
 
-            row.push({
-                ...photo,
-                width: photoWidth,
-                height: photoHeight,
-                aspectRatio: aspectRatio
-            });
-            currentRowWidth += photoWidth;
-        }
+                // console.log('photoWidth', photoWidth);
+                // console.log('photoHeight', photoHeight);
+
+                row.push({
+                    ...photo,
+                    width: photoWidth,
+                    height: photoHeight,
+                    aspectRatio: aspectRatio
+                });
+                currentRowWidth += photoWidth;
+            }
         });
 
 

@@ -5,7 +5,7 @@ from .models import Stock, Watchlist
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
-        fields = ['symbol', 'description', 'display_symbol', 'market_capitalization']
+        fields = ['id', 'symbol', 'description', 'industry', 'display_symbol', 'market_capitalization']
 
 class WatchlistSerializer(serializers.ModelSerializer):
     class Meta:

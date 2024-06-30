@@ -1,0 +1,84 @@
+    // const websocket = useRef(null);
+    // const isWebSocketInitialized = useRef(false);
+
+
+// useEffect(() => {
+    //     if (!isWebSocketInitialized.current) {
+    //         console.log('Initializing WebSocket connection...');
+    //         websocket.current = new WebSocket(stockConfig.websocketUrl, [], config);
+    //         isWebSocketInitialized.current = true;
+
+    //         websocket.current.onopen = () => {
+    //             console.log('WebSocket connection established');
+    //             // watchList.forEach(symbol => {
+    //                 // console.log(symbol);
+    //                 websocket.current.send(JSON.stringify({ type: 'subscribe', symbol: 'TSLA' }))
+    //             // });
+    //         };
+
+    //         websocket.current.onmessage = (event) => {
+    //             const data = JSON.parse(event.data);
+    //             console.log('WebSocket message received:', data);
+
+    //             if (data.type === 'ping') {
+    //                 console.log('Received ping from server');
+    //                 websocket.current.send(JSON.stringify({ type: 'pong' })); // Respond to ping
+    //             } else if (data.type === 'trade') {
+    //                 data.data.forEach(trade => {
+    //                     console.log(`Received trade data for ${trade.s}: Price=${trade.p}, Volume=${trade.v}, Time=${trade.t}`);
+    //                     setStockData(prevState => {
+    //                         const updatedState = { ...prevState };
+    //                         if (!updatedState[trade.s]) {
+    //                             updatedState[trade.s] = [];
+    //                         }
+    //                         updatedState[trade.s].push({ price: trade.p, time: trade.t });
+    //                         return updatedState;
+    //                     });
+    //                 });
+    //             }
+    //         };
+
+    //         websocket.current.onclose = () => {
+    //             console.log('WebSocket closed');
+    //             websocket.current = null;
+    //         };
+
+    //         websocket.current.onerror = (error) => {
+    //             console.error('WebSocket error:', error);
+    //         };
+
+    //         // Cleanup function
+    //         return () => {
+    //             if (websocket && websocket.current.readyState === WebSocket.OPEN) {
+    //                 websocket.current.close();
+    //             }
+    //         };
+    //     }
+    // }, [watchList]);
+
+    // const handleAddSymbol = () => {
+    //     if (newSymbol && !watchList.includes(newSymbol)) {
+    //         setWatchList([...watchList, newSymbol]);
+    //         websocket.current.send(JSON.stringify({ type: 'subscribe', symbol: newSymbol }));
+    //     }
+    //     setNewSymbol('');
+    // };
+
+    // const chartData = (symbol) => {
+    //     if (!stockData[symbol]) {
+    //         return { labels: [], datasets: [] };
+    //     }
+    //     const prices = stockData[symbol].map(data => data.price);
+    //     const times = stockData[symbol].map(data => new Date(data.time).toLocaleTimeString());
+    //     return {
+    //         labels: times,
+    //         datasets: [
+    //             {
+    //                 label: `${symbol} Price`,
+    //                 data: prices,
+    //                 borderColor: 'rgba(75, 192, 192, 1)',
+    //                 fill: false,
+    //             },
+    //         ],
+    //     };
+    // };

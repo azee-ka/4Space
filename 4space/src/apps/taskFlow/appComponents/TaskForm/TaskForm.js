@@ -46,7 +46,7 @@ const TaskForm = ({ onClose, taskFormIsOverlay, fetchTasks }) => {
             await fetchTasks(); // Wait for the tasks to be updated
             onClose(); // Close the form after submission
         } else {
-            navigate('/tasks');
+            navigate('/taskflow/tasks');
         }
     };
     

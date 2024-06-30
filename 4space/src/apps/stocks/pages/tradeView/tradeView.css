@@ -39,6 +39,136 @@
     background-color: rgba(0, 0, 255, 0);
 }
 
+
+.trade-view-search-bar {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.trade-view-search-bar-inner {
+    width: 60%;
+    height: 100%;
+    background-color: rgb(30, 255, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.trade-view-search-bar-inner input {
+    width: 100%;
+    height: 85%;
+    padding: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin: 0;
+    background-color: rgba(44, 44, 44, 0.379);
+    backdrop-filter: blur(70px);
+    border: 1px solid rgba(128, 128, 128, 0.386);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: rgb(199, 199, 199);
+    outline: none;
+    border-radius: 9px;
+    height: 90%;
+}
+
+.trade-view-search-bar-inner.results-shown input {
+    border-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.trade-view-search-results {
+    position: absolute;
+    z-index: 5;
+    top: 46px;
+    background-color: rgba(19, 19, 19, 0.309);
+    backdrop-filter: blur(70px);
+    width: 767px;
+    height: 300px;
+    border-radius: 9px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    border: 1px solid rgba(128, 128, 128, 0.386);
+    border-top: 0;
+}
+.trade-view-search-results-inner {
+    width: 95%;
+    /* height: 95%; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 0, 0, 0);
+    gap: 5px;
+}
+
+.per-stock-search-query {
+    width: 100%;
+    height: 45px;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid rgba(182, 182, 182, 0.412);
+}
+
+.per-stock-search-query-inner {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(128, 0, 128, 0);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+.per-stock-search-query-inner p {
+    margin: 0;
+    font-size: 14px;
+    color: rgb(181, 181, 181);
+
+}
+
+.per-stock-search-add-to-watchlist-btn {
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.per-stock-search-add-to-watchlist-btn button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    height: 30px;
+    aspect-ratio: 1 / 1;
+    font-size: 14px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: rgb(62, 62, 62);
+    color: rgb(180, 180, 180);
+}
+.per-stock-search-add-to-watchlist-btn button:hover {
+    cursor: pointer;
+    background-color: rgb(87, 87, 87);
+}
+
+
 .trade-view-my-watch-list {
     width: 100%;
     display: flex;

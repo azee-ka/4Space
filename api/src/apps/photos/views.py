@@ -25,7 +25,7 @@ def upload_photo(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_photos(request):
-    photos = PhotoElement.objects.filter(user=request.user).order_by('original_media_datetime')
+    photos = PhotoElement.objects.filter(user=request.user.interactuser).order_by('original_media_datetime')
     grouped_photos = {}
 
     for photo in photos:
@@ -60,14 +60,14 @@ def create_album(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_albums(request):
-    albums = Album.objects.filter(user=request.user)
+    albums = Album.objects.filter(user=request.user.interactuser)
     serializer = AlbumSerializer(albums, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_album_photos(request, album_id):
-    album = get_object_or_404(Album, id=album_id, user=request.user)
+    album = get_object_or_404(Album, id=album_id, user=request.user.interactuser)
     photos = album.photos.all()
     serializer = PhotoElementSerializer(photos, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -77,7 +77,7 @@ def get_album_photos(request, album_id):
 @permission_classes([IsAuthenticated])
 def get_album_metadata(request, album_id):
     # Retrieve the album using the provided album_id
-    album = get_object_or_404(Album, id=album_id, user=request.user)
+    album = get_object_or_404(Album, id=album_id, user=request.user.interactuser)
     
     # Serialize the album data
     serializer = AlbumSerializer(album)
@@ -91,7 +91,7 @@ def get_album_metadata(request, album_id):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_album_title(request, album_id):
-    album = get_object_or_404(Album, id=album_id, user=request.user)
+    album = get_object_or_404(Album, id=album_id, user=request.user.interactuser)
 
     new_title = request.data.get('title', None)
     if new_title is not None:
