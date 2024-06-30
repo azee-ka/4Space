@@ -20,7 +20,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
     const [otherUserChatInfo, setOtherUserChatInfo] = useState();
     const [messages, setMessages] = useState([]);
 
-    const [chatExists, setChatExists] = useState(false);
+    const [chatExists, setChatExists] = useState(true);
 
     const [isRestricted, setIsRestricted] = useState(false);
 
@@ -56,7 +56,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             console.log('newMessages', response.data);
             countMessage = response.data.count;
             if (newMessages.length < limit) setHasMore(false);
-            setMessages((prevMessages) => append ? [...newMessages, ...prevMessages] : newMessages);
+            setMessages((prevMessages) => append ? [...prevMessages, ...newMessages] : newMessages);
             setOffset(newOffset + limit);
 
         } catch (error) {
@@ -111,6 +111,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
                 const data = JSON.parse(event.data);
                 console.log(data);
                 if (!data.error) {
+                    scrollToBottom();
                     // Update messages state without duplicates
                     setMessages((prevMessages) => {
                         if (!prevMessages.some((msg) => msg.id === data.message.id)) {

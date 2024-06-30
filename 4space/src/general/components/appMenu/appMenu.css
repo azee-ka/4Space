@@ -12,8 +12,8 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    background-color: rgba(92, 89, 95, 0.227);
-    backdrop-filter: blur(500px);
+    background-color: rgba(40, 39, 39, 0.119);
+    backdrop-filter: blur(40px);
     border: 1px solid rgba(128, 128, 128, 0.174);
     z-index: 10;
     backdrop-filter: blur(100px) !important;

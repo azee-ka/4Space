@@ -95,6 +95,14 @@ const TaskList = () => {
         }
     };
 
+
+    // {!isGridView &&
+    //     <div className='task-grid-create-button'>
+    //         <h2>Tasks</h2>
+    //         <button onClick={() => handleCreateTask()}>Create Task</button>
+    //     </div>
+    // }
+
     return tasks ? (
         <div className='task-list-page' onClick={() => setShowDropdown(false)}>
             <div className='task-list-page-inner'>
@@ -220,6 +228,13 @@ const TaskList = () => {
                             </div>
                         ) : (
                             <div className='task-list-page-list-inner'>
+                                {!isGridView &&
+                        <div className='task-list-create-button'>
+                            <h2>Tasks</h2>
+                            <button onClick={() => handleCreateTask()}>Create Task</button>
+                        </div>
+                    }   
+                    <div className='task-list-page-list-inner-inner'>
                                 {tasks.map((task, index) => (
                                     <div
                                         key={index}
@@ -264,6 +279,7 @@ const TaskList = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
                             </div>
                         )}
                     </div>

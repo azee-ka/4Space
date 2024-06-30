@@ -86,7 +86,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message_data = None
             if message_instance:
                 try:
-                    print("hello232323232")
+                    print("room_group_name")
                     message_data = await sync_to_async(lambda: MessageSerializer(message_instance).data)()
                 
                     # Send message to chat group
@@ -109,10 +109,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 message_data = None
                 if message_instance:
                     try:
-                        print(f"hello10121--1-1 {message_instance}")
+                        print(f"room_group_name_unrestricted--1-1 {message_instance}")
                         message_data = await sync_to_async(lambda: MessageSerializer(message_instance).data)()
                         # Send message to WebSocket
-                        print("hello10121")
+                        print("room_group_name_unrestricted")
                         await self.channel_layer.group_send(
                             self.room_group_name_unrestricted,
                             {
