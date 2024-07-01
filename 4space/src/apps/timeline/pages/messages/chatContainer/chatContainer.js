@@ -56,7 +56,7 @@ const ChatContainer = ({ fetchUserMessagesList }) => {
             console.log('newMessages', response.data);
             countMessage = response.data.count;
             if (newMessages.length < limit) setHasMore(false);
-            setMessages((prevMessages) => append ? [...prevMessages, ...newMessages] : newMessages);
+            setMessages((prevMessages) => append ? [...newMessages, ...prevMessages] : newMessages);
             setOffset(newOffset + limit);
 
         } catch (error) {

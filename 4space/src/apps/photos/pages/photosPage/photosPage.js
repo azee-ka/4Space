@@ -119,127 +119,128 @@ const PhotosPage = () => {
     // };
 
 
-    // Function to update the width
-    const updateGridWidth = () => {
-        if (photoGroupRef.current) {
-            setGridWidth(photoGroupRef.current.offsetWidth);
-        }
-    };
+    // // Function to update the width
+    // const updateGridWidth = () => {
+    //     if (photoGroupRef.current) {
+    //         setGridWidth(photoGroupRef.current.offsetWidth);
+    //     }
+    // };
 
-    // useEffect hook to access the width after component mounts
-    useEffect(() => {
-        updateGridWidth();
+    // // useEffect hook to access the width after component mounts
+    // useEffect(() => {
+    //     updateGridWidth();
 
-        // Add event listener for window resize
-        window.addEventListener('resize', updateGridWidth);
+    //     // Add event listener for window resize
+    //     window.addEventListener('resize', updateGridWidth);
 
-        // Cleanup function to remove the event listener
-        return () => {
-            window.removeEventListener('resize', updateGridWidth);
-        };
-    }, []);
-
-
-    const handleEachGroup = (photos) => {
-        let groupRows = [];
-        let row = [];
-        let currentRowWidth = 0;
-        let currentRowHeight = 240; // Start with the minimum height
-
-        photos.forEach((photo, index) => {
-            const { naturalWidth, naturalHeight } = getPhotoDimensions(photo.media);
-
-            const aspectRatio = naturalWidth / naturalHeight;
-            const photoHeight = 240;
-            const photoWidth = photoHeight * aspectRatio;
-            // console.log("currentRowHeight", currentRowHeight);
-            // console.log("aspectRatio", aspectRatio);
-            // console.log('photoWidth1', photoWidth);
-            // console.log('photoHeight1', photoHeight);
-
-            if (aspectRatio && photoHeight && photoWidth) {
-                // Check if adding this photo to the current row would exceed the grid width
-                if (currentRowWidth + photoWidth > gridWidth) {
-                    // Adjust the row height to make the photos fit exactly into the grid width
-                    const adjustedHeight = (gridWidth / currentRowWidth) * currentRowHeight;
-
-                    // Ensure the adjusted height is within the min and max bounds
-                    const finalRowHeight = Math.min(Math.max(adjustedHeight, 240), 500);
-
-                    // Update the width of each photo in the current row to maintain aspect ratio
-                    row = row.map(item => ({
-                        ...item,
-                        width: finalRowHeight * aspectRatio,
-                        height: finalRowHeight,
-                    }));
-                    if (row.length > 0) {
-                        groupRows.push(row);
-                    }
-
-                    // Start a new row
-                    row = [];
-                    currentRowWidth = 0;
-                    currentRowHeight = finalRowHeight;
-                }
-
-                // console.log('photoWidth', photoWidth);
-                // console.log('photoHeight', photoHeight);
-
-                row.push({
-                    ...photo,
-                    width: photoWidth,
-                    height: photoHeight,
-                    aspectRatio: aspectRatio
-                });
-                currentRowWidth += photoWidth;
-            }
-        });
+    //     // Cleanup function to remove the event listener
+    //     return () => {
+    //         window.removeEventListener('resize', updateGridWidth);
+    //     };
+    // }, []);
 
 
-        // Add the last row if it has photos
-        if (row.length > 0) {
-            groupRows.push(row);
-        }
+    // const handleEachGroup = (photos) => {
+    //     let groupRows = [];
+    //     let row = [];
+    //     let currentRowWidth = 0;
+    //     let currentRowHeight = 240; // Start with the minimum height
 
-        return groupRows;
-    };
+    //     photos.forEach((photo, index) => {
+    //         const { naturalWidth, naturalHeight } = getPhotoDimensions(photo.media);
 
-    const handleStackItems = () => {
-        let allGroupsRows = [];
-        updateGridWidth();
+    //         const aspectRatio = naturalWidth / naturalHeight;
+    //         const photoHeight = 240;
+    //         const photoWidth = photoHeight * aspectRatio;
+    //         // console.log("currentRowHeight", currentRowHeight);
+    //         // console.log("aspectRatio", aspectRatio);
+    //         // console.log('photoWidth1', photoWidth);
+    //         // console.log('photoHeight1', photoHeight);
 
-        photos.forEach((group) => {
-            let groupRows = handleEachGroup(group.photos);
-            allGroupsRows.push({ date: group.date, groupRows: groupRows });
-        });
+    //         if (aspectRatio && photoHeight && photoWidth) {
+    //             // Check if adding this photo to the current row would exceed the grid width
+    //             if (currentRowWidth + photoWidth > gridWidth) {
+    //                 // Adjust the row height to make the photos fit exactly into the grid width
+    //                 const adjustedHeight = (gridWidth / currentRowWidth) * currentRowHeight;
 
-        console.log(allGroupsRows)
-        setPhotosToRender(allGroupsRows);
+    //                 // Ensure the adjusted height is within the min and max bounds
+    //                 const finalRowHeight = Math.min(Math.max(adjustedHeight, 240), 500);
 
-        // Process allGroupsRows as needed, for example, updating the state or rendering the rows
-    };
+    //                 // Update the width of each photo in the current row to maintain aspect ratio
+    //                 row = row.map(item => ({
+    //                     ...item,
+    //                     width: finalRowHeight * aspectRatio,
+    //                     height: finalRowHeight,
+    //                 }));
+    //                 if (row.length > 0) {
+    //                     groupRows.push(row);
+    //                 }
 
-    // Helper function to get photo dimensions
-    const getPhotoDimensions = (media) => {
-        const img = new Image();
-        img.src = `${API_BASE_URL}${media.file}`;
-        // console.log('img.width', img.width);
-        // console.log('img.height', img.height)
-        return { naturalWidth: img.width, naturalHeight: img.height };
-    };
+    //                 // Start a new row
+    //                 row = [];
+    //                 currentRowWidth = 0;
+    //                 currentRowHeight = finalRowHeight;
+    //             }
+
+    //             // console.log('photoWidth', photoWidth);
+    //             // console.log('photoHeight', photoHeight);
+
+    //             row.push({
+    //                 ...photo,
+    //                 width: photoWidth,
+    //                 height: photoHeight,
+    //                 aspectRatio: aspectRatio
+    //             });
+    //             currentRowWidth += photoWidth;
+    //         }
+    //     });
 
 
-    useEffect(() => {
-        handleStackItems();
-    }, [photos]);
+    //     // Add the last row if it has photos
+    //     if (row.length > 0) {
+    //         groupRows.push(row);
+    //     }
+
+    //     return groupRows;
+    // };
+
+    // const handleStackItems = () => {
+    //     let allGroupsRows = [];
+    //     updateGridWidth();
+
+    //     photos.forEach((group) => {
+    //         let groupRows = handleEachGroup(group.photos);
+    //         allGroupsRows.push({ date: group.date, groupRows: groupRows });
+    //     });
+
+    //     console.log(allGroupsRows)
+    //     setPhotosToRender(allGroupsRows);
+
+    //     // Process allGroupsRows as needed, for example, updating the state or rendering the rows
+    // };
+
+    // // Helper function to get photo dimensions
+    // const getPhotoDimensions = (media) => {
+    //     const img = new Image();
+    //     img.src = `${API_BASE_URL}${media.file}`;
+    //     // console.log('img.width', img.width);
+    //     // console.log('img.height', img.height)
+    //     return { naturalWidth: img.width, naturalHeight: img.height };
+    // };
+
+
+    // useEffect(() => {
+    //     handleStackItems();
+    // }, [photos]);
 
 
     useEffect(() => {
         fetchPhotos();
-        handleStackItems();
+        // handleStackItems();
     }, []);
 
     const handleRenderMedia = (media) => {
+        console.log(media)
         if (media) {
             if (media.media_type === "image") {
                 return <img src={`${API_BASE_URL}${media.file}`} alt="Photo" />;
@@ -258,23 +259,19 @@ const PhotosPage = () => {
                     <h2>Photos</h2>
                 </div>
                 <div className="photos-page-content">
-                    <div className="photo-grid" ref={photoGroupRef}>
-                        {photosToRender.map((photosGroup, index) => (
-                            <div key={index} className="photo-each-group">
+                    <div className="photo-each-group" ref={photoGroupRef}>
+                        {photos.map((photosGroup, index) => (
+                            <div key={index} className="photo-grid">
                                 <div className="photo-group-date">
                                     <p>{formatDate(photosGroup.date, false, true, true)}</p>
                                 </div>
-                                <div className="photo-group-grid">
-                                    {photosGroup.groupRows.map((row, rowIndex) => (
-                                        <div key={rowIndex} className="photo-row">
-                                            {row.map((item, itemIndex) => (
-                                                <div key={itemIndex} className="photo-item" style={{ width: item.width, height: item.height }}>
-                                                    {handleRenderMedia(item.media)}
-                                                </div>
-                                            ))}
+                                {photosGroup.photos.map((item, index) => (
+                                    <div key={index} className="photo-item-outer">
+                                        <div className="photo-item" style={{ width: item.width, height: item.height }}>
+                                            {handleRenderMedia(item.media)}
                                         </div>
-                                    ))}
-                                </div>
+                                    </div>
+                                ))}
                             </div>
                         ))}
                     </div>

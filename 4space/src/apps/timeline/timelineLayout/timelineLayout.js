@@ -19,7 +19,7 @@ import SmallSidebar from '../appComponents/sidebar/smallSidebar/smallSidebar';
 import PostFrame from '../pages/post/expandedPost/postFrame';
 import SearchSidebar from '../appComponents/sidebar/searchSidebar/searchSidebar';
 
-const TimelineLayout = ({ children, userList, userListTitle, showUserList, setShowUserList, postId, previousLocation, handlePrevPostClick, handleNextPostClick, showExpandPost, setShowExpandPost, handleUserListTrigger }) => {
+const TimelineLayout = ({ children, userList, userListTitle, showUserList, setShowUserList, postId, previousLocation, handlePrevPostClick, handleNextPostClick, showExpandPost, setShowExpandPost, handleUserListTrigger, showPreviousPostButton,  showNextPostButton }) => {
     const { token, isAuthenticated, user } = useAuthState();
     const config = GetConfig(token);
     const location = useLocation();
@@ -162,7 +162,8 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
             {notificationsMenuOpen && <Notifications notifications={notifications} setNotificationCount={setNotificationCount} />}
             {showUserList && <UserListOverlay userList={userList} title={userListTitle} onClose={() => setShowUserList(false)} />}
             {showCreatePostOverlay && <CreatePostOverlay onClose={() => handleCloseCreatePostOverlayClick()} />}
-            {showExpandPost && <PostFrame postId={postId} onClose={handleExpandPostClose} handlePrevPostClick={handlePrevPostClick} handleNextPostClick={handleNextPostClick} handleUserListTrigger={handleUserListTrigger} />}
+            {showExpandPost && <PostFrame postId={postId} onClose={handleExpandPostClose} handlePrevPostClick={handlePrevPostClick} handleNextPostClick={handleNextPostClick} handleUserListTrigger={handleUserListTrigger} showPreviousPostButton={showPreviousPostButton}
+                  showNextPostButton={showNextPostButton} />}
         </div>
     );
 };

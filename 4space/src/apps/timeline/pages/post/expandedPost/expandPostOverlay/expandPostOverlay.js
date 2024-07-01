@@ -16,7 +16,7 @@ import unlikedImg from '../../../../../../assets/unliked.png';
 import dislikedImg from '../../../../../../assets/disliked.png';
 import undislikedImg from '../../../../../../assets/undisliked.png';
 
-const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPostClick, handleUserListTrigger }) => {
+const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPostClick, handleUserListTrigger, showPreviousPostButton, showNextPostButton }) => {
     const { post_id } = useParams();
 
     const { token, user } = useAuthState();
@@ -49,6 +49,10 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
         if (!post_id && !window.location.pathname.includes('post')) {
             window.history.replaceState(null, '', `/timeline/post/${postId}`);
         }
+    }, [post_id, postId]);
+
+    useEffect(() => {
+            window.history.replaceState(null, '', `/timeline/post/${postId}`);
     }, [post_id, postId]);
 
 
@@ -176,18 +180,18 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                 <div className="expand-post-overlay-previous-next-post-btns">
                     <div className="expand-post-overlay-previous-next-post-btns-inner">
                         <div className="expand-post-overlay-previous-post-btn">
-                            {prevLocation !== '/timeline' && post.next_post_uuid &&
+                            {prevLocation !== '/timeline' && showPreviousPostButton &&
                                 <div onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => handlePrevPostClick(post.next_post_uuid)}>
+                                    <button onClick={() => handlePrevPostClick()}>
                                         <FontAwesomeIcon icon={faChevronLeft} />
                                     </button>
                                 </div>
                             }
                         </div>
                         <div className="expand-post-overlay-next-post-btn">
-                            {prevLocation !== '/timeline' && post.previous_post_uuid &&
+                            {prevLocation !== '/timeline' && showNextPostButton &&
                                 <div onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => handleNextPostClick(post.previous_post_uuid)}>
+                                    <button onClick={() => handleNextPostClick()}>
                                         <FontAwesomeIcon icon={faChevronRight} />
                                     </button>
                                 </div>

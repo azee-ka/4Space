@@ -54,18 +54,18 @@ function SearchSidebar({ isOpen }) {
                     <div className='search-sidebar-header'>
                         <h2>Search</h2>
                         <div className='search-sidebar-search-bar'>
-                        <input
-                            placeholder='Search...'
-                            value={searchInput}
-                            onChange={(e) => handleInputChange(e)}
-                        />
-                    </div>
+                            <input
+                                placeholder='Search...'
+                                value={searchInput}
+                                onChange={(e) => handleInputChange(e)}
+                            />
+                        </div>
                     </div>
                     <div className='search-sidebar-results'>
                         <div className='search-sidebar-results-inner'>
                             {searhQueryResults.map((item, index) => (
-                                <div key={index} className='search-per-item'>
-                                    <Link to={`/timeline/profile/${item.username}`}>
+                                <div key={index} className='search-per-item' onClick={() => handleRedirect(item.username)}>
+                                    {/* <Link to={`/timeline/profile/${item.username}`}> */}
                                     <div className='search-per-item-inner'>
                                         <div className='search-item-profile-picture'>
                                             <ProfilePicture src={item.profile_picture} />
@@ -74,7 +74,7 @@ function SearchSidebar({ isOpen }) {
                                             {item.username}
                                         </div>
                                     </div>
-                                    </Link>
+                                    {/* </Link> */}
                                 </div>
                             ))}
                         </div>

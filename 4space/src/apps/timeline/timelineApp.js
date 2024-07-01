@@ -25,27 +25,46 @@ const TimelineApp = () => {
 
   const [showExpandPost, setShowExpandPost] = useState(false);
 
+  const [expandPostCurrentIndex, setExpandPostCurrentIndex] = useState()
+  const [postsList, setPostsList] = useState();
 
-  const handleExpandPostTrigger = (post, previousLocation) => {
+  const [showPreviousPostButton, setShowPreviousPostButton] = useState(true)
+  const [showNextPostButton, setShowNextPostButton] = useState(true);
+
+
+  const handleExpandPostTrigger = (postId, posts, index, previousLocation) => {
     setShowExpandPost(true);
-    setPostId(post.id);
+    setPostId(postId);
     setPreviousLocation(previousLocation);
+
+    setShowPreviousPostButton(index > 0);
+    setShowNextPostButton(index < posts.length - 1);
+    setExpandPostCurrentIndex(index);
+    setPostsList(posts);
   };
 
 
-  const handlePrevPostClick = (prevPostId) => {
-    console.log('prevPostId', prevPostId);
-    setPostId(prevPostId);
-    window.history.replaceState(null, '', `/post/${prevPostId}`);
-    console.log(window.location.pathname)
-}
+  const handlePrevPostClick = () => {
+    if (expandPostCurrentIndex > 0) {
+      const newIndex = expandPostCurrentIndex - 1;
+      handleExpandPostTrigger(postsList[newIndex].id, postsList, newIndex, previousLocation);
+      setExpandPostCurrentIndex(newIndex);
+      console.log('newIndexprev', newIndex);
+    } else {
+      setShowPreviousPostButton(false)
+    }
+  }
 
-const handleNextPostClick = (nextPostId) => {
-    console.log('nextPostId', nextPostId);
-    setPostId(nextPostId);
-    window.history.replaceState(null, '', `/post/${nextPostId}`);
-    console.log(window.location.pathname)
-}
+  const handleNextPostClick = () => {
+    if (expandPostCurrentIndex < postsList.length - 1) {
+      const newIndex = expandPostCurrentIndex + 1;
+      handleExpandPostTrigger(postsList[newIndex].id, postsList, newIndex, previousLocation);
+      setExpandPostCurrentIndex(newIndex);
+      console.log('newIndexnext', newIndex);
+    } else {
+      setShowNextPostButton(false);
+    }
+  }
 
 
   const handleUserListTrigger = (userListParam, titleParam) => {
@@ -68,7 +87,7 @@ const handleNextPostClick = (nextPostId) => {
     {
       path: '/profile/edit',
       name: 'My Profile Edit',
-      element: <MyProfileEdit handleUserListTrigger={handleUserListTrigger}/>
+      element: <MyProfileEdit handleUserListTrigger={handleUserListTrigger} />
     },
     {
       path: '/profile',
@@ -78,7 +97,7 @@ const handleNextPostClick = (nextPostId) => {
     {
       path: '/profile/:username',
       name: 'User Profile',
-      element: <Profile handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger}/>
+      element: <Profile handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
     },
     {
       path: '/create-post',
@@ -120,38 +139,40 @@ const handleNextPostClick = (nextPostId) => {
 
   return (
     <div className={`App ${isAuthenticated ? 'private' : ''}`}>
-        <Routes>
-          {isAuthenticated ? (
-            privateRoutes.map((route, index) => (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <TimelineLayout
-                    className={`${route.path.substring(1)}`}
-                    pageName={route.name}
-                    userList={userList}
-                    userListTitle={userListTitle}
-                    showUserList={showUserList}
-                    setShowUserList={setShowUserList}
-                    postId={postId}
-                    previousLocation={previousLocation}
-                    handlePrevPostClick={handlePrevPostClick}
-                    handleNextPostClick={handleNextPostClick}
-                    showExpandPost={showExpandPost}
-                    setShowExpandPost={setShowExpandPost}
-                    handleUserListTrigger={handleUserListTrigger}
-                  >
-                    {route.element}
-                  </TimelineLayout>
-                }
-              />
-            ))
-          ) : (
-            <Route path="/*" element={<Navigate to="/login" />} />
-          )}
+      <Routes>
+        {isAuthenticated ? (
+          privateRoutes.map((route, index) => (
+            <Route
+              key={index}
+              path={route.path}
+              element={
+                <TimelineLayout
+                  className={`${route.path.substring(1)}`}
+                  pageName={route.name}
+                  userList={userList}
+                  userListTitle={userListTitle}
+                  showUserList={showUserList}
+                  setShowUserList={setShowUserList}
+                  postId={postId}
+                  previousLocation={previousLocation}
+                  handlePrevPostClick={handlePrevPostClick}
+                  handleNextPostClick={handleNextPostClick}
+                  showExpandPost={showExpandPost}
+                  setShowExpandPost={setShowExpandPost}
+                  handleUserListTrigger={handleUserListTrigger}
+                  showPreviousPostButton={showPreviousPostButton}
+                  showNextPostButton={showNextPostButton}
+                >
+                  {route.element}
+                </TimelineLayout>
+              }
+            />
+          ))
+        ) : (
           <Route path="/*" element={<Navigate to="/login" />} />
-        </Routes>
+        )}
+        <Route path="/*" element={<Navigate to="/login" />} />
+      </Routes>
     </div>
   );
 };

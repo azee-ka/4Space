@@ -114,7 +114,7 @@ def list_past_messages(request, chat_uuid):
     # Get all messages if the user is the inviter or has accepted the invitation
     # Otherwise, get the first 3 messages
     if is_inviter or is_accepted or not is_restricted:
-        messages = Message.objects.filter(chat=chat).order_by('timestamp')
+        messages = Message.objects.filter(chat=chat).order_by('-timestamp')
         # messages = list(messages)[::-1]
         paginator = MessagePagination()
         result_page = paginator.paginate_queryset(messages, request)
@@ -122,7 +122,7 @@ def list_past_messages(request, chat_uuid):
         return paginator.get_paginated_response(serializer.data)
     else:
         # Get the first 3 messages, assuming they are by the inviter or accepted users
-        first_3_messages = Message.objects.filter(chat=chat).order_by('timestamp')[:3]
+        first_3_messages = Message.objects.filter(chat=chat).order_by('-timestamp')[:3]
 
         # Initialize variables to keep track of messages to be sent
         messages_to_send = []

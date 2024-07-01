@@ -135,6 +135,6 @@ def upload_photos_to_album(request, album_id):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_album(request, album_id):
-    album = get_object_or_404(Album, id=album_id, user=request.user)
+    album = get_object_or_404(Album, id=album_id, user=request.user.interactuser)
     album.delete()
     return Response({'message': 'Album deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
