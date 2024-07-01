@@ -40,6 +40,8 @@ const Timeline = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
                         <Post
                             key={index}
                             postId={post.id}
+                            posts={posts}
+                            currentPostIndex={index}
                             handleExpandPostTrigger={handleExpandPostTrigger}
                             handleUserListTrigger={handleUserListTrigger}
                         />

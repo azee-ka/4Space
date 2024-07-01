@@ -180,7 +180,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                 <div className="expand-post-overlay-previous-next-post-btns">
                     <div className="expand-post-overlay-previous-next-post-btns-inner">
                         <div className="expand-post-overlay-previous-post-btn">
-                            {prevLocation !== '/timeline' && showPreviousPostButton &&
+                            {showPreviousPostButton &&
                                 <div onClick={(e) => e.stopPropagation()}>
                                     <button onClick={() => handlePrevPostClick()}>
                                         <FontAwesomeIcon icon={faChevronLeft} />
@@ -189,7 +189,7 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
                             }
                         </div>
                         <div className="expand-post-overlay-next-post-btn">
-                            {prevLocation !== '/timeline' && showNextPostButton &&
+                            {showNextPostButton &&
                                 <div onClick={(e) => e.stopPropagation()}>
                                     <button onClick={() => handleNextPostClick()}>
                                         <FontAwesomeIcon icon={faChevronRight} />

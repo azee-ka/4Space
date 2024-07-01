@@ -19,7 +19,7 @@ import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons
 import GetConfig from '../../../../general/components/Authentication/utils/config';
 import ProfilePicture from '../../../../general/utils/profilePicture/getProfilePicture';
 
-const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
+const Post = ({ postId, posts, currentPostIndex, handleExpandPostTrigger, handleUserListTrigger }) => {
   const [post, setPost] = useState(null);
 
   const { token, user } = useAuthState();
@@ -180,7 +180,7 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
               <p onClick={() => handleUserListTrigger(post.dislikes, "Dislikes")}>
                 {`${post.dislikes.length} dislikes`}
               </p>
-              <p onClick={() => handleExpandPostTrigger(post, window.location.pathname)} className="timeline-post-info-count-comments">
+              <p onClick={() => handleExpandPostTrigger(post.id, posts, currentPostIndex, window.location.pathname)} className="timeline-post-info-count-comments">
                 {`${post.comments.length} comment${post.comments.length === 1 ? '' : 's'}`}
               </p>
             </div>
@@ -220,7 +220,7 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
 
         {post.text &&
           <div className='timeline-post-text'>
-            <div onClick={() => handleExpandPostTrigger(post, window.location.pathname)} className="timeline-post-info-count-comments">
+            <div onClick={() => handleExpandPostTrigger(post.id, posts, currentPostIndex, window.location.pathname)} className="timeline-post-info-count-comments">
               {`${post.text}`}
             </div>
           </div>
@@ -246,7 +246,7 @@ const Post = ({ postId, handleExpandPostTrigger, handleUserListTrigger }) => {
               <img src={isDisliked ? dislikedImg : undislikedImg} alt="Dislike" />
             </div>
             <div className='timeline-post-more-img'>
-              <div onClick={() => handleExpandPostTrigger(post, window.location.pathname)}>
+              <div onClick={() => handleExpandPostTrigger(post.id, posts, currentPostIndex, window.location.pathname)}>
                 <img src={three_dots_dark} alt="More"></img>
               </div>
             </div>

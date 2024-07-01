@@ -41,6 +41,7 @@ const TimelineApp = () => {
     setShowNextPostButton(index < posts.length - 1);
     setExpandPostCurrentIndex(index);
     setPostsList(posts);
+    console.log('posts', posts, index)
   };
 
 
