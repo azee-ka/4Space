@@ -30,7 +30,6 @@ class PartialUserSerializer(serializers.ModelSerializer):
 
 
 class BaseUserSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = BaseUser
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'profile_picture']

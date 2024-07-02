@@ -1,0 +1,61 @@
+.mechflow-layout-page {
+    background-color: rgba(255, 255, 255, 0);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-decoration: none !important;
+    color: white;
+    /* position: relative; */
+}
+
+.mechflow-layout-page-content {
+    background-color: rgba(255, 255, 255, 0);
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.mechflow-layout-small-sidebar {
+    width: 90px;
+    height: 100%;
+    background-color: rgba(27, 25, 25, 0.167);
+    border-right: 1px solid rgba(128, 128, 128, 0.118);
+    z-index: 4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mechflow-layout-page-content-inner {
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mechflow-layout-navbar {
+    width: 100%;
+    height: 100px;
+    /* position: absolute; */
+}
+
+.mechflow-layout-sidebar {
+    width: 250px;
+    height: 100%;
+    background-color: rgba(27, 25, 25, 0);
+}
+
+
+
+.mechflow-layout-small-sidebar.large-sidebar-open {
+    background-color: rgba(255, 0, 0, 0);
+    border-right: 1px solid rgba(128, 128, 128, 0);
+}

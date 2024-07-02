@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Line } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import './tradeView.css';
-import { useAuthDispatch, useAuthState } from "../../../../general/components/Authentication/utils/AuthProvider";
+import { useAuthState } from "../../../../general/components/Authentication/utils/AuthProvider";
 import GetConfig from "../../../../general/components/Authentication/utils/config";
 import stockConfig from '../../utils/config';
 import API_BASE_URL from "../../../../config";
@@ -15,227 +15,110 @@ import 'chartjs-adapter-date-fns';
 Chart.register(...registerables);
 
 const TradeView = () => {
-    const { isAuthenticated } = useAuthDispatch();
     const { token } = useAuthState();
     const config = GetConfig(token);
 
-    const [stockData, setStockData] = useState([
-        {
-            "v": 54266550,
-            "vw": 209.7069,
-            "o": 209.15,
-            "c": 209.07,
-            "h": 211.38,
-            "l": 208.61,
-            "t": 1719288000000,
-            "n": 621125
-        },
-        {
-            "v": 64531178,
-            "vw": 213.1428,
-            "o": 211.5,
-            "c": 213.25,
-            "h": 214.86,
-            "l": 210.64,
-            "t": 1719374400000,
-            "n": 769036
-        },
-        {
-            "v": 48631748,
-            "vw": 213.9094,
-            "o": 214.69,
-            "c": 214.1,
-            "h": 215.7395,
-            "l": 212.35,
-            "t": 1719460800000,
-            "n": 644311
-        },
-        {
-            "v": 80927625,
-            "vw": 212.5954,
-            "o": 215.77,
-            "c": 210.62,
-            "h": 216.07,
-            "l": 210.3,
-            "t": 1719547200000,
-            "n": 729816
-        }
-    ],
-        [
-            {
-                "v": 54266550,
-                "vw": 209.7069,
-                "o": 209.15,
-                "c": 209.07,
-                "h": 211.38,
-                "l": 208.61,
-                "t": 1719288000000,
-                "n": 621125
-            },
-            {
-                "v": 64531178,
-                "vw": 213.1428,
-                "o": 211.5,
-                "c": 213.25,
-                "h": 214.86,
-                "l": 210.64,
-                "t": 1719374400000,
-                "n": 769036
-            },
-            {
-                "v": 48631748,
-                "vw": 213.9094,
-                "o": 214.69,
-                "c": 214.1,
-                "h": 215.7395,
-                "l": 212.35,
-                "t": 1719460800000,
-                "n": 644311
-            },
-            {
-                "v": 80927625,
-                "vw": 212.5954,
-                "o": 215.77,
-                "c": 210.62,
-                "h": 216.07,
-                "l": 210.3,
-                "t": 1719547200000,
-                "n": 729816
-            }
-        ]);
-
+    const [stockData, setStockData] = useState({});
     const chartRefs = useRef({});
-
-    const [marketIsOpen, setMarketIsOpen] = useState(false);
     const [watchList, setWatchList] = useState([]);
+    const [newSymbol, setNewSymbol] = useState('');
+    const [stockSearchQuery, setStockSearchQuery] = useState('');
+    const [stockSearchQueryResults, setStockSearchQueryResults] = useState([]);
 
-    const [stockSearchQuery, setStockSearchQuery] = useState('')
-    const [stockSearchQueryResults, setStockSearchQueryResults] = useState([])
-
-    // /stock/market-status?exchange=US
-
-    const fetchMarketStatus = async () => {
-        try {
-            const response = await axios.get(`${stockConfig.baseUrl}/stock/market-status?exchange=US&token=${process.env.REACT_APP_WEBSOCKET_TOKEN}`);
-            console.log(response.data);
-            setMarketIsOpen(response.data.isOpen);
-        } catch (error) {
-            console.error('Error', error);
-        }
-    };
-
-
-    const fetchWatchList = async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/stocks/watchlist/`, config);
-            console.log(response.data);
-            setWatchList(response.data);
-
-        } catch (error) {
-            console.error('Error', error);
-        }
-    };
+    const websocket = useRef(null);
+    const isWebSocketInitialized = useRef(false);
 
     useEffect(() => {
         fetchMarketStatus();
         fetchWatchList();
-    }, [])
+    }, []);
 
-
-    // Define a function to save console output to a file
-    const saveToFile = (data, filename) => {
-        const blob = new Blob([data], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }, 0);
-    };
-
-    // Extend console to have a save method
-    console.save = (data, filename) => {
-        if (!data) {
-            console.error('Console.save: No data');
-            return;
-        }
-
-        if (!filename) filename = 'console.json';
-
-        if (typeof data === 'object') {
-            data = JSON.stringify(data, undefined, 4);
-        }
-
-        saveToFile(data, filename);
-    };
-
-
-    const handleInputChange = (e) => {
-        const inputValue = e.target.value;
-        setStockSearchQuery(inputValue);
-
-        if (inputValue !== "") {
-            handleSubmitSearch(inputValue);
-        } else {
-            setStockSearchQueryResults([]);
-        }
-    };
-
-    const handleSubmitSearch = async (symbol) => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}api/apps/stocks/search/?query=${symbol}`, config);
-            // console.log(response.data);
-            setStockSearchQueryResults(response.data);
-            // console.save(response.data, 'stocks_data.txt');
-        } catch (error) {
-            console.error('Error', error);
-        }
-    };
-
-    // add-to-watchlist/
-    const handleAddStockToWatchlist = async (stock_id) => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}api/apps/stocks/add-to-watchlist/${stock_id}/`, null, config);
-            console.log(response.data);
-            // console.save(response.data, 'stocks_data.txt');
-        } catch (error) {
-            console.error('Error', error);
-        }
-    };
-
-
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             // const response = await axios.get('https://api.polygon.io/v2/aggs/ticker/AAPL/range/1/day/2024-06-25/2024-06-28?adjusted=true&sort=asc&apiKey=xweYDCCFAmHWRoG5he7ONfKNnH3Uq3ao');
-    //             // console.save(response.data.results);
-    //             // console.log(response.data);
-    //             setStockData(data);
-    //         } catch (error) {
-    //             console.error("Error", error);
-    //         }
-    //     };
-
-    //     fetchData();
-    // }, []);
-
-    // Render charts for each stock in watchlist
     useEffect(() => {
-        // Iterate through watchlist and render charts
-        watchList.forEach(stock => {
-            const chartData = getChartData(stock.symbol);
-            renderChart(stock.symbol, chartData);
-        });
-    }, [watchList]);
+        if (!isWebSocketInitialized.current && watchList.length > 0) {
+            console.log('Initializing WebSocket connection...');
+            websocket.current = new WebSocket(stockConfig.websocketUrl, [], config);
+            isWebSocketInitialized.current = true;
 
-    // Function to get chart data for a specific symbol
+            websocket.current.onopen = () => {
+                console.log('WebSocket connection established');
+                watchList.forEach(stock => {
+                    websocket.current.send(JSON.stringify({ type: 'subscribe', symbol: stock.symbol }));
+                });
+            };
+
+            websocket.current.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log(data)
+                if (data.type === 'trade') {
+                    const { symbol, price, time } = data.data;
+                    setStockData(prevData => ({
+                        ...prevData,
+                        [symbol]: [
+                            ...(prevData[symbol] || []),
+                            { price, time }
+                        ]
+                    }));
+                }
+            };
+
+            websocket.current.onclose = () => {
+                console.log('WebSocket closed');
+                websocket.current = null;
+            };
+
+            websocket.current.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            return () => {
+                if (websocket.current && websocket.current.readyState === WebSocket.OPEN) {
+                    websocket.current.close();
+                }
+            };
+        }
+    }, [watchList, config]);
+
+    useEffect(() => {
+        // Render charts when stockData or watchList changes
+        watchList.forEach(stock => {
+            if (chartRefs.current[stock.symbol]) {
+                const chartData = getChartData(stock.symbol);
+                renderChart(stock.symbol, chartData);
+            }
+        });
+    }, [stockData, watchList]);
+
+    const handleAddSymbol = () => {
+        if (newSymbol && !watchList.some(stock => stock.symbol === newSymbol)) {
+            setWatchList([...watchList, { symbol: newSymbol, description: newSymbol }]);
+            websocket.current.send(JSON.stringify({ type: 'subscribe', symbol: newSymbol }));
+        }
+        setNewSymbol('');
+    };
+
+    const fetchMarketStatus = async () => {
+        try {
+            const response = await axios.get(`${stockConfig.baseUrl}/stock/market-status?exchange=US&token=${process.env.REACT_APP_WEBSOCKET_TOKEN}`);
+            // Update market status if needed
+        } catch (error) {
+            console.error('Error fetching market status', error);
+        }
+    };
+
+    const fetchWatchList = async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}api/apps/stocks/watchlist/`, config);
+            setWatchList(response.data);
+        } catch (error) {
+            console.error('Error fetching watchlist', error);
+        }
+    };
+
     const getChartData = (symbol) => {
-        const prices = stockData.map(data => data.c);
-        const times = stockData.map(data => new Date(data.t));
+        const data = stockData[symbol] || [];
+        const prices = data.map(d => d.price);
+        const times = data.map(d => new Date(d.time));
+
         return {
             labels: times,
             datasets: [
@@ -243,34 +126,28 @@ const TradeView = () => {
                     label: `${symbol} Price`,
                     data: prices,
                     borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderWidth: 1,
                     fill: false,
                 },
             ],
         };
     };
 
-    // Function to render a chart for a specific symbol
     const renderChart = (symbol, data) => {
         const ctx = chartRefs.current[symbol].getContext('2d');
 
-        // Destroy existing chart if it exists
         if (chartRefs.current[symbol].chart) {
             chartRefs.current[symbol].chart.destroy();
         }
 
-        // Create new chart instance
         chartRefs.current[symbol].chart = new Chart(ctx, {
             type: 'line',
-            data: data,
+            data,
             options: {
                 scales: {
                     x: {
                         type: 'time',
                         time: {
-                            unit: 'day',
-                            tooltipFormat: 'PP',
+                            unit: 'minute',
                         },
                     },
                     y: {
@@ -282,6 +159,34 @@ const TradeView = () => {
                 },
             },
         });
+    };
+
+    const handleInputChange = (e) => {
+        setStockSearchQuery(e.target.value);
+
+        if (e.target.value) {
+            handleSubmitSearch(e.target.value);
+        } else {
+            setStockSearchQueryResults([]);
+        }
+    };
+
+    const handleSubmitSearch = async (query) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}api/apps/stocks/search/?query=${query}`, config);
+            setStockSearchQueryResults(response.data);
+        } catch (error) {
+            console.error('Error searching stocks', error);
+        }
+    };
+
+    const handleAddStockToWatchlist = async (stock_id) => {
+        try {
+            await axios.post(`${API_BASE_URL}api/apps/stocks/add-to-watchlist/${stock_id}/`, null, config);
+            fetchWatchList();
+        } catch (error) {
+            console.error('Error adding stock to watchlist', error);
+        }
     };
 
     return (
@@ -342,7 +247,7 @@ const TradeView = () => {
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

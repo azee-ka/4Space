@@ -5,16 +5,15 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import SearchHistory
 from .serializers import SearchHistorySerializer
-from ...user.timelineUser.models import TimelineUser
+from ...user.baseUser.models import BaseUser
 from django.utils import timezone
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def store_search_history(request):
-    searched_user_id = request.data.get('searched_user_id')
-
-    if searched_user_id:
-        searched_user = get_object_or_404(TimelineUser, id=searched_user_id)
+def store_search_history(request, user_id):
+    
+    if user_id:
+        searched_user = get_object_or_404(BaseUser, id=user_id)
 
         # Check if the user is already in the search history
         search_entry = SearchHistory.objects.filter(user=request.user, searched_user=searched_user).first()
@@ -45,16 +44,15 @@ def get_search_history(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def delete_search_history(request):
-    username_to_delete = request.data.get('username')
+def delete_search_history(request, user_id):
 
-    if username_to_delete:
+    if user_id:
         # Get the user based on the provided username
-        user_to_delete = get_object_or_404(TimelineUser, username=username_to_delete)
+        user_to_delete = get_object_or_404(BaseUser, id=user_id)
 
         # Delete search history entries for the specified user
         SearchHistory.objects.filter(user=request.user, searched_user=user_to_delete).delete()
 
-        return Response({"message": f"Search history for {username_to_delete} deleted successfully."})
+        return Response({"message": f"Search history for {user_id} deleted successfully."})
     else:
         return Response({"message": "Invalid request data."}, status=400)

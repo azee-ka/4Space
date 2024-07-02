@@ -59,7 +59,8 @@
     cursor: pointer;
 }
 .photos-sidebar-menu-item.active {
-    background-color: rgba(97, 29, 255, 0.577);
+    background-color: rgba(65, 65, 65, 0.327);
+    backdrop-filter: blur(70px);
 
 }
 

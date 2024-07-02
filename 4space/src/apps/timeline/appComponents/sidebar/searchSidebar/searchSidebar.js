@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import './searchSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
 import API_BASE_URL from '../../../../../config';
 import GetConfig from '../../../../../general/components/Authentication/utils/config';
 import { useAuthState } from '../../../../../general/components/Authentication/utils/AuthProvider';
@@ -17,10 +17,26 @@ function SearchSidebar({ isOpen }) {
     const [searchInput, setSearchInput] = useState('');
     const [searhQueryResults, setSearchQueryResults] = useState([]);
 
+    const [searchHistory, setSearchHistory] = useState([]);
+
+    const handleGetSearchHistory = async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}api/components/search-history/history/`, config);
+            console.log(response.data);
+            setSearchHistory(response.data);
+        } catch (error) {
+            console.error('Error', error);
+        }
+    };
 
     useEffect(() => {
-        console.log(searhQueryResults);
-    }, [searhQueryResults])
+        handleGetSearchHistory();
+    }, []);
+
+
+    useEffect(() => {
+        setSearchInput('');
+    }, [isOpen])
 
     const handleInputChange = (e) => {
         const inputValue = e.target.value;
@@ -43,8 +59,16 @@ function SearchSidebar({ isOpen }) {
         }
     };
 
-    const handleRedirect = (username) => {
-        navigate(`/timeline/profile/${username}`);
+    // search-history/
+
+    const handleRedirect = async (user) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}api/components/search-history/store/${user.id}`, null, config);
+            console.log(response.data);
+            navigate(`/timeline/profile/${user.username}`);
+        } catch (error) {
+            console.error('Error', error);
+        }
     };
 
     return (
@@ -59,19 +83,25 @@ function SearchSidebar({ isOpen }) {
                                 value={searchInput}
                                 onChange={(e) => handleInputChange(e)}
                             />
+                            <FontAwesomeIcon onClick={() => { setSearchInput(''); setSearchQueryResults([]); }} icon={faClose} />
                         </div>
                     </div>
                     <div className='search-sidebar-results'>
                         <div className='search-sidebar-results-inner'>
-                            {searhQueryResults.map((item, index) => (
-                                <div key={index} className='search-per-item' onClick={() => handleRedirect(item.username)}>
+                            {(searhQueryResults.length === 0 ? searchHistory : searhQueryResults).map((item, index) => (
+                                <div key={index} className='search-per-item' onClick={() => handleRedirect(item)}>
                                     {/* <Link to={`/timeline/profile/${item.username}`}> */}
                                     <div className='search-per-item-inner'>
-                                        <div className='search-item-profile-picture'>
-                                            <ProfilePicture src={item.profile_picture} />
+                                        <div className='search-item-info'>
+                                            <div className='search-item-profile-picture'>
+                                                <ProfilePicture src={searhQueryResults.length === 0 ? item.searched_user.profile_picture : item.profile_picture} />
+                                            </div>
+                                            <div className='search-item-username'>
+                                                {searhQueryResults.length === 0 ? item.searched_user.username : item.username}
+                                            </div>
                                         </div>
-                                        <div className='search-item-username'>
-                                            {item.username}
+                                        <div className='delete-history-search'>
+                                            <FontAwesomeIcon icon={faClose} />
                                         </div>
                                     </div>
                                     {/* </Link> */}

@@ -15,6 +15,7 @@ import likedImg from '../../../../../../assets/liked.png';
 import unlikedImg from '../../../../../../assets/unliked.png';
 import dislikedImg from '../../../../../../assets/disliked.png';
 import undislikedImg from '../../../../../../assets/undisliked.png';
+import MediaViewer from "../../../../../../general/utils/mediaViewer/mediaViewer";
 
 const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPostClick, handleUserListTrigger, showPreviousPostButton, showNextPostButton }) => {
     const { post_id } = useParams();
@@ -160,7 +161,8 @@ const ExpandPostOverlay = ({ postId, onClose, handlePrevPostClick, handleNextPos
             );
         } else {
             return (
-                <img src={`${API_BASE_URL}${mediaFile.file}`} alt={mediaFile.id} />
+                <MediaViewer src={mediaFile.file} mediaType={mediaFile.media_type} />
+                // <img src={`${API_BASE_URL}${mediaFile.file}`} alt={mediaFile.id} />
             );
         }
     };

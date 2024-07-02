@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './appMenu.css';
-import { FaCog, FaServer, FaUser, FaTasks, FaStream, FaImages, FaPlay, FaChartLine } from 'react-icons/fa'; // Example icons
+import { FaCog, FaServer, FaUser, FaTasks, FaStream, FaImages, FaPlay, FaChartLine, FaDashcube, FaChartBar } from 'react-icons/fa'; // Example icons
 import { faStream } from '@fortawesome/free-solid-svg-icons';
 import PlayButton from '../../../apps/spectra/utils/playButtons';
 
@@ -11,7 +11,7 @@ const appsData = [
     { path: '/photos', label: 'Photos', icon: <FaImages /> },
     { path: '/spectra', label: 'Spectra', icon: <FaPlay /> },
     { path: '/stocks', label: 'Stocks', icon: <FaChartLine /> },
-    { path: '/profile', label: 'Profile', icon: <FaUser /> },
+    { path: '/mechflow', label: 'MechFlow', icon: <FaChartBar /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },
     { path: '/profile', label: 'Profile', icon: <FaCog /> },
     { path: '/profile', label: 'Profile', icon: <FaUser /> },

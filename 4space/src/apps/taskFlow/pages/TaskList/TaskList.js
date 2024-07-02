@@ -88,7 +88,7 @@ const TaskList = () => {
     const handleSortOptionChange = async (option) => {
         setSortOption(option); // Update the local state
         try {
-            await axios.post(`${API_BASE_URL}/api/apps/taskflow/update-sort-option/`, { sort_option: option }, config);
+            await axios.post(`${API_BASE_URL}api/apps/taskflow/update-sort-option/`, { sort_option: option }, config);
             fetchTasks(); // Refetch tasks after updating sort option
         } catch (error) {
             console.error('Failed to update sort option', error);

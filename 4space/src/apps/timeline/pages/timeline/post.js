@@ -18,6 +18,7 @@ import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons
 // import '@fortawesome/fontawesome-free/css/all.css';
 import GetConfig from '../../../../general/components/Authentication/utils/config';
 import ProfilePicture from '../../../../general/utils/profilePicture/getProfilePicture';
+import MediaViewer from '../../../../general/utils/mediaViewer/mediaViewer';
 
 const Post = ({ postId, posts, currentPostIndex, handleExpandPostTrigger, handleUserListTrigger }) => {
   const [post, setPost] = useState(null);
@@ -142,7 +143,8 @@ const Post = ({ postId, posts, currentPostIndex, handleExpandPostTrigger, handle
       );
     } else {
       return (
-        <img src={`${API_BASE_URL}${mediaFile.file}`} alt={mediaFile.id} />
+        <MediaViewer src={mediaFile.file} mediaType={mediaFile.media_type} />
+        // <img src={`${API_BASE_URL}${mediaFile.file}`} alt={mediaFile.id} />
       );
     }
   };

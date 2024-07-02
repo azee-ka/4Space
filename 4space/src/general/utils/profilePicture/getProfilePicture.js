@@ -1,32 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import default_profile_picture from '../../../assets/default_profile_picture.png';
 import API_BASE_URL from '../../../config';
 import './getProfilePicture.css';
 
 const ProfilePicture = ({ src, onClick }) => {
-    let profilePictureSrc = default_profile_picture;
+    const [profilePictureSrc, setProfilePictureSrc] = useState(default_profile_picture);
 
-    // console.log(src);
+    useEffect(() => {
+        const fetchImageAsBlob = async (imageSrc) => {
+            try {
+                const response = await fetch(imageSrc);
+                const blob = await response.blob();
+                const objectURL = URL.createObjectURL(blob);
+                setProfilePictureSrc(objectURL);
+            } catch (error) {
+                console.error('Error fetching image as blob:', error);
+                setProfilePictureSrc(default_profile_picture);
+            }
+        };
 
-    if (src) {
-        if (typeof src === 'object' && src.profile_picture) {
-            profilePictureSrc = API_BASE_URL + src.profile_picture;
+        let imageSrc = default_profile_picture;
 
-        } else if (typeof src === 'string' && src.includes('default_profile_picture')) {
-            profilePictureSrc = default_profile_picture;
+        if (src) {
+            if (typeof src === 'object' && src.profile_picture) {
+                imageSrc = API_BASE_URL + src.profile_picture;
+            } else if (typeof src === 'string' && src.includes('default_profile_picture')) {
+                imageSrc = default_profile_picture;
+            } else if (typeof src === 'string' && src.includes('http://')) {
+                imageSrc = src;
+            } else if (typeof src === 'string') {
+                imageSrc = API_BASE_URL + src;
+            } else if (src === null) {
+                imageSrc = default_profile_picture;
+            }
+        } else if (src === null) {
+            imageSrc = default_profile_picture;
         }
-        else if (typeof src === 'string' && src.includes('http://')) {
-            profilePictureSrc = src;
-        }
-        else if(typeof src === 'string') {
-            profilePictureSrc = API_BASE_URL + src;
-        }
-        else if(src === null) {
-            profilePictureSrc = default_profile_picture;
-        }
-    } else if(src === null) {
-        profilePictureSrc = default_profile_picture;
-    }
+
+        fetchImageAsBlob(imageSrc);
+    }, [src]);
+
+
 
     const handleClick = () => {
         if (onClick) {

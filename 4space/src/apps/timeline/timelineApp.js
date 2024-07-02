@@ -41,7 +41,6 @@ const TimelineApp = () => {
     setShowNextPostButton(index < posts.length - 1);
     setExpandPostCurrentIndex(index);
     setPostsList(posts);
-    console.log('posts', posts, index)
   };
 
 
@@ -50,7 +49,6 @@ const TimelineApp = () => {
       const newIndex = expandPostCurrentIndex - 1;
       handleExpandPostTrigger(postsList[newIndex].id, postsList, newIndex, previousLocation);
       setExpandPostCurrentIndex(newIndex);
-      console.log('newIndexprev', newIndex);
     } else {
       setShowPreviousPostButton(false)
     }
@@ -61,7 +59,6 @@ const TimelineApp = () => {
       const newIndex = expandPostCurrentIndex + 1;
       handleExpandPostTrigger(postsList[newIndex].id, postsList, newIndex, previousLocation);
       setExpandPostCurrentIndex(newIndex);
-      console.log('newIndexnext', newIndex);
     } else {
       setShowNextPostButton(false);
     }

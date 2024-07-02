@@ -108,7 +108,6 @@ const TimelineLayout = ({ children, userList, userListTitle, showUserList, setSh
     }, [isAuthenticated]);
 
     const handleCloseOverlays = () => {
-        console.log('handleCloseOverlays')
         setSidebarOpen(false);
         setMenuOpen(false);
         setAppMenuOpen(false);

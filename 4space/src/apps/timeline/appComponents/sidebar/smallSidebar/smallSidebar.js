@@ -20,11 +20,9 @@ const SmallSidebar = ({ handleShowCreatePostOverlayClick, handleOpenSearchSideba
     const navigate = useNavigate();
 
     const handleClick = (item) => {
-        console.log("butns")
         if (item.type === 'button') {
             if (typeof item.onClick === 'function') {
                 item.onClick();
-                console.log("butns clicked")
             }
         } else if (item.type === 'link') {
             navigate(item.path);

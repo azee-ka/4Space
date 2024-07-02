@@ -1,10 +1,10 @@
 # serializers.py
 from rest_framework import serializers
-from ...user.timelineUser.serializers import TimelineUserSerializer
+from ...user.baseUser.serializers import IdealUserSerializer
 from .models import SearchHistory
 
 class SearchHistorySerializer(serializers.ModelSerializer):
-    searched_user = TimelineUserSerializer()
+    searched_user = IdealUserSerializer()
 
     class Meta:
         model = SearchHistory
