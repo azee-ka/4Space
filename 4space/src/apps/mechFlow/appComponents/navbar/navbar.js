@@ -38,7 +38,7 @@ function MechFlowNavbar({ handleProfileMenuToggle, handleAppMenuToggle, sidebarO
                 <div className='task-flow-navbar-bar-header'>
                     <div className='navbar-app-title'>
                         <h1>4Space</h1>
-                        <p>Stocks</p>
+                        <p>MechFlow</p>
                     </div>
                     <div className='task-flow-navbar-links'>
                         <div className='task-flow-navbar-page-links'>

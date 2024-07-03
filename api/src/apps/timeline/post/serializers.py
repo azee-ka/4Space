@@ -13,6 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'user',
             'created_at',
         ]
+        ordering = ['order', 'created_at'] 
 
     def get_user(self, obj):
         timeline_user = obj.user
@@ -44,7 +45,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'text',
+            # 'caption',
             'media_files',
             'id',
             'user',
@@ -98,14 +99,6 @@ class PostSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-
-        # Retrieve previous and next post UUIDs based on some ordering (e.g., created_at)
-        previous_post = Post.objects.filter(created_at__lt=instance.created_at).order_by('-created_at').first()
-        next_post = Post.objects.filter(created_at__gt=instance.created_at).order_by('created_at').first()
-
-        representation['previous_post_uuid'] = previous_post.id if previous_post else None
-        representation['next_post_uuid'] = next_post.id if next_post else None
-
         return representation
     
     
@@ -134,12 +127,6 @@ class MinimalPostSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        # Retrieve previous and next post UUIDs based on some ordering (e.g., created_at)
-        previous_post = Post.objects.filter(created_at__lt=instance.created_at).order_by('-created_at').first()
-        next_post = Post.objects.filter(created_at__gt=instance.created_at).order_by('created_at').first()
-
-        representation['previous_post_uuid'] = previous_post.id if previous_post else None
-        representation['next_post_uuid'] = next_post.id if next_post else None
 
         media_files = representation.get('media_files')
         if isinstance(media_files, list) and media_files:

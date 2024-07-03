@@ -6,6 +6,8 @@ from django.shortcuts import get_object_or_404
 from .models import SearchHistory
 from .serializers import SearchHistorySerializer
 from ...user.baseUser.models import BaseUser
+from ...user.timelineUser.models import TimelineUser
+
 from django.utils import timezone
 
 @api_view(['POST'])
@@ -42,17 +44,18 @@ def get_search_history(request):
 
 
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_search_history(request, user_id):
 
-    if user_id:
+    try:
         # Get the user based on the provided username
         user_to_delete = get_object_or_404(BaseUser, id=user_id)
-
+        print(f'user_to_delete {user_to_delete}')
         # Delete search history entries for the specified user
         SearchHistory.objects.filter(user=request.user, searched_user=user_to_delete).delete()
 
         return Response({"message": f"Search history for {user_id} deleted successfully."})
-    else:
+    except Exception as e:
+        print(f'Error: {e}')
         return Response({"message": "Invalid request data."}, status=400)

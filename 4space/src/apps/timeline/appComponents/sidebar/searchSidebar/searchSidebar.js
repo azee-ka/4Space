@@ -33,9 +33,20 @@ function SearchSidebar({ isOpen }) {
         handleGetSearchHistory();
     }, []);
 
+    const handleDeleteSearchItem = async (user) => {
+        try {
+            const response = await axios.delete(`${API_BASE_URL}api/components/search-history/delete/${user.id}/`, config);
+            console.log(response.data);
+            handleGetSearchHistory();
+        } catch (error) {
+            console.error('Error', error);
+        }
+    };
+
 
     useEffect(() => {
         setSearchInput('');
+        setSearchQueryResults([]);
     }, [isOpen])
 
     const handleInputChange = (e) => {
@@ -62,14 +73,20 @@ function SearchSidebar({ isOpen }) {
     // search-history/
 
     const handleRedirect = async (user) => {
-        try {
-            const response = await axios.post(`${API_BASE_URL}api/components/search-history/store/${user.id}`, null, config);
-            console.log(response.data);
-            navigate(`/timeline/profile/${user.username}`);
-        } catch (error) {
-            console.error('Error', error);
+        console.log('user', user)
+        if (searhQueryResults.length !== 0) {
+            try {
+                const response = await axios.post(`${API_BASE_URL}api/components/search-history/store/${user.id}/`, null, config);
+                console.log(response.data);
+                navigate(`/timeline/profile/${user.username}`);
+            } catch (error) {
+                console.error('Error', error);
+            }
+        } else {
+            navigate(`/timeline/profile/${user.searched_user.username}`);
         }
     };
+
 
     return (
         <div className={`search-sidebar-container ${isOpen ? '' : 'close'}`} onClick={(e) => e.stopPropagation()}>
@@ -100,9 +117,11 @@ function SearchSidebar({ isOpen }) {
                                                 {searhQueryResults.length === 0 ? item.searched_user.username : item.username}
                                             </div>
                                         </div>
-                                        <div className='delete-history-search'>
-                                            <FontAwesomeIcon icon={faClose} />
-                                        </div>
+                                        {searhQueryResults.length === 0 &&
+                                            <div className='delete-history-search'>
+                                                <FontAwesomeIcon icon={faClose} onClick={(e) => { handleDeleteSearchItem(item); e.stopPropagation() }} />
+                                            </div>
+                                        }
                                     </div>
                                     {/* </Link> */}
                                 </div>

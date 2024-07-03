@@ -7,16 +7,19 @@
     padding-top: 25px;
     padding-bottom: 20px;
     border-radius: 10px;
-    top: 9.5%;
+    top: 75px;
     right: 123px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    background-color: rgba(110, 95, 95, 0.214);
-    backdrop-filter: blur(100px);
+    /* background-color: rgba(110, 95, 95, 0.214);
+    backdrop-filter: blur(100px); */
     border: 1px solid rgba(128, 128, 128, 0.174);
     box-shadow: 0px 0px 7px 1px rgba(98, 98, 98, 0.409);
+
+    background-color: rgba(40, 39, 39, 0.119);
+    backdrop-filter: blur(40px);
 }
 
 .notifications-card-inner.no-notification {

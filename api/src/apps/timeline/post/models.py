@@ -5,6 +5,17 @@ from django.db import models
 from django.contrib.auth.models import User
 import uuid
 
+class CommentManager(models.Manager):
+    def get_queryset(self):
+        # We will customize the queryset to ensure the caption comment is always on top
+        return super().get_queryset().annotate(
+            is_caption=models.Case(
+                models.When(text=models.F('post__caption'), then=0),
+                default=1,
+                output_field=models.IntegerField(),
+            )
+        ).order_by('is_caption', 'created_at')
+        
 class Comment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey('Post', related_name='comments', on_delete=models.CASCADE)
@@ -24,7 +35,7 @@ class MediaFile(models.Model):
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey('timelineUser.TimelineUser', on_delete=models.CASCADE)
-    text = models.TextField(blank=True)  # Make the text field optional
+    caption = models.TextField(blank=True, null=True)
     media_files = models.ManyToManyField(MediaFile, related_name='post_media', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     likes_count = models.PositiveIntegerField(default=0)  # Field for the number of likes
@@ -36,6 +47,7 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         PostFeatures.objects.get_or_create(post=self)
+
         
     def __str__(self):
         return f"Post by {self.user.interactuser.user.username}"

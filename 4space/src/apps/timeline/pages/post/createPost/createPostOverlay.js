@@ -90,7 +90,7 @@ const CreatePostOverlay = ({ onClose }) => {
         
         // Assuming 'content' and 'uploadedMedia' are variables containing your data
         const formData = new FormData();
-        formData.append('text', content); // Replace with your actual content data
+        formData.append('caption', content); // Replace with your actual content data
         // Append each media file to the form data
         uploadedMedia.forEach((file, index) => {
             formData.append(`media[]`, file);
