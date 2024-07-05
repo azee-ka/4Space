@@ -76,14 +76,14 @@ const Post = ({ postId, posts, currentPostIndex, handleExpandPostTrigger, handle
   const handlePostComment = async () => {
     const data = { text: commentText }
     try {
-        const response = await axios.post(`${API_BASE_URL}/api/apps/timeline/post/${postId}/comment/`, data, config);
-        console.log(response.data);
-        fetchPostData();
-        setCommentText('');
+      const response = await axios.post(`${API_BASE_URL}/api/apps/timeline/post/${postId}/comment/`, data, config);
+      console.log(response.data);
+      fetchPostData();
+      setCommentText('');
     } catch (error) {
-        console.error("Error fetching post data", error);
+      console.error("Error fetching post data", error);
     }
-};
+  };
 
 
   const handleDislikeandUndislike = () => {
@@ -106,7 +106,7 @@ const Post = ({ postId, posts, currentPostIndex, handleExpandPostTrigger, handle
         setPost(data);
       })
       .catch(error => console.error('Error toggling like:', error));
-  }
+  };
 
   const handleLikeAndUnlike = () => {
     // Update the post state with the new like information
@@ -152,7 +152,7 @@ const Post = ({ postId, posts, currentPostIndex, handleExpandPostTrigger, handle
 
   const handleRedirect = (username) => {
     navigate(`/timeline/profile/${username}`)
-  }
+  };
 
   return post ? (
     <div className="timeline-post">
@@ -254,7 +254,6 @@ const Post = ({ postId, posts, currentPostIndex, handleExpandPostTrigger, handle
             </div>
           </div>
         </div>
-
       </div>
     </div>
   ) : (

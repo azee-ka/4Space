@@ -8,7 +8,7 @@ function MechFlowSidebar({ isOpen, onClose }) {
     const navigate = useNavigate();
 
     const taskFlow = [
-        { icon: <FontAwesomeIcon icon={faHome} />, label: 'Home', path: '/stocks', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faHome} />, label: 'Home', path: '/mechflow', type: 'link' },
         { icon: <FontAwesomeIcon icon={faTasks} />, label: 'Explore', path: '/stocks/explore', type: 'link' },
         { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Uplaod', path: '/stocks/upload', type: 'link' },
     ];

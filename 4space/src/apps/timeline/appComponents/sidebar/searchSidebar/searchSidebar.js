@@ -47,6 +47,9 @@ function SearchSidebar({ isOpen }) {
     useEffect(() => {
         setSearchInput('');
         setSearchQueryResults([]);
+        if(isOpen) {
+            handleGetSearchHistory();
+        }
     }, [isOpen])
 
     const handleInputChange = (e) => {
