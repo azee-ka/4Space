@@ -7,6 +7,7 @@ import PlayButton from '../../../apps/spectra/utils/playButtons';
 
 const appsData = [
     { path: '/timeline', label: 'Timeline', icon: <FaStream /> },
+    { path: '/timeflow', label: 'TimeFlow', icon: <FaStream /> },
     { path: '/taskflow', label: 'Tasks', icon: <FaTasks /> },
     { path: '/photos', label: 'Photos', icon: <FaImages /> },
     { path: '/spectra', label: 'Spectra', icon: <FaPlay /> },

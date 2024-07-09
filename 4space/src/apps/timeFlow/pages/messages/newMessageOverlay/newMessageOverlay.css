@@ -1,0 +1,276 @@
+.new-message-overlay {
+    background-color: rgba(19, 19, 19, 0.66);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.new-message-overlay-card {
+    width: 470px;
+    height: 490px;
+    /* background-color: rgb(33, 33, 33); */
+    background-color: rgb(25, 25, 25);
+    box-shadow: 0 0 5px 2px rgba(218, 218, 218, 0.197);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+    background-color: rgba(36, 36, 36, 0.653);
+    backdrop-filter: blur(70px);
+}
+.new-message-overlay-card-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 90%;
+    height: 90%;
+    background-color: rgba(255, 0, 0, 0);
+}
+
+
+.new-messge-card-title {
+    width: 100%;
+    height: 25px;
+    background-color: rgb(0, 255, 221, 0);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.new-message-card-content {
+    width: 100%;
+    flex-grow: 1;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.new-message-card-content-inner {
+    width: 100%;
+    height: 95%;
+    background-color: rgb(0, 255, 166, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+}
+
+
+.new-message-card-content-inner textarea,
+.new-message-card-content-inner input {
+    background-color: rgb(255, 0, 230, 0);
+    resize: none;
+    border: 1px solid gray;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 17px;
+    color: white;
+    outline: none;
+}
+
+.new-message-card-content-inner textarea:hover,
+.new-message-card-content-inner input:hover {
+    border: 1px solid rgb(0, 210, 186);
+}
+
+.new-message-card-content-inner textarea:focus,
+.new-message-card-content-inner input:focus {
+    box-shadow: 0px 0px 3px 2px rgb(0, 159, 143);
+    border: 1px solid rgb(0, 210, 186);
+}
+
+
+.new-message-card-message-to-field {
+    width: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.new-message-card-message-to-field input {
+    width: 100%;
+    height: 20px;
+}
+
+.new-message-user-search-list {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 310px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: auto;
+}
+.new-message-user-search-list-inner {
+    background-color: rgba(156, 121, 121, 0);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    overflow-y: auto;
+}
+
+.users-search-list-item {
+    height: 55px;
+    width: 100%;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    color: white;
+}
+.users-search-list-item:hover {
+    background-color: rgba(123, 123, 123, 0.387);
+    cursor: pointer;
+}
+
+.users-search-list-item-inner {
+    background-color: rgba(0, 128, 0, 0);
+    height: 90%;
+    width: 94%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+.users-search-list-item-profile-picture {
+    height: 100%;
+    aspect-ratio: 1 / 1;
+}
+.users-search-list-item-profile-picture-inner {
+    height: 100%;
+    width: 100%;
+}
+.users-search-list-item-profile-picture-inner {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+.new-send-card-send-message-button {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(0, 0, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;   
+}
+
+.new-send-card-send-message-button-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(255, 0, 0, 0);
+}
+
+
+.new-send-card-send-message-button-inner button {
+    height: 35px;
+    padding: 8px;
+    border: 0px solid white;
+    border-radius: 6px;
+    background-color: rgba(0, 145, 147, 0.9);
+    color: white;
+    font-size: 14px;
+}
+.new-send-card-send-message-button-inner button:hover {
+    background-color: rgb(0, 0, 0);
+    box-shadow: 0px 0px 4px 2px rgb(0, 171, 169);
+    cursor: pointer;
+}
+
+
+
+.users-search-list-item-checkbox {
+    position: relative;
+    margin-right: 15px;
+  }
+  
+  .users-search-list-item-checkbox input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+  
+  .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #b5b5b551;
+    border-radius: 5px;
+    background-color: rgba(132, 132, 132, 0.64);
+    display: inline-block;
+    position: relative;
+    transition: all 0.3s;
+  }
+  
+  .users-search-list-item-checkbox input[type="checkbox"]:checked + .custom-checkbox {
+    border-color: rgb(0, 149, 132);
+    background-color: rgb(0, 149, 132);
+  }
+  
+  .users-search-list-item-checkbox input[type="checkbox"]:checked + .custom-checkbox::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 7px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+
+
+  .new-message-start-chat-button {
+    width: 100%;
+    height: 55px;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .new-message-start-chat-button button {
+    width: 95%;
+    height: 40px;
+    background-color: rgb(97, 0, 153);
+    border: 0;
+    font-size: 16px;
+    color: white;
+    border-radius: 8px;
+    opacity: 0.8;
+  }
+
+  .new-message-start-chat-button button:hover {
+    opacity: 1;
+    cursor: pointer;
+  }
+
+  .new-message-start-chat-button button:disabled {
+    opacity: 0.5; 
+    cursor: not-allowed;
+}

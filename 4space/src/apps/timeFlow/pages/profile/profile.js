@@ -64,7 +64,7 @@ const Profile = ({ handleUserListTrigger, handleExpandPostTrigger }) => {
         (profileViewData.view === 'self' || paramUsername === undefined) ? (
             <MyProfile profileData={profileViewData.profile} handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
         ) : (
-            <UserProfile profileData={profileViewData} handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} handleFetchUserData={handleFetchUserData} handleFetchUserId={handleFetchUserId} />
+            <UserProfile profileData={profileViewData} handleUserListTrigger={handleUserListTrigger} handleExpandPostTrigger={handleExpandPostTrigger} />
         )
     ) : (
         <div>Loading...</div>

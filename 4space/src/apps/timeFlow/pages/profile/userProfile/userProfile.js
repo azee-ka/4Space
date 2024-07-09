@@ -7,17 +7,13 @@ import PartialProfile from "./partialProfile/partialProfile";
 import MyProfile from "../myProfile/myProfile";
 
 
-const UserProfile = ({ profileData, handleUserListTrigger, handleExpandPostTrigger, handleFetchUserData, handleFetchUserId }) => {
+const UserProfile = ({ profileData, handleUserListTrigger, handleExpandPostTrigger }) => {
     // const { token, user } = useAuthState();
     // const config = GetConfig(token);
     // const { username: paramUsername } = useParams();
 
     // const [profileData, setProfileData] = useState({});
     console.log(profileData)
-
-    useEffect(() => {
-        handleFetchUserData();
-    }, []);
 
     return (profileData && profileData.viewable === "full") ? (
         <FullProfile

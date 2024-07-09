@@ -122,7 +122,7 @@
     margin-top: 10px;
 }
 .full-profile-follow-connect-btn button {
-    background-color: rgb(83, 18, 169) !important;
+    background-color: rgb(17, 139, 139);
     padding: 10px 17px 10px 17px;
     display: flex;
     justify-content: center;
@@ -136,8 +136,8 @@
 }
 
 .full-profile-follow-connect-btn button:hover {
-    background-color: rgba(100, 19, 167, 0) !important;
-    box-shadow: 0px 0px 4px 4px rgba(86, 19, 173, 0.925) !important;
+    background-color: rgb(19, 167, 167, 0.4);
+    box-shadow: 0px 0px 4px 4px rgba(0, 255, 255, 0.441);
     cursor: pointer;
 }
 

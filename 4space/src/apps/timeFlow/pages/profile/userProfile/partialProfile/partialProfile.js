@@ -5,8 +5,6 @@ import GetConfig from "../../../../../../general/components/Authentication/utils
 import './partialProfile.css';
 import ProfilePicture from "../../../../../../general/utils/profilePicture/getProfilePicture";
 import { useAuthState } from "../../../../../../general/components/Authentication/utils/AuthProvider";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLock } from "@fortawesome/free-solid-svg-icons";
 
 const PartialProfile = ({ userData }) => {
     const [profileData, setProfileData] = useState(userData);
@@ -85,11 +83,8 @@ const PartialProfile = ({ userData }) => {
                                     <p>{userData.connections_count} connections</p>
                                 </div>
                             </div>
-                            <div className="partial-profile-lock">
-                                <FontAwesomeIcon icon={faLock} />
-                            </div>
                             <div className="partial-profile-follow-connect-btns">
-                                
+
                             </div>
                         </div>
                     </div>

@@ -144,9 +144,3 @@
     align-items: center;
     background-color: rgba(0, 0, 255, 0);
 }
-
-
-.partial-profile-lock svg {
-    font-size: 50px !important;
-    color: gray;
-}

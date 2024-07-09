@@ -7,6 +7,7 @@ import Login from './general/components/Authentication/Login/Login.js';
 import Register from './general/components/Authentication/Register/Register.js';
 
 import TimelineApp from './apps/timeline/timelineApp.js';
+import TimeFlowApp from './apps/timeFlow/timeflowApp.js';
 import PhotosApp from './apps/photos/photosApp.js';
 import TaskFlowApp from './apps/taskFlow/taskFlowApp.js';
 import SpectraApp from './apps/spectra/spectraApp.js';
@@ -28,6 +29,7 @@ const App = () => {
           {isAuthenticated ? (
             <>
               <Route path="/timeline/*" element={<TimelineApp />} />
+              <Route path="/timeflow/*" element={<TimeFlowApp />} />
               <Route path="/photos/*" element={<PhotosApp />} />
               <Route path="/taskFlow/*" element={<TaskFlowApp />} />
               <Route path="/spectra/*" element={<SpectraApp />} />

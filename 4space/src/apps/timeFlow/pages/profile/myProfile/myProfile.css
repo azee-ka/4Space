@@ -1,4 +1,4 @@
-.full-profile-page {
+.my-profile-page {
     width: 100%;
     height: 100%;
     display: flex;
@@ -7,7 +7,7 @@
     background-color: rgba(255, 0, 0, 0);
 }
 
-.full-profile-page-content {
+.my-profile-page-content {
     width: 100%;
     height: 100%;
     display: flex;
@@ -16,7 +16,7 @@
     flex-direction: row;
 }
 
-.full-profile-left-side {
+.my-profile-left-side {
     width: 320px;
     height: 100%;
     display: flex;
@@ -27,7 +27,7 @@
     gap: 5px;
 }
 
-.full-profile-page-header {
+.my-profile-page-header {
     height: 9%;
     width: 100%;
     background-color: rgba(134, 134, 252, 0);
@@ -35,14 +35,14 @@
     justify-content: center;
     align-items: center;
 }
-.full-profile-page-header-inner {
+.my-profile-page-header-inner {
     width: 82%;
     height: 100%;
     background-color: rgba(255, 0, 0, 0);
 }
 
 
-.full-profile-picture-container {
+.my-profile-picture-container {
     background-color: rgba(0, 128, 0, 0);
     width: 100%;
     height: 295px;
@@ -51,7 +51,7 @@
     align-items: center;
     flex-direction: column;
 }
-.full-profile-picture-container-inner {
+.my-profile-picture-container-inner {
     width: 43%;
     aspect-ratio: 1 / 1;
     display: flex;
@@ -60,7 +60,7 @@
     align-items: center;
     background-color: rgb(58, 58, 118, 0);
 }
-.full-profile-picture-container-inner img {
+.my-profile-picture-container-inner img {
     width: 100%;
     aspect-ratio: 1 / 1;
     background-color: rgba(168, 168, 168, 0.245);
@@ -69,7 +69,7 @@
     align-items: center;
 }
 
-.full-profile-user-info-container {
+.my-profile-user-info-container {
     background-color: rgba(255, 0, 0, 0);
     width: 100%;
     height: 35px;
@@ -79,12 +79,12 @@
     font-size: 20px;
     color: rgb(212, 212, 212);
 }
-.full-profile-user-info-container p:hover {
+.my-profile-user-info-container p:hover {
     cursor: pointer;
     color: rgb(160, 160, 160);
 }
 
-.full-profile-interact-stats {
+.my-profile-interact-stats {
     width: 100%;
     background-color: rgba(127, 255, 212, 0);
     display: flex;
@@ -97,12 +97,12 @@
     margin-top: 15px;
 }
 
-.full-profile-follow-following div:hover,
-.full-profile-interact-stats div:hover {
+.my-profile-follow-following div:hover,
+.my-profile-interact-stats div:hover {
     cursor: pointer;
 }
 
-.full-profile-follow-following {
+.my-profile-follow-following {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -111,7 +111,7 @@
     gap: 15px;
 }
 
-.full-profile-follow-connect-btn {
+.my-profile-follow-connect-btn {
     background-color: rgba(255, 0, 0, 0);
     width: 100%;
     height: 35px;
@@ -121,8 +121,8 @@
     gap: 10px;
     margin-top: 10px;
 }
-.full-profile-follow-connect-btn button {
-    background-color: rgb(83, 18, 169) !important;
+.my-profile-follow-connect-btn button {
+    background-color: rgb(17, 139, 139);
     padding: 10px 17px 10px 17px;
     display: flex;
     justify-content: center;
@@ -135,16 +135,16 @@
     transition: background-color 0.3s ease;
 }
 
-.full-profile-follow-connect-btn button:hover {
-    background-color: rgba(100, 19, 167, 0) !important;
-    box-shadow: 0px 0px 4px 4px rgba(86, 19, 173, 0.925) !important;
+.my-profile-follow-connect-btn button:hover {
+    background-color: rgb(19, 167, 167, 0.4);
+    box-shadow: 0px 0px 4px 4px rgba(0, 255, 255, 0.441);
     cursor: pointer;
 }
 
 
 
 
-.full-profile-right-side {
+.my-profile-right-side {
     flex-grow: 1;
     height: 100%;
     display: flex;
@@ -155,7 +155,7 @@
     overflow-y: auto;
     box-shadow: 0px 10px 4px 4px rgba(128, 128, 128, 0.327);
 }
-.full-profile-right-side-inner {
+.my-profile-right-side-inner {
     width: 96%;
     background-color: rgba(0, 128, 0, 0);
     margin-top: 10px;
@@ -167,7 +167,7 @@
     gap: 10px;
 }
 
-.full-profile-page-date-joined {
+.my-profile-page-date-joined {
     width: 100%;
     height: 50px;
     background-color: rgba(0, 0, 255, 0);
@@ -175,7 +175,7 @@
     justify-content: center;
     align-items: center;
 }
-.full-profile-page-date-joined-inner {
+.my-profile-page-date-joined-inner {
     width: 94%;
     display: flex;
     justify-content: flex-end;
@@ -183,4 +183,14 @@
     font-size: 11px;
     color: rgb(90, 90, 90);
     background-color: rgba(0, 0, 255, 0);
+}
+
+
+.my-profile-display-posts-grid {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

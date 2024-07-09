@@ -1,0 +1,156 @@
+.preferences-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.preferences-header {
+    width: 100%;
+    height: 70px;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.preferences-header-inner {
+    width: 80%;
+    height: 100%;
+    background-color: rgb(0, 51, 255, 0);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.preferences-page-content {
+    flex-grow: 1;
+    width: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.preferences-page-content-inner {
+    width: 80%;
+    height: 100%;
+    background-color: rgba(193, 193, 193, 0.054);
+    backdrop-filter: blur(100px) !important;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 4px 4px rgba(128, 128, 128, 0.25);
+    z-index: 3;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.preferences-sidebar {
+    width: 300px;
+    height: 100%;
+    background-color: rgba(255, 255, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.preferences-sidebar-inner {
+    width: 80%;
+    height: 93%;
+    background-color: rgba(255, 255, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-end;
+}
+
+.preferences-sidebar-inner button {
+    width: 100%;
+    height: 45px;
+    background-color: rgba(151, 151, 111, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    font-size: 18px;
+    color: white;
+    border: 0;
+    padding-right: 10px;
+    border-radius: 6px;
+}
+.preferences-sidebar-inner button:hover {
+    background-color: rgba(97, 97, 97, 0.435);
+    cursor: pointer;
+}
+
+
+
+.preferences-settings {
+    flex-grow: 1;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: -5px 3px 4px 1px rgba(128, 128, 128, 0.192);
+}
+.preferences-settings-inner {
+    width: 80%;
+    height: 95%;
+    background-color: rgb(154, 63, 63, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.preferences-settings-block {
+    width: 100%;
+    background-color: rgba(255, 192, 203, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 15px;
+}
+.preferences-settings-header {
+    width: 100%;
+    background-color: rgba(128, 0, 128, 0);
+}
+
+
+.profile-visibility-toggle-container {
+    background-color: rgba(0, 0, 255, 0);
+    width: 60%;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    border-bottom: 1px solid gray;
+}
+
+.profile-visibility-btn-description {
+    background-color: rgba(0, 128, 0, 0);
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+.profile-visibility-btn-description p {
+    font-size: 13px;
+    color: rgb(174, 174, 174);
+}
+
+.profile-visibility-btn-container {
+    width: 75px;
+    height: 100%;
+    background-color: rgba(0, 255, 255, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
