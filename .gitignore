@@ -1,0 +1,47 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+
+# .gitignore
+api/.env
+api/api/config.py
+api/api/settings.py
+
+api/media
+api/comnds.txt
+
+api/db.sqlite3
+api/dump.rdb
+api/.zshrc
+api/migrate.sh
+api/runserver.sh
+
+space/node_modules/
+# Ignore all __pycache__ folders
+**/__pycache__/
+*.pyc
+
+# Ignore all migrations folders
+**/migrations/

@@ -1,0 +1,17 @@
+/* loadingBar.css */
+.loading-bar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    height: 3px;
+    background-color: #4caf50; /* Adjust this to your desired color */
+    transition: width 0.1s ease-out;
+}
+
+.loading-bar.finished {
+    background-color: rgba(76, 175, 79, 0);
+}
+
+.loading-bar.loading {
+    background-color: #0299a1;
+}

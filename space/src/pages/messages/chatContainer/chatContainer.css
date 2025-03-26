@@ -1,0 +1,482 @@
+.chat-container {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.chat-container-top-panel {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 54px;
+    width: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.418);
+}
+.chat-profiles-list-container {
+    background-color: rgba(255, 0, 0, 0);
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 5px;
+    padding: 0em 0.4em;
+}
+
+.participants-profile-image-container {
+    background-color: rgba(255, 255, 0, 0);
+    height: 100%;
+    min-width: 45px;
+    max-width: 80px;
+    display: flex;
+    /* align-items: center; */
+    /* justify-content: center; */
+    position: relative;
+    padding: 0.1em;
+    box-sizing: border-box;
+}
+.profile-image {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.232);
+    align-self: center;
+}
+.profile-image.profile-image-0 {
+    top: -10px;
+    right: -10px;
+    z-index: 2;
+}
+.profile-image.profile-image-1 {
+    bottom: -5px;
+    left: -10px;
+    z-index: 1;
+}
+
+
+.participants-profile-username-container {
+    background-color: rgba(128, 0, 128, 0);
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    /* gap: 8px; */
+}
+.participant-username {
+    margin-right: 8px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 120px;  /* Adjust based on design */
+}
+
+.conversation-info-container {
+    width: 200px;
+    height: 100%;
+    background-color: rgba(0, 0, 255, 0);
+}
+
+
+
+
+
+
+.chat-container-center-panel {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    max-height: 560px;
+    padding: 1em 1em 0em 1em;
+    margin-top: 8px;
+    box-sizing: border-box;
+    overflow-y: auto !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+
+
+.time-separator {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    text-align: center;
+    font-size: 0.8em;
+    padding: 0.3em 0em;
+    color: rgb(150, 150, 150);
+}
+.message {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.message-content {
+    display: inline-block;
+    max-width: 70%;
+    padding: 0.5em 0.6em;
+    border-radius: 12px;
+    word-break: break-word;
+    white-space: pre-wrap;
+    /* border-radius: 12px; */
+}
+.message.separated-from-previous {
+    margin-bottom: 4px;
+}
+.message.separated-from-previous .message-content {
+    border-radius: 12px 12px 6px 6px;
+}
+.message.first-grouped {
+    margin-bottom: 4px;
+}
+.message.middle-grouped {
+    margin-bottom: 4px;
+}
+.message.last-grouped {
+    margin-bottom: 12px;
+}
+.message.completely-separated {
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+.message.separated .message-content {
+    border-radius: 12px;
+}
+.message.grouped .message-content {
+    border-radius: 12px 12px 6px 6px;
+}
+.message.first-grouped .message-content {
+    border-radius: 12px 12px 6px 6px;
+}
+.message.middle-grouped .message-content {
+    border-radius: 6px 6px 6px 6px;
+}
+.message.last-grouped .message-content {
+    border-radius: 6px 6px 12px 12px;
+}
+
+
+.message-content p {
+    padding: 0;
+    margin: 0;
+}
+ .message.sent {
+    color: white;
+    justify-content: flex-end; 
+}
+.message.received {
+    color: white;
+    justify-content: flex-start;
+}
+.message.sent .message-content {
+    background-color: #005a7db7;
+}
+
+.message.received .message-content {
+    background-color: #2c2f2fb3;
+}
+
+.message-action-btns {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(255, 0, 0, 0);
+    gap: 6px
+}
+
+.message-action-btns button {
+    cursor: pointer;
+    font-size: 0.9em;
+    background: none;
+    border: none;
+    color: white;
+    position: relative;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.1s ease;
+    background-color: rgba(128, 128, 128, 0);
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.35em;
+}
+.message-action-btns button:hover {
+    background-color: rgba(128, 128, 128, 0.364);
+}
+.message-action-btns button .icon-style {
+    padding: 0;
+    margin: 0;
+}
+.ellipsis-btn.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.message:hover .message-action-btns button {
+    visibility: visible;
+    opacity: 1;
+}
+.message-more-dropdown {
+    background-color: rgba(16, 15, 15, 0.991);
+    width: 200px;
+    border: 1px solid rgba(128, 128, 128, 0.219);
+    border-radius: 12px;
+    box-sizing: border-box;
+    padding: 0em 0em;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0px;
+    color: white;
+}
+.message-time {
+    width: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    padding: 1em 1em;
+    box-sizing: border-box;
+    font-size: 0.7em;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.607);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    color: rgb(189, 189, 189);
+}
+.more-menu-btns {
+    width: 100%;
+    flex-grow: 1;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.6em 0.8em;
+    box-sizing: border-box;
+    gap: 5px;
+}
+.report-button-container button,
+.more-menu-btns button {
+    width: 100%;
+    height: 30px;
+    border-radius: 8px;
+    border: 0;
+    font-size: 0.9em;
+    background-color: rgba(255, 255, 255, 0);
+    color: rgb(219, 219, 219);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0em 1em;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+.report-button-container button:hover,
+.more-menu-btns button:hover {
+    background-color: rgba(128, 128, 128, 0.289);
+    cursor: pointer;
+}
+
+.report-button-container {
+    width: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    padding: 0.5em 1em;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-top: 1px solid rgba(128, 128, 128, 0.375);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    color: rgb(189, 189, 189);
+}
+.report-button-container button {
+    color: red;
+}
+
+
+
+
+
+.chat-container-bottom-panel {
+    min-height: 58px;
+    max-height: 180px;
+    width: 100%;
+    background-color: rgba(0, 0, 255, 0.02);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0.4em 0.4em;
+    position: relative;
+    gap: 6px;
+}
+
+.request-warning-container {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    text-align: center;
+    padding: 1em 0em;
+    border-top: 1px solid rgba(128, 128, 128, 0.625);
+    color: rgb(168, 168, 168);
+    font-size: 0.8em;
+}
+.request-warning-container.invite {
+    /* position: absolute; */
+    /* bottom: 100%; */
+    padding: 0.5em 0em;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.372);
+}
+
+.write-message-container {
+    background-color: rgba(36, 36, 36, 0.23);
+    width: 100%;
+    height: 100%;
+    border-radius: 25px;
+    padding: 0 0em 0 0.3em;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    border: 1px solid rgba(128, 128, 128, 0.276);
+}
+.write-message-field {
+    overflow: hidden;
+    overflow-y: auto;
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0.2em 0 0.1em 0;
+    box-sizing: border-box;
+}
+.write-message-field .editor-container {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.write-message-container .emoji-btn-container {
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.write-message-container .emoji-button {
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.send-message-btn {
+    border: 0;
+    background-color: rgba(255, 0, 0, 0);
+    height: 100%;
+    width: 40px;
+    aspect-ratio: 1 / 1;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 1.4em;
+    color: gray;
+}
+
+.send-message-btn:hover {
+    color: white;
+    cursor: pointer;
+}
+
+
+
+.message-request-btns {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: 0px;
+    padding: 0.3em 0.3em;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(128, 128, 128, 0.784);
+}
+
+.message-request-btns div {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0em 0.3em;
+    border-right: 1px solid rgba(128, 128, 128, 0.63);
+}
+.message-request-btns div:last-child {
+    border-right: 1px solid rgba(128, 128, 128, 0);
+}
+
+.message-request-btns button {
+    height: 100%;
+    width: 100%;
+    font-size: 1em;
+    background-color: rgba(255, 255, 255, 0.005);
+    border: 0;
+    color: white;
+}
+.message-request-btns button:hover {
+    cursor: pointer;
+}
+
+.accept-request-btn {
+    color: rgb(0, 255, 247) !important;
+}
+.reject-request-btn {
+    color: red !important;
+}
+.block-request-btn {
+    color: red !important;
+}
+.report-request-btn {
+    color: red !important;
+}
+
+
+
+.message-content.emoji-only {
+    font-size: 3em;
+    line-height: 0.5 !important;
+    background-color: rgba(128, 128, 128, 0.013) !important;
+    padding: 0;
+    margin: 0px 0 !important;
+}
+.message-content.emoji-only .emoji {
+    line-height: 1.2em;
+}
