@@ -1,0 +1,100 @@
+.custom-partial-profile {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    /* padding: 0 30px; */
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+
+.customization-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    gap: 12px;
+    background-color: rgba(255, 0, 0, 0);
+}
+
+.customization-controls button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 0;
+    background-color: rgb(26, 26, 26);
+    border: 1px solid rgba(128, 128, 128, 0.288);
+    color: white;
+    font-size: 1em;
+    transition: border 0.3s ease, backgroundo-color 0.3s ease;
+}
+.customization-controls button:hover {
+    background-color: rgba(0, 95, 84, 0.106);
+    box-shadow: 0 0 3px 3px rgb(0, 95, 84);
+    cursor: pointer;
+}
+
+
+.react-grid-layout.layout {
+    width: 100% !important;
+    height: 100% !important;
+    position: relative;
+    user-select: none;
+}
+
+.react-grid-layout.layout p {
+    user-select: none;
+}
+
+.grid-item {
+    /* background-color: rgba(0, 110, 99, 0.173) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border: inherit;
+    font-family: inherit;
+    color: inherit;
+    text-align: center; */
+    cursor: move;
+    user-select: none;
+    border-radius: 8px;
+}
+
+/* .profile-info {
+    background-color: rgba(0, 110, 99, 0.182);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border: 0px solid gray;
+    color: rgb(188, 188, 188);
+    text-align: center;
+    border-radius: 8px;
+} */
+
+
+.save-btn,
+.cancel-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.save-btn {
+    background-color: #4caf50;
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+    color: white;
+}

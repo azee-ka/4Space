@@ -1,0 +1,348 @@
+/* Add these styles at the end of Navbar.css */
+
+.profile-menu-container {
+    position: absolute;
+    top: 58px; 
+    right: 15px;
+    color: #ffffff;
+    background-color: rgba(14, 14, 15, 0.89);
+    /* box-shadow: 0 8px 16px rgba(45, 45, 45, 0.5); */
+    padding: 10px;
+    border-radius: 10px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: top;
+    width: auto;
+    max-width: 310px;
+    min-width: 280px;
+    height: auto;
+    max-height: 515px;
+    gap: 13px;
+    z-index: 100;
+    /* border: 0.1px solid rgba(88, 88, 88, 0.6); */
+    transition: box-shadow 0.3s ease;
+    backdrop-filter: blur(50px) !important;
+    /* box-shadow: 0px 0px 7px 1px rgba(98, 98, 98, 0.409); */
+    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.631);
+    border: 1px solid rgba(128, 128, 128, 0.174);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    overflow: hidden;
+    background-color: rgba(40, 39, 39, 0.119);
+}
+
+.profile-menu-container {
+    opacity: 1;
+  }
+
+
+.profile-menu-user-info-container {
+    width: 96%;
+    background-color: rgba(91, 91, 91, 0.244);
+    text-align: left;
+    padding: 8px;
+    border-radius: 8px;
+}
+.profile-menu-user-info-container:hover {
+    cursor: pointer;
+}
+
+.profile-menu-links {
+    width: 100% !important;
+    background-color: rgba(0, 128, 0, 0) !important;
+    padding: 4px;
+}
+
+.profile-menu-links ul {
+    background-color: rgba(196, 19, 19, 0) !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    padding: 0.5em 0.8em;
+    box-sizing: border-box;
+    gap: 10px;
+}
+
+.profile-menu-links ul li {
+    background-color: rgba(0, 128, 0, 0);
+    width: 100%;
+    padding: 0.5em 0.8em;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease;
+    color: rgb(213, 213, 213);
+}
+
+.profile-menu-links ul li:hover {
+    background-color: rgba(0, 110, 106, 0.782);
+    cursor: pointer;
+    color: white;
+}
+
+
+
+.profile-menu-sign-out-button-container {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-menu-sign-out-button-container button {
+    padding: 0.5em 0em;
+    width: 80%;
+    font-size: 1em;
+    border-radius: 6px;
+    border: 0;
+    background-color: rgba(161, 161, 161, 0.168);
+    color: rgb(212, 212, 212);
+    transition: background-color 0.3s ease;
+}
+.profile-menu-sign-out-button-container button:hover {
+    background-color: rgba(108, 108, 108, 0.451);
+    cursor: pointer;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.profile-menu-profile-picture-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.learner-profile-menu-user-profile-picture {
+    width: 43px;
+    height: 43px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.learner-profile-menu-user-profile-picture img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+.learner-profile-menu-user-info-text {
+    background-color: rgba(0, 128, 0, 0);
+    width: 55%;
+}
+.profile-menu-role-text {
+    background-color: rgba(255, 0, 0, 0);
+    font-size: 10px;
+}
+.profile-menu-role-text p {
+    font-style: italic;
+    color: rgb(151, 151, 151);
+}
+
+
+.profile-menu-account-profiles-list {
+    background-color: rgba(255, 255, 255, 0);
+    width: 100%;
+    min-height: 70px;
+    margin-top: 6px;
+    border-top: 0.5px solid rgba(128, 128, 128, 0.686);
+}
+.profile-menu-account-profiles-list-title {
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 30px;
+    padding: 5px;
+    margin-bottom: 7px;
+}
+.profile-menu-account-profiles-list-title p {
+    background-color: rgb(128, 124, 0, 0);
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    line-height: 0;
+    font-size: 13px;
+    color: rgb(162, 162, 162);
+    /* font-style: italic; */
+}
+
+.profile-menu-account-profiles-list-content {
+    background-color: rgba(0, 128, 0, 0);
+    width: 100%;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 0;
+    min-height: 60px;
+    max-height: 200px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+.profile-menu-account-profiles-list-content-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 98%;
+    background-color: rgba(0, 0, 255, 0);
+}
+
+.profile-menu-per-account-profile {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+    background-color: rgba(0, 0, 255, 0);
+    border-radius: 8px;
+    margin: 0;
+    padding: 0px;
+}
+.profile-menu-per-account-profile:hover {
+    background-color: rgba(61, 61, 61, 0.381) !important;
+    cursor: pointer;
+}
+
+.profile-menu-per-account-profile-inner {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 96%;
+    height: 96%;
+    background-color: rgba(0, 0, 255, 0);
+    border-radius: 8px;
+    margin: 0;
+    padding: 0px;
+    overflow: hidden;
+}
+
+.profile-menu-per-account-profile-picture-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 0, 0, 0);
+    width: 53px;
+    border-bottom-left-radius: 8px;
+    border-top-left-radius: 8px;
+}
+.profile-menu-per-account-profile-picture-container-inner {
+    border-radius: 50%;
+    background-color: rgba(128, 128, 128, 0.289);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 46px;
+    aspect-ratio: 1 / 1;
+}
+.profile-menu-per-account-profile-picture-container img {
+    background-color: rgb(0, 255, 221, 0);
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    align-self: center;
+}
+
+.profile-menu-per-account-profile-info-container {
+    flex-grow: 1;
+    background-color: rgb(117, 0, 128, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;   
+}
+
+
+.profile-menu-per-account-profile-info-container-inner {
+    background-color: rgb(130, 83, 109, 0);
+    width: 96%;
+    height: 96%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-menu-per-account-profile-username-email-container {
+    /* display: flex; */
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
+    text-align: left;
+    line-height: 0;
+    height: 100%;
+    width: 150px;
+    background-color: rgba(255, 192, 203, 0);
+    gap: 2px;
+}
+.profile-menu-per-account-profile-username-email-container p {
+    line-height: 0.3;
+    font-size: 14px;
+    color: rgb(207, 207, 207);
+}
+.profile-menu-per-account-profile-role-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-end;
+    flex-grow: 1;
+    height: 100%;
+}
+.profile-menu-per-account-profile-role-container p {
+    line-height: 0;
+    font-size: 10px;
+    color: rgb(151, 151, 151);
+    font-style: italic;
+}
+
+
+
+
+.profile-menu-account-profiles-add-profile-button {
+    height: 100%;
+    width: 110px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0);
+}
+.profile-menu-account-profiles-add-profile-button button {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 13px;
+    background-color: rgba(255, 255, 255, 0) !important;
+    color: white;
+    padding: 10px !important;
+}
+.profile-menu-account-profiles-add-profile-button button:hover {
+    border: 1px solid gray;
+}

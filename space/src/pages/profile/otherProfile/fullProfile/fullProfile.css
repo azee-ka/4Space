@@ -1,0 +1,187 @@
+.full-profile-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 15px 0px;
+    box-sizing: border-box;
+}
+
+.full-profile-left-panel {
+    width: 24%;
+    height: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    padding: 0px 15px;
+    box-sizing: border-box;
+    font-family: monospace;
+    flex-shrink: 0;
+}
+
+.full-profile-user-info {
+    width: 100%;
+    height: 40%;
+    background-color: rgba(46, 46, 46, 0.254);
+    backdrop-filter: blur(60px);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0px;
+    box-sizing: border-box;
+}
+
+.full-profile-user-info-profile-picture {
+    width: 140px;
+    aspect-ratio: 1 / 1;
+    background-color: rgba(255, 0, 0, 0);
+}
+.full-profile-user-info-profile-picture img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.full-profile-user-info-username {
+    background-color: rgba(0, 128, 0, 0);
+    margin-top: -6px;
+}
+.full-profile-user-info-username p {
+    margin: 0;
+    padding: 0;
+    font-size: 1.15em;
+    color: rgb(180, 180, 180);
+}
+.full-profile-user-info-username p:hover {
+    color: white;
+    cursor: pointer;
+}
+
+
+.full-profile-user-info-stats {
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 3px 15px;
+    box-sizing: border-box;
+}
+
+.full-profile-user-info-stats-count {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.full-profile-user-info-stats-count button {
+    background-color: rgba(182, 182, 182, 0.100);
+    border: 0;
+    border-radius: 4px;
+    padding: 8px 8px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.full-profile-user-info-stats-count button:hover {
+    background-color: rgba(182, 182, 182, 0.295);
+    cursor: pointer;
+}
+
+.full-profile-user-info-stats-count button p {
+    margin: 0;
+    padding: 0;
+    font-size: 1.3em;
+    color: rgb(196, 196, 196);
+    font-family: monospace;
+}
+.full-profile-user-info-stats-count button p:last-child {
+    font-size: 1.1em;
+}
+
+
+
+
+.full-profile-interact {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(46, 46, 46, 0.254);
+    backdrop-filter: blur(60px);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.full-profile-interact-follow-btn {
+    height: 100%;
+    background-color: rgba(0, 128, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.full-profile-interact button {
+    padding: 8px 18px;
+    color: white;
+    font-size: 1em;
+    background-color: rgb(0, 70, 83);
+    border: 0;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+.full-profile-interact button:hover {
+    background-color: rgba(0, 70, 83, 0.179);
+    box-shadow: 0 0 3px 3px rgb(0, 70, 83);
+    cursor: pointer;
+}
+
+
+
+.full-profile-metrics {
+    width: 100%;
+    flex-grow: 1;
+    background-color: rgba(46, 46, 46, 0.254);
+    backdrop-filter: blur(60px);
+    border-radius: 10px;
+    padding: 2px 15px;
+    box-sizing: border-box;
+    color: rgb(181, 181, 181);
+}
+
+
+
+
+
+
+
+
+.full-profile-right-panel {
+    flex-grow: 1;
+    height: 100%;
+    background-color: rgb(0, 0, 128, 0);
+    /* overflow-y: auto; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 0px 0 0px;
+    box-sizing: border-box;
+}

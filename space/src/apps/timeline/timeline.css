@@ -1,0 +1,12 @@
+.timeline-page {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    padding: 25px;
+    box-sizing: border-box;
+}
+
+.timeline-page h2 {
+    padding: 0;
+    margin: 0;
+}

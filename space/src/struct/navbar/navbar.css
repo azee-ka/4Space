@@ -1,0 +1,325 @@
+.navbar-container {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(30, 30, 30, 0.200);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  /* backdrop-filter: blur(10px); */
+  box-shadow: 0px 0px 4px 4px rgba(128, 128, 128, 0.149);
+  /* box-shadow: 0 7px 15px rgba(0, 0, 0, 0.631); */
+  z-index: 49;
+  overflow: hidden;
+
+}
+
+.navbar-left {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: rgba(0, 128, 0, 0);
+}
+
+.navbar-icon-logo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: rgba(0, 255, 255, 0);
+  width: 100%;
+  margin-left: 13px;
+  gap: 13px;
+  z-index: 51;
+}
+
+
+
+.navbar-logo-container {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 255, 0);
+  font-size: 17px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #fff;
+}
+.navbar-logo-container img {
+  height: 35px;
+  width: 26px;
+  /* aspect-ratio: 1 / 1; */
+  margin-right: 8px;
+}
+.navbar-logo-container img:last-child {
+  height: 32px;
+  width: 18px;
+  margin-left: -3px;
+  margin-top: 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.navbar-logo-container:hover img:last-child {
+  opacity: 1;
+}
+
+.navbar-logo-container h2 {
+  /* background: linear-gradient(135deg, #7500f9, #ff007b, #f4ff00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; */
+  color: rgba(255, 255, 255, 0.890);
+  font-family: 'Roboto Mono', monospace;
+  padding: 0;
+  margin: 0;
+  transition: all 0.2s ease-in;
+}
+.navbar-logo-container:hover h2 {
+  background: linear-gradient(120deg, #00ffd0, #7500f9);
+  background-clip: 3;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.navbar-logo-container h2 span {
+  margin-left: 3px;
+  font-size: 0.5em;
+  font-family: monospace;
+  font-weight: normal;
+  letter-spacing: -0.08em;
+}
+
+.navbar-logo-container a {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+.navbar-right {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  /* align-items: center; */
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+
+
+.navbar-pages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 0, 0, 0);
+}
+.navbar-pages ul {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  box-sizing: border-box;
+  list-style: none;
+}
+
+.navbar-pages ul li a {
+  display: block;
+  padding: 10px 0px;
+  background-color: transparent;
+  color: rgb(210, 210, 210);
+  text-decoration: none;
+  position: relative;
+}
+.navbar-pages ul li a:hover {
+  color: rgb(255, 255, 255);
+}
+
+.navbar-pages ul li a::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: 0px;
+  bottom: 0;
+  text-align: center;
+  width: 110%;
+  height: 2px;
+  background-color: rgb(255, 255, 255);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.navbar-pages ul li a:hover::after {
+  transform: scaleX(1);
+  transform-origin: right;
+}
+
+
+
+.navbar-items {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  background-color: rgba(128, 128, 128, 0);
+  /* width: 180px; */
+}
+
+.navbar-items ul {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  /* gap: 10px; */
+  background-color: rgba(0, 255, 145, 0);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.navbar-items li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  position: relative;
+}
+
+.navbar-items li button,
+.navbar-items li a {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 255, 255, 0);
+  border: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.navbar-items li:nth-child(1) a {
+  height: 38px;
+  width: 38px;
+  aspect-ratio: 1 / 1;
+  font-size: 22px;
+  color: white;
+}
+.navbar-items li:nth-child(1) a:hover {
+  background-color: rgba(128, 128, 128, 0.551);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+.navbar-items li:nth-child(2) button {
+  height: 38px;
+  width: 38px;
+  aspect-ratio: 1 / 1;
+  font-size: 22px;
+  color: white;
+}
+.navbar-items li:nth-child(2) button:hover {
+  background-color: rgba(128, 128, 128, 0.551);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.navbar-items li:nth-child(3) button {
+  height: 39px;
+  width: 39px;
+  aspect-ratio: 1 / 1;
+  color: white;
+  background-color: rgb(88, 25, 25, 0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.navbar-items li:nth-child(3) button:hover {
+  cursor: pointer;
+}
+.navbar-items li:nth-child(3) button .nine-dot-icon {
+  font-size: 45px !important;
+}
+
+
+.navbar-items li:nth-child(4) button {
+  background-color: rgba(244, 244, 244, 0);
+  display: flex;
+  /* flex-direction: row; */
+  justify-content: center !important;
+  align-items: center !important;
+  border-radius: 50%;
+  height: 43px;
+  width: 43px;
+  padding: 0;
+  border: 2px solid rgba(244, 244, 244, 0);
+  transition: border 0.3 ease;
+}
+.navbar-items li:nth-child(4) button:hover {
+  border: 2px solid rgb(255, 255, 255);
+  cursor: pointer;
+}
+.navbar-items li:nth-child(4) button img {
+  display: flex;
+  align-self: center;
+  height: 100%;
+  width: 100%;
+  /* aspect-ratio: 1 / 1; */
+}
+.navbar-items li::nth-child(4) button img:hover {
+  cursor: pointer;
+}
+
+
+.notification-button {
+  position: relative;
+}
+
+.notification-count {
+  position: absolute;
+  top: -3px;
+  right: -0px;
+  background-color: rgb(255, 0, 0);
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+
+
+.navbar-public-btns {
+  background-color: rgba(255, 0, 0, 0);
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+  margin-right: 15px;
+}
+
+
+
+.navbar-pages.animation {
+  animation: nav-slide 0.5s ease;
+}
+
+@keyframes nav-slide {
+  0% {
+    transform: translateY(-90%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+
+
+
+

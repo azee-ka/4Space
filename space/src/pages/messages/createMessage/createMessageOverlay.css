@@ -1,0 +1,205 @@
+.create-message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(24, 24, 24, 0.687);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 60; 
+    color: white;
+}
+
+.create-message-card {
+    width: 550px;
+    height: 500px;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 10px;
+    padding: 0.5em 1.5em;
+    box-sizing: border-box;
+    position: relative;
+    gap: 10px;
+}
+.create-message-top-panel {
+    width: 100%;
+    height: 45px;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+.create-message-top-panel button {
+    position: absolute;
+    right: 10px;
+    background-color: rgba(128, 128, 128, 0);
+    color: rgb(191, 191, 191);
+    font-size: 1.3em;
+    padding: 0.2em;
+    margin: 0;
+    border: 0;
+    display: flex;
+}
+.create-message-top-panel button:hover {
+    color: white;
+    cursor: pointer;
+}
+
+.create-message-select-recipient {
+    width: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+}
+.create-message-recipient-input {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(126, 126, 165, 0);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    gap: 6px;
+}
+
+.recipients-search-list {
+    flex-grow: 1;
+    width: 100%;
+    background-color: rgba(0, 128, 0, 0);
+}
+.recipients-search-list ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 1em 1em;
+    margin: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+}
+.recipient-item {
+    cursor: pointer;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 0.4em 0.5em;
+    box-sizing: border-box;
+    border-radius: 6px;
+}
+.recipient-item:hover {
+    background-color: #7272724b;
+}
+.recipient-profile-image {
+    height: 100%;
+    width: auto;
+    display: flex;
+}
+.recipient-profile-image img {
+    height: 100%;
+    width: auto;
+}
+
+
+.no-recipients-container {
+    display: flex;
+    background-color: rgba(0, 0, 255, 0);
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.start-chat-btn {
+    padding: 0em;
+    width: 80%;
+    height: 35px;
+    border-radius: 6px;
+    background-color: rgb(0, 133, 113);
+    border: 0;
+    color: white;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+.start-chat-btn:hover {
+    box-shadow: 0 0 3px 3px rgb(0, 133, 113);
+    background-color: rgb(0, 133, 113, 0.15);
+    cursor: pointer;
+}
+.start-chat-btn:disabled {
+    /* background-color: #656565c9; */
+    background-color: rgb(0, 133, 113);
+    cursor: not-allowed;
+    opacity: 0.5;
+    box-shadow: none;
+}
+
+
+
+
+
+
+
+
+.input-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border: 1px solid #cccccc00;
+    padding: 0 5px;
+    border-radius: 5px;
+    gap: 5px;
+    flex-grow: 1;
+    box-sizing: border-box;
+    background-color: rgba(42, 39, 46, 0.76);
+}
+
+.recipient-block {
+    display: flex;
+    align-items: center;
+    background-color: #333134;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.recipient-input-field {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    background-color: rgb(180, 44, 44, 0);
+    margin: 0;
+    padding: 0.5em 0.5em;
+    box-shadow: none !important;
+}
+
+.remove-recipient-icon {
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 1.2em;
+}
+
+
+
+.no-recipients-container {
+    padding: 8px 12px;
+    text-align: center;
+}
