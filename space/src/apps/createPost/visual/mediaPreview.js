@@ -119,7 +119,7 @@ const MediaPreview = ({ mediaFiles, onBack }) => {
     };
 
     const renderMediaContent = () => {
-        if (!previewMedia) return <div>Loading...</div>;
+        if (!previewMedia) return <div className='no-content'>No content to preview!</div>
 
         const mediaType = uploadedMedia[currentMediaIndex]?.type;
 
@@ -200,6 +200,7 @@ const MediaPreview = ({ mediaFiles, onBack }) => {
             </div>
 
             <div className="media-preview-content">
+                {uploadedMedia.length !== 0 &&
                 <div className="media-preview-nav-container">
                     {currentMediaIndex > 0 ? (
                         <button className="media-preview-nav left" onClick={handlePrevious}>
@@ -212,6 +213,7 @@ const MediaPreview = ({ mediaFiles, onBack }) => {
                         </button>
                     )}
                 </div>
+}
                 {renderMediaContent()}
             </div>
         </div>

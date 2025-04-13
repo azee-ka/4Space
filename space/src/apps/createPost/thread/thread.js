@@ -2,34 +2,18 @@ import React, { useRef, useState } from 'react';
 import './thread.css';
 import { FaEllipsisV, FaUpload } from 'react-icons/fa';
 
-const Thread = ({ showpostEditorToolbar, setShowpostEditorToolbar, handleButtonClick }) => {
+const Thread = React.forwardRef(({ showpostEditorToolbar, setShowpostEditorToolbar, handleButtonClick }, ref) => {
     const [postType, setpostType] = useState("idea");
 
     const handlepostTypeChange = (e) => setpostType(e.target.value);
 
-    const [uploadedFiles, setUploadedFiles] = useState([]);
-    const [previewMedia, setPreviewMedia] = useState(null);
-    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-
-    
-    const handleSelectedMedia = (event) => {
-        const selectedFiles = Array.from(event.target.files).filter(
-            (file) => file.type.startsWith('image/') || file.type.startsWith('video/')
-        );
-        setUploadedFiles((prev) => [...prev, ...selectedFiles]);
-        setPreviewMedia(URL.createObjectURL(selectedFiles[0]));
-        setCurrentMediaIndex(0);
-    }
-    const handleMediaUploadFn = () => {
-        console.log(uploadedFiles);
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*, video/*';
-        fileInput.multiple = true;
-        fileInput.click();
-        fileInput.addEventListener('change', (e) => handleSelectedMedia(e));
-    };
-    
+    // Expose the getData method via the ref
+    React.useImperativeHandle(ref, () => ({
+        getData: () => ({
+            type: 'Thread',
+            content_type: postType,
+        }),
+    }));
 
     return (
         <div className="create-post-actions-menubar">
@@ -43,7 +27,7 @@ const Thread = ({ showpostEditorToolbar, setShowpostEditorToolbar, handleButtonC
                     <select value={postType} onChange={handlepostTypeChange}>
                         <option disabled value="idea">Select Type</option>
                         <option value="announcement">Announcement</option>
-                        <option value="announcement">Leaning Opinon</option>
+                        <option value="leaning-opinion">Leaning Opinion</option>
                         <option value="idea">Thought</option>
                         <option value="question">Question</option>
                     </select>
@@ -62,6 +46,6 @@ const Thread = ({ showpostEditorToolbar, setShowpostEditorToolbar, handleButtonC
             </div>
         </div>
     );
-}
+});
 
 export default Thread;
