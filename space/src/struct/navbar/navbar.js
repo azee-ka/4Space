@@ -65,8 +65,8 @@ const Navbar = ({
 
 
     const publicPagesNavbar = [
-        { path: '/home', label: 'Home', id: 'navbar-phrase', role: 'public' },
         { path: '/login', label: 'Sign In', id: 'navbar-access', role: 'public' },
+        { path: '/register', label: 'Sign Up', id: 'navbar-access', role: 'public' },
     ];
 
     const privatePagesNavbar = [
@@ -126,17 +126,6 @@ const Navbar = ({
                     </ul>
                 </div>
                 <div className='navbar-items'>
-                    {!authState.isAuthenticated && (
-                        <div className='navbar-public-btns'>
-                            <div className='navbar-login-btn'>
-                                <Link to={'/login'}>Sign In</Link>
-                            </div>
-                            <div className='navbar-register-btn'>
-                                <Link to={'/register'}>Sign Up</Link>
-                            </div>
-                        </div>
-                    )}
-
                     {authState.isAuthenticated && (
                         <ul>
                             <li className='messages-page-link'>

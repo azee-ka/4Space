@@ -400,11 +400,11 @@ const CustomEditor = ({
                     {renderButton('code', faCode)}
                     {renderButton('script', faSuperscript, 'super')}
                     {renderButton('script', faSubscript, 'sub')}
-                    {supportMedia && (
+                    {/* {supportMedia && (
                         <button onClick={handleImageUpload}>
                             <FontAwesomeIcon icon={faImage} />
                         </button>
-                    )}
+                    )} */}
                     <div className="color-picker">
                         <input
                             type="color"

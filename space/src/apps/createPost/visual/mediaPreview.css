@@ -6,6 +6,8 @@
     gap: 12px;
     padding: 0em 0.5em;
     box-sizing: border-box;
+    height: 100%;
+    width: 100%;
 }
 
 
@@ -139,6 +141,8 @@
     align-items: center;
     background-color: rgba(255, 0, 0, 0);
     position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 
@@ -172,4 +176,15 @@
 .media-preview-nav-container button:hover {
     background-color: rgba(72, 72, 72, 0.868);
     cursor: pointer;
+}
+
+
+.no-content {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
 }

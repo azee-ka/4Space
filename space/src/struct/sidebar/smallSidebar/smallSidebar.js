@@ -11,7 +11,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     const { openCreatePostOverlay } = useCreatePostContext();
 
     const taskFlow = [
-        { icon: <FontAwesomeIcon icon={faChartBar} />, label: 'Dasboard', path: '/', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faChartBar} />, label: 'Dasboard', path: '/dashboard', type: 'link' },
         { icon: <FontAwesomeIcon icon={faStream} />, label: 'Timeline', path: '/timeline', type: 'link' },
         { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Explore', path: '/explore', type: 'link' },
         { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },

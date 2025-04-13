@@ -23,6 +23,8 @@ import { ReportOverlayProvider } from '../context/ReportOverlayContext';
 
 import Timeline from '../apps/timeline/timeline';
 import CreatePost from '../apps/createPost/createPost';
+import Dashboard from '../apps/dashboard/dashboard';
+import Explore from '../apps/explore/explore';
 
 
 const AppRouter = () => {
@@ -30,9 +32,10 @@ const AppRouter = () => {
     const isAuthenticated = authState.isAuthenticated;
 
     const privateRoutes = [
-        { name: 'Timeline', path: '/', component: <Timeline />, key: 'Profile' },
-        { name: 'Timeline', path: '/timeline', component: <Profile />, key: 'Profile' },
-        { name: 'Explore', path: '/explore', component: <Profile />, key: 'Profile' },
+        { name: 'Dashboard', path: '/dashboard', component: <Dashboard />, key: 'Dashboard' },
+        { name: 'Timeline', path: '/', component: <Timeline />, key: 'Timeline' },
+        { name: 'Timeline', path: '/timeline', component: <Timeline />, key: 'Timeline' },
+        { name: 'Explore', path: '/explore', component: <Explore />, key: 'Explore' },
         
         { name: 'Create Post', path: '/create/post', component: <CreatePost />, key: 'CreatePost' },
 

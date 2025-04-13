@@ -5,28 +5,25 @@ def upload_to(instance, filename):
     return f'profile_pictures/{instance.username}/{filename}'
 
 class BaseUserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        """Create and return a regular user with an email and password."""
-        if not email:
-            raise ValueError('The Email field must be set')
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+    def create_user(self, username, password=None, **extra_fields):
+        """Create and return a regular user with a username and password."""
+        if not username:
+            raise ValueError('The Username field must be set')
+        user = self.model(username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
-        """Create and return a superuser with an email and password."""
+    def create_superuser(self, username, password=None, **extra_fields):
+        """Create and return a superuser with a username and password."""
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(username, password, **extra_fields)
 
 
 class BaseUser(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
-    username_anon = models.CharField(max_length=150, unique=True, null=True, blank=True)
-    username_pro = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    username = models.CharField(max_length=150, unique=True)  # Make username unique
+    email = models.EmailField(unique=False, null=True, blank=True)  # Email is no longer unique
     role = models.CharField(
         max_length=50, 
         choices=[('anonymous', 'Anonymous'), ('professional', 'Professional')],
@@ -63,9 +60,8 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
 
     objects = BaseUserManager()
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = []
-
+    USERNAME_FIELD = 'username'  # Set username as the unique identifier
+    REQUIRED_FIELDS = []  # No additional required fields
 
     def get_profile_for_viewer(self, viewer):
         """
@@ -101,5 +97,5 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
         return self.following.filter(id=user.id).exists()
     
     def __str__(self):
-        return self.email
+        return self.username
 

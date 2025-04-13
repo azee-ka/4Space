@@ -7,8 +7,9 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const ItemType = 'poll-option';
 
-const Poll = () => {
+const Poll = React.forwardRef((props, ref) => {
     const [options, setOptions] = useState(["", ""]);
+    const [question, setQuestion] = useState(""); // State for poll question
     const lastFocusedIndex = useRef(null); // Track last focused input
 
     const handleOptionChange = (index, value) => {
@@ -84,12 +85,23 @@ const Poll = () => {
         );
     };
 
+    // Expose the getData method via the ref
+    React.useImperativeHandle(ref, () => ({
+        getData: () => ({
+            type: 'Poll',
+            question,
+            options: options.filter((option) => option.trim() !== ""), // Filter out empty options
+        }),
+    }));
+
     return (
         <div className="poll-post-fields">
             <input
                 type="text"
                 placeholder="Poll Question..."
                 className="create-post-input poll-question"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)} // Update question state
             />
             {options.map((option, index) => (
                 <DraggableOption key={index} index={index} option={option} />
@@ -99,6 +111,6 @@ const Poll = () => {
             </button>
         </div>
     );
-};
+});
 
 export default Poll;

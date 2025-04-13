@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import BaseUser
 from rest_framework import serializers
-# from ..axionspace.serializers import EntrySerializer
 
 
 def build_category_representation(instance, representation, categories):
@@ -15,12 +14,8 @@ def build_category_representation(instance, representation, categories):
                 count_data['following_count'] = instance.following.count()
             if 'followers_count' in fields:
                 count_data['followers_count'] = instance.followers.count()
-            if 'entries_count' in fields:
-                count_data['entries_count'] = instance.authored_entries.count()  # Ensure we use 'authored_entries'
-            if 'packets_count' in fields:
-                count_data['packets_count'] = instance.authored_packets.count()
-            if 'flares_count' in fields:
-                count_data['flares_count'] = instance.authored_flares.count()
+            if 'posts_count' in fields:
+                count_data['posts_count'] = instance.authored_posts.count()  # Ensure we use 'authored_entries'
             data[category] = count_data
         else:
             # For other categories, just include the relevant fields
@@ -58,21 +53,11 @@ class EntriesCountMixin:
     """
     Mixin that adds the 'entries_count' field to any serializer.
     """
-    entries_count = serializers.SerializerMethodField()
-    packets_count = serializers.SerializerMethodField()
-    flares_count = serializers.SerializerMethodField()
+    authored_posts = serializers.SerializerMethodField()
 
-    def get_entries_count(self, obj):
-        # Assuming 'authored_entries' is the reverse relationship on BaseUser for the entries they authored
-        return obj.authored_entries.count()
-
-    def get_packets_count(self, obj):
-        # Assuming 'authored_packets' is the reverse relationship on BaseUser for the entries they authored
-        return obj.authored_packets.count()
-    
-    def get_flares_count(self, obj):
-        # Assuming 'authored_flares' is the reverse relationship on BaseUser for the entries they authored
-        return obj.authored_flares.count()
+    def get_posts_count(self, obj):
+        # Assuming 'authored_posts' is the reverse relationship on BaseUser for the posts they authored
+        return obj.authored_posts.count()
 
 
 

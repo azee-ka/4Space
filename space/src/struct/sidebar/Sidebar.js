@@ -8,10 +8,10 @@ function Sidebar({ isOpen, onClose }) {
     const navigate = useNavigate();
 
     const options = [
-        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Central', path: '/', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faStream} />, label: 'AxionSpace', path: '/axionspace', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'QuantaSpace', path: '/quantaspace', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faCog} />, label: 'RadianSpace', path: '/radianspace', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Option 1', path: '/', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Option 2', path: '/', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Option 3', path: '/', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faCog} />, label: 'Option 4', path: '/', type: 'context' },
     ];
 
 

@@ -84,14 +84,15 @@ function Layout({ children, pageName }) {
             </div>
 
             <div className='layout-page'>
-                <div className='layout-small-sidebar'>
-                    {authState.isAuthenticated &&
+                {authState.isAuthenticated &&
+
+                    <div className='layout-small-sidebar'>
                         <SmallSidebar
                             searchSidebarOpen={searchSidebarOpen}
                             setSearchSidebarOpen={setSearchSidebarOpen}
                         />
-                    }
-                </div>
+                    </div>
+                }
                 <div className={`layout-page-content`}>
                     {children}
                 </div>
