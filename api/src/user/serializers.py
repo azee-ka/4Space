@@ -142,13 +142,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Extract 'username' from validated data
-        username = validated_data.pop('username', None)
+        # username = validated_data.pop('username', None)
 
         # Create the user using the other validated data
         user = BaseUser.objects.create_user(**validated_data)
 
         # Store the username in the 'username_general' field
-        user.username = username
+        # user.username = username
 
         # Save and return the user
         user.save()
