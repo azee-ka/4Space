@@ -93,7 +93,7 @@ function Layout({ children, pageName }) {
                         />
                     </div>
                 }
-                <div className={`layout-page-content`}>
+                <div className={`layout-page-content ${authState.isAuthenticated ? 'sidebar' : ''}`}>
                     {children}
                 </div>
             </div>
