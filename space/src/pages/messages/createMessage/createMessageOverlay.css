@@ -170,6 +170,11 @@
     box-sizing: border-box;
     background-color: rgba(42, 39, 46, 0.76);
 }
+.input-container input {
+    height: 22px;
+    font-size: 1em;
+    color: white;
+}
 
 .recipient-block {
     display: flex;

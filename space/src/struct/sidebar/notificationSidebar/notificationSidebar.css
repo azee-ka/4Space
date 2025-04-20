@@ -1,6 +1,7 @@
 .notification-sidebar {
     backdrop-filter: blur(80px) !important;
-    background-color: rgba(23, 23, 23, 0.698);
+    /* background-color: rgba(23, 23, 23, 0.698); */
+    background-color: rgba(35, 35, 35, 0.271);
     position: fixed;
     width: 400px;
     height: 100vh;
