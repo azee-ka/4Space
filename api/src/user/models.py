@@ -23,7 +23,7 @@ class BaseUserManager(BaseUserManager):
 
 class BaseUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=150, unique=True)  # Make username unique
-    email = models.EmailField(unique=False, blank=True)  # Email is no longer unique
+    email = models.EmailField(unique=False, null=True, blank=True)  # Email is no longer unique
     role = models.CharField(
         max_length=50, 
         choices=[('anonymous', 'Anonymous'), ('professional', 'Professional')],
