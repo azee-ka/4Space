@@ -9,8 +9,8 @@
     align-items: center;
     align-items: center;
     transition: all 0.4s ease;
-    backdrop-filter: blur(20px) !important;
-    background-color: rgba(4, 0, 10, 0.6);
+    backdrop-filter: blur(80px) !important;
+    background-color: rgba(6, 6, 14, 0.289);
     z-index: 45;
 }
 
@@ -80,30 +80,34 @@
     justify-content: center;
     align-items: center;
     position: relative;
+    box-sizing: border-box;
+    padding: 0 18px;
 }
 
 .search-sidebar-search-bar input {
     background-color: rgba(255, 0, 0, 0);
-    width: 80%;
+    width: 100%;
     height: 80%;
     border: 0;
-    border-radius: 10px;
+    border-radius: 8px;
     /* background-color: rgba(32, 30, 30, 0.786); */
-    background-color: rgba(32, 30, 30, 0.361);
+    background-color: rgba(57, 56, 56, 0.639);
     backdrop-filter: blur(40px);
-    padding: 0px 12px;
+    padding: 0px 35px 0 16px;
     outline: none;
     font-size: 16px;
     color: white;
     border: 1px solid rgba(128, 128, 128, 0);
     position: relative;
+    box-sizing: border-box;
 }
 
 .search-sidebar-search-bar svg {
     transition: opacity 1s ease, visibility 1s ease;
     position: absolute;
-    right: 40px;
-    top: 15px;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
     /* transform: translateY(50%); */
     font-size: 25px;
     color: rgb(166, 166, 166);

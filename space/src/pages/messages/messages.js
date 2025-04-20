@@ -19,11 +19,11 @@ const Messages = () => {
     return (
         <div className="messages-pages">
             <div className="messages-top-panel">
-                <h3>
+                <h2>
                     <Link to={'/messages'}>
                         Messages
                     </Link>
-                </h3>
+                </h2>
             </div>
             {(currentPath.startsWith("/messages/requests")) ? (
                 <MessageRequests />
