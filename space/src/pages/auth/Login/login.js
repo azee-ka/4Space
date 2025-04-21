@@ -1,7 +1,7 @@
 // LoginForm.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios'; // Import Axios
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import './login.css';
 import API_BASE_URL from '../../../utils/apiUrl';
@@ -46,7 +46,7 @@ const LoginPage = () => {
         } catch (error) {
             console.error('Error logging in:', error.message);
             // Handle the error as needed
-            setLoginError((error.response.data && error.response.data.message) || (error.message));
+            setLoginError((error && error.response && error.response.data && error.response.data.message) || (error.message));
         }
     };
 
@@ -89,7 +89,7 @@ const LoginPage = () => {
                         </div>
 
                         <div className='redirect-to-register'>
-                            <a href="/register">Don't have an account? Sign Up</a>
+                            <Link to="/register">Don't have an account? Sign Up</Link>
                         </div>
 
                         <button type="submit">Login</button>

@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'src.utils',
     'src.notifications',
     
+    'src.organization',
+    
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken', 

@@ -42,6 +42,22 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True
     )
+    organization = models.ForeignKey(
+        'organization.Organization',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='members',
+    )
+    org_role = models.CharField(
+        max_length=50,
+        choices=[('admin', 'Admin'), ('member', 'Member')],
+        null=True,
+        blank=True,
+        default='none'
+    )
+    is_approved_by_org = models.BooleanField(default=False)
+    
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

@@ -1,9 +1,10 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from ..serializers import UserCreateSerializer
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 
 @api_view(['POST'])
@@ -37,6 +38,9 @@ def login_view(request):
     password = request.data.get('password')
     user = authenticate(username=username, password=password)
     if user:
+        if user.organization and user.org_role == 'member':
+            if not user.is_approved_by_org:
+                return Response({"message": "Your account is pending approval."}, status=403)
         # Login the user and generate a new token
         login(request, user)
         token, created = Token.objects.get_or_create(user=user)
@@ -44,3 +48,18 @@ def login_view(request):
         return Response(response_data, status=200)
     else:
         return Response({"message": "Invalid credentials"}, status=401)
+    
+    
+    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user_view(request):
+    user = request.user
+
+    # Optionally revoke the token (good practice)
+    Token.objects.filter(user=user).delete()
+
+    # Delete the user
+    user.delete()
+
+    return Response({"message": "User account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
