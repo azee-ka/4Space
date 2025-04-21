@@ -14,7 +14,7 @@
 
 .login-auth-container-inner {
     width: 800px;
-    height: 550px;
+    height: 500px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -28,13 +28,13 @@
     border: 1px solid rgba(57, 57, 57, 0.495);
     border-radius: 10px;
     transition: background-color 0.3s ease, transform 0.4s ease;
+    padding: 0em 2em;
 }
 .login-auth-container-inner {
     transform: scale(1.03);
 }
 
 .login-auth-container .login-auth-card {
-    padding: 20px 30px;
     width: 400px;
     height: 100%;
     display: flex;

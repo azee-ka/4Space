@@ -135,20 +135,19 @@ class EditUserInfoSerializer(serializers.ModelSerializer):
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     username = serializers.CharField(write_only=True)  # Frontend sends 'username'
+    org_role = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = BaseUser
-        fields = ['email', 'password', 'username', 'first_name', 'last_name']
+        fields = ['email', 'password', 'username', 'first_name', 'last_name', 'org_role']
 
     def create(self, validated_data):
-        # Extract 'username' from validated data
-        # username = validated_data.pop('username', None)
-
+        role = validated_data.pop('org_role', None)
         # Create the user using the other validated data
         user = BaseUser.objects.create_user(**validated_data)
-
-        # Store the username in the 'username_general' field
-        # user.username = username
+        user.org_role = role
+        if user.org_role == 'admin':
+            user.is_approved_by_org = True  # admins are auto-approved
 
         # Save and return the user
         user.save()

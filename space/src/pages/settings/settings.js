@@ -26,7 +26,6 @@ const Settings = () => {
         'Profile': [
             { label: 'Basic Info', component: <BasicInfo /> },
             { label: 'Your Activity', component: <Visiblity /> },
-            { label: 'Notifications', component: <NotificationsTab /> },
         ],
         'Interactions Control': [
             { label: 'Messages Control', component: <MessagesControl /> },
@@ -50,6 +49,7 @@ const Settings = () => {
             { label: 'Local Visibility', component: <Visiblity /> },
         ],
         'Notifications': [
+            { label: 'Notifications', component: <NotificationsTab /> },
             { label: 'Email Notifications', component: <NotificationsTab /> },
             { label: 'Push Notifications', component: <NotificationsTab /> },
             { label: 'In-App Notifications', component: <NotificationsTab /> },
