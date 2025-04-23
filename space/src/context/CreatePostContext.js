@@ -1,7 +1,7 @@
 // context/CreatePostContext.js
 import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CreatePost from '../apps/createPost/createPost';
+import CreatePost from '../apps/home/createPost/createPost';
 
 const CreatePostContext = createContext();
 

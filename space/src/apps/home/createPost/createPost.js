@@ -1,17 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './createPost.css';
 import { FaTimes } from 'react-icons/fa';
-import { useCreatePostContext } from '../../context/CreatePostContext';
+import { useCreatePostContext } from '../../../context/CreatePostContext';
 import { faAlignRight, faCalendarDay, faCameraRetro, faImage, faMicrophoneLines, faPoll } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import CustomEditor from '../../utils/editor/editor';
+import CustomEditor from '../../../utils/editor/editor';
 import Thread from './thread/thread';
 import Visual from './visual/visual';
 import Poll from './poll/poll';
 import MediaPreview from './visual/mediaPreview';
-import { formatDateTime } from '../../utils/formatDateTime';
-import useApi from '../../utils/useApi';
-import { useAuth } from '../../hooks/useAuth';
+import { formatDateTime } from '../../../utils/formatDateTime';
+import useApi from '../../../utils/useApi';
+import { useAuth } from '../../../hooks/useAuth';
 
 
 const CreatePost = () => {
