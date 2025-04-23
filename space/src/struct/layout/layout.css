@@ -60,7 +60,7 @@
     background-color: rgba(255, 0, 0, 0);
 }
 .layout-page-content.sidebar {
-    margin-left: 80px;
+    /* margin-left: 80px; */
     padding: 10px 10px;
 }
 
