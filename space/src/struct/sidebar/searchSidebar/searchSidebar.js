@@ -28,11 +28,12 @@ function SearchSidebar({ isOpen, onClose }) {
 
     useEffect(() => {
         handleGetSearchHistory();
-    }, []);
+    }, [isOpen]);
 
     const handleDeleteSearchItem = async (user) => {
+        console.log(user);
         try {
-            const response = await callApi(`search/user-search/delete/${user.username}/`);
+            const response = await callApi(`search/user-search/delete/${user.username}/`,'DELETE');
             console.log(response.data);
             handleGetSearchHistory();
         } catch (error) {
@@ -73,6 +74,7 @@ function SearchSidebar({ isOpen, onClose }) {
     // search-history/
 
     const handleRedirect = async (user) => {
+        console.log(user);
         if (searhQueryResults.length !== 0) {
             try {
                 const response = await callApi(`search/user-search/store/${user.username}/`, 'POST');
@@ -120,7 +122,7 @@ function SearchSidebar({ isOpen, onClose }) {
                                         </div>
                                         {searhQueryResults.length === 0 &&
                                             <div className='delete-history-search'>
-                                                <FontAwesomeIcon icon={faClose} onClick={(e) => { handleDeleteSearchItem(item); e.stopPropagation() }} />
+                                                <FontAwesomeIcon icon={faClose} onClick={(e) => { handleDeleteSearchItem(item.searched_user); e.stopPropagation() }} />
                                             </div>
                                         }
                                     </div>

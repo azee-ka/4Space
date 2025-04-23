@@ -41,7 +41,7 @@ def get_search_history(request):
 
 
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_search_history(request, username_to_delete):
     if username_to_delete:
