@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faCog, faStream, faLayerGroup, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faCog, faStream, faLayerGroup, faSearch, faVestPatches, faNetworkWired, faShareNodes, faCircleNodes } from '@fortawesome/free-solid-svg-icons';
 
 function Sidebar({ isOpen, onClose }) {
     const navigate = useNavigate();
 
     const options = [
-        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Option 1', path: '/', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Option 2', path: '/', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Option 3', path: '/', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faCog} />, label: 'Option 4', path: '/', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Home', path: '/', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faCircleNodes} />, label: 'Communities', path: '/', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Space', path: '/', type: 'context' },
     ];
 
 
