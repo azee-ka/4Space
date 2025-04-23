@@ -18,7 +18,7 @@ const OtherProfile = ({ username, fetchProfileData, enforceViewType = '', isCust
     useEffect(() => {
         fetchProfileData(username, setProfileInfo);
         // console.log(profileInfo);
-    }, []);
+    }, [username]);
 
 
     return enforceViewType === '' ? (

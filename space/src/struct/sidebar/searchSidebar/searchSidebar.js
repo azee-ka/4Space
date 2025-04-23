@@ -7,7 +7,7 @@ import { faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
 import useApi from '../../../utils/useApi';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 
-function SearchSidebar({ isOpen }) {
+function SearchSidebar({ isOpen, onClose }) {
     const { callApi } = useApi();
     const navigate = useNavigate();
 
@@ -18,7 +18,7 @@ function SearchSidebar({ isOpen }) {
 
     const handleGetSearchHistory = async () => {
         try {
-            const response = await callApi(`components/search-history/history/`);
+            const response = await callApi(`search/user-search/history/`);
             console.log(response.data);
             setSearchHistory(response.data);
         } catch (error) {
@@ -27,12 +27,12 @@ function SearchSidebar({ isOpen }) {
     };
 
     useEffect(() => {
-        // handleGetSearchHistory();
+        handleGetSearchHistory();
     }, []);
 
     const handleDeleteSearchItem = async (user) => {
         try {
-            const response = await callApi(`components/search-history/delete/${user.id}/`);
+            const response = await callApi(`search/user-search/delete/${user.username}/`);
             console.log(response.data);
             handleGetSearchHistory();
         } catch (error) {
@@ -62,7 +62,7 @@ function SearchSidebar({ isOpen }) {
 
     const handleSubmitSearch = async (searchQuery) => {
         try {
-            const response = await callApi(`components/search/user-search/?query=${searchQuery}`);
+            const response = await callApi(`search/user-search/?query=${searchQuery}`);
             console.log(response.data);
             setSearchQueryResults(response.data);
         } catch (error) {
@@ -75,14 +75,16 @@ function SearchSidebar({ isOpen }) {
     const handleRedirect = async (user) => {
         if (searhQueryResults.length !== 0) {
             try {
-                const response = await axios.post(`components/search-history/store/${user.id}/`, 'POST');
+                const response = await callApi(`search/user-search/store/${user.username}/`, 'POST');
                 console.log(response.data);
                 navigate(`/profile/${user?.username}`);
+                onClose();
             } catch (error) {
                 console.error('Error', error);
             }
         } else {
             navigate(`/profile/${user?.searched_user?.username}`);
+            onClose();
         }
     };
 

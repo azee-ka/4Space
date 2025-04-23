@@ -10,7 +10,7 @@ urlpatterns = [
     path('profile/<str:username>/', views.user_profile_view, name='profile_view'),
     
     # Search
-    path('', include('src.user.search.urls')),
+    path('search/', include('src.user.search.urls')),
 
     # Interact
     path('', include('src.user.interact.urls')),
