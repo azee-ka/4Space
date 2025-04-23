@@ -21,10 +21,10 @@ import { EditorProvider } from '../utils/editor/EditorContext';
 import Messages from '../pages/messages/messages';
 import { ReportOverlayProvider } from '../context/ReportOverlayContext';
 
-import Timeline from '../apps/timeline/timeline';
-import CreatePost from '../apps/createPost/createPost';
-import Dashboard from '../apps/dashboard/dashboard';
-import Explore from '../apps/explore/explore';
+import Timeline from '../apps/home/timeline/timeline';
+import CreatePost from '../apps/home/createPost/createPost';
+import Dashboard from '../apps/home/dashboard/dashboard';
+import Explore from '../apps/home/explore/explore';
 
 
 const AppRouter = () => {
