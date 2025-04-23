@@ -34,8 +34,8 @@
     box-sizing: border-box;
     display: flex;
     justify-content: center;
-    align-items: center;
-    position: fixed;
+    align-items: flex-start;
+    /* position: fixed; */
     background-color: rgba(0, 128, 0, 0);
     border-right: 1px solid rgba(128, 128, 128, 0.235);
     left: 0;
