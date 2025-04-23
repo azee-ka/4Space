@@ -17,7 +17,7 @@
 .search-sidebar-container.close {
     width: 0px;
     visibility: hidden !important;
-    opacity: 0 !important;
+    /* opacity: 0 !important; */
 }
 
 .search-sidebar-container-content {

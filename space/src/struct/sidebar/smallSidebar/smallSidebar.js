@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream, faLayerGroup, faSearch, faDashboard, faDatabase, faChartBar, faGear } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream, faLayerGroup, faSearch, faDashboard, faDatabase, faChartBar, faGear, faUser } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import SearchSidebar from '../searchSidebar/searchSidebar';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
+import ProfileMenuSidebar from './profileMenuSidebar.js/profileMenuSidebar';
+import DropdownButton from '../../../utils/popperButton/DropdownButton';
 
 const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     const { openCreatePostOverlay } = useCreatePostContext();
@@ -20,7 +22,23 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     ];
     const bottomIcons = [
         { icon: <FontAwesomeIcon icon={faGear} />, label: 'Settings', path: '/settings', type: 'link' },
-    ];
+        {
+            type: 'dropdown',
+            component: (
+                <DropdownButton
+                    toggleContent={
+                        <button className="profile-menu-toggle">
+                            <FontAwesomeIcon icon={faUser} />
+                        </button>
+                    }
+                    placement="top-start"
+                >
+                    <ProfileMenuSidebar />
+                </DropdownButton>
+            ),
+            label: 'Profile Menu',
+        }
+        ];
 
     const navigate = useNavigate();
 
@@ -54,19 +72,21 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                 </div>
             <div className="small-sidebar-bottom">
             {bottomIcons?.map((item, index) => (
-                <div
-                    key={index}
-                    className="small-sidebar-item"
-                    onClick={(e) => { handleClick(item); e.stopPropagation(); }}
-                >
-                    {item.type === 'button' ? (
-                        <button>{item.icon}</button>
-                    ) : (
-                        <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
-                    )}
-                    <div className="tooltip">{item.label}</div>
-                </div>
-            ))}
+    <div
+        key={index}
+        className="small-sidebar-item"
+        onClick={(e) => e.stopPropagation()}
+    >
+        {item.type === 'dropdown' ? (
+            item.component
+        ) : item.type === 'button' ? (
+            <button onClick={item.onClick}>{item.icon}</button>
+        ) : (
+            <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
+        )}
+        <div className="tooltip">{item.label}</div>
+    </div>
+))}
             </div>
             {<SearchSidebar isOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />}
         </div>

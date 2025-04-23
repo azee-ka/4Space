@@ -31,7 +31,6 @@ function SearchSidebar({ isOpen, onClose }) {
     }, [isOpen]);
 
     const handleDeleteSearchItem = async (user) => {
-        console.log(user);
         try {
             const response = await callApi(`search/user-search/delete/${user.username}/`,'DELETE');
             console.log(response.data);
@@ -74,7 +73,6 @@ function SearchSidebar({ isOpen, onClose }) {
     // search-history/
 
     const handleRedirect = async (user) => {
-        console.log(user);
         if (searhQueryResults.length !== 0) {
             try {
                 const response = await callApi(`search/user-search/store/${user.username}/`, 'POST');
