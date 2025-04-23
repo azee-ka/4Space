@@ -7,7 +7,7 @@ const DropdownButton = ({
     children,            // The dropdown content, can be anything
     toggleContent,     // The button or trigger content
     placement = 'bottom-start',
-    boundaryRef
+    boundaryRef,
 }) => {
     const { buttonRef, dropdownRef, showDropdown, toggleDropdown, setShowDropdown } = usePopperDropdown(false, placement, boundaryRef);
 

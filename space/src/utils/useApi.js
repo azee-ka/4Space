@@ -6,7 +6,6 @@ const useApi = () => {
     const { authState } = useAuth();
     
     const callApi = (endpoint, method = 'GET', data = null, contentType = 'application/json', tempAuthState = null) => {
-        console.log(tempAuthState);
         return apiCall(
             endpoint,
             method,
