@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     
     'src.post',
     'src.report',
+    'src.userSearchHistory',
     'src.utils',
     'src.notifications',
     

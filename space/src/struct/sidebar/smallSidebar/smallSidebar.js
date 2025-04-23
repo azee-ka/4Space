@@ -68,7 +68,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                 </div>
             ))}
             </div>
-            {<SearchSidebar isOpen={searchSidebarOpen} />}
+            {<SearchSidebar isOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />}
         </div>
     );
 
