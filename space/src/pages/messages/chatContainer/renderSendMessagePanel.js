@@ -11,8 +11,17 @@ const renderSendMessagePanel = (
     setTypeMessageContent,
     callApi,
     navigate,
-    handleSendMessage
+    handleSendMessage,
+    currentUserId,
 ) => {
+
+
+    const { view_type, participant_records = [] } = conversationDetails || {};
+
+    const isBlocked = conversationDetails?.conversation_status === 'blocked';
+    const isInvite = conversationDetails?.conversation_status ===  'invite';
+    const isInviteAccepted = conversationDetails?.conversation_status ===  'allowed';
+    const inviteWasSent = messagesLength >= 1;
 
     const handleAcceptRequest = async () => {
         try {
@@ -49,39 +58,41 @@ const renderSendMessagePanel = (
         // openReportOverlay();
     };
 
-    if (conversationDetails?.view_type === 'inbox') {
-        if (conversationDetails?.conversation_status === 'invite') {
-            return (
-                <div className="request-warning-container invite">
-                    As per the settings, you can only send 1 message in this conversation as an invitation until your request is accepted.
-                </div>
-            )
-        } else if (conversationDetails?.conversation_status === 'blocked') {
-            return (
-                <div className="request-warning-container">
-                    As per the end settings, you cannot send any messages in this conversation.
-                </div>
-            )
-        } else if (conversationDetails?.participants[0]?.status !== 'active'
-            && messagesLength === 1 &&
-            conversationDetails?.conversation_status !== 'allowed'
-        ) {
-            return (
-                <div className="request-warning-container">
-                    <h3>Invite Sent</h3>
-                    You will be able to send more messags once your request is accepted.
-                </div>
-            )
-        }
-        else {
-            return (
+    // === HANDLE BLOCKED ===
+    if (isBlocked) {
+        return (
+            <div className="request-warning-container">
+                You cannot send messages in this conversation.
+            </div>
+        );
+    }
+
+    // === HANDLE ONE-TIME INVITE ===
+    if (isInvite && inviteWasSent) {
+        return (
+            <div className="request-warning-container">
+                <h3>Invite Sent</h3>
+                You can send more messages once your request is accepted.
+            </div>
+        );
+    }
+
+    // === SHOW EDITOR IF USER CAN SEND MESSAGE ===
+    if ( ((isInvite && !inviteWasSent) && view_type === 'inbox') || (isInviteAccepted && view_type === 'inbox') ) {
+        return (
+            <>
+                {isInvite && messagesLength === 0 && (
+                    <div className="request-warning-container invite">
+                        You can only send <strong>one</strong> message as an invitation until your request is accepted.
+                    </div>
+                )}
                 <div className="write-message-container">
                     <EmojiButton />
                     <div className="write-message-field">
                         <CustomEditor
                             content={typeMessageContent}
                             onContentChange={setTypeMessageContent}
-                            placeholder='Type message...'
+                            placeholder="Type a message..."
                             isPlainText={true}
                         />
                     </div>
@@ -89,31 +100,20 @@ const renderSendMessagePanel = (
                         <FaPaperPlane />
                     </button>
                 </div>
-            )
-        }
-    } else if (conversationDetails?.view_type === 'request') {
-        <div className="message-request-btns">
-            <div>
-                <button onClick={handleAcceptRequest} className="accept-request-btn">
-                    Accept
-                </button>
+            </>
+        );
+    }
+
+    // === HANDLE PENDING REQUEST SCREEN ===
+    if (view_type === 'request') {
+        return (
+            <div className="message-request-btns">
+                <button onClick={handleAcceptRequest} className="accept-request-btn">Accept</button>
+                <button onClick={handleRejectRequest} className="reject-request-btn">Reject</button>
+                <button onClick={handleBlockRequest} className="block-request-btn">Block</button>
+                <button onClick={handleReportBlockRequest} className="report-request-btn">Report and Block</button>
             </div>
-            <div>
-                <button onClick={handleRejectRequest} className="reject-request-btn">
-                    Reject
-                </button>
-            </div>
-            <div>
-                <button onClick={handleBlockRequest} className="block-request-btn">
-                    Block
-                </button>
-            </div>
-            <div>
-                <button onClick={handleReportBlockRequest} className="report-request-btn">
-                    Report and Block
-                </button>
-            </div>
-        </div>
+        );
     }
 }
 

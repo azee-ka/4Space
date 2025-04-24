@@ -450,9 +450,12 @@
     background-color: rgba(255, 255, 255, 0.005);
     border: 0;
     color: white;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 .message-request-btns button:hover {
     cursor: pointer;
+    background-color: rgba(111, 111, 111, 0.308);
 }
 
 .accept-request-btn {

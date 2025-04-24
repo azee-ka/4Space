@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
+from django.db.models import Count
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -73,45 +74,53 @@ def block_user(request, conversation_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_conversation(request):
-    """
-    Create a new conversation with the selected recipients.
-    This endpoint accepts a list of user objects with 'id' and 'username' properties.
-    Returns the UUID of the created conversation.
-    """
     recipients = request.data.get('recipients', [])
     recipient_ids = [recipient['id'] for recipient in recipients]
-    participants = [request.user.id] + recipient_ids
+    all_user_ids = sorted([request.user.id] + recipient_ids)
 
-    users = BaseUser.objects.filter(id__in=participants)
-
-    if len(users) != len(participants):
+    users = BaseUser.objects.filter(id__in=all_user_ids)
+    if len(users) != len(all_user_ids):
         return Response({"error": "One or more recipients are invalid."}, status=status.HTTP_400_BAD_REQUEST)
 
+    # Check for an existing conversation with exactly these participants
+    possible_convos = Conversation.objects.annotate(
+        participant_count=Count('participants')
+    ).filter(participant_count=len(all_user_ids))
+
+    for convo in possible_convos:
+        convo_participant_ids = sorted(convo.participants.values_list('id', flat=True))
+        if convo_participant_ids == all_user_ids:
+            serializer = ConversationSerializer(convo, context={'request': request})
+            return Response({
+                "message": "A conversation with these participants already exists.",
+                "conversation_uuid": convo.uuid,
+                "existing": True
+            }, status=status.HTTP_200_OK)
+
+    # Create new conversation
     conversation = Conversation.objects.create()
 
-    # Add the creator (current user) as a participant with 'active' status
     Participant.objects.create(
         user=request.user,
         conversation=conversation,
         role='creator',
-        status='active',  # Creator becomes 'active'
+        status='active',
     )
 
-    # Process each recipient (participant)
     for user in users:
-        if user == request.user:
-            continue  # Skip the current user as they are already added
+        if user != request.user:
+            Participant.objects.create(
+                user=user,
+                conversation=conversation,
+                role='member',
+                status='added'
+            )
 
-        # Set all non-creator users as 'added' by default (they won't see the conversation)
-        Participant.objects.create(
-            user=user,
-            conversation=conversation,
-            role='member',
-            status='added',  # Users are 'added' and can't see the convo yet
-        )
-    # Serialize the conversation to return the UUID and other details
     serializer = ConversationSerializer(conversation, context={'request': request})
-    return Response({"conversation_uuid": conversation.uuid}, status=status.HTTP_201_CREATED)
+    return Response({
+        "conversation_uuid": conversation.uuid,
+        "existing": False
+    }, status=status.HTTP_201_CREATED)
 
 
 
