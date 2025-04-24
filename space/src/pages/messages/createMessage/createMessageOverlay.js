@@ -17,7 +17,7 @@ const CreateMessageOverlay = ({ onClose }) => {
 
     const searchRecipients = async (query) => {
         try {
-            const response = await callApi(`search/user/?query=${query}`);
+            const response = await callApi(`search/user-search/?query=${query}`);
             setSearchedRecipients(response.data);
             console.log(response.data);
         } catch (err) {
@@ -123,7 +123,6 @@ const CreateMessageOverlay = ({ onClose }) => {
                                     <h4>No account found!</h4>
                                 </div>
                             )
-
                             }
                         </div>
                     </div>

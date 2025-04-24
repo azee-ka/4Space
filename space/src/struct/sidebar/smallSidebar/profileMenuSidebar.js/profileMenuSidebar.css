@@ -16,7 +16,7 @@
 
 .sidebar-profile-menu-item a {
     text-decoration: none;
-    color: rgb(173, 173, 173);
+    color: rgb(159, 159, 159);
     background-color: rgba(0, 128, 0, 0);
     padding: 10px 16px;
     font-size: 1.1em;
@@ -32,4 +32,5 @@
 .sidebar-profile-menu-item a:hover {
     background-color: #404040;
     cursor: pointer;
+    color: white;
 }

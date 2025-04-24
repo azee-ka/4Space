@@ -309,7 +309,8 @@ const ChatContainer = ({ conversationId }) => {
                     setTypeMessageContent,
                     callApi,
                     navigate,
-                    handleSendMessage
+                    handleSendMessage,
+                    authState.user.id,
                 )}
             </div>
         </div>
