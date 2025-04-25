@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -19,4 +19,6 @@ urlpatterns = [
 
     # Retrieve posts by post type (e.g., "Poll", "Thread")
     path('post/type/<str:post_type>/', views.get_posts_by_type, name='get_posts_by_type'),
+    
+    path('explore/', include('src.post.explore.urls')),
 ]

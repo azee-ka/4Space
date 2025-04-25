@@ -151,66 +151,65 @@ const CreatePost = () => {
 
     // Function to handle form submission
     const handleSubmit = async () => {
-        // Validate restriction field
         if (!restrictionActiveBtn) {
-            setIsRestrictionValid(false); // Mark restriction as invalid
-            return; // Prevent form submission
+            setIsRestrictionValid(false);
+            return;
         } else {
-            setIsRestrictionValid(true); // Mark restriction as valid
+            setIsRestrictionValid(true);
         }
-
-        const activeTabData = getActiveTabData(); // Get data from the active tab
-        console.log('activeTabData', activeTabData);
-        console.log('editorContent', editorContent);
-        // Prepare postData based on the activeButton (post type)
-        let postData = {
-            post_type: activeButton, // Post type (e.g., Thread, Visual, etc.)
-            user: authState.user.username,
-            visibility: visibilityActiveBtn,
-            restriction: restrictionActiveBtn,
-            comments_setting: commentsActiveBtn,
-            content: editorContent[activeButton],
-        };
-
-        // Add type-specific fields
+    
+        const activeTabData = getActiveTabData();
+        console.log('Active Tab Data:', activeTabData);
+        console.log(' editorContent[activeButton]:',  editorContent[activeButton]);
+        // Build form data
+        const formData = new FormData();
+    
+        formData.append('post_type', activeButton);
+        formData.append('user', authState.user.username);
+        formData.append('visibility', visibilityActiveBtn);
+        formData.append('restriction', restrictionActiveBtn);
+        formData.append('comments_setting', commentsActiveBtn);
+        formData.append('content', editorContent[activeButton]);
+    
         if (activeButton === 'Thread') {
-            postData.content_type = activeTabData.content_type;
+            formData.append('content_type', activeTabData.content_type);
         }
-        else if (activeButton === 'Visual') {
-            postData.media_files = activeTabData.media_files
+        if (activeButton === 'Visual') {
+            selectedMediaFiles.forEach(file => {
+                formData.append('media_files', file); // ✅ append real files!
+            });
         }
-        else if (activeButton === 'Story') {
-            // postData.content = activeTabData.content; // Content is a string or JSON
-        } else if (activeButton === 'Poll') {
-            postData.question = activeTabData.question; // Poll-specific field
-            postData.options = activeTabData.options; // Poll-specific field
-            postData.expiration_date = getPollExpirationDate(); // Poll expiration
-        } else if (activeButton === 'Event') {
-            postData.title = activeTabData.title; // Event-specific field
-            postData.event_date = activeTabData.event_date; // Event-specific field
-        } else if (activeButton === 'Audio') {
-            postData.audio_file = activeTabData.audio_file; // Audio-specific field
+        if (activeButton === 'Poll') {
+            formData.append('question', activeTabData.question);
+            activeTabData.options.forEach(option => {
+                formData.append('options', option);
+            });
+            formData.append('expiration_date', getPollExpirationDate().toISOString());
         }
+        if (activeButton === 'Story') {
+            // formData.append('content', activeTabData.content);
+        }
+        if (activeButton === 'Event') {
+            formData.append('title', activeTabData.title);
+            formData.append('event_date', activeTabData.event_date);
+        }
+        if (activeButton === 'Audio') {
+            formData.append('audio_file', activeTabData.audio_file);
+        }
+    
+        console.log('Submitting FormData:');
+for (let pair of formData.entries()) {
+  console.log(pair[0] + ':', pair[1]);
+}
 
-        console.log('postData', postData);
-
+    
         try {
-            const response = await callApi('posts/post/', 'POST', postData); // Replace '/api/posts' with your API endpoint
+            const response = await callApi('posts/post/', 'POST', formData, "multipart/form-data"); 
             console.log('Post created successfully:', response.data);
         } catch (error) {
             console.error('Error creating post:', error);
         }
-    };
-
-
-    const getPosts = async () => {
-        try {
-            const response = await callApi('posts/post/get-posts/'); // Replace '/api/posts' with your API endpoint
-            console.log('Post retrieved successfully:', response.data);
-        } catch (error) {
-            console.error('Error retrieving post:', error);
-        }
-    };
+    };    
 
 
 
@@ -499,7 +498,7 @@ const CreatePost = () => {
                         <div className='submit-post-btns'>
                             <button className='submit-post-btn' onClick={handleSubmit}>Post</button>
                             <button className='save-draft-btn'>Save Draft</button>
-                            <button className='cancel-post-btn' onClick={getPosts}>Cancel</button>
+                            <button className='cancel-post-btn' onClick={onClose}>Cancel</button>
                         </div>
                     </>
                 )}

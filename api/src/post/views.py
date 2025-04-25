@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import ThreadPost, VisualPost, PollPost, StoryPost, EventPost, AudioPost
-from .serializers import PostCreateSerializer, ThreadPostSerializer, VisualPostSerializer, PollPostSerializer, StoryPostSerializer, EventPostSerializer, AudioPostSerializer
+from .serializers import PostCreateSerializer, ThreadPostSerializer, VisualPostSerializer, PollPostSerializer, StoryPostSerializer, EventPostSerializer, AudioPostSerializer, POST_TYPE_REGISTRY
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 
@@ -15,32 +15,14 @@ def create_post(request):
     if serializer.is_valid():
         post = serializer.save()
         
-        # Use the appropriate serializer for the response
-        if isinstance(post, ThreadPost):
-            response_serializer = ThreadPostSerializer(post)
-            post_type = 'Thread'
-        elif isinstance(post, VisualPost):
-            response_serializer = VisualPostSerializer(post)
-            post_type = 'Visual'
-        elif isinstance(post, PollPost):
-            response_serializer = PollPostSerializer(post)
-            post_type = 'Poll'
-        elif isinstance(post, StoryPost):
-            response_serializer = StoryPostSerializer(post)
-            post_type = 'Story'
-        elif isinstance(post, EventPost):
-            response_serializer = EventPostSerializer(post)
-            post_type = 'Event'
-        elif isinstance(post, AudioPost):
-            response_serializer = AudioPostSerializer(post)
-            post_type = 'Audio'
-        else:
-            return Response({"error": "Unknown post type"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Add the `post_type` field dynamically to the response data
-        response_data = response_serializer.data
+        post_type = post.__class__.__name__.replace('Post', '')
+        serializer_class = POST_TYPE_REGISTRY.get(post_type)
+        if not serializer_class:
+            return Response({"error": "Unregistered post type"}, status=400)
+
+        response_data = serializer_class(post, context={'request': request}).data
         response_data['post_type'] = post_type
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(response_data, status=201)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -1,125 +1,182 @@
 from rest_framework import serializers
-from .models import ThreadPost, VisualPost, PollPost, StoryPost, EventPost, AudioPost
+from .models import BasePost, ThreadPost, VisualPost, PollPost, StoryPost, EventPost, AudioPost, MediaFile
 from ..user.models import BaseUser
 
+    
+class MediaFileSerializer(serializers.ModelSerializer):
+    file = serializers.SerializerMethodField()
+    media_type = serializers.CharField()
+    quality = serializers.CharField()
+    video_qualities = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MediaFile
+        fields = ['file', 'media_type', 'quality', 'video_qualities']
+    
+    def get_file(self, obj):
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.file.url)
+        return obj.file.url
+
+    def get_video_qualities(self, obj):
+        """Return available video qualities (144p, 240p, 360p, etc.)"""
+        # We check if the media type is video, and if so, generate video qualities
+        if obj.media_type == 'video':
+            return obj.get_video_qualities()  # This method will return the list of qualities
+
+        return []  # If not a video, return an empty list
+    
+    
+POST_TYPE_REGISTRY = {}
+
+class RegisteredPostSerializer(serializers.ModelSerializer):
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        
+        # Read post_type from Meta
+        post_type = getattr(cls.Meta, 'post_type', None)
+        if not post_type:
+            raise TypeError(f"{cls.__name__} must define a 'post_type' inside Meta.")
+        
+        POST_TYPE_REGISTRY[post_type] = cls
+        cls.post_type = post_type  # Set for convenience
+
+
+
 class BasePostSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+    post_type = serializers.SerializerMethodField()
+
+
     class Meta:
-        model = ThreadPost  # This will be the base class for all post types
-        fields = ['id', 'user', 'visibility', 'restriction', 'comments_setting', 'created_at', 'updated_at']
+        model = BasePost  # abstract, not used directly
+        fields = [
+            'id', 'user',
+            'visibility', 'restriction', 'comments_setting',
+            'created_at', 'updated_at',
+            'post_type'
+        ]
+
+    def get_post_type(self, obj):
+        return obj.__class__.__name__.replace("Post", "")
 
 
-class ThreadPostSerializer(serializers.ModelSerializer):
+class ThreadPostSerializer(RegisteredPostSerializer, BasePostSerializer):
     content = serializers.CharField()
-
-    class Meta:
+    
+    class Meta(BasePostSerializer.Meta):
         model = ThreadPost
-        fields = ['content']
+        fields = BasePostSerializer.Meta.fields + ['content']
+        post_type = 'Thread'
 
 
-class VisualPostSerializer(serializers.ModelSerializer):
-    content = serializers.CharField()
+class VisualPostSerializer(RegisteredPostSerializer, BasePostSerializer):
+    content = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    media_files = serializers.SerializerMethodField()  # 🛠 NOT direct input, just output.
 
-    class Meta:
+    class Meta(BasePostSerializer.Meta):
         model = VisualPost
-        fields = ['content', 'media_files']
+        fields = BasePostSerializer.Meta.fields + ['content', 'media_files']
+        post_type = 'Visual'
+
+    def get_media_files(self, obj):
+        request = self.context.get('request')  # ⚡ get the request from context
+        return MediaFileSerializer(obj.media_files.all(), many=True, context={'request': request}).data
 
 
-class PollPostSerializer(serializers.ModelSerializer):
+
+
+class PollPostSerializer(RegisteredPostSerializer, BasePostSerializer):
     question = serializers.CharField()
     options = serializers.ListField(child=serializers.CharField())
     expiration_date = serializers.DateTimeField()
 
-    class Meta:
+    class Meta(BasePostSerializer.Meta):
         model = PollPost
-        fields = ['question', 'options', 'expiration_date']
+        fields = BasePostSerializer.Meta.fields + ['question', 'options', 'expiration_date']
+        post_type = 'Poll'
 
 
-class StoryPostSerializer(serializers.ModelSerializer):
+class StoryPostSerializer(RegisteredPostSerializer, BasePostSerializer):
     content = serializers.CharField()
 
-    class Meta:
+    class Meta(BasePostSerializer.Meta):
         model = StoryPost
-        fields = ['content']
+        fields = BasePostSerializer.Meta.fields + ['content']
+        post_type = 'Story'
 
 
-class EventPostSerializer(serializers.ModelSerializer):
+
+class EventPostSerializer(RegisteredPostSerializer, BasePostSerializer):
     title = serializers.CharField()
     event_date = serializers.DateTimeField()
-
-    class Meta:
+ 
+    class Meta(BasePostSerializer.Meta):
         model = EventPost
-        fields = ['title', 'event_date']
+        fields = BasePostSerializer.Meta.fields + ['title', 'event_date']
+        post_type = 'Event'
 
 
-class AudioPostSerializer(serializers.ModelSerializer):
+class AudioPostSerializer(RegisteredPostSerializer, BasePostSerializer):
     audio_file = serializers.FileField()
 
-    class Meta:
+    class Meta(BasePostSerializer.Meta):
         model = AudioPost
-        fields = ['audio_file']
+        fields = BasePostSerializer.Meta.fields + ['audio_file']
+        post_type = 'Audio'
+
 
 
 # Serializer for handling the creation of posts
 class PostCreateSerializer(serializers.Serializer):
     post_type = serializers.CharField()
-    user = serializers.CharField()  # Accept username instead of UUID
-    visibility = serializers.ChoiceField(choices=ThreadPost.VISIBILITY_CHOICES, default='Private')
-    restriction = serializers.ChoiceField(choices=ThreadPost.RESTRICTION_CHOICES, default='SFW')
-    comments_setting = serializers.ChoiceField(choices=ThreadPost.COMMENTS_CHOICES, default='Allow')
-    media_files = serializers.ListField(child=serializers.CharField(), required=False)
-
-    def validate_user(self, value):
-        """
-        Validate and resolve the username to a BaseUser object.
-        """
-        try:
-            user = BaseUser.objects.get(username=value)
-        except BaseUser.DoesNotExist:
-            raise serializers.ValidationError("User with this username does not exist.")
-        return user
-
-    # Dynamically validate and create post-specific fields
-    def validate(self, data):
-        post_type = data.get('post_type')
-        if not post_type:
-            raise serializers.ValidationError("Post type is required.")
-
-        # Dynamically select the appropriate serializer
-        serializer_class = self.get_post_type_serializer(post_type)
-        if not serializer_class:
-            raise serializers.ValidationError(f"Invalid post type: {post_type}")
-
-        # Validate post-specific fields using the selected serializer
-        post_specific_serializer = serializer_class(data=self.context['request'].data)
-        post_specific_serializer.is_valid(raise_exception=True)
-        data['post_specific_data'] = post_specific_serializer.validated_data
-        return data
+    user = serializers.SlugRelatedField(
+        slug_field='username',
+        queryset=BaseUser.objects.all()
+    )
+    visibility = serializers.ChoiceField(choices=BasePost.VISIBILITY_CHOICES, default='Private')
+    restriction = serializers.ChoiceField(choices=BasePost.RESTRICTION_CHOICES, default='SFW')
+    comments_setting = serializers.ChoiceField(choices=BasePost.COMMENTS_CHOICES, default='Allow')
+    media_files = serializers.ListField(
+        child=serializers.FileField(),
+        required=False
+    )
+    content = serializers.CharField(required=False, allow_blank=True)
 
     def create(self, validated_data):
         post_type = validated_data.pop('post_type')
-        user = validated_data.pop('user')  # This is now a BaseUser object
-        post_specific_data = validated_data.pop('post_specific_data')
+        user = validated_data.pop('user')
 
-        # Dynamically create the appropriate post type
+        media_files_data = validated_data.pop('media_files', [])
+
         serializer_class = self.get_post_type_serializer(post_type)
         if not serializer_class:
             raise serializers.ValidationError(f"Invalid post type: {post_type}")
 
-        # Merge common and post-specific data
-        post_data = {**validated_data, **post_specific_data, 'user': user}
-        return serializer_class.Meta.model.objects.create(**post_data)
+        post_specific_data = {key: validated_data.pop(key) for key in list(validated_data.keys()) if key not in ['visibility', 'restriction', 'comments_setting', 'content']}
+        
+        post_specific_serializer = serializer_class(data=post_specific_data)
+        post_specific_serializer.is_valid(raise_exception=True)
+
+        post_model = serializer_class.Meta.model
+
+        post_data = {**validated_data, **post_specific_serializer.validated_data, 'user': user}
+        post = post_model.objects.create(**post_data)
+
+        # 🛠 FIX: Save uploaded media files if VisualPost
+        if isinstance(post, VisualPost) and media_files_data:
+            for uploaded_file in media_files_data:
+                media_instance = MediaFile.objects.create(file=uploaded_file)
+                post.media_files.add(media_instance)  # ✅ This actually connects the files to the VisualPost!
+
+        return post
+
+
 
     @staticmethod
     def get_post_type_serializer(post_type):
-        """
-        Map post types to their specific serializers.
-        """
-        post_type_serializers = {
-            'Thread': ThreadPostSerializer,
-            'Visual': VisualPostSerializer,
-            'Poll': PollPostSerializer,
-            'Story': StoryPostSerializer,
-            'Event': EventPostSerializer,
-            'Audio': AudioPostSerializer,
-        }
-        return post_type_serializers.get(post_type)
+        return POST_TYPE_REGISTRY.get(post_type)

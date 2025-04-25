@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     
     'src.user.apps.UserConfig',
     'src.messaging.apps.MessagingConfig',
-    
     'src.post',
     'src.report',
     'src.userSearchHistory',
