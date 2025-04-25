@@ -26,7 +26,7 @@ const Visual = React.forwardRef(({ onMediaSelect, mediaFiles }, ref) => {
     React.useImperativeHandle(ref, () => ({
         getData: () => ({
             type: 'Visual',
-            mediaFiles: mediaFiles,
+            mediaFiles: mediaFiles || [],
         }),
     }));
 
