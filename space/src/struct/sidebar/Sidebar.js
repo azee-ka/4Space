@@ -9,7 +9,7 @@ function Sidebar({ isOpen, onClose }) {
 
     const options = [
         { icon: <FontAwesomeIcon icon={faStream} />, label: 'Home', path: '/', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faCircleNodes} />, label: 'Communities', path: '/', type: 'context' },
+        { icon: <FontAwesomeIcon icon={faCircleNodes} />, label: 'Communities', path: '/communities', type: 'context' },
         { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Space', path: '/', type: 'context' },
     ];
 

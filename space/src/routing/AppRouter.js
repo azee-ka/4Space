@@ -26,19 +26,32 @@ import CreatePost from '../apps/home/createPost/createPost';
 import Dashboard from '../apps/home/dashboard/dashboard';
 import Explore from '../apps/home/explore/explore';
 
+import CommunitiesTimeline from '../apps/communities/timeline/timline';
+import Community from '../apps/communities/community/community';
+import CommunitiesDashboard from '../apps/communities/dashboard/dashboard';
+import { ModeProvider } from '../context/modeContext';
+
 
 const AppRouter = () => {
     const { authState, isLoading } = useAuth();
     const isAuthenticated = authState.isAuthenticated;
 
     const privateRoutes = [
+        // Home
         { name: 'Dashboard', path: '/dashboard', component: <Dashboard />, key: 'Dashboard' },
         { name: 'Timeline', path: '/', component: <Timeline />, key: 'Timeline' },
         { name: 'Timeline', path: '/timeline', component: <Timeline />, key: 'Timeline' },
         { name: 'Explore', path: '/explore', component: <Explore />, key: 'Explore' },
-        
         { name: 'Create Post', path: '/create/post', component: <CreatePost />, key: 'CreatePost' },
 
+        // Communities
+        { name: 'Community Dasboard', path: '/communities', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
+        { name: 'Community Dasboard', path: '/communities/dashboard', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
+        { name: 'Communities Timeline', path: '/communities/timeline', component: <CommunitiesTimeline />, key: 'Communities Timline' },
+        { name: 'Community', path: '/communities/c/:communityId', component: <Community />, key: 'Community' },
+        { name: 'Create Community', path: '/communities/create', component: <CommunitiesDashboard />, key: 'CreateCommunity' },
+
+        
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
         { name: 'My Profile', path: '/profile', component: <Profile />, key: 'MyProfile' },
         { name: 'Settings', path: '/settings', component: <Settings />, key: 'Settings' },
@@ -86,6 +99,7 @@ const AppRouter = () => {
     return (
         <Router>
             <DndProvider backend={HTML5Backend}>
+            <ModeProvider>
                 <ReportOverlayProvider>
                     <EditorProvider>
                         <PostProvider>
@@ -131,6 +145,7 @@ const AppRouter = () => {
                         </PostProvider>
                     </EditorProvider>
                 </ReportOverlayProvider>
+                </ModeProvider>
             </DndProvider>
         </Router>
     );

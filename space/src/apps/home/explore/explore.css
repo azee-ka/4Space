@@ -8,7 +8,7 @@
 
 .explore-header {
     width: 100%;
-    height: 60px;
+    height: 40px;
     background-color: rgba(0, 0, 0, 0);
     display: flex;
     justify-content: space-between;
@@ -19,6 +19,7 @@
     padding: 0;
     margin: 0;
     height: 40px;
+    font-size: 1.5em;
     background-color: rgba(187, 187, 187, 0);
     display: flex;
     align-items: flex-end;

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { Link, useLocation } from 'react-router-dom';
 import './navbar.css';
@@ -13,9 +12,8 @@ import appLogo from '../../assets/logo.png';
 import appLogoComplete from '../../assets/logo-comp.png';
 import useNotifications from '../../hooks/useNotifications';
 import { useCreatePostContext } from '../../context/CreatePostContext';
-import DropdownButton from '../../utils/popperButton/DropdownButton';
-import AppMenu from './appMenu/appMenu';
-import { FaFacebookMessenger } from 'react-icons/fa';
+import { useModeContext } from '../../context/modeContext';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 const Navbar = ({
     handleProfileMenuToggle,
@@ -26,6 +24,8 @@ const Navbar = ({
     profileData,
 }) => {
     const { authState } = useAuth();
+    const { mode } = useModeContext();
+
     const { count: notificationsCount } = useNotifications();
 
     const { openCreatePostOverlay } = useCreatePostContext();
@@ -69,12 +69,19 @@ const Navbar = ({
         { path: '/register', label: 'Sign Up', id: 'navbar-access', role: 'public' },
     ];
 
-    const privatePagesNavbar = [
+    const homePagesNavbar = [
+        // Home
         { label: "Home", path: "/home" },
         { label: "Dashboard", path: "/dashboard" },
         { label: "Explore", path: "/explore" },
         { label: "Create Post", action: () => openCreatePostOverlay(window.location.pathname) },
     ];
+    const communitiesPagesNavbar = [
+        // Home
+        { label: "Dashboard", path: "/communities/dashboard" },
+        { label: "Timeline", path: "/communities/timeline" },
+    ];
+    const privatePagesNavbar = mode === 'communities' ? communitiesPagesNavbar : homePagesNavbar;
 
     const handleMenuClick = (path, action) => {
         if (action) {
@@ -130,7 +137,7 @@ const Navbar = ({
                         <ul>
                             <li className='messages-page-link'>
                                 <Link to={`/messages/inbox`}>
-                                    <FaFacebookMessenger />
+                                    <ChatBubbleLeftRightIcon className='chat-icon' />
                                 </Link>
                             </li>
                             {/* Notifications Menu */}
