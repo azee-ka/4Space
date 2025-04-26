@@ -5,6 +5,7 @@ import useApi from "../../../utils/useApi";
 import { FaEdit, FaFacebookMessenger } from "react-icons/fa";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import ChatContainer from "../chatContainer/chatContainer";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 
 const MessageInbox = ({ setShowCreateMessageOverlay }) => {
     const navigate = useNavigate();
@@ -131,7 +132,7 @@ const MessageInbox = ({ setShowCreateMessageOverlay }) => {
                 ) : (
                     <div className="no-conversation-selected-panel">
                         <div className="no-conversation-message-icon">
-                            <FaFacebookMessenger className="icon-style" />
+                            <ChatBubbleLeftRightIcon className="chat-icon" />
                         </div>
                         <h3>Select or Start a New Conversation</h3>
                         <button onClick={() => setShowCreateMessageOverlay(true)}>
