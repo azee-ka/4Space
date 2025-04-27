@@ -265,7 +265,7 @@
   width: 43px;
   padding: 0;
   border: 2px solid rgba(244, 244, 244, 0);
-  transition: border 0.3 ease;
+  transition: all 0.3 ease;
 }
 .navbar-items li:nth-child(4) button:hover {
   border: 2px solid rgb(255, 255, 255);
@@ -277,6 +277,7 @@
   height: 100%;
   width: 100%;
   /* aspect-ratio: 1 / 1; */
+  transition: all 0.3 ease;
 }
 .navbar-items li::nth-child(4) button img:hover {
   cursor: pointer;

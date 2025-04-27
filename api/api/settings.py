@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'src.notifications',
     
     'src.organization',
+    'src.community',
     
     'rest_framework',
     'corsheaders',

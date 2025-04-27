@@ -27,7 +27,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         { icon: <FontAwesomeIcon icon={faUserGroup} />, label: 'Communities Timeline', path: '/communities/timeline', type: 'link' },
         { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
         { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faPenToSquare} />, label: 'Create Community', onClick: () => openCreatePostOverlay(window.location.pathname), type: 'button' },
+        { icon: <FontAwesomeIcon icon={faPenToSquare} />, label: 'Create Community', path: '/communities/create', type: 'link' },
     ];
     const bottomIcons = [
         { icon: <FontAwesomeIcon icon={faGear} />, label: 'Settings', path: '/settings', type: 'link' },
