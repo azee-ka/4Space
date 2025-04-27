@@ -3,12 +3,13 @@ import './partialProfile.css';
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate } from "react-router-dom";
 import useApi from "../../../../utils/useApi";
-import CustomPartialProfile from "./customPartialProfile";
 
-const PartialProfile = ({ profileInfo, isCustomizing }) => {
+const PartialProfile = ({ profileInfo }) => {
     const { callApi } = useApi();
     const navigate = useNavigate();
     const [isPendingFollowing, setIsPendingFollowing] = useState(profileInfo?.interact?.follow_request_status === 'pending' && !profileInfo?.interact?.is_following);
+
+    const [isFollowing, setIsFollowing] = useState(profileInfo?.interact?.is_following);
 
     const handleFollowProfile = async () => {
         try {
@@ -22,39 +23,51 @@ const PartialProfile = ({ profileInfo, isCustomizing }) => {
         }
     };
 
-    return !isCustomizing ? (
+
+    return (
         <div className="partial-profile-page">
-            <div className="partial-profile-panel">
-                <div className="partial-profile-panel-profile-image">
+            <div className="partial-profile-container">
+                <div className="partial-profile-image">
                     <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
                 </div>
-                <div className="partial-profile-panel-profile-info">
+
+                <div className="partial-profile-info">
                     <Link to={`/profile/${profileInfo?.basicInfo?.username}`}>
-                        <p>@{profileInfo?.basicInfo?.username}</p>
+                        <h2>@{profileInfo?.basicInfo?.username}</h2>
                     </Link>
-                    <div className="partial-profile-panel-profile-stats">
+
+                    {profileInfo?.basicInfo?.display_name && (
+                        <p className="display-name">{profileInfo.basicInfo.display_name}</p>
+                    )}
+
+                    <div className="stats-grid">
                         <div>
-                            <p>{profileInfo?.stats?.followers_count} followers</p>
-                            <p>{profileInfo?.stats?.following_count} following</p>
+                            <strong>{profileInfo?.stats?.followers_count || 0}</strong>
+                            <span>Followers</span>
                         </div>
                         <div>
-                            <p>0{profileInfo?.stats?.contributions_count} contributions</p>
+                            <strong>{profileInfo?.stats?.following_count || 0}</strong>
+                            <span>Following</span>
                         </div>
                     </div>
-                    <div className="partial-profile-follow-button">
-                        <button onClick={() => handleFollowProfile()}>
+
+                    <div className="private-profile-message">
+                        <p>This profile is private.</p>
+                        <p>Follow to see more information.</p>
+                    </div>
+
+                    <div className="action-buttons">
+                    <button className="follow-btn" onClick={() => handleFollowProfile()}>
                             {isPendingFollowing ? 'Requested': 'Follow'}
                         </button>
+                        <Link to={`/messages/${profileInfo?.basicInfo?.username}`}>
+                            <button className="message-btn">Message</button>
+                        </Link>
                     </div>
                 </div>
             </div>
         </div>
-    ) : (
-        <CustomPartialProfile 
-            profileInfo={profileInfo} 
-            handleFollowProfile={handleFollowProfile} 
-        />
-    )
+    );
 };
 
 export default PartialProfile;

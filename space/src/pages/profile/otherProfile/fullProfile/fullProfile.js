@@ -1,103 +1,124 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import './fullProfile.css';
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate } from "react-router-dom";
 import useApi from "../../../../utils/useApi";
 import UserListOverlay from "../../../../components/userListOverlay/userListOverlay";
 
-const FullProfile = ({ profileInfo, isCustomizing }) => {
+// Tabs (same as your MyProfile)
+import MyPostsTab from "../../myProfile/tabs/myPostsTab/myPostsTab";
+import MyCommunitiesTab from "../../myProfile/tabs/myCommunitiesTab/myCommunitiesTab";
+import BookmarkedPostsTab from "../../myProfile/tabs/bookmarkedPostsTab/bookmarkedPostsTab";
+
+const FullProfile = ({ profileInfo }) => {
     const { callApi } = useApi();
     const navigate = useNavigate();
-    const [isFollowing, setIsFollowing] = useState(profileInfo?.interact?.is_following);
 
-    const [showFollowersListOverlay, setShowFollowersListOverlay] = useState(false);
-        const [showFollowingListOverlay, setShowFollowingListOverlay] = useState(false);
-        const [showAffiliationsListOverlay, setShowAffiliationsListOverlay] = useState(false);
-    
+    const [isFollowing, setIsFollowing] = useState(profileInfo?.interact?.is_following);
+    const [activeTab, setActiveTab] = useState('posts');
+
+    const [showFollowersOverlay, setShowFollowersOverlay] = useState(false);
+    const [showFollowingOverlay, setShowFollowingOverlay] = useState(false);
+
+    const defaultTabs = [
+        { key: 'posts', label: 'Posts' },
+        { key: 'communities', label: 'Communities' },
+        { key: 'bookmarks', label: 'Bookmarks' },
+    ];
 
     useEffect(() => {
         setIsFollowing(profileInfo?.interact?.is_following);
     }, [profileInfo]);
 
-    const handleFollowProfile = async () => {
+    const handleFollowToggle = async () => {
         try {
-            setIsFollowing(prevState => !prevState);
-            const response = await callApi(`profile/follow-toggle/${profileInfo?.basicInfo?.username}/`, 'POST');
-            console.log(response.data);
+            setIsFollowing(prev => !prev);
+            await callApi(`profile/follow-toggle/${profileInfo?.basicInfo?.username}/`, 'POST');
             navigate(`/profile/${profileInfo?.basicInfo?.username}`, { state: { refreshed: true } });
         } catch (err) {
-            console.error('Error toggling follow', err);
-            setIsFollowing(prevState => !prevState);
+            console.error('Follow toggle failed', err);
+            setIsFollowing(prev => !prev);
         }
     };
 
-    return !isCustomizing ? (
-        <div className="full-profile-page">
-            <div className="full-profile-left-panel">
-                <div className="full-profile-user-info">
-                    <div className="full-profile-user-info-profile-picture">
-                        <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
-                    </div>
-                    <div className="full-profile-user-info-username">
-                        <Link to={`/profile/${profileInfo?.basicInfo?.username}`}>
-                            <p>@{profileInfo?.basicInfo?.username}</p>
-                        </Link>
-                    </div>
-                    <div className="full-profile-user-info-stats">
-                        <div className="full-profile-user-info-stats-count">
-                            <button  onClick={() => setShowFollowersListOverlay(true)}>
-                                <p>{profileInfo?.stats?.followers_count} followers</p>
-                            </button>
-                            <button onClick={() => setShowFollowingListOverlay(true)}>
-                                <p>{profileInfo?.stats?.following_count} following</p>
-                            </button>
+    return (
+        <div className="profile-page">
+            <div className="profile-top-panel">
+                <h2>
+                    <Link to={`/profile/${profileInfo?.basicInfo?.username}`}>
+                        Profile @{profileInfo?.basicInfo?.username}
+                    </Link>
+                </h2>
+            </div>
+
+            <div className="profile-main-panel">
+                <aside className="profile-left">
+                    <div className="profile-card">
+                        <div className="my-profile-profile-image">
+                            <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
                         </div>
-                        <div className="full-profile-user-info-stats-count">
-                            <button onClick={() => setShowAffiliationsListOverlay(true)}>
-                                <p>{profileInfo?.stats?.followers_count} Contributions</p>
-                            </button>
-                            <button onClick={() => setShowAffiliationsListOverlay(true)}>
-                                <p>{profileInfo?.stats?.following_count} Affiliations</p>
-                            </button>
+                        {profileInfo?.basicInfo?.display_name && (
+                            <p className="display-name">{profileInfo?.basicInfo?.display_name}</p>
+                        )}
+                        <p className="bio">{profileInfo?.basicInfo?.about_me || "No bio provided."}</p>
+
+                        <div className="profile-stats">
+                            <div onClick={() => setShowFollowersOverlay(true)}>
+                                <strong>{profileInfo?.stats?.followers_count || 0}</strong>
+                                <span>Followers</span>
+                            </div>
+                            <div onClick={() => setShowFollowingOverlay(true)}>
+                                <strong>{profileInfo?.stats?.following_count || 0}</strong>
+                                <span>Following</span>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div className="full-profile-interact">
-                    <div className="full-profile-interact-follow-btn">
-                        <button onClick={() => handleFollowProfile()}>
+
+                        <button className="follow-button" onClick={handleFollowToggle}>
                             {isFollowing ? 'Unfollow' : 'Follow'}
                         </button>
                     </div>
-                    <div className="full-profile-interact-message-btn">
-                        <button>
-                            Message
-                        </button>
-                    </div>
-                </div>
-                <div className="full-profile-metrics">
-                    <section>
-                        <h3>Metrics</h3>
-                        <div>
+                </aside>
 
+                <main className="profile-center">
+                    <section className="highlight-section">
+                        <h3>Highlights</h3>
+                        <div className="highlights-grid">
+                            {defaultTabs.map((tab) => (
+                                <div
+                                    key={tab.key}
+                                    className={`highlight-card ${activeTab === tab.key ? 'active' : ''}`}
+                                    onClick={() => setActiveTab(tab.key)}
+                                >
+                                    {tab.label}
+                                </div>
+                            ))}
                         </div>
                     </section>
-                </div>
+
+                    <section className="tab-section">
+                        {activeTab === 'posts' && <MyPostsTab />}
+                        {activeTab === 'communities' && <MyCommunitiesTab />}
+                        {activeTab === 'bookmarks' && <BookmarkedPostsTab />}
+                    </section>
+                </main>
             </div>
-            <div className="full-profile-right-panel">
-            </div>
-            {showFollowersListOverlay &&
-                <UserListOverlay userList={profileInfo?.data?.followers} onClose={() => setShowFollowersListOverlay(false)} title={'Followers'} />
-            }
-            {showFollowingListOverlay &&
-                <UserListOverlay userList={profileInfo?.data?.following} onClose={() => setShowFollowingListOverlay(false)} title={'Following'} />
-            }
-            {showAffiliationsListOverlay &&
-                <UserListOverlay userList={null} onClose={() => setShowAffiliationsListOverlay(false)} title={'Affiliations'} />
-            }
+
+            {showFollowersOverlay && (
+                <UserListOverlay
+                    userList={profileInfo?.data?.followers}
+                    onClose={() => setShowFollowersOverlay(false)}
+                    title="Followers"
+                />
+            )}
+            {showFollowingOverlay && (
+                <UserListOverlay
+                    userList={profileInfo?.data?.following}
+                    onClose={() => setShowFollowingOverlay(false)}
+                    title="Following"
+                />
+            )}
         </div>
-    ) : (
-        <div>Custom Full</div>
-    )
+    );
 };
 
 export default FullProfile;

@@ -6,140 +6,134 @@ import { useAuth } from "../../../hooks/useAuth";
 import { FaCog } from "react-icons/fa";
 import UserListOverlay from "../../../components/userListOverlay/userListOverlay";
 
+// Tab Components
+import MyPostsTab from "./tabs/myPostsTab/myPostsTab";
+import MyCommunitiesTab from "./tabs/myCommunitiesTab/myCommunitiesTab";
+import BookmarkedPostsTab from "./tabs/bookmarkedPostsTab/bookmarkedPostsTab";
+
 const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
     const navigate = useNavigate();
     const { authState } = useAuth();
     const [profileInfo, setProfileInfo] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);  // Loading state
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [showFollowersListOverlay, setShowFollowersListOverlay] = useState(false);
-    const [showFollowingListOverlay, setShowFollowingListOverlay] = useState(false);
-    const [showAffiliationsListOverlay, setShowAffiliationsListOverlay] = useState(false);
+    const [showFollowersOverlay, setShowFollowersOverlay] = useState(false);
+    const [showFollowingOverlay, setShowFollowingOverlay] = useState(false);
+
+    const [activeTab, setActiveTab] = useState('posts');
+
+    // List of highlight tabs (fixed correctly now)
+    const defaultTabs = [
+        { key: 'posts', label: 'My Posts' },
+        { key: 'communities', label: 'My Communities' },
+        { key: 'bookmarks', label: 'My Bookmarks' },
+    ];
 
     useEffect(() => {
-        setIsLoading(true);  // Set loading true when fetching starts
+        setIsLoading(true);
         fetchProfileData(username || authState.user.username, (data) => {
             setProfileInfo(data);
-            setIsLoading(false);  // Set loading false when data is fetched
+            setIsLoading(false);
         });
     }, [username]);
 
-
     if (isLoading) {
         return (
-            <div className="my-profile-page">
-                <div className="loading-container">
-                    <p>Loading profile...</p>
-                    {/* You can replace this with a spinner or a more complex loading UI */}
-                </div>
+            <div className="profile-page loading">
+                <p>Loading profile...</p>
             </div>
         );
     }
 
-
-    return !isCustomizing ? (
-        <div className="my-profile-page">
-            <div className="my-profile-left-panel">
-                <div className="my-profile-user-info">
-                    <FaCog className="icon-style" onClick={() => navigate('/settings#profile-basic-info')} />
-                    <div className="my-profile-user-profile-picture">
-                        <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
-                    </div>
-                    <Link href={`profile/${profileInfo?.basicInfo?.username}`} className="my-profile-user-username">
-                        <p>@{profileInfo?.basicInfo?.username}</p>
+    return (
+        <div className="profile-page">
+            <div className="profile-top-panel">
+                <h2>
+                    <Link to={'/profile'}>
+                        My Profile
                     </Link>
-                    <div className="my-profile-user-stats">
-                        <div className="my-profile-user-stat-counts">
-                            <button onClick={() => setShowFollowersListOverlay(true)}>
-                                <p>{profileInfo?.stats?.followers_count}</p>
-                                <p>Followers</p>
-                            </button>
-                            <button onClick={() => setShowFollowingListOverlay(true)}>
-                                <p>{profileInfo?.stats?.following_count}</p>
-                                <p>Following</p>
-                            </button>
-                        </div>
-                        <div className="my-profile-user-stat-counts">
-                            <button onClick={() => setShowAffiliationsListOverlay(true)}>
-                                <p>{profileInfo?.stats?.affiliated_count}0</p>
-                                <p>Affiliations</p>
-                            </button>
-                            <button onClick={() => setShowAffiliationsListOverlay(true)}>
-                                <p>{profileInfo?.stats?.affiliated_count}0</p>
-                                <p>Affiliations</p>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className="my-profile-metrics-container">
-                    <section>
-                        <h3>Stats</h3>
-                        <div className="my-profile-metrics-stats">
-                            <div>
-                                <p>{profileInfo?.stats?.entries_count}</p>
-                                <p>Entries</p>
-                            </div>
-                            <div>
-                                <p>{profileInfo?.stats?.flares_count}</p>
-                                <p>Posts</p>
-                            </div>
-                            <div>
-                                <p>{profileInfo?.stats?.packets_count}</p>
-                                <p>Packets</p>
-                            </div>
-                            <div>
-                                <p>{profileInfo?.stats?.spaces_count}0</p>
-                                <p>Spaces</p>
-                            </div>
-                        </div>
-                    </section>
-                    <section>
-                        <h3>Metrics</h3>
-                        <div className="my-profile-metrics-collection">
-                            <div>
-                                <p>0</p>
-                                <p>Impact Score</p>
-                            </div>
-                            <div>
-                                <p>0</p>
-                                <p>Impact Score</p>
-                            </div>
-                            <div>
-                                <p>0</p>
-                                <p>Impact Score</p>
-                            </div>
-                            <div>
-                                <p>0</p>
-                                <p>Impact Score</p>
-                            </div>
-                            <div>
-                                <p>0</p>
-                                <p>Impact Score</p>
-                            </div>
-                            <div>
-                                <p>0</p>
-                                <p>Impact Score</p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
+                </h2>
             </div>
-            <div className="my-profile-right-panel">
 
+            <div className="profile-main-panel">
+                {/* Left Sidebar */}
+                <aside className="profile-left">
+                    <div className="profile-card">
+                        <div className="profile-settings">
+                            <FaCog onClick={() => navigate('/settings#profile-basic-info')} />
+                        </div>
+                        <div className="my-profile-profile-image">
+                            <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
+                        </div>
+                        <h2>@{profileInfo?.basicInfo?.username}</h2>
+                        {profileInfo?.basicInfo?.display_name && (
+                            <p className="display-name">{profileInfo?.basicInfo?.display_name}</p>
+                        )}
+                        <p className="bio">{profileInfo?.basicInfo?.about_me || "No bio provided."}</p>
+
+                        <div className="profile-stats">
+                            <div onClick={() => setShowFollowersOverlay(true)}>
+                                <strong>{profileInfo?.stats?.followers_count || 0}</strong>
+                                <span>Followers</span>
+                            </div>
+                            <div onClick={() => setShowFollowingOverlay(true)}>
+                                <strong>{profileInfo?.stats?.following_count || 0}</strong>
+                                <span>Following</span>
+                            </div>
+                            <div>
+                                <strong>{profileInfo?.stats?.spaces_count || 0}</strong>
+                                <span>Spaces</span>
+                            </div>
+                        </div>
+
+                        <Link to={`/profile/${profileInfo?.basicInfo?.username}`} className="edit-profile-button">
+                            View Public Profile
+                        </Link>
+                    </div>
+                </aside>
+
+                {/* Center Panel */}
+                <main className="profile-center">
+                    <section className="highlight-section">
+                        <h3>Highlights</h3>
+                        <div className="highlights-grid">
+                            {defaultTabs.map((tab) => (
+                                <div
+                                    key={tab.key}
+                                    className={`highlight-card ${activeTab === tab.key ? 'active' : ''}`}
+                                    onClick={() => setActiveTab(tab.key)}
+                                >
+                                    {tab.label}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="tab-section">
+                        {activeTab === 'posts' && <MyPostsTab />}
+                        {activeTab === 'communities' && <MyCommunitiesTab />}
+                        {activeTab === 'bookmarks' && <BookmarkedPostsTab />}
+                    </section>
+                </main>
             </div>
-            {showFollowersListOverlay &&
-                <UserListOverlay userList={profileInfo?.data?.followers} onClose={() => setShowFollowersListOverlay(false)} title={'Followers'} />
-            }
-            {showFollowingListOverlay &&
-                <UserListOverlay userList={profileInfo?.data?.following} onClose={() => setShowFollowingListOverlay(false)} title={'Following'} />
-            }
-            {showAffiliationsListOverlay &&
-                <UserListOverlay userList={null} onClose={() => setShowAffiliationsListOverlay(false)} title={'Affiliations'} />
-            }
+
+            {/* Overlays */}
+            {showFollowersOverlay && (
+                <UserListOverlay
+                    userList={profileInfo?.data?.followers}
+                    onClose={() => setShowFollowersOverlay(false)}
+                    title="Followers"
+                />
+            )}
+            {showFollowingOverlay && (
+                <UserListOverlay
+                    userList={profileInfo?.data?.following}
+                    onClose={() => setShowFollowingOverlay(false)}
+                    title="Following"
+                />
+            )}
         </div>
-    ) : (
-        <div>Cutsom Self</div>
-    )
-}
+    );
+};
 
 export default MyProfile;
