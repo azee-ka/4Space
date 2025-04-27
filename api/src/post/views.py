@@ -10,7 +10,8 @@ from .serializers import (
     ThreadPostSerializer,
     VisualPostSerializer,
     VoteSerializer,
-    CommentSerializer
+    CommentSerializer,
+    PostRetrieveSerializer,
 )
 
 # POST creation view
@@ -42,38 +43,41 @@ def create_post(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_posts(request):
-    thread_posts = ThreadPost.objects.all()
-    visual_posts = VisualPost.objects.all()
+    PostModels = [ThreadPost, VisualPost]
 
-    serialized_posts = []
+    all_posts = []
+    for model_class in PostModels:
+        queryset = model_class.objects.all()
+        for post in queryset:
+            serializer = PostRetrieveSerializer(post, context={'request': request})
+            all_posts.append(serializer.data)
 
-    for post in thread_posts:
-        serialized_posts.append(ThreadPostSerializer(post, context={'request': request}).data)
+    # Sort across all posts
+    all_posts = sorted(all_posts, key=lambda x: x.get('meta', {}).get('created_at', ''), reverse=True)
 
-    for post in visual_posts:
-        serialized_posts.append(VisualPostSerializer(post, context={'request': request}).data)
-
-    serialized_posts.sort(key=lambda x: x.get('created_at') or '', reverse=True)
-
-    return Response(serialized_posts, status=status.HTTP_200_OK)
+    return Response({'posts': all_posts}, status=status.HTTP_200_OK)
 
 
-# Retrieve a single post by UUID
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_post_by_id(request, post_id):
-    post = None
-    try:
-        post = ThreadPost.objects.get(id=post_id)
-        serializer = ThreadPostSerializer(post, context={'request': request})
-    except ThreadPost.DoesNotExist:
-        try:
-            post = VisualPost.objects.get(id=post_id)
-            serializer = VisualPostSerializer(post, context={'request': request})
-        except VisualPost.DoesNotExist:
-            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+    PostModels = [ThreadPost, VisualPost]
 
+    post = None
+    for model_class in PostModels:
+        try:
+            post = model_class.objects.get(id=post_id)
+            break
+        except model_class.DoesNotExist:
+            continue
+
+    if not post:
+        return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = PostRetrieveSerializer(post, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 # Update a post by UUID
@@ -117,16 +121,22 @@ def delete_post(request, post_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_posts_by_type(request, post_type):
-    if post_type == "Thread":
-        posts = ThreadPost.objects.all()
-        serializer = ThreadPostSerializer(posts, many=True, context={'request': request})
-    elif post_type == "Visual":
-        posts = VisualPost.objects.all()
-        serializer = VisualPostSerializer(posts, many=True, context={'request': request})
-    else:
-        return Response({"error": "Invalid post type"}, status=status.HTTP_400_BAD_REQUEST)
+    PostTypeMapping = {
+        "Thread": ThreadPost,
+        "Visual": VisualPost,
+    }
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    model_class = PostTypeMapping.get(post_type)
+    if not model_class:
+        return Response({"error": "Invalid post type."}, status=status.HTTP_400_BAD_REQUEST)
+
+    queryset = model_class.objects.all()
+    serialized_posts = [PostRetrieveSerializer(post, context={'request': request}).data for post in queryset]
+
+    serialized_posts = sorted(serialized_posts, key=lambda x: x.get('meta', {}).get('created_at', ''), reverse=True)
+
+    return Response({'posts': serialized_posts}, status=status.HTTP_200_OK)
+
 
 
 
@@ -151,25 +161,29 @@ def toggle_like_dislike(request, post_id):
 
     if toggle_type == 'like':
         if post.likes.filter(id=user.id).exists():
-            post.likes.remove(user)  # Remove existing like
+            post.likes.remove(user)
         else:
             post.likes.add(user)
-            post.dislikes.remove(user)  # Ensure no dislike exists
+            post.dislikes.remove(user)
     elif toggle_type == 'dislike':
         if post.dislikes.filter(id=user.id).exists():
-            post.dislikes.remove(user)  # Remove existing dislike
+            post.dislikes.remove(user)
         else:
             post.dislikes.add(user)
-            post.likes.remove(user)  # Ensure no like exists
+            post.likes.remove(user)
 
-    post.save()
+    # AFTER toggling, update counts
+    post.likes_count = post.likes.count()
+    post.dislikes_count = post.dislikes.count()
+    post.save(update_fields=["likes_count", "dislikes_count"])
 
     return Response({
-        'likes_count': post.likes.count(),
-        'dislikes_count': post.dislikes.count(),
+        'likes_count': post.likes_count,
+        'dislikes_count': post.dislikes_count,
         'like_status': 'liked' if post.likes.filter(id=user.id).exists() else 'not_liked',
         'dislike_status': 'disliked' if post.dislikes.filter(id=user.id).exists() else 'not_disliked',
     }, status=status.HTTP_200_OK)
+
 
 
 

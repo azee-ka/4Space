@@ -81,7 +81,7 @@ const ExpandedPostOverlay = () => {
                     </div>
                 </div>
                 <div className='expanded-post-comments overlay'>
-                    {post?.text?.length > 0 &&
+                    {post?.post?.caption?.length > 0 &&
                         <div className='expanded-post-per-comment'>
                             <div className='expanded-post-comments-info'>
                                 <div className='expanded-post-commenting-user-info'>
@@ -99,19 +99,19 @@ const ExpandedPostOverlay = () => {
                                     </div>
                                 </div>
                                 <div className='expanded-post-comment-info'>
-                                    <p>Posted {timeAgo(post?.created_at)}</p>
+                                    <p>Posted {timeAgo(post?.meta?.created_at)}</p>
                                 </div>
                             </div>
                             <div className='expanded-post-comments-text'>
                                 <div className='expanded-post-comments-text-inner'>
-                                    <RenderText text={post?.text} />
+                                    <RenderText text={post?.post?.caption} />
                                 </div>
                             </div>
                         </div>
                     }
                     {post?.comments?.length !== 0 ?
                         (post?.comments?.map((commentData, index) => (
-                            <div key={`${index}-${commentData?.created_at}`} className='expanded-post-per-comment'>
+                            <div key={`${index}-${commentData?.meta?.created_at}`} className='expanded-post-per-comment'>
                                 <div className='expanded-post-comments-info'>
                                     <div className='expanded-post-commenting-user-info'>
                                         <div className='expanded-post-commenting-user-profile-picture'>
@@ -126,7 +126,7 @@ const ExpandedPostOverlay = () => {
                                         </div>
                                     </div>
                                     <div className='expanded-post-comment-info'>
-                                        <p>Posted {timeAgo(commentData?.created_at)}</p>
+                                        <p>Posted {timeAgo(commentData?.meta?.created_at)}</p>
                                     </div>
                                 </div>
                                 <div className='expanded-post-comments-text'>
@@ -201,22 +201,22 @@ const ExpandedPostOverlay = () => {
                 <div className='expanded-post-info-container overlay'>
                     <div className='expanded-post-info-container-inner overlay'>
                         <div className='expanded-post-creation-time overlay'>
-                            <p>Posted {timeAgo(post?.created_at)}</p>
+                            <p>Posted {timeAgo(post?.meta?.created_at)}</p>
                         </div>
                         <div className='expanded-post-info-likes-unlikes-comments-count overlay'>
                             <p>{post?.comments?.length} {post?.comments?.length === 1 ? 'comment' : 'comments'}</p>
-                            <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{post?.likes_count} {post?.likes_count === 1 ? 'like' : 'likes'}</p>
-                            <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{post?.dislikes_count} {post.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
+                            <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{post?.stats?.likes_count} {post?.stats?.likes_count === 1 ? 'like' : 'likes'}</p>
+                            <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{post?.stats?.dislikes_count} {post.stats?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
                         </div>
                     </div>
                 </div>
                 <div className='expanded-post-media-container'>
                     {post &&
                         <div className='expanded-post-media overlay'>
-                            {renderMediaContent(post?.media_files[currentMediaIndex])}
+                            {renderMediaContent(post?.post?.media_files[currentMediaIndex])}
                         </div>
                     }
-                    {post?.media_files?.length > 1 &&
+                    {post?.post?.media_files?.length > 1 &&
                         <div className='expanded-post-img-previous-next-buttons-container'>
                             {currentMediaIndex > 0 ? (
                                 <button className='expanded-post-img-previous-button-container-inner' onClick={() => navigateMedia('prev')}>
@@ -226,7 +226,7 @@ const ExpandedPostOverlay = () => {
                                 <div className='expand-post-btn-placeholder' />
                             )
                             }
-                            {currentMediaIndex !== post?.media_files?.length - 1 ? (
+                            {currentMediaIndex !== post?.post?.media_files?.length - 1 ? (
                                 <button className='expanded-post-img-next-button-container-inner' onClick={() => navigateMedia('next')}>
                                     <FaChevronRight className='icon-style' />
                                 </button>
@@ -240,10 +240,10 @@ const ExpandedPostOverlay = () => {
             </div>
             <div className='expanded-post-interaction-container overlay' onClick={(e) => e.stopPropagation()}>
                 <div onClick={() => toggleLikeDislike('like')}>
-                    <img src={post.like_status === 'liked' ? liked : unliked} />
+                    <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
                 </div>
                 <div onClick={() => toggleLikeDislike('dislike')}>
-                    <img src={post.dislike_status === 'disliked' ? disliked : undisliked} />
+                    <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
                 </div>
                 <div onClick={() => toggleBookmark()}>
                     <FaBookmark
@@ -253,7 +253,7 @@ const ExpandedPostOverlay = () => {
                 <div onClick={() => setShowPostMoreMenuOverlay(true)} >
                     <FaEllipsisH className={`icon-style`} />
                 </div>
-                {post?.author?.username === authState.user.username &&
+                {post?.author?.username === authState?.user?.username &&
                     <div onClick={() => deletePost()} className='expanded-post-delete-post'>
                         <FaTrash className='icon-style' />
                     </div>

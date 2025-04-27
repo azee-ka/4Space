@@ -20,8 +20,6 @@ const PostsGrid = ({ classname, postsData, handleExpandPostOpen }) => {
     handleExpandPostOpen(post.id, posts, window.location.pathname + window.location.hash, index);
   };
 
-  console.log('posts', postsData);
-
 
   return (posts !== undefined || posts !== null) ? (
     posts.length > 0 ? (

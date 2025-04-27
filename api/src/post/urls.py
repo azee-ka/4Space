@@ -37,5 +37,6 @@ urlpatterns = [
     
     
     path('explore/', include('src.post.explore.urls')),
+    path('timeline/', include('src.post.timeline.urls')),
     
 ]

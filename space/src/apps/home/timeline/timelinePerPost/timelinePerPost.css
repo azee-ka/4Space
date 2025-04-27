@@ -1,4 +1,4 @@
-.radian-timeline-per-post {
+.timeline-per-post {
     background-color: rgba(255, 0, 0, 0);
     /* width: 75%; */
     display: flex;
@@ -10,7 +10,7 @@
 }
 
 
-.radian-timeline-per-post-inner {
+.timeline-per-post-inner {
     background-color: rgba(0, 0, 0, 0.234);
     border: 0.5px solid rgba(128, 128, 128, 0.552);
     border-radius: 12px;
@@ -26,7 +26,7 @@
     /* min-height: 600px; */
 }
 
-.radian-timeline-post-user-info {
+.timeline-post-user-info {
     height: 58px;
     width: 100%;
     display: flex;
@@ -38,7 +38,7 @@
     box-sizing: border-box;
     background-color: rgba(255, 0, 0, 0);
 }
-.radian-timeline-post-user-profile-picture {
+.timeline-post-user-profile-picture {
     height: 100%;
     width: auto;
     display: flex;
@@ -48,11 +48,11 @@
     padding: 0.1em 0em;
     box-sizing: border-box;
 }
-.radian-timeline-post-user-profile-picture img {
+.timeline-post-user-profile-picture img {
     height: 100%;
 }
 
-.radian-timeline-post-user-username {
+.timeline-post-user-username {
     /* min-width: 15%; */
     height: 100%;
     display: flex;
@@ -62,13 +62,13 @@
     font-size: 14px;
     margin-right: 10px;
 }
-.radian-timeline-post-user-username a {
+.timeline-post-user-username a {
     text-decoration: none;
     color: white;
 }
 
 
-.radian-timeline-post-stats {
+.timeline-post-stats {
     background-color: rgba(255, 0, 0, 0);
     flex-grow: 1;
     display: flex;
@@ -78,8 +78,8 @@
     gap: 10px;
     font-size: 11px;
 }
-.radian-timeline-post-stats-count,
-.radian-timeline-post-created-at {
+.timeline-post-stats-count,
+.timeline-post-created-at {
     border-radius: 10px;
     border: 0.5px solid rgba(128, 128, 128, 0.481);
     padding: 0.8em;
@@ -93,7 +93,7 @@
     color: rgb(152, 152, 152);
     box-sizing: border-box;
 }
-.radian-timeline-post-stats-count {
+.timeline-post-stats-count {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -101,12 +101,12 @@
     font-size: 13px;
 }
 
-.radian-timeline-post-stats-count p:hover {
+.timeline-post-stats-count p:hover {
     cursor: pointer;
 }
 
 
-.radian-timeline-post-media-container {
+.timeline-post-media-container {
     /* width: 100%; */
     display: flex;
     justify-content: center;
@@ -120,8 +120,8 @@
     min-width: 100px; */
 }
 
-.radian-timeline-post-media-container video,
-.radian-timeline-post-media-container img {
+.timeline-post-media-container video,
+.timeline-post-media-container img {
     object-fit: cover;
     aspect-ratio: inherit;
     width: 100%;
@@ -135,7 +135,7 @@
 
 
 
-.radian-timeline-post-comments-caption {
+.timeline-post-comments-caption {
     /* height: 80px; */
     flex-grow: 1;
     width: 100%;
@@ -153,7 +153,7 @@
 }
 
 
-.radian-timeline-caption {
+.timeline-caption {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
@@ -200,7 +200,7 @@
     margin: 0;
 }
 
-.radian-timeline-add-comment {
+.timeline-add-comment {
     background-color: rgba(128, 128, 128, 0);
     height: 35px;
     width: 100%;
@@ -213,7 +213,7 @@
     margin: 0;
     /* border-radius: 8px; */
 }
-.radian-timeline-add-comment input {
+.timeline-add-comment input {
     box-sizing: border-box;
     /* padding: 0 0em 0 0.6em; */
     padding: 0;
@@ -224,7 +224,7 @@
     border-radius: 0;
     box-shadow: none;
 }
-.radian-timeline-add-comment button {
+.timeline-add-comment button {
     height: 100%;
     background-color: rgba(255, 255, 255, 0);
     border: 0;
@@ -232,7 +232,7 @@
     font-size: 1.5em;
     align-self: center;
 }
-.radian-timeline-add-comment button .icon-style {
+.timeline-add-comment button .icon-style {
     padding: 0;
     margin: 0;
 }
@@ -243,7 +243,7 @@
 
 
 
-.radian-timeline-view-comment-btn {
+.timeline-view-comment-btn {
     width: 100%;
     height: 20px;
     flex-shrink: 0;
@@ -254,24 +254,24 @@
     /* padding: 0 0.3em; */
     box-sizing: border-box;
 }
-.radian-timeline-view-comment-btn p {
+.timeline-view-comment-btn p {
     margin: 0;
     padding: 0;
     color: rgb(177, 177, 177);
 }
-.radian-timeline-view-comment-btn p:hover {
+.timeline-view-comment-btn p:hover {
     cursor: pointer;
 }
 
 
 
 
-.radian-timeline-per-post-interaction {
+.timeline-per-post-interaction {
     width: 100%;
     height: 100%;
     width: 50px;
     max-height: 600px;
-    min-height: 335px;
+    min-height: 270px;
     background-color: rgba(0, 0, 0, 0.234);
     border: 0.5px solid rgba(128, 128, 128, 0.400);
     border-radius: 12px;
@@ -282,7 +282,7 @@
     gap: 8px;
 }
 
-.radian-timeline-per-post-interaction div {
+.timeline-per-post-interaction div {
     width: 80%;
     aspect-ratio: 1 / 1;
     display: flex;
@@ -293,25 +293,25 @@
     transition: background-color 0.3s ease;
 }
 
-.radian-timeline-per-post-interaction div:hover {
+.timeline-per-post-interaction div:hover {
     cursor: pointer;
     background-color: rgb(0, 107, 123);
 }
-.radian-timeline-per-post-interaction #more-button:hover {
+.timeline-per-post-interaction #more-button:hover {
     cursor: pointer;
     background-color: rgb(0, 107, 123, 0);
 }
 
-.radian-timeline-per-post-interaction img {
+.timeline-per-post-interaction img {
     width: 30px;
     aspect-ratio: 1 / 1;
 }
 
-.radian-timeline-per-post-interaction .icon-style {
+.timeline-per-post-interaction .icon-style {
     font-size: 1.5em;
     padding: 0.1em;
 }
-.radian-timeline-per-post-interaction #more-button {
+.timeline-per-post-interaction #more-button {
     font-size: 0.9em;
 }
 
@@ -330,7 +330,7 @@
 
 
 
-.radian-timeline-post-previous-next-post-button-container {
+.timeline-post-previous-next-post-button-container {
     position: absolute;
     width: 100%;
     /* height: 25px; */
@@ -346,7 +346,7 @@
 }
 
 
-.radian-timeline-post-previous-next-post-button-container button {
+.timeline-post-previous-next-post-button-container button {
     aspect-ratio: 1 / 1;
     background-color: rgba(81, 81, 81, 0.799);
     display: flex;
@@ -361,12 +361,74 @@
     font-size: 1em;
 }
 
-.radian-timeline-post-previous-next-post-button-container button .icon-style {
+.timeline-post-previous-next-post-button-container button .icon-style {
     padding: 0;
     margin: 0;
 }
 
-.radian-timeline-post-previous-next-post-button-container button:hover {
+.timeline-post-previous-next-post-button-container button:hover {
     background-color: rgba(161, 161, 161, 0.746);
     cursor: pointer;
+}
+
+
+
+
+
+
+
+
+.timeline-post-thread {
+    width: 100%;
+    max-height: 720px;
+    min-height: 210px;
+    background-color: rgba(0, 0, 0, 0.234);
+    border: 0.5px solid rgba(128, 128, 128, 0.400);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+.timeline-thread-content {
+    flex-grow: 1;
+    width: 100%;
+    background-color: rgba(203, 134, 134, 0);
+}
+
+.timeline-thread-detail-interaction {
+    height: 50px;
+    width: 100%;
+    background-color: rgba(187, 12, 12, 0);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 0.3em 0.8em;
+    box-sizing: border-box;
+    font-size: 0.7em;
+}
+
+
+.timeline-thread-detail-interaction > div,
+.timeline-post-detail-interaction-btn {
+    background-color: rgba(65, 65, 65, 0);
+    border: 0;
+    color: rgba(200, 200, 200, 0.809);
+    font-size: 20px;
+    align-self: center;
+    flex-grow: 1;
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.timeline-thread-detail-interaction > div:hover,
+.timeline-post-detail-interaction-btn:hover {
+    cursor: pointer;
+    background-color: rgba(119, 119, 119, 0.5);
+    color: white;
 }

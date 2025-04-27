@@ -365,7 +365,7 @@
     border: 1px solid rgba(128, 128, 128, 0.295);
     /*Needed for editor*/
     max-height: 150px;
-    min-height: 40px;
+    min-height: 50px;
     width: 100%;
     /* padding: 0.3em 0.2em !important; */
     display: flex;
