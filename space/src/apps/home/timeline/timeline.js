@@ -31,12 +31,19 @@ const Timeline = () => {
 
     const filters = ['All', 'Thread', 'Visual'];
 
+    // 🔥 Filtering the posts based on activeFilter
+    const filteredPosts = posts.filter(post => {
+        if (activeFilter === 'All') return true;
+        return post.post_type === activeFilter;
+    });
+
+
     return posts ? (
         <div className="timeline-page">
             <div className='timeline-header'>
                 <h2>Timeline</h2>
                 <div className="timeline-header-right">
-                    <button onClick={() => setSecondTimelineAdd(!secondTimelineAdd)} className="timeline-add-btn">
+                    <button onClick={() => setSecondTimelineAdd(!secondTimelineAdd)} className={`timeline-add-btn ${secondTimelineAdd ? 'active' : ''}`}>
                         Toggle Timeline
                     </button>
                     <DropdownButton
@@ -65,18 +72,18 @@ const Timeline = () => {
                 (
                     <div className='timeline-content'>
                         <div className="timeline-left-side-container">
-                            {posts.map((post, index) => (
+                            {filteredPosts.map((post, index) => (
                                 <ExpandPostProvider key={index} postId={post.id}>
-                                    <TimelinePerPost postId={post.id} posts={posts} index={index} activeFilter={activeFilter} />
+                                    <TimelinePerPost postId={post.id} posts={filteredPosts} index={index} activeFilter={activeFilter} />
                                 </ExpandPostProvider>
                             ))
                             }
                         </div>
                         <div className="timeline-right-side-container">
                             {secondTimelineAdd &&
-                                posts.map((post, index) => (
+                                filteredPosts.map((post, index) => (
                                     <ExpandPostProvider key={index} postId={post.id}>
-                                        <TimelinePerPost postId={post.id} posts={posts} index={index} activeFilter={activeFilter} />
+                                        <TimelinePerPost postId={post.id} posts={filteredPosts} index={index} activeFilter={activeFilter} />
                                     </ExpandPostProvider>
                                 ))
                             }

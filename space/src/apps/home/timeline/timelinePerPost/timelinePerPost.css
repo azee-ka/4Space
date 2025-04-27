@@ -223,6 +223,8 @@
     background-color: rgba(0, 0, 0, 0);
     border-radius: 0;
     box-shadow: none;
+    color: white;
+    font-size: 1.3em;
 }
 .timeline-add-comment button {
     height: 100%;
@@ -295,7 +297,7 @@
 
 .timeline-per-post-interaction div:hover {
     cursor: pointer;
-    background-color: rgb(0, 107, 123);
+    background-color: rgba(123, 123, 123, 0.496);
 }
 .timeline-per-post-interaction #more-button:hover {
     cursor: pointer;
