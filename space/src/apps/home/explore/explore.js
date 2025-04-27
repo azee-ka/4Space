@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 import ThreadCard from './thread/threadCard';
-import VisualCard from './visual/visualCard';
+import VisualPostsGrid from './visual/visualPostsGrid';
 import PollCard from './poll/pollCard';
 import StoryCard from './story/storyCard';
 import EventCard from './event/eventCard';
@@ -34,22 +34,59 @@ const Explore = () => {
         fetchExplorePosts();
     }, []);
 
-    const filteredPosts = activeFilter === 'All'
-        ? posts
-        : posts.filter(post => post.post_type === activeFilter);
+    const filters = ['All', 'Thread', 'Visual', 'Poll', 'Story', 'Event', 'Audio'];
 
-    const renderPost = (post) => {
-        switch (post.post_type) {
-            case 'Thread': return <ThreadCard post={post} key={post.id} />;
-            case 'Visual': return <VisualCard post={post} key={post.id} />;
-            case 'Poll': return <PollCard post={post} key={post.id} />;
-            case 'Story': return <StoryCard post={post} key={post.id} />;
-            case 'Event': return <EventCard post={post} key={post.id} />;
-            case 'Audio': return <AudioCard post={post} key={post.id} />;
-            default: return null;
+    const renderPosts = () => {
+        const filteredPosts = activeFilter === 'All'
+            ? posts
+            : posts.filter(post => post.post_type === activeFilter);
+    
+        if (filteredPosts.length === 0) {
+            return <div>No posts available.</div>;
+        }
+    
+        switch (activeFilter) {
+            case 'Visual':
+                return <VisualPostsGrid posts={filteredPosts} />;
+            case 'All':
+                return (
+                    <>
+                        {renderPostsByType('Thread')}
+                        {renderPostsByType('Visual')}
+                        {renderPostsByType('Poll')}
+                        {renderPostsByType('Story')}
+                        {renderPostsByType('Event')}
+                        {renderPostsByType('Audio')}
+                    </>
+                );
+            default:
+                return null;
         }
     };
-    const filters = ['All', 'Thread', 'Visual', 'Poll', 'Story', 'Event', 'Audio'];
+    
+
+    const renderPostsByType = (type) => {
+        const typePosts = posts.filter(post => post.post_type === type);
+        if (typePosts.length === 0) return null;
+
+        switch (type) {
+            case 'Visual':
+                return <VisualPostsGrid posts={typePosts} key="visual" />;
+            // case 'Thread':
+            //     return <ThreadCard posts={typePosts} key="thread" />;
+            // case 'Poll':
+            //     return <PollCard posts={typePosts} key="poll" />;
+            // case 'Story':
+            //     return <StoryCard posts={typePosts} key="story" />;
+            // case 'Event':
+            //     return <EventCard posts={typePosts} key="event" />;
+            // case 'Audio':
+            //     return <AudioCard posts={typePosts} key="audio" />;
+            default:
+                return null;
+        }
+    };
+
 
     return (
         <div className="explore-page">
@@ -81,12 +118,8 @@ const Explore = () => {
             {loading ? (
                 <div className="loading">Loading posts...</div>
             ) : (
-                <div className={`posts-container ${activeFilter === 'Visual' ? 'grid' : 'list'}`}>
-                    {filteredPosts.length > 0 ? (
-                        filteredPosts.map(post => renderPost(post))
-                    ) : (
-                        <div className="no-posts">No posts to show.</div>
-                    )}
+                <div className={`posts-container`}>
+                    {renderPosts()}
                 </div>
             )}
         </div>

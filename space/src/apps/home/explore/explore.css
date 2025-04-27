@@ -4,6 +4,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 
 .explore-header {
@@ -80,17 +81,18 @@
 
 
 .posts-container {
-    width: 50%;
+    width: 100%;
+    height: 100%;
     overflow-y: auto;
     /* display: flex; */
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
+    background-color: rgba(255, 0, 0, 0);
 }
 
-
-/* Post card base styles */
+/* 
 .post-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -110,7 +112,6 @@
     box-shadow: 0 0 12px rgba(0, 200, 255, 0);
 }
 
-/* Post-specific minor styles */
 .thread-card p,
 .story-card p {
     font-size: 1em;
@@ -151,7 +152,6 @@
     margin-top: 10px;
 }
 
-/* Responsive optimization */
 @media (max-width: 600px) {
     .post-card {
         padding: 12px;
@@ -160,4 +160,4 @@
     .visual-card img.visual-image {
         max-height: 200px;
     }
-}
+} */

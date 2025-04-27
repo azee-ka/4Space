@@ -19,16 +19,12 @@ function SearchSidebar({ isOpen, onClose }) {
     const handleGetSearchHistory = async () => {
         try {
             const response = await callApi(`search/user-search/history/`);
-            console.log(response.data);
+            // console.log(response.data);
             setSearchHistory(response.data);
         } catch (error) {
             console.error('Error', error);
         }
     };
-
-    useEffect(() => {
-        handleGetSearchHistory();
-    }, [isOpen]);
 
     const handleDeleteSearchItem = async (user) => {
         try {
@@ -45,7 +41,7 @@ function SearchSidebar({ isOpen, onClose }) {
         setSearchInput('');
         setSearchQueryResults([]);
         if(isOpen) {
-            // handleGetSearchHistory();
+            handleGetSearchHistory();
         }
     }, [isOpen])
 

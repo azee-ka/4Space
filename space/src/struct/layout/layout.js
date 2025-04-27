@@ -11,9 +11,13 @@ import useProfile from '../../hooks/useProfile';
 import NotificationSidebar from '../sidebar/notificationSidebar/notificationSidebar';
 import SearchSidebar from '../sidebar/searchSidebar/searchSidebar';
 import SmallSidebar from '../sidebar/smallSidebar/smallSidebar';
+import { usePostContext } from '../../context/PostContext';
+import ExpandPost from '../../components/postUI/expandPost/expandPost';
 
 function Layout({ children, pageName }) {
     const { authState } = useAuth();
+
+    const { expandPostIdReciever } = usePostContext();
 
     const { minimalProfileData: profileData } = useProfile();
 
@@ -123,6 +127,7 @@ function Layout({ children, pageName }) {
                 <NotificationsMenu
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />}
+                {expandPostIdReciever && <ExpandPost />}
         </div>
     );
 }

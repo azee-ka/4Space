@@ -25,7 +25,7 @@ export const PostProvider = ({ children }) => {
         setCurrentExpandPostIndex(index);
         setPostsList(posts);
         setExpandPostOnCloseUrl(originalPreviousUrl);
-        window.history.replaceState(null, null, `/radianspace/flare/${postIdToExpand}`);
+        window.history.replaceState(null, null, `/posts/p/${postIdToExpand}`);
     };
 
     const handlePreviousPostClick = () => {
@@ -53,9 +53,6 @@ export const PostProvider = ({ children }) => {
         setExpandPostIdReciever(null);
         navigate(expandPostOnCloseUrl);
     };
-
-
-
 
 
     return (

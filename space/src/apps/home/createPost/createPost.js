@@ -157,20 +157,25 @@ const CreatePost = () => {
         } else {
             setIsRestrictionValid(true);
         }
-    
+
+        if (activeButton === 'Visual' && selectedMediaFiles.length === 0) {
+            alert("Please upload at least one image or video before posting a Visual post.");
+            return;
+        }
+
         const activeTabData = getActiveTabData();
         console.log('Active Tab Data:', activeTabData);
-        console.log(' editorContent[activeButton]:',  editorContent[activeButton]);
+        console.log(' editorContent[activeButton]:', editorContent[activeButton]);
         // Build form data
         const formData = new FormData();
-    
+
         formData.append('post_type', activeButton);
-        formData.append('user', authState.user.username);
+        formData.append('author', authState.user.username);
         formData.append('visibility', visibilityActiveBtn);
         formData.append('restriction', restrictionActiveBtn);
         formData.append('comments_setting', commentsActiveBtn);
         formData.append('content', editorContent[activeButton]);
-    
+
         if (activeButton === 'Thread') {
             formData.append('content_type', activeTabData.content_type);
         }
@@ -196,20 +201,21 @@ const CreatePost = () => {
         if (activeButton === 'Audio') {
             formData.append('audio_file', activeTabData.audio_file);
         }
-    
-        console.log('Submitting FormData:');
-for (let pair of formData.entries()) {
-  console.log(pair[0] + ':', pair[1]);
-}
 
-    
+        console.log('Submitting FormData:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ':', pair[1]);
+        }
+
+
         try {
-            const response = await callApi('posts/post/', 'POST', formData, "multipart/form-data"); 
+            const response = await callApi('posts/post/', 'POST', formData, "multipart/form-data");
             console.log('Post created successfully:', response.data);
+            onClose(); // Close the overlay after successful post creation
         } catch (error) {
             console.error('Error creating post:', error);
         }
-    };    
+    };
 
 
 

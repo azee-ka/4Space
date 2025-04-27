@@ -10,7 +10,6 @@ const ImageWrapper = ({ src, onClick, className }) => {
             onClick();
         }
     };
-
     return (
         <img
             src={imageSource}

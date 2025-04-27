@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import useApi from '../../utils/useApi';
-import VideoPlayer from '../videoPlayer/videoPlayer';
+import useApi from '../../../utils/useApi';
+import VideoPlayer from '../../videoPlayer/videoPlayer';
+
 const ExpandPostContext = createContext();
 
 export const ExpandPostProvider = ({ children, postId }) => {
@@ -23,7 +24,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
     useEffect(() => {
         const fetchPostData = async () => {
             try {
-                const response = await callApi(`radianspace/flare/${postId}/`);
+                const response = await callApi(`posts/post/${postId}/`);
                 setPost(response.data);
             } catch (error) {
                 console.error('Error fetching post data:', error);
@@ -40,7 +41,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
     const toggleLikeDislike = async (toggle_type) => {
         try {
             // Make a POST request to the new combined endpoint
-            const response = await callApi(`radianspace/flare/${postId}/like-dislike/`, 'POST', { toggle_type: toggle_type });
+            const response = await callApi(`posts/post/${postId}/toggle-like-dislike/`, 'POST', { toggle_type: toggle_type });
 
             // Get updated like/dislike counts and user statuses
             const { likes_count, dislikes_count, like_status, dislike_status } = response.data;
@@ -80,7 +81,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
             formData.append('text', commentText);
             formData.append('post_id', postId);
 
-            const response = await callApi(`radianspace/flare/${postId}/comment/`, 'POST', formData);
+            const response = await callApi(`posts/post/comment/${postId}/create/`, 'POST', formData);
             setCommentText('');
             setPost((prev) => ({
                 ...prev,
@@ -94,7 +95,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
     // Delete the post
     const deletePost = async () => {
         try {
-            await callApi(`radianspace/flare/${postId}/delete/`, 'DELETE');
+            await callApi(`posts/post/${postId}/delete/`, 'DELETE');
             // window.location.reload();
         } catch (error) {
             console.error('Error deleting post:', error);
@@ -103,11 +104,10 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
 
 
-
     const toggleCommentLike = async (comment_id) => {
         try {
             // Make the API request to like/unlike the comment
-            const response = await callApi(`radianspace/flare/${comment_id}/comment-like/`, 'POST');
+            const response = await callApi(`posts/post/comment/${comment_id}/like/`, 'POST');
 
             // Assuming response.data contains the updated like status and likes count
             const updatedLikeStatus = response.data.like_status;
@@ -144,7 +144,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
     const voteComment = async (comment_id, vote_type) => {
         try {
             // Make the API request to upvote/downvote the comment
-            const response = await callApi(`radianspace/flare/${comment_id}/vote/`, 'POST', { vote_type: vote_type });
+            const response = await callApi(`posts/post/comment/${comment_id}/vote/`, 'POST', { vote_type: vote_type });
 
             // Assuming response.data contains the updated vote status, upvotes count, and downvotes count
             const updatedVoteStatus = response.data.vote_status;
@@ -181,7 +181,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
     const replyToComment = async (comment_id) => {
         try {
-            const response = await callApi(`radianspace/flare/${comment_id}/create-reply/`, 'POST', { data: commentReplyText });
+            const response = await callApi(`posts/post/comment/${comment_id}/reply/`, 'POST', { data: commentReplyText });
             // setPost(response.data);
             console.log(response.data);
         } catch (error) {
