@@ -97,14 +97,17 @@
     flex-direction: row;
     align-items: flex-start;
     justify-content: flex-start;
+    gap: 50px;
     text-align: center;
     overflow-y: hidden;
+    padding-top: 10px;
     padding-bottom: 10px;
+
 }
 
 .timeline-left-side-container {
     background-color: rgba(0, 128, 0, 0);
-    width: 50%;
+    flex-grow: 1;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -112,6 +115,7 @@
     align-items: flex-start;
     gap: 50px;
     overflow-y: auto;
+    padding-bottom: 10px;
 }
 
 .timeline-right-side-container {
@@ -124,6 +128,7 @@
     align-items: flex-start;
     gap: 50px;
     overflow-y: auto;
+    padding-bottom: 10px;
 }
 
 
