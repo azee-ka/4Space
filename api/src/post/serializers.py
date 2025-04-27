@@ -86,7 +86,9 @@ class CommentSerializer(serializers.ModelSerializer):
         """
         return obj.likes.count()
         
-        
+      
+      
+  
 # Media Serializer
 class MediaFileSerializer(serializers.ModelSerializer):
     file = serializers.SerializerMethodField()
@@ -107,6 +109,126 @@ class MediaFileSerializer(serializers.ModelSerializer):
             return obj.get_video_qualities()
         return []
 
+
+
+
+
+class PostRetrieveSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    post_type = serializers.SerializerMethodField()
+
+    post = serializers.SerializerMethodField()
+    author = EssentialUserSerializer(read_only=True)
+    stats = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    settings = serializers.SerializerMethodField()
+    meta = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    likes = serializers.SerializerMethodField()      # ✅ New
+    dislikes = serializers.SerializerMethodField()   # ✅ New
+
+    def get_post_type(self, obj):
+        return obj.__class__.__name__.replace('Post', '')
+
+    def get_post(self, obj):
+        post_data = {}
+
+        if isinstance(obj, ThreadPost):
+            post_data['sub_type'] = self.get_thread_sub_type(obj)
+            post_data['content'] = obj.content
+
+            media = obj.media_files.all()
+            if media.exists():
+                post_data['media_files'] = MediaFileSerializer(media, many=True, context=self.context).data
+
+            if obj.poll_question:
+                post_data['poll'] = {
+                    'question': obj.poll_question,
+                    'options': obj.poll_options,
+                    'expiration_date': obj.poll_expiration_date,
+                }
+
+            if obj.event_title:
+                post_data['event'] = {
+                    'title': obj.event_title,
+                    'date': obj.event_date,
+                }
+
+        elif isinstance(obj, VisualPost):
+            post_data['caption'] = obj.caption
+
+            media = obj.media_files.all()
+            if media.exists():
+                post_data['media_files'] = MediaFileSerializer(media, many=True, context=self.context).data
+
+        return post_data
+
+    def get_thread_sub_type(self, obj):
+        if obj.poll_question:
+            return 'Poll'
+        elif obj.event_title:
+            return 'Event'
+        else:
+            return 'Thread'
+
+    def get_stats(self, obj):
+        return {
+            'likes_count': obj.likes_count,
+            'dislikes_count': obj.dislikes_count,
+            'comments_count': obj.comments_count,
+        }
+
+    def get_status(self, obj):
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        if user:
+            like_status = 'liked' if user in obj.likes.all() else 'not_liked'
+            dislike_status = 'disliked' if user in obj.dislikes.all() else 'not_disliked'
+        else:
+            like_status = 'none'
+            dislike_status = 'none'
+
+        return {
+            'like_status': like_status,
+            'dislike_status': dislike_status,
+        }
+
+    def get_settings(self, obj):
+        return {
+            'visibility': obj.visibility,
+            'restriction': obj.restriction,
+            'comments_setting': obj.comments_setting,
+        }
+
+    def get_meta(self, obj):
+        return {
+            'created_at': obj.created_at,
+            'updated_at': obj.updated_at,
+        }
+    
+    def get_comments(self, obj):
+        request = self.context.get('request')
+        top_level_comments = obj.comments.filter(parent_comment__isnull=True).order_by('-created_at')
+        return CommentSerializer(top_level_comments, many=True, context={'request': request}).data
+
+    def get_likes(self, obj):
+        request = self.context.get('request')
+        liked_users = obj.likes.all()
+        return EssentialUserSerializer(liked_users, many=True, context={'request': request}).data
+
+    def get_dislikes(self, obj):
+        request = self.context.get('request')
+        disliked_users = obj.dislikes.all()
+        return EssentialUserSerializer(disliked_users, many=True, context={'request': request}).data
+
+
+
+
+
+
+
+
 # Base Serializer
 class BasePostSerializer(serializers.ModelSerializer):
     author = EssentialUserSerializer(read_only=True)
@@ -116,12 +238,19 @@ class BasePostSerializer(serializers.ModelSerializer):
     dislikes_count = serializers.IntegerField(read_only=True)
     comments = serializers.SerializerMethodField()
 
+    likes = serializers.SerializerMethodField()
+    dislikes = serializers.SerializerMethodField()
+    
+    like_status = serializers.SerializerMethodField()
+    dislike_status = serializers.SerializerMethodField()
+    
     class Meta:
         model = None  # Abstract
         fields = [
             'id', 'author', 'visibility', 'restriction', 'comments_setting',
             'created_at', 'updated_at', 'post_type',
             'comments_count', 'likes_count', 'dislikes_count', 'comments',
+            'likes', 'dislikes', 'like_status', 'dislike_status',
         ]
 
     def get_post_type(self, obj):
@@ -131,22 +260,52 @@ class BasePostSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         comments = obj.comments.filter(parent_comment__isnull=True).order_by('-created_at')
         return CommentSerializer(comments, many=True, context={'request': request}).data
+    
+    def get_likes(self, obj):
+        """Return serialized list of users who liked this post."""
+        request = self.context.get('request')
+        liked_users = obj.likes.all()
+        return EssentialUserSerializer(liked_users, many=True, context={'request': request}).data
+
+    def get_dislikes(self, obj):
+        """Return serialized list of users who disliked this post."""
+        request = self.context.get('request')
+        disliked_users = obj.dislikes.all()
+        return EssentialUserSerializer(disliked_users, many=True, context={'request': request}).data
+    
+    def get_like_status(self, obj):
+        if self.context.get('request'):
+            user = self.context.get('request').user
+            if user in obj.likes.all():
+                return 'liked'
+            return 'not_liked'
+        return 'none'
+
+    def get_dislike_status(self, obj):
+        if self.context.get('request'):
+            user = self.context.get('request').user
+            if user in obj.dislikes.all():
+                return 'disliked'
+            return 'not_disliked'
+        return 'none'
+
 
 # ThreadPost
 class ThreadPostSerializer(BasePostSerializer):
     content = serializers.CharField()
     media_files = serializers.SerializerMethodField()
-
-    # Add poll fields
     poll_question = serializers.CharField(required=False, allow_blank=True)
     poll_options = serializers.ListField(child=serializers.CharField(), required=False)
     poll_expiration_date = serializers.DateTimeField(required=False, allow_null=True)
+    event_title = serializers.CharField(required=False, allow_blank=True)
+    event_date = serializers.DateTimeField(required=False, allow_null=True)
 
     class Meta(BasePostSerializer.Meta):
         model = ThreadPost
         fields = BasePostSerializer.Meta.fields + [
             'content', 'media_files',
-            'poll_question', 'poll_options', 'poll_expiration_date'
+            'poll_question', 'poll_options', 'poll_expiration_date',
+            'event_title', 'event_date',
         ]
 
     def get_media_files(self, obj):
@@ -167,6 +326,9 @@ class VisualPostSerializer(BasePostSerializer):
         request = self.context.get('request')
         return MediaFileSerializer(obj.media_files.all(), many=True, context={'request': request}).data
 
+
+
+
 # Post Creation Serializer
 class PostCreateSerializer(serializers.Serializer):
     post_type = serializers.ChoiceField(choices=[('Thread', 'Thread'), ('Visual', 'Visual')])
@@ -177,25 +339,31 @@ class PostCreateSerializer(serializers.Serializer):
     content = serializers.CharField(required=False, allow_blank=True)
     caption = serializers.CharField(required=False, allow_blank=True)
     media_files = serializers.ListField(child=serializers.FileField(), required=False)
+    # poll fields
+    poll_question = serializers.CharField(required=False, allow_blank=True)
+    poll_options = serializers.ListField(child=serializers.CharField(), required=False)
+    poll_expiration_date = serializers.DateTimeField(required=False, allow_null=True)
+    # event fields
+    event_title = serializers.CharField(required=False, allow_blank=True)
+    event_date = serializers.DateTimeField(required=False, allow_null=True)
 
     def create(self, validated_data):
         post_type = validated_data.pop('post_type')
         author = validated_data.pop('author')
         media_files_data = validated_data.pop('media_files', [])
 
-        # Clean fields properly
-        content = validated_data.pop('content', None)
-        caption = validated_data.pop('caption', None)
-
         if post_type == 'Thread':
-            if not content:
-                raise serializers.ValidationError('Thread post must have content.')
             post = ThreadPost.objects.create(
                 author=author,
-                content=content,
+                content=validated_data.get('content', ""),
                 visibility=validated_data.get('visibility', 'Private'),
                 restriction=validated_data.get('restriction', 'SFW'),
                 comments_setting=validated_data.get('comments_setting', 'Allow'),
+                poll_question=validated_data.get('poll_question', None),
+                poll_options=validated_data.get('poll_options', []),
+                poll_expiration_date=validated_data.get('poll_expiration_date', None),
+                event_title=validated_data.get('event_title', None),
+                event_date=validated_data.get('event_date', None),
             )
             for uploaded_file in media_files_data:
                 media = MediaFile.objects.create(file=uploaded_file)
@@ -203,11 +371,9 @@ class PostCreateSerializer(serializers.Serializer):
             return post
 
         elif post_type == 'Visual':
-            if not media_files_data:
-                raise serializers.ValidationError('Visual post must have at least one media file.')
             post = VisualPost.objects.create(
                 author=author,
-                caption=caption or "",
+                caption=validated_data.get('caption', ""),
                 visibility=validated_data.get('visibility', 'Private'),
                 restriction=validated_data.get('restriction', 'SFW'),
                 comments_setting=validated_data.get('comments_setting', 'Allow'),
@@ -219,10 +385,9 @@ class PostCreateSerializer(serializers.Serializer):
 
         raise serializers.ValidationError('Invalid post type.')
 
-
-    def get_media_files(self, obj):
-        request = self.context.get('request')  # ⚡ get the request from context
-        return MediaFileSerializer(obj.media_files.all(), many=True, context={'request': request}).data
+    # def get_media_files(self, obj):
+    #     request = self.context.get('request')  # ⚡ get the request from context
+    #     return MediaFileSerializer(obj.media_files.all(), many=True, context={'request': request}).data
 
 class MinimalVisualPostSerializer(VisualPostSerializer):
     thumbnail = serializers.SerializerMethodField()
@@ -287,3 +452,47 @@ class MinimalVisualPostSerializer(VisualPostSerializer):
             print(f"Error processing video file: {e}")
             return None
 
+
+
+
+
+class MinimalThreadPostSerializer(serializers.ModelSerializer):
+    post_type = serializers.SerializerMethodField()
+    sub_type = serializers.SerializerMethodField()
+    media_preview = serializers.SerializerMethodField()
+    stats = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField()
+    id = serializers.UUIDField()
+    content = serializers.CharField()
+
+    class Meta:
+        model = ThreadPost
+        fields = ['id', 'post_type', 'sub_type', 'content', 'media_preview', 'stats', 'created_at']
+
+    def get_post_type(self, obj):
+        return 'Thread'
+
+    def get_sub_type(self, obj):
+        if obj.poll_question:
+            return 'Poll'
+        elif obj.event_title:
+            return 'Event'
+        return 'Thread'
+
+    def get_media_preview(self, obj):
+        media = obj.media_files.all().order_by('order')
+        first_media = media.first() if media.exists() else None
+        if not first_media:
+            return None
+
+        request = self.context.get('request')
+        return {
+            'file': request.build_absolute_uri(first_media.file.url) if request else first_media.file.url,
+            'media_type': first_media.media_type,
+        }
+
+    def get_stats(self, obj):
+        return {
+            'likes_count': obj.likes_count,
+            'comments_count': obj.comments_count,
+        }

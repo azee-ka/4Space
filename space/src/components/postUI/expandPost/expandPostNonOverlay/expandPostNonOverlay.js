@@ -62,7 +62,7 @@ const ExpandedPostNonOverlay = () => {
                     </div>
                 </div>
                 <div className='expanded-post-comments'>
-                    {post?.text?.length > 0 &&
+                    {post?.post?.caption?.length > 0 &&
                         <div className='expanded-post-per-comment'>
                             <div className='expanded-post-comments-info'>
                                 <div className='expanded-post-commenting-user-info'>
@@ -80,7 +80,7 @@ const ExpandedPostNonOverlay = () => {
                                     </div>
                                 </div>
                                 <div className='expanded-post-comment-info'>
-                                    <p>Posted {timeAgo(post?.created_at)}</p>
+                                    <p>Posted {timeAgo(post?.meta?.created_at)}</p>
                                 </div>
                             </div>
                             <div className='expanded-post-comments-text'>
@@ -109,7 +109,7 @@ const ExpandedPostNonOverlay = () => {
                                         </div>
                                     </div>
                                     <div className='expanded-post-comment-info'>
-                                        <p>Posted {timeAgo(commentData.created_at)}</p>
+                                        <p>Posted {timeAgo(commentData?.created_at)}</p>
                                     </div>
                                 </div>
                                 <div className='expanded-post-comments-text'>
@@ -120,30 +120,30 @@ const ExpandedPostNonOverlay = () => {
                                 <div className='expanded-post-comment-interaction'>
                                     <div>
                                         <button
-                                            onClick={() => toggleCommentLike(commentData.id)}
+                                            onClick={() => toggleCommentLike(commentData?.id)}
                                             className={`expanded-post-comment-interaction-btn ${commentData?.like_status === 'liked' ? 'liked' : ''}`}
                                         >
                                             <FaHeart />
                                         </button>
-                                        <p>{commentData.likes_count}</p>
+                                        <p>{commentData?.likes_count}</p>
                                     </div>
                                     <div>
                                         <button
-                                            onClick={() => voteComment(commentData.id, 'upvote')}
+                                            onClick={() => voteComment(commentData?.id, 'upvote')}
                                             className={`expanded-post-comment-interaction-btn ${commentData?.vote_status === 'upvoted' ? 'voted' : ''}`}
                                         >
                                             <FaArrowUp />
                                         </button>
-                                        <p>{commentData.upvotes_count}</p>
+                                        <p>{commentData?.upvotes_count}</p>
                                     </div>
                                     <div>
                                         <button
-                                            onClick={() => voteComment(commentData.id, 'downvote')}
+                                            onClick={() => voteComment(commentData?.id, 'downvote')}
                                             className={`expanded-post-comment-interaction-btn ${commentData?.vote_status === 'downvoted' ? 'voted' : ''}`}
                                         >
                                             <FaArrowDown />
                                         </button>
-                                        <p>{commentData.downvotes_count}</p>
+                                        <p>{commentData?.downvotes_count}</p>
                                     </div>
                                     <div>
                                         <button className='expanded-post-comment-interaction-btn'>
@@ -184,12 +184,12 @@ const ExpandedPostNonOverlay = () => {
                 <div className='expanded-post-info-container'>
                     <div className='expanded-post-info-container-inner'>
                         <div className='expanded-post-creation-time'>
-                            <p>Posted {timeAgo(post.created_at)}</p>
+                            <p>Posted {timeAgo(post?.meta?.created_at)}</p>
                         </div>
                         <div className='expanded-post-info-likes-unlikes-comments-count'>
                             <p>{post.comments.length} {post.comments.length === 1 ? 'comment' : 'comments'}</p>
-                            <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{post?.likes_count} {post?.likes_count === 1 ? 'like' : 'likes'}</p>
-                            <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{post?.dislikes_count} {post?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
+                            <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{post?.stats?.likes_count} {post?.stats?.likes_count === 1 ? 'like' : 'likes'}</p>
+                            <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{post?.stats?.dislikes_count} {post?.stats?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
                         </div>
                     </div>
                 </div>
@@ -197,7 +197,7 @@ const ExpandedPostNonOverlay = () => {
                     <div className='expanded-post-media'>
                         {renderMediaContent()}
                     </div>
-                    {post.media_files.length > 1 &&
+                    {post?.post?.media_files.length > 1 &&
                         <div className='expanded-post-img-previous-next-buttons-container'>
                             {currentMediaIndex > 0 ? (
                                 <button className='expanded-post-img-previous-button-container-inner' onClick={() => navigateMedia('prev')}>
@@ -207,7 +207,7 @@ const ExpandedPostNonOverlay = () => {
                                 <div className='expand-post-btn-placeholder' />
                             )
                             }
-                            {currentMediaIndex !== post?.media_files?.length - 1 ? (
+                            {currentMediaIndex !== post?.post?.media_files?.length - 1 ? (
                                 <button className='expanded-post-img-next-button-container-inner' onClick={() => navigateMedia('next')}>
                                     <FaChevronRight className='icon-style' />
                                 </button>
@@ -221,10 +221,10 @@ const ExpandedPostNonOverlay = () => {
             </div>
             <div className='expanded-post-interaction-container'>
                 <div onClick={() => toggleLikeDislike('like')}>
-                    <img src={post.like_status === 'liked' ? liked : unliked} />
+                    <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
                 </div>
                 <div onClick={() => toggleLikeDislike('dislike')}>
-                    <img src={post.dislike_status === 'disliked' ? disliked : undisliked} />
+                    <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
                 </div>
                 <div onClick={() => toggleBookmark()}>
                     <FaBookmark

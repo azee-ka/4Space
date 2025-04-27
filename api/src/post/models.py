@@ -219,10 +219,14 @@ class ThreadPost(BasePost):
     content = models.TextField(default="", blank=False, null=False)
     media_files = models.ManyToManyField('post.MediaFile', blank=True)
     
-    # Optional Poll fields
+    # Poll-specific
     poll_question = models.CharField(max_length=255, blank=True, null=True)
-    poll_options = models.JSONField(default=list, blank=True)  # list of options
+    poll_options = models.JSONField(default=list, blank=True)
     poll_expiration_date = models.DateTimeField(blank=True, null=True)
+
+    # Event-specific
+    event_title = models.CharField(max_length=255, blank=True, null=True)
+    event_date = models.DateTimeField(blank=True, null=True)
 
 
     def __str__(self):

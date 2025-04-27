@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './createPost.css';
-import { FaTimes } from 'react-icons/fa';
+import { FaEllipsisV, FaTimes } from 'react-icons/fa';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
 import { faAlignRight, faCalendarDay, faCameraRetro, faImage, faMicrophoneLines, faPoll } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,6 +30,8 @@ const CreatePost = () => {
     const [restrictionActiveBtn, setRestrictionActiveBtn] = useState("");
     const [isRestrictionValid, setIsRestrictionValid] = useState(true);
     const [commentsActiveBtn, setCommentsActiveBtn] = useState("Allow");
+
+
     const [expirationActiveBtn, setExpirationActiveBtn] = useState("Never");
     const [customExpirationDate, setCustomExpirationDate] = useState(() => {
         const nextDay = new Date();
@@ -63,11 +65,11 @@ const CreatePost = () => {
     const [editorContent, setEditorContent] = useState({
         Thread: '',
         Visual: '',
-        Poll: '',
-        Story: '',
         Event: '',
-        Audio: '',
     });
+
+    const [eventData, setEventData] = useState({ title: '', date: '' });
+
 
     const handleEditorChange = (content, tab) => {
         setEditorContent((prevContent) => ({
@@ -138,12 +140,8 @@ const CreatePost = () => {
                 return visualRef.current.getData();
             case 'Poll':
                 return pollRef.current.getData();
-            case 'Story':
-                return { type: 'Story', content: editorContent['Story'] };
             case 'Event':
                 return { type: 'Event', content: editorContent['Event'] };
-            case 'Audio':
-                return { type: 'Audio', content: editorContent['Audio'] };
             default:
                 return {};
         }
@@ -169,7 +167,7 @@ const CreatePost = () => {
         // Build form data
         const formData = new FormData();
 
-        formData.append('post_type', activeButton);
+        formData.append('post_type', activeButton === 'Poll' || activeButton === 'Event' ? 'Thread' : activeButton);
         formData.append('author', authState.user.username);
         formData.append('visibility', visibilityActiveBtn);
         formData.append('restriction', restrictionActiveBtn);
@@ -191,15 +189,10 @@ const CreatePost = () => {
             });
             formData.append('expiration_date', getPollExpirationDate().toISOString());
         }
-        if (activeButton === 'Story') {
-            // formData.append('content', activeTabData.content);
-        }
+
         if (activeButton === 'Event') {
             formData.append('title', activeTabData.title);
             formData.append('event_date', activeTabData.event_date);
-        }
-        if (activeButton === 'Audio') {
-            formData.append('audio_file', activeTabData.audio_file);
         }
 
         console.log('Submitting FormData:');
@@ -249,21 +242,13 @@ const CreatePost = () => {
                                             <FontAwesomeIcon icon={faPoll} className="icon-style" />
                                             Poll/Quiz
                                         </button>
-                                        <button className={`create-post-type-select-btn  ${activeButton === 'Story' ? 'active' : ''}`} onClick={() => handleActiveButtonChange("Story")}>
-                                            <FontAwesomeIcon icon={faCameraRetro} className="icon-style" />
-                                            Story
-                                        </button>
                                         <button className={`create-post-type-select-btn  ${activeButton === 'Event' ? 'active' : ''}`} onClick={() => handleActiveButtonChange("Event")}>
                                             <FontAwesomeIcon icon={faCalendarDay} className="icon-style" />
                                             Event
                                         </button>
-                                        <button className={`create-post-type-select-btn  ${activeButton === 'Audio' ? 'active' : ''}`} onClick={() => handleActiveButtonChange("Audio")}>
-                                            <FontAwesomeIcon icon={faMicrophoneLines} className="icon-style" />
-                                            Audio
-                                        </button>
                                     </div>
                                     <div className='form-prompt-content'>
-                                        {activeButton !== 'Poll' &&
+                                        {(activeButton !== 'Poll' || activeButton !== 'Event') &&
                                             <div className={`create-post-content-editor ${activeButton}`}>
                                                 <CustomEditor
                                                     placeholder="Write something here..."
@@ -296,23 +281,26 @@ const CreatePost = () => {
                                                 ref={pollRef}
                                             />
                                         }
-                                        {activeButton === 'Story' &&
-                                            <div className="story-post-fields">
-                                                {/* <input type="file" accept="image/*,video/*" className="create-post-input" /> */}
-                                            </div>
-                                        }
-
                                         {activeButton === 'Event' &&
-                                            <div className="event-post-fields">
-                                                {/* <input type="text" placeholder="Event Title" className="create-post-input" />
-                                <input type="datetime-local" className="create-post-input" />
-                                <input type="text" placeholder="Event Location" className="create-post-input" /> */}
-                                            </div>
-                                        }
-
-                                        {activeButton === 'Audio' &&
-                                            <div className="audio-post-fields">
-                                                <input type="file" accept="audio/*" className="create-post-input" />
+                                            <div className='create-post-content-editor Event'>
+                                                <CustomEditor
+                                                    placeholder="Write something here..."
+                                                    content={editorContent['Event']}
+                                                    onContentChange={(content) => handleEditorChange(content, 'Event')}
+                                                    showToolbar={showpostEditorToolbar}
+                                                    isOverlay={true}
+                                                />
+                                                <div className="create-post-actions-menubar-inner">
+                                                    <button
+                                                        className="create-post-settings-btn"
+                                                        onClick={() => setShowpostEditorToolbar(!showpostEditorToolbar)}
+                                                    >
+                                                        {showpostEditorToolbar ? 'Hide Toolbar' : 'Show Toolbar'}
+                                                    </button>
+                                                    <button className="create-post-settings-btn">
+                                                        <FaEllipsisV className="icon-style" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         }
                                     </div>
@@ -402,7 +390,7 @@ const CreatePost = () => {
                                                         pollExpirationActiveBtn === '2' ? 'Poll will close after 2 days. ' :
                                                             pollExpirationActiveBtn === '7' ? 'Poll will close after 7 days. ' :
                                                                 pollExpirationActiveBtn === 'Custom' ? `Expires on ${formatDateTime(customPollExpirationDate, true)}. ` : ''}
-                                                    Results will be available to the same audience.
+                                                    Results will be available to the participants.
                                                 </p>
                                             </div>
                                             <div className='post-settings-options'>
@@ -465,7 +453,7 @@ const CreatePost = () => {
                                         <div className='post-sub-setting-header'>
                                             <h3>Comments</h3>
                                             <p>
-                                                {commentsActiveBtn === 'Allow' ? 'Anyone can comment on your post.' :
+                                                {commentsActiveBtn === 'Allow' ? 'Anyone, to whom your post is visible to, can comment.' :
                                                     commentsActiveBtn === 'Disable' ? 'Comments are disabled. No one can comment.' :
                                                         commentsActiveBtn === 'Friends' ? 'Only your friends can comment on this post.' :
                                                             commentsActiveBtn === 'Approval' ? 'Comments will only appear after you approve them.' : ''}

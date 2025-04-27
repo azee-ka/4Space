@@ -26,6 +26,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
             try {
                 const response = await callApi(`posts/post/${postId}/`);
                 setPost(response.data);
+                console.log('Post data:', response.data);
             } catch (error) {
                 console.error('Error fetching post data:', error);
             }
@@ -42,17 +43,15 @@ export const ExpandPostProvider = ({ children, postId }) => {
         try {
             // Make a POST request to the new combined endpoint
             const response = await callApi(`posts/post/${postId}/toggle-like-dislike/`, 'POST', { toggle_type: toggle_type });
-
+            console.log(response.data);
             // Get updated like/dislike counts and user statuses
             const { likes_count, dislikes_count, like_status, dislike_status } = response.data;
 
             // Update the post with the new like/dislike counts and user statuses
             setPost((prevPost) => ({
                 ...prevPost,
-                likes_count,
-                dislikes_count,
-                like_status,
-                dislike_status,
+                stats: { likes_count, dislikes_count },
+                status: { like_status, dislike_status },
             }));
 
         } catch (error) {
@@ -64,7 +63,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
     const toggleBookmark = async () => {
         try {
-            const method = post.like_status === 'liked' ? 'DELETE' : 'POST';
+            const method = post?.status?.like_status === 'liked' ? 'DELETE' : 'POST';
             // const response = await callApi(`radianspace/flare/${postId}/dislike/`, method);
             setPostBookmarked(!postBookmarked);
             // setPost(response.data);
@@ -193,9 +192,9 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
     // Navigate media
     const navigateMedia = (direction) => {
-        if (!post?.media_files) return;
+        if (!post?.post?.media_files) return;
         setCurrentMediaIndex((prevIndex) => {
-            const maxIndex = post.media_files.length - 1;
+            const maxIndex = post?.post?.media_files.length - 1;
             if (direction === 'next' && prevIndex < maxIndex) return prevIndex + 1;
             if (direction === 'prev' && prevIndex > 0) return prevIndex - 1;
             return prevIndex;
@@ -204,7 +203,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
     // Render media content
     const renderMediaContent = () => {
-        const mediaFile = post?.media_files?.[currentMediaIndex];
+        const mediaFile = post?.post?.media_files?.[currentMediaIndex];
         // console.log(mediaFile);
         if (!mediaFile) return null;
 

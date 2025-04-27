@@ -5,12 +5,8 @@ import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
-import ThreadCard from './thread/threadCard';
+import ThreadPosts from './thread/threadPosts';
 import VisualPostsGrid from './visual/visualPostsGrid';
-import PollCard from './poll/pollCard';
-import StoryCard from './story/storyCard';
-import EventCard from './event/eventCard';
-import AudioCard from './audio/audioCard';
 
 const Explore = () => {
     const { callApi } = useApi();
@@ -34,7 +30,7 @@ const Explore = () => {
         fetchExplorePosts();
     }, []);
 
-    const filters = ['All', 'Thread', 'Visual', 'Poll', 'Story', 'Event', 'Audio'];
+    const filters = ['All', 'Thread', 'Visual'];
 
     const renderPosts = () => {
         const filteredPosts = activeFilter === 'All'
@@ -48,15 +44,13 @@ const Explore = () => {
         switch (activeFilter) {
             case 'Visual':
                 return <VisualPostsGrid posts={filteredPosts} />;
+            case 'Thread':
+                return <ThreadPosts posts={filteredPosts} />;
             case 'All':
                 return (
                     <>
                         {renderPostsByType('Thread')}
                         {renderPostsByType('Visual')}
-                        {renderPostsByType('Poll')}
-                        {renderPostsByType('Story')}
-                        {renderPostsByType('Event')}
-                        {renderPostsByType('Audio')}
                     </>
                 );
             default:
@@ -72,16 +66,8 @@ const Explore = () => {
         switch (type) {
             case 'Visual':
                 return <VisualPostsGrid posts={typePosts} key="visual" />;
-            // case 'Thread':
-            //     return <ThreadCard posts={typePosts} key="thread" />;
-            // case 'Poll':
-            //     return <PollCard posts={typePosts} key="poll" />;
-            // case 'Story':
-            //     return <StoryCard posts={typePosts} key="story" />;
-            // case 'Event':
-            //     return <EventCard posts={typePosts} key="event" />;
-            // case 'Audio':
-            //     return <AudioCard posts={typePosts} key="audio" />;
+            case 'Thread':
+                return <ThreadPosts posts={typePosts} key="thread" />;
             default:
                 return null;
         }
