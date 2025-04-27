@@ -1,10 +1,10 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from ..models import ThreadPost, VisualPost, PollPost, StoryPost, EventPost, AudioPost
+from ..models import ThreadPost, VisualPost
 from ..serializers import (
-    ThreadPostSerializer, VisualPostSerializer, PollPostSerializer,
-    StoryPostSerializer, EventPostSerializer, AudioPostSerializer
+    ThreadPostSerializer, VisualPostSerializer,
+    MinimalVisualPostSerializer
 )
 
 @api_view(['GET'])
@@ -17,11 +17,7 @@ def explore_posts(request):
     # Map models to their serializers
     post_types = {
         ThreadPost: ThreadPostSerializer,
-        VisualPost: VisualPostSerializer,
-        PollPost: PollPostSerializer,
-        StoryPost: StoryPostSerializer,
-        EventPost: EventPostSerializer,
-        AudioPost: AudioPostSerializer,
+        VisualPost: MinimalVisualPostSerializer,
     }
 
     all_posts = []

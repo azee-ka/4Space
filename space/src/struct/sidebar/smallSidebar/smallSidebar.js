@@ -61,11 +61,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         }
     };
 
-    console.log('sidebarMode', setMode);
-
-    const sidebarBtns = mode === 'communities' ? communitiesIcons : homeIcons;
-    
-
+    const sidebarBtns = mode === 'communities' ? communitiesIcons : homeIcons;    
 
     return (
         <div className={`small-sidebar ${searchSidebarOpen ? 'search-sidebar-open' : ''}`}>

@@ -30,6 +30,7 @@ import CommunitiesTimeline from '../apps/communities/timeline/timline';
 import Community from '../apps/communities/community/community';
 import CommunitiesDashboard from '../apps/communities/dashboard/dashboard';
 import { ModeProvider } from '../context/modeContext';
+import ExpandPost from '../components/postUI/expandPost/expandPost';
 
 
 const AppRouter = () => {
@@ -43,6 +44,7 @@ const AppRouter = () => {
         { name: 'Timeline', path: '/timeline', component: <Timeline />, key: 'Timeline' },
         { name: 'Explore', path: '/explore', component: <Explore />, key: 'Explore' },
         { name: 'Create Post', path: '/create/post', component: <CreatePost />, key: 'CreatePost' },
+        { name: 'Expand Post', path: '/posts/p/:postId', component: <ExpandPost />, key: 'ExpandPost' },
 
         // Communities
         { name: 'Community Dasboard', path: '/communities', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
