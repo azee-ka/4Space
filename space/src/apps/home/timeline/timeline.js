@@ -14,7 +14,7 @@ const Timeline = () => {
 
     const [activeFilter, setActiveFilter] = useState('All');
 
-    const [secondTimelineAdd, setSecondTimelineAdd] = useState(false);
+    const [secondTimelineAdd, setSecondTimelineAdd] = useState(true);
 
     useEffect(() => {
         const fetchTimelinePosts = async () => {
@@ -37,7 +37,7 @@ const Timeline = () => {
                 <h2>Timeline</h2>
                 <div className="timeline-header-right">
                     <button onClick={() => setSecondTimelineAdd(!secondTimelineAdd)} className="timeline-add-btn">
-                        Add Timeline
+                        Toggle Timeline
                     </button>
                     <DropdownButton
                         toggleContent={
