@@ -4,12 +4,34 @@ import useApi from '../../../utils/useApi';
 import { useExpandPostContext } from '../expandPost/expandPostContext';
 import RenderText from '../../../utils/autoCompleteInput/renderText';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
-import { FaHeart, FaCommentDots, FaRetweet, FaBookmark, FaShareAlt, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaHeart, FaCommentDots, FaRetweet, FaBookmark, FaShareAlt, FaArrowUp, FaArrowDown, FaReply } from 'react-icons/fa';
 import { formatDateTime } from '../../../utils/formatDateTime';
+import CustomEditor from '../../../utils/editor/editor';
+import EmojiButton from '../../../utils/editor/EmojiButton';
 
 const ThreadPost = () => {
-    const { post } = useExpandPostContext();
-    const { callApi } = useApi();
+    const {
+        post,
+        postBookmarked,
+        commentText,
+        commentReplyText,
+        showLikesOverlay,
+        showDislikesOverlay,
+        setCommentText,
+        setShowLikesOverlay,
+        setShowDislikesOverlay,
+        toggleLikeDislike,
+        deletePost,
+        toggleBookmark,
+        addComment,
+        voteComment,
+        toggleCommentLike,
+        replyToComment,
+        navigateMedia,
+        renderMediaContent,
+        handleCloseLikesOverlay,
+    } = useExpandPostContext();
+
     const [replyText, setReplyText] = useState('');
 
     useEffect(() => {
@@ -17,13 +39,6 @@ const ThreadPost = () => {
             console.log('ThreadPost component loaded', post);
         }
     }, [post]);
-
-    const handleReplySubmit = () => {
-        if (!replyText.trim()) return;
-        console.log('Reply submitted:', replyText);
-        setReplyText('');
-        // later: call API to submit comment
-    };
 
     return post ? (
         <div className="thread-post-page">
@@ -91,30 +106,61 @@ const ThreadPost = () => {
                         </div>
 
                         {/* Reply field */}
-                        <div className="thread-post-reply">
-                            <input
-                                type="text"
-                                placeholder="Write your reply..."
-                                value={replyText}
-                                onChange={(e) => setReplyText(e.target.value)}
+                        <div className="thread-post-reply-container">
+                            <div className="thread-post-reply">
+                            <EmojiButton />
+                            <CustomEditor
+                                placeholder='Write your reply here...'
+                                content={commentText}
+                                onContentChange={setCommentText}
+                                showToolbar={false}
                             />
-                            <button onClick={handleReplySubmit}>Reply</button>
+                            </div>
+                            
+                        {(commentText !== '' || commentText === "<p><br></p>") &&
+                            <button onClick={addComment}>Reply</button>
+                        }
                         </div>
                     </div>
                 </div>
 
                 {/* Comments List */}
-                <div className="thread-post-comments">
-                    {/* Later: Map real comments */}
-                    <p className="comments-heading">Comments</p>
-                    {/* Fake placeholder comments for now */}
-                    <div className="comment-item">
-                        <p><strong>@user123</strong> This is a cool thread!</p>
+                {/* Comments List */}
+<div className="thread-post-comments">
+    <p className="comments-heading">Comments</p>
+
+    {post?.comments?.length > 0 ? (
+        post.comments.map((comment) => (
+            <div key={comment.id} className="comment-item">
+                <div className="comment-header">
+                    <div className="comment-profile-image">
+                        <ProfilePicture src={comment.author?.profile_image} />
                     </div>
-                    <div className="comment-item">
-                        <p><strong>@someone</strong> Awesome work!</p>
+                    <div className="comment-author-info">
+                        <span className="comment-username">@{comment.author?.username}</span>
+                        <span className="comment-time">{formatDateTime(comment.created_at, true)}</span>
                     </div>
                 </div>
+
+                <div className="comment-text">
+                    <RenderText text={comment.text} />
+                </div>
+
+                {/* Interaction Row */}
+                <div className="comment-actions-row">
+                    <button className="comment-action-btn"><FaHeart /> Like</button>
+                    <button className="comment-action-btn"><FaReply /> Reply</button>
+                    <button className="comment-action-btn"><FaArrowUp /> Upvote</button>
+                    <button className="comment-action-btn"><FaArrowDown /> Downvote</button>
+                </div>
+            </div>
+        ))
+    ) : (
+        <div className="no-comments">No comments yet. Be the first to reply!</div>
+    )}
+</div>
+
+
             </div>
         </div>
     ) : (
