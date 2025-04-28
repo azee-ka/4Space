@@ -16,10 +16,11 @@ const PostsGrid = ({ classname, postsData, handleExpandPostOpen }) => {
   }, [postsData]);
 
   const handlePostClick = (post, index) => {
-    console.log('post click ', post);
+    console.log('post click ', post, index, posts);
     handleExpandPostOpen(post.id, posts, window.location.pathname + window.location.hash, index, post.post_type);
   };
 
+  console.log('PostsGrid posts:', posts);
 
   return (posts !== undefined || posts !== null) ? (
     posts.length > 0 ? (

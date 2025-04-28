@@ -32,46 +32,9 @@ const Explore = () => {
 
     const filters = ['All', 'Thread', 'Visual'];
 
-    const renderPosts = () => {
-        const filteredPosts = activeFilter === 'All'
-            ? posts
-            : posts.filter(post => post.post_type === activeFilter);
-    
-        if (filteredPosts.length === 0) {
-            return <div>No posts available.</div>;
-        }
-    
-        switch (activeFilter) {
-            case 'Visual':
-                return <VisualPostsGrid posts={filteredPosts} />;
-            case 'Thread':
-                return <ThreadPosts posts={filteredPosts} />;
-            case 'All':
-                return (
-                    <>
-                        {renderPostsByType('Thread')}
-                        {renderPostsByType('Visual')}
-                    </>
-                );
-            default:
-                return null;
-        }
-    };
-    
-
-    const renderPostsByType = (type) => {
-        const typePosts = posts.filter(post => post.post_type === type);
-        if (typePosts.length === 0) return null;
-
-        switch (type) {
-            case 'Visual':
-                return <VisualPostsGrid posts={typePosts} key="visual" />;
-            case 'Thread':
-                return <ThreadPosts posts={typePosts} key="thread" />;
-            default:
-                return null;
-        }
-    };
+    const filteredPosts = activeFilter === 'All'
+    ? posts
+    : posts.filter(post => post.post_type === activeFilter);
 
 
     return (
@@ -105,7 +68,22 @@ const Explore = () => {
                 <div className="loading">Loading posts...</div>
             ) : (
                 <div className={`posts-container`}>
-                    {renderPosts()}
+                    {loading ? (
+                    <div className="loading">Loading posts...</div>
+                ) : filteredPosts.length === 0 ? (
+                    <div className="no-posts">No posts available.</div>
+                ) : (
+                    <>
+                        {activeFilter === 'Thread' && <ThreadPosts posts={filteredPosts} />}
+                        {activeFilter === 'Visual' && <VisualPostsGrid posts={filteredPosts} />}
+                        {activeFilter === 'All' && (
+                            <>
+                                <ThreadPosts posts={filteredPosts.filter(post => post.post_type === 'Thread')} />
+                                <VisualPostsGrid posts={filteredPosts.filter(post => post.post_type === 'Visual')} />
+                            </>
+                        )}
+                    </>
+                )}
                 </div>
             )}
         </div>

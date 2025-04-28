@@ -40,8 +40,15 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
 
 
     const handlePostClick = (index, post_type) => {
-        handleExpandPostOpen(postId, posts, window.location.pathname + window.location.hash, index, post_type);
+        let filteredPosts = posts;
+    
+        if (post_type === 'Visual') {
+            filteredPosts = posts.filter(p => p.post_type === 'Visual');
+        }
+    
+        handleExpandPostOpen(postId, filteredPosts, window.location.pathname + window.location.hash, index, post_type);
     };
+    
 
     // console.log('TimelinePerPost post:', post);
 
