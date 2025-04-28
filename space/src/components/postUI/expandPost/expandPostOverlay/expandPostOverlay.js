@@ -61,7 +61,7 @@ const ExpandedPostOverlay = () => {
     };
 
 
-    console.log('ExpandedPostOverlay post:', post);
+    // console.log('ExpandedPostOverlay post:', post);
 
     return post ? (
         <div className="expanded-post-container">

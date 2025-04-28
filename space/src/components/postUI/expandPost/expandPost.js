@@ -7,14 +7,13 @@ import { ExpandPostProvider } from './expandPostContext';
 import { usePostContext } from '../../../context/PostContext';
 import PostMoreOverlay from './postMoreOverlay/postMoreOverlay';
 
-const ExpandPost = ({
-}) => {
+const ExpandPost = ({}) => {
     const {
         expandPostIdReciever: overlayPostId,
         handleExpandPostClose,
     } = usePostContext();
 
-    console.log('ExpandPost overlayPostId:', overlayPostId);
+    // console.log('ExpandPost overlayPostId:', overlayPostId);
 
     const { postId } = useParams();
     const { showPostMoreMenuOverlay, setShowPostMoreMenuOverlay } = usePostContext();
@@ -25,6 +24,7 @@ const ExpandPost = ({
         setExpandPostIdFinal(overlayPostId ? overlayPostId : postId);
     }, [overlayPostId, postId]);
 
+    // console.log('ExpandPost expandPostIdFinal:', expandPostIdFinal);
 
     return (
         <ExpandPostProvider postId={expandPostIdFinal}>

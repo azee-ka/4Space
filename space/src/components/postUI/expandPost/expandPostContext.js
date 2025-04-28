@@ -26,7 +26,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
             try {
                 const response = await callApi(`posts/post/${postId}/`);
                 setPost(response.data);
-                console.log('Post data:', response.data);
+                // console.log('Post data:', response.data);
             } catch (error) {
                 console.error('Error fetching post data:', error);
             }
@@ -43,7 +43,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
         try {
             // Make a POST request to the new combined endpoint
             const response = await callApi(`posts/post/${postId}/toggle-like-dislike/`, 'POST', { toggle_type: toggle_type });
-            console.log(response.data);
+            // console.log(response.data);
             // Get updated like/dislike counts and user statuses
             const { likes_count, dislikes_count, like_status, dislike_status } = response.data;
 
@@ -132,7 +132,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
                 };
             });
 
-            console.log(response.data);
+            // console.log(response.data);
         } catch (error) {
             console.error('Error liking/unliking comment:', error);
         }
@@ -171,7 +171,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
                 };
             });
 
-            console.log(response.data);
+            // console.log(response.data);
         } catch (error) {
             console.error('Error voting comment:', error);
         }
@@ -182,7 +182,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
         try {
             const response = await callApi(`posts/post/comment/${comment_id}/reply/`, 'POST', { data: commentReplyText });
             // setPost(response.data);
-            console.log(response.data);
+            // console.log(response.data);
         } catch (error) {
             console.error('Error voting comment:', error);
         }

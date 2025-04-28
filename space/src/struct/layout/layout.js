@@ -13,6 +13,7 @@ import SearchSidebar from '../sidebar/searchSidebar/searchSidebar';
 import SmallSidebar from '../sidebar/smallSidebar/smallSidebar';
 import { usePostContext } from '../../context/PostContext';
 import ExpandPost from '../../components/postUI/expandPost/expandPost';
+import Post from '../../apps/home/post/post';
 
 function Layout({ children, pageName }) {
     const { authState } = useAuth();
@@ -127,7 +128,7 @@ function Layout({ children, pageName }) {
                 <NotificationsMenu
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />}
-                {expandPostIdReciever && <ExpandPost />}
+                {expandPostIdReciever && <Post />}
         </div>
     );
 }

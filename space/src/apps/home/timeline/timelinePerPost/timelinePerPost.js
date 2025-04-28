@@ -39,11 +39,11 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
     } = useExpandPostContext();
 
 
-    const handlePostClick = (index) => {
-        handleExpandPostOpen(postId, posts, window.location.pathname + window.location.hash, index);
+    const handlePostClick = (index, post_type) => {
+        handleExpandPostOpen(postId, posts, window.location.pathname + window.location.hash, index, post_type);
     };
 
-    console.log('TimelinePerPost post:', post);
+    // console.log('TimelinePerPost post:', post);
 
     return post ? (
         <div className='timeline-per-post'>
@@ -63,7 +63,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                             <p>Posted {timeAgo(post?.meta?.created_at)}</p>
                         </div>
                         <div className='timeline-post-stats-count'>
-                            <p onClick={() => handlePostClick(index)}>{post?.comments.length} {post?.comments?.length === 1 ? 'comment' : 'comments'}</p>
+                            <p onClick={() => handlePostClick(index, post.post_type)}>{post?.comments.length} {post?.comments?.length === 1 ? 'comment' : 'comments'}</p>
                             <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{post?.stats?.likes_count} {post?.stats?.likes_count === 1 ? 'like' : 'likes'}</p>
                             <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{post?.stats?.dislikes_count} {post?.stats?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
                         </div>
@@ -105,7 +105,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                                 </div>
                             </div>
                             {post?.comments.length > 0 &&
-                                <div className='timeline-view-comment-btn' onClick={() => handlePostClick(index)}>
+                                <div className='timeline-view-comment-btn' onClick={() => handlePostClick(index, post.post_type)}>
                                     <p>View {post?.comments.length} Comments</p>
                                 </div>
                             }
@@ -177,7 +177,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                         className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`}
                     />
                 </div>
-                <div onClick={() => handlePostClick(index)} id='more-button'>
+                <div onClick={() => handlePostClick(index, post.post_type)} id='more-button'>
                     <FaEllipsisH
                         className={`icon-style`}
                     />
