@@ -8,10 +8,12 @@
     background: transparent;
     color: white;
     box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .thread-post-container {
     width: 600px;
+    height: auto;
     backdrop-filter: blur(15px);
     background: rgba(255, 255, 255, 0.04);
     border-radius: 18px;
@@ -53,8 +55,8 @@
 }
 
 .thread-post-content {
-    font-size: 1.2em;
-    line-height: 1.6;
+    font-size: 1.1em;
+    line-height: 1.5;
     color: rgba(220, 220, 220, 0.95);
     word-break: break-word;
 }
