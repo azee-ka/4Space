@@ -79,6 +79,29 @@ def get_post_by_id(request, post_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_post_type_by_id(request, post_id):
+    PostModels = [ThreadPost, VisualPost]
+
+    post = None
+    for model_class in PostModels:
+        try:
+            post = model_class.objects.get(id=post_id)
+            break
+        except model_class.DoesNotExist:
+            continue
+
+    if not post:
+        return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = PostRetrieveSerializer(post, context={'request': request})
+    post_type = serializer.data['post_type']
+
+    return Response({'post_type': post_type}, status=status.HTTP_200_OK)
+
+
+
 
 # Update a post by UUID
 @api_view(['PUT'])

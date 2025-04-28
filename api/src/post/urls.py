@@ -12,6 +12,9 @@ urlpatterns = [
     # Retrieve a specific post by its UUID
     path('post/<uuid:post_id>/', views.get_post_by_id, name='get_post_by_id'),
 
+    # Retrieve a specific post_type by its UUID
+    path('post/<uuid:post_id>/type/', views.get_post_type_by_id, name='get_post_type_by_id'),
+
     # Update a post by its UUID
     path('post/<uuid:post_id>/update/', views.update_post, name='update_post'),
     

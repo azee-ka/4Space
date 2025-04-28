@@ -18,14 +18,20 @@ export const PostProvider = ({ children }) => {
 
     const [showPostMoreMenuOverlay, setShowPostMoreMenuOverlay] = useState(false);
     
-    const handleExpandPostOpen = (postIdToExpand, posts, originalPreviousUrl, index) => {
-        setExpandPostIdReciever(postIdToExpand);
-        setShowPreviousPostButton(index > 0);
-        setShowNextPostButton(index < posts.length - 1);
-        setCurrentExpandPostIndex(index);
-        setPostsList(posts);
-        setExpandPostOnCloseUrl(originalPreviousUrl);
-        window.history.replaceState(null, null, `/posts/p/${postIdToExpand}`);
+    const handleExpandPostOpen = (postIdToExpand, posts, originalPreviousUrl, index, post_type) => {
+        if(post_type === "Thread") {
+            console.log("Thread Post ID to expand:", postIdToExpand);
+            navigate(`/posts/p/${postIdToExpand}`);
+        } else {
+            console.log("Post ID to expand:", postIdToExpand);
+            setExpandPostIdReciever(postIdToExpand);
+            setShowPreviousPostButton(index > 0);
+            setShowNextPostButton(index < posts.length - 1);
+            setCurrentExpandPostIndex(index);
+            setPostsList(posts);
+            setExpandPostOnCloseUrl(originalPreviousUrl);
+            window.history.replaceState(null, null, `/posts/p/${postIdToExpand}`);
+        }
     };
 
     const handlePreviousPostClick = () => {
