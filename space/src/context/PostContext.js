@@ -29,6 +29,7 @@ export const PostProvider = ({ children }) => {
             setShowNextPostButton(index < posts.length - 1);
             setCurrentExpandPostIndex(index);
             setPostsList(posts);
+            console.log("expandede d e Posts List:", posts);
             setExpandPostOnCloseUrl(originalPreviousUrl);
             window.history.replaceState(null, null, `/posts/p/${postIdToExpand}`);
         }
@@ -37,7 +38,7 @@ export const PostProvider = ({ children }) => {
     const handlePreviousPostClick = () => {
         if (currentExpandPostIndex > 0) {
             const newIndex = currentExpandPostIndex - 1;
-            handleExpandPostOpen(postsList[newIndex].uuid, postsList, expandPostOnCloseUrl, newIndex);
+            handleExpandPostOpen(postsList[newIndex].id, postsList, expandPostOnCloseUrl, newIndex);
             setCurrentExpandPostIndex(newIndex);
         } else {
             setShowPreviousPostButton(false);
@@ -47,7 +48,7 @@ export const PostProvider = ({ children }) => {
     const handleNextPostClick = () => {
         if (currentExpandPostIndex < postsList.length - 1) {
             const newIndex = currentExpandPostIndex + 1;
-            handleExpandPostOpen(postsList[newIndex].uuid, postsList, expandPostOnCloseUrl, newIndex);
+            handleExpandPostOpen(postsList[newIndex].id, postsList, expandPostOnCloseUrl, newIndex);
             setCurrentExpandPostIndex(newIndex);
         } else {
             setShowNextPostButton(false);
