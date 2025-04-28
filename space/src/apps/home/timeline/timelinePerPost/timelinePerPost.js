@@ -13,9 +13,10 @@ import { Link } from 'react-router';
 import { timeAgo } from '../../../../utils/convertDateTIme';
 import { usePostContext } from '../../../../context/PostContext';
 import { useExpandPostContext } from '../../../../components/postUI/expandPost/expandPostContext';
-import { FaBookmark, FaChevronLeft, FaChevronRight, FaEllipsisH, FaPaperPlane } from 'react-icons/fa';
+import { FaArrowDown, FaArrowUp, FaBookmark, FaChevronLeft, FaChevronRight, FaCommentDots, FaEllipsisH, FaEllipsisV, FaHeart, FaPaperPlane, FaReply, FaRetweet, FaShareAlt } from 'react-icons/fa';
 import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import DropdownButton from '../../../../utils/popperButton/DropdownButton';
+import { formatDateTime } from '../../../../utils/formatDateTime';
 
 const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
     const { handleExpandPostOpen } = usePostContext();
@@ -41,162 +42,158 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
 
     const handlePostClick = (index, post_type) => {
         let filteredPosts = posts;
-    
+
         if (post_type === 'Visual') {
             filteredPosts = posts.filter(p => p.post_type === 'Visual');
         }
-    
+
         handleExpandPostOpen(postId, filteredPosts, window.location.pathname + window.location.hash, index, post_type);
     };
-    
+
 
     // console.log('TimelinePerPost post:', post);
 
-    return post ? (
-        <div className='timeline-per-post'>
-            <div
-                className='timeline-per-post-inner'>
-                <div className='timeline-post-user-info'>
-                    <div className='timeline-post-user-profile-picture'>
+    return post ? (<div className="timeline-per-post-wrapper">
+
+        {/* Main Post Card */}
+        <div className="timeline-per-post">
+            <div className="timeline-post-user-info">
+                <div className="timeline-post-user-details">
+                    <div className="user-profile-wrapper">
                         <ProfilePicture src={post?.author?.profile_image} />
                     </div>
-                    <div className='timeline-post-user-username'>
-                        <Link to={`profile/${post?.author?.username}`}>
-                            {post?.author?.username}
-                        </Link>
+                    <div className="user-info-text">
+                        <Link to={`/profile/${post?.author?.username}`}>@{post?.author?.username}</Link>
+                        <p className="post-time">{formatDateTime(post?.meta?.created_at, true)}</p>
                     </div>
-                    <div className='timeline-post-stats'>
-                        <div className='timeline-post-created-at'>
-                            <p>Posted {timeAgo(post?.meta?.created_at)}</p>
+                </div>
+
+                {/* Post Stats Section */}
+                <div className="timeline-post-stats">
+                    <div className="stat-item" onClick={() => setShowLikesOverlay(true)}>
+                        <strong>{post?.stats?.likes_count || 0}</strong>
+                        <span>Likes</span>
+                    </div>
+                    <div className="stat-item" onClick={() => setShowDislikesOverlay(true)}>
+                        <strong>{post?.stats?.dislikes_count || 0}</strong>
+                        <span>Dislikes</span>
+                    </div>
+                    <div className="stat-item" onClick={() => handlePostClick(index, post.post_type)}>
+                        <strong>{post?.comments?.length || 0}</strong>
+                        <span>Comments</span>
+                    </div>
+                </div>
+
+            </div>
+
+            {post?.post_type === 'Visual' && (activeFilter === 'Visual' || activeFilter === 'All') && (
+                <div className="timeline-visual-post">
+                    <div className="media-container">
+                        {renderMediaContent(post?.post?.media_files[currentMediaIndex])}
+                        <div className="media-nav-buttons">
+                            {currentMediaIndex < (post?.post?.media_files?.length || 0) - 1 && (
+                                <div></div>
+                            )}
+                            {currentMediaIndex > 0 && (
+                                <button onClick={() => navigateMedia('prev')}><FaChevronLeft /></button>
+                            )}
+                            {currentMediaIndex < (post?.post?.media_files?.length || 0) - 1 && (
+                                <button onClick={() => navigateMedia('next')}><FaChevronRight /></button>
+                            )}
+                            {currentMediaIndex > 0 && (
+                                <div></div>
+                            )}
+
                         </div>
-                        <div className='timeline-post-stats-count'>
-                            <p onClick={() => handlePostClick(index, post.post_type)}>{post?.comments.length} {post?.comments?.length === 1 ? 'comment' : 'comments'}</p>
-                            <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{post?.stats?.likes_count} {post?.stats?.likes_count === 1 ? 'like' : 'likes'}</p>
-                            <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{post?.stats?.dislikes_count} {post?.stats?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
+                    </div>
+
+                    <div className="timeline-caption-and-comment">
+                        <div className="caption-block">
+                            <Link to={`/profile/${post?.author?.username}`} className="username">@{post?.author?.username}</Link>
+                            <RenderText text={post?.post?.caption} />
+                        </div>
+
+                        <div className="view-comments" onClick={() => handlePostClick(index, post.post_type)}>
+                            View {post?.comments?.length || 0} Comments
+                        </div>
+
+                        <div className="comment-input-wrapper">
+                            <input
+                                placeholder="Write your comment..."
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                            />
+                            <button onClick={addComment}>
+                                <FaPaperPlane />
+                            </button>
                         </div>
                     </div>
                 </div>
-                {post?.post_type === 'Visual' && (activeFilter === 'Visual' || activeFilter === 'All') &&
-                    <>
-                        <div className='timeline-post-media-container'>
-                            {renderMediaContent(post?.post?.media_files[currentMediaIndex])}
-                            <div className='timeline-post-previous-next-post-button-container'>
-                                {currentMediaIndex > 0 ? (
-                                    <button className='timeline-post-previous-post-button-container-inner' onClick={() => navigateMedia('prev')}>
-                                        <FaChevronLeft className='icon-style' />
-                                    </button>
-                                ) : (
-                                    <div className='timeline-btn-placeholder' />
-                                )
-                                }
-                                {currentMediaIndex <= post?.post?.media_files?.length - 2 ? (
-                                    <button className='timeline-post-next-post-button-container-inner' onClick={() => navigateMedia('next')}>
-                                        <FaChevronRight className='icon-style' />
-                                    </button>
-                                ) : (
-                                    <div className='timeline-btn-placeholder' />
-                                )
-                                }
-                            </div>
-                        </div>
-                        <div className='timeline-post-comments-caption'>
-                            <div className='timeline-caption'>
-                                <Link to={`/profile/${post?.author?.username}`} className='username'>
-                                    {post?.author?.username}
-                                </Link>
-                                <div className='caption-container'>
-                                    <div className='caption-text'>
-                                        <RenderText text={post?.post?.caption} />
-                                        {/* <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post?.post?.caption) }} /> */}
-                                    </div>
-                                </div>
-                            </div>
-                            {post?.comments.length > 0 &&
-                                <div className='timeline-view-comment-btn' onClick={() => handlePostClick(index, post.post_type)}>
-                                    <p>View {post?.comments.length} Comments</p>
-                                </div>
-                            }
-                            <div className='timeline-add-comment'>
-                                <input
-                                    placeholder='Comment here...'
-                                    value={commentText}
-                                    onChange={(e) => setCommentText(e?.target?.value)}
-                                />
-                                <button onClick={() => addComment()}>
-                                    <FaPaperPlane className='icon-style' />
-                                </button>
-                            </div>
-                        </div>
-                    </>}
+            )}
 
-                {post?.post_type === 'Thread' && (activeFilter === 'Thread' || activeFilter === 'All') &&
-                    <div className='timeline-post-thread'>
-                        <div className='timeline-thread-content'>
+            {post?.post_type === 'Thread' && (activeFilter === 'Thread' || activeFilter === 'All') && (
+                <div className="timeline-thread-post">
+                    <div className="thread-post-body">
+                        <div className="thread-content">
                             <RenderText text={post?.post?.content} />
                         </div>
-                        <div className='timeline-thread-detail-interaction'>
-                            <button className='timeline-post-detail-interaction-btn'>
-                                <FontAwesomeIcon icon={faArrowUp} className="icon-style" />
-                            </button>
-                            <button className='timeline-post-detail-interaction-btn'>
-                                <FontAwesomeIcon icon={faArrowDown} className="icon-style" />
-                            </button>
-                            <button className='timeline-post-detail-interaction-btn'>
-                                <FontAwesomeIcon icon={faHeart} className="icon-style" />
-                            </button>
-                            <button className='timeline-post-detail-interaction-btn'>
-                                <FontAwesomeIcon icon={faShareAlt} className="icon-style" />
-                            </button>
-                            <button className='timeline-post-detail-interaction-btn'>
-                                <FontAwesomeIcon icon={faReply} className="icon-style" />
-                            </button>
-                            <DropdownButton
-                                toggleContent={
-                                    <button className='timeline-post-detail-interaction-btn'>
-                                        <FontAwesomeIcon icon={faEllipsisV} className="icon-style" />
-                                    </button>
-                                }
-                            >
-                                <div
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="quanta-packet-more-card"
-                                >
-                                    <ul>
-                                        <li>Option 1</li>
-                                        <li>Option 2</li>
-                                        <li>Option 3</li>
-                                    </ul>
-                                </div>
-                            </DropdownButton>
+
+                        <div className="thread-vote-buttons">
+                            <button className="vote-btn"><FaArrowUp /></button>
+                            <button className="vote-btn"><FaArrowDown /></button>
                         </div>
                     </div>
-                }
-            </div>
-            <div className='timeline-per-post-interaction'>
-                <div onClick={() => toggleLikeDislike('like')}>
-                    <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
+
+                    <div className="thread-actions-row">
+                        <button className="thread-action-btn"><FaHeart /> Like</button>
+                        <button className="thread-action-btn"><FaReply /> Reply</button>
+                        <button className="thread-action-btn"><FaRetweet /> Repost</button>
+                        <button className="thread-action-btn"><FaBookmark/> Save</button>
+                        <button className="thread-action-btn"><FaShareAlt/> Share</button>
+                        <DropdownButton
+                            toggleContent={<button className="thread-action-btn"><FaEllipsisV /></button>}
+                        >
+                            <div className="more-options-card">
+                                <ul>
+                                    <li>Option 1</li>
+                                    <li>Option 2</li>
+                                </ul>
+                            </div>
+                        </DropdownButton>
+                    </div>
                 </div>
-                <div onClick={() => toggleLikeDislike('dislike')}>
-                    <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
-                </div>
-                <div onClick={() => toggleBookmark()}>
-                    <FaBookmark
-                        className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`}
-                    />
-                </div>
-                <div onClick={() => handlePostClick(index, post.post_type)} id='more-button'>
-                    <FaEllipsisH
-                        className={`icon-style`}
-                    />
-                </div>
-            </div>
-            {showLikesOverlay && (
-                <UserListOverlay userList={post.likes} onClose={handleCloseLikesOverlay} title={'Likes'} />
             )}
-            {showDislikesOverlay && (
-                <UserListOverlay userList={post.dislikes} onClose={handleCloseLikesOverlay} title={'Dislikes'} />
-            )}
+
+
         </div>
+
+        {/* Floating Buttons Separate */}
+        <div className="timeline-floating-actions">
+            <div onClick={() => toggleLikeDislike('like')} className="float-btn">
+                <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
+            </div>
+            <div onClick={() => toggleLikeDislike('dislike')} className="float-btn">
+                <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
+            </div>
+            <div onClick={() => toggleBookmark()} className="float-btn">
+                <FaBookmark className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`} />
+            </div>
+            <div onClick={() => handlePostClick(index, post.post_type)} className="float-btn">
+                <FaEllipsisH className="icon-style" />
+            </div>
+        </div>
+
+        {/* Overlays */}
+        {showLikesOverlay && (
+            <UserListOverlay userList={post.likes} onClose={handleCloseLikesOverlay} title="Likes" />
+        )}
+        {showDislikesOverlay && (
+            <UserListOverlay userList={post.dislikes} onClose={handleCloseLikesOverlay} title="Dislikes" />
+        )}
+    </div>
+
+
+
     ) : (
         <div>Loading...</div>
     )
