@@ -4,6 +4,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    padding: 0px 5px;
     gap: 10px;
 }
 
@@ -83,6 +84,7 @@
     border-radius: 8px;
     transition: all 0.3s ease;
 }
+
 .timeline-filters button:hover {
     background-color: rgba(119, 119, 119, 0.5);
     cursor: pointer;
@@ -104,12 +106,14 @@
     border: 1px solid rgba(128, 128, 128, 0.528);
     font-size: 0.8em;
 }
+
 .timeline-add-btn:hover {
     background-color: rgba(119, 119, 119, 0.5);
     cursor: pointer;
     color: white;
     /* border: 1px solid rgba(255, 255, 255, 0.528); */
 }
+
 .timeline-add-btn.active {
     background-color: rgba(103, 109, 110, 0.5);
     cursor: pointer;
@@ -175,10 +179,12 @@
     gap: 10px;
     color: rgb(214, 214, 214);
 }
+
 .timeline-no-posts h3 {
     padding: 0;
     margin: 0;
 }
+
 .timeline-no-posts h3:nth-child(2) {
     font-size: 1em !important;
     color: rgb(195, 195, 195);

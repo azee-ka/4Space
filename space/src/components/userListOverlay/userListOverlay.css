@@ -68,24 +68,20 @@
     color: white;
     margin-bottom: 5px;
     font-size: 0.7em;
-    background-color: rgba(255, 0, 0, 0);
+    background-color: rgba(205, 21, 21, 0);
     height: 40px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /* border-bottom: 1px solid gray; */
   }
   .follow-list-header h2 {
     font-size: 1.5em;
     margin: 0;
     padding: 0;
     color: white;
-    text-align: center;
-    background-color: rgba(0, 145, 255, 0);
-    height: 100%;
-    display: flex;
-    align-items: center;
+    background-color: rgba(0, 255, 170, 0.5);
+    align-items: center !important;
   }
   .follow-overlay-line-seperator {
     height: 0.5px;
