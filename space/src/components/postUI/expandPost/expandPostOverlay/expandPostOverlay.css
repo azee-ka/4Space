@@ -48,7 +48,11 @@
     pointer-events: none;
 }
 
-
+.icon-style {
+    padding: 0;
+    margin: 0;
+    align-self: center;
+}
 .expand-previous-next-post-button-container.overlay button {
     height: 100%;
     aspect-ratio: 1 / 1;
@@ -60,7 +64,7 @@
     border: 1px solid rgb(131, 131, 131, 0);
     background-color: rgba(105, 105, 105, 0.444);
     font-size: 20px;
-    padding: 1em 0.5em;
+    padding: 1em 0em;
     box-sizing: border-box;
     z-index: 1000;
     border: 0;

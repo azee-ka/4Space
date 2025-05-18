@@ -80,14 +80,14 @@ const Timeline = () => {
                             }
                         </div>
                         {secondTimelineAdd &&
-                        <div className="timeline-right-side-container">
+                            <div className="timeline-right-side-container">
                                 {filteredPosts.map((post, index) => (
                                     <ExpandPostProvider key={index} postId={post.id}>
                                         <TimelinePerPost postId={post.id} posts={filteredPosts} index={index} activeFilter={activeFilter} />
                                     </ExpandPostProvider>
                                 ))}
-                        </div>
-}
+                            </div>
+                        }
                     </div>
                 ) : (
                     <div className="timeline-no-posts">

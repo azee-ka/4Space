@@ -39,6 +39,7 @@ const Explore = () => {
 
     return (
         <div className="explore-page">
+            <div className="explore-page-inner">
             <div className="explore-header">
                 <h2>Explore</h2>
                 <DropdownButton
@@ -86,6 +87,7 @@ const Explore = () => {
                 )}
                 </div>
             )}
+            </div>
         </div>
     );
 };

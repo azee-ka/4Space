@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import useApi from '../../../utils/useApi';
 import VideoPlayer from '../../videoPlayer/videoPlayer';
+import { useAuth } from '../../../hooks/useAuth';
 
 const ExpandPostContext = createContext();
 
 export const ExpandPostProvider = ({ children, postId }) => {
     const { callApi } = useApi();
+    const { authState } = useAuth();
 
     // States managed by the PostProvider
     const [post, setPost] = useState(null); // Complete post data
@@ -19,6 +21,12 @@ export const ExpandPostProvider = ({ children, postId }) => {
     const [showDislikesOverlay, setShowDislikesOverlay] = useState(false);
 
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0); // Media navigation index
+
+    const [isSelfPost, setIsSelfPost] = useState(false);
+
+    useEffect(() => {
+        setIsSelfPost(post?.author?.username === authState?.user?.username);
+    } , [post, authState]);
 
     // Fetch and set initial post data
     useEffect(() => {
@@ -243,6 +251,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
         navigateMedia,
         renderMediaContent,
         handleCloseLikesOverlay,
+        isSelfPost,
     };
 
     return <ExpandPostContext.Provider value={value}>{children}</ExpandPostContext.Provider>;

@@ -13,7 +13,7 @@ import { Link } from 'react-router';
 import { timeAgo } from '../../../../utils/convertDateTIme';
 import { usePostContext } from '../../../../context/PostContext';
 import { useExpandPostContext } from '../../../../components/postUI/expandPost/expandPostContext';
-import { FaArrowDown, FaArrowUp, FaBookmark, FaChevronLeft, FaChevronRight, FaCommentDots, FaEllipsisH, FaEllipsisV, FaHeart, FaPaperPlane, FaReply, FaRetweet, FaShareAlt } from 'react-icons/fa';
+import { FaArrowDown, FaArrowUp, FaBan, FaBellSlash, FaBookmark, FaChevronLeft, FaChevronRight, FaCommentDots, FaEdit, FaEllipsisH, FaEllipsisV, FaExpandAlt, FaExpandArrowsAlt, FaFlag, FaHeart, FaMagic, FaPaperPlane, FaReply, FaRetweet, FaShareAlt, FaTrashAlt, FaVolumeMute } from 'react-icons/fa';
 import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import DropdownButton from '../../../../utils/popperButton/DropdownButton';
 import { formatDateTime } from '../../../../utils/formatDateTime';
@@ -37,6 +37,8 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
         navigateMedia,
         renderMediaContent,
         handleCloseLikesOverlay,
+        isSelfPost,
+        deletePost,
     } = useExpandPostContext();
 
 
@@ -140,23 +142,53 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
 
                         <div className="thread-vote-buttons">
                             <button className="vote-btn"><FaArrowUp /></button>
+                            <div className="vote-count">
+                            {post?.stats?.votes_count || 0}
+                        </div>
                             <button className="vote-btn"><FaArrowDown /></button>
                         </div>
                     </div>
 
                     <div className="thread-actions-row">
-                        <button className="thread-action-btn"><FaHeart /> Like</button>
-                        <button className="thread-action-btn"><FaReply /> Reply</button>
-                        <button className="thread-action-btn"><FaRetweet /> Repost</button>
-                        <button className="thread-action-btn"><FaBookmark/> Save</button>
-                        <button className="thread-action-btn"><FaShareAlt/> Share</button>
+                        <button className="thread-action-btn"><FaReply className="icon-style" /> Reply</button>
+                        <button className="thread-action-btn"><FaRetweet className="icon-style" /> Repost</button>
+                        <button onClick={() => handlePostClick(index, post.post_type)} className="thread-action-btn">
+                            <FaExpandAlt className="icon-style" />
+                            Expand
+                        </button>
+                        <button className="thread-action-btn"><FaMagic className="icon-style" /> AI Insight</button>
                         <DropdownButton
-                            toggleContent={<button className="thread-action-btn"><FaEllipsisV /></button>}
+                            toggleContent={
+                                <button className="thread-action-btn"><FaEllipsisV /></button>
+                            }
                         >
-                            <div className="more-options-card">
+                            <div className="timeline-post-more-options-card">
                                 <ul>
-                                    <li>Option 1</li>
-                                    <li>Option 2</li>
+                                    {isSelfPost && (
+                                    <li>
+                                        <button className="more-options-card-btn"><FaEdit /> Edit Post</button>
+                                    </li>
+                                    )}
+                                    {isSelfPost && (
+                                        <li>
+                                            <button className="more-options-card-btn" onClick={() => deletePost(postId)}><FaTrashAlt /> Delete</button>
+                                        </li>
+                                    )}
+                                    {!isSelfPost && (
+                                    <li>
+                                        <button className="more-options-card-btn"><FaFlag /> Report</button>
+                                    </li>
+                                    )}
+                                     {!isSelfPost && (
+                                    <li>
+                                        <button className="more-options-card-btn"><FaBellSlash /> Mute Author</button>
+                                    </li>
+                                    )}
+                                     {!isSelfPost && (
+                                    <li>
+                                        <button className="more-options-card-btn"><FaBan /> Block Author</button>
+                                    </li>
+                                    )}
                                 </ul>
                             </div>
                         </DropdownButton>
@@ -178,8 +210,8 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
             <div onClick={() => toggleBookmark()} className="float-btn">
                 <FaBookmark className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`} />
             </div>
-            <div onClick={() => handlePostClick(index, post.post_type)} className="float-btn">
-                <FaEllipsisH className="icon-style" />
+            <div className="float-btn">
+                <FaShareAlt className={`icon-style`} />
             </div>
         </div>
 

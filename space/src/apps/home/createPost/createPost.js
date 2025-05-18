@@ -211,6 +211,7 @@ const CreatePost = () => {
     };
 
 
+    console.log(activeButton);;
 
     return (
         <div className="create-post-overlay" onClick={() => onClose()}>
@@ -248,7 +249,7 @@ const CreatePost = () => {
                                         </button>
                                     </div>
                                     <div className='form-prompt-content'>
-                                        {(activeButton !== 'Poll' || activeButton !== 'Event') &&
+                                        {(activeButton !== 'Poll' && activeButton !== 'Event') &&
                                             <div className={`create-post-content-editor ${activeButton}`}>
                                                 <CustomEditor
                                                     placeholder="Write something here..."
@@ -281,7 +282,7 @@ const CreatePost = () => {
                                                 ref={pollRef}
                                             />
                                         }
-                                        {activeButton === 'Event' &&
+                                        {(activeButton === 'Event' && activeButton !== 'Poll') &&
                                             <div className='create-post-content-editor Event'>
                                                 <CustomEditor
                                                     placeholder="Write something here..."
