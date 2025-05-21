@@ -1,41 +1,32 @@
-# community/tab_registry.py
-
-from ..community.school.models import CommunityGrade, CommunityAssignment
-from ..community.startup.models import FundingRound
+from .school.models import CommunityAssignment, CommunityGrade
+from .school.serializers import CommunityAssignmentSerializer, CommunityGradeSerializer
+from .school.views import get_assignments, get_grades  # we'll create these
 
 TAB_REGISTRY = {
-  "school": {
-    "grades": {
-      "label": "Grades",
-      "model": CommunityGrade,
-      "icon": "📊",
-      "route": "/api/school/{community_id}/grades/"
+    "school": {
+        "assignments": {
+            "label": "Assignments",
+            "icon": "📚",
+            "model": CommunityAssignment,
+            "serializer": CommunityAssignmentSerializer,
+            "view": get_assignments,
+            "route": "school/<uuid:community_id>/assignments/"
+        },
+        "grades": {
+            "label": "Grades",
+            "icon": "📊",
+            "model": CommunityGrade,
+            "serializer": CommunityGradeSerializer,
+            "view": get_grades,
+            "route": "school/<uuid:community_id>/grades/"
+        }
     },
-    "assignments": {
-      "label": "Assignments",
-      "model": CommunityAssignment,
-      "icon": "📚",
-      "route": "/api/school/{community_id}/assignments/"
-    },
-  },
-  "startup": {
-    "funding": {
-      "label": "Funding",
-      "model": FundingRound,
-      "icon": "💸",
-      "route": "/api/startup/{community_id}/funding/"
-    }
-  }
+    # Add other categories here...
 }
 
-
-
-
-TAB_REGISTRY_FLAT = {}
-
-for category, tabs in TAB_REGISTRY.items():
-    for tab_key, tab_data in tabs.items():
-        TAB_REGISTRY_FLAT[tab_key] = {
-            "category": category,
-            **tab_data
-        }
+# Flat registry for quick lookup
+TAB_REGISTRY_FLAT = {
+    key: {**entry, "category": category}
+    for category, tabs in TAB_REGISTRY.items()
+    for key, entry in tabs.items()
+}

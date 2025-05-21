@@ -1,5 +1,5 @@
 from django.db import models
-from community.models import Community
+from src.community.models import Community
 import uuid
 
 class CommunityGrade(models.Model):

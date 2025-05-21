@@ -13,29 +13,6 @@ def community_logo_upload_path(instance, filename):
     return f'community_logos/{instance.slug}/{uuid.uuid4()}.{ext}'
 
 
-class CommunityType(models.Model):
-    key = models.CharField(max_length=100, unique=True)
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    icon = models.CharField(max_length=100, blank=True)
-
-
-
-class TabDefinition(models.Model):
-    key = models.CharField(max_length=100, unique=True)  # e.g. "assignments", "funding", "resources"
-    label = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    icon = models.CharField(max_length=100, blank=True)
-    is_custom_allowed = models.BooleanField(default=True)
-    config_schema = models.JSONField(default=dict, blank=True)
-
-    category = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Category grouping for organizational purposes (e.g., 'school', 'startup')"
-    )
-
-
 
 class Community(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -49,7 +26,7 @@ class Community(models.Model):
         default='General',
         help_text="Optional category tag for filtering/grouping (e.g., 'tech', 'education')"
     )
-    type = models.ForeignKey(CommunityType, null=True, on_delete=models.SET_NULL)
+    type = models.CharField(max_length=100, blank=True, default="general")
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='sub_communities')
     organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE)
 
@@ -68,20 +45,18 @@ class Community(models.Model):
 
 class CommunityTab(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='tabs')
-    tab_definition = models.ForeignKey(TabDefinition, on_delete=models.CASCADE, null=True, blank=True)
-    custom_label = models.CharField(max_length=100, blank=True)
+    community = models.ForeignKey("Community", on_delete=models.CASCADE, related_name='tabs')
+    key = models.CharField(max_length=100)  # e.g., "assignments"
     order = models.PositiveIntegerField(default=0)
-    config = models.JSONField(default=dict, blank=True)
     is_active = models.BooleanField(default=True)
-
-    # 🆕 Privacy Roles
-    viewable_by_roles = models.JSONField(default=list, blank=True)
-    editable_by_roles = models.JSONField(default=list, blank=True)
 
     class Meta:
         ordering = ['order']
-        unique_together = ('community', 'tab_definition')
+        unique_together = ('community', 'key')
+
+    def __str__(self):
+        return f"{self.community.name} - {self.key}"
+
 
 
 

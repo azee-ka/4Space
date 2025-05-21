@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import CommunityGradeListCreateView, CommunityAssignmentListCreateView
+from . import views
 
 urlpatterns = [
-    path('<uuid:community_id>/grades/', CommunityGradeListCreateView.as_view(), name='community_grades'),
-    path('<uuid:community_id>/assignments/', CommunityAssignmentListCreateView.as_view(), name='community_assignments'),
+    path("school/<uuid:community_id>/assignments/", views.get_assignments, name="get_assignments"),
+    path("school/<uuid:community_id>/grades/", views.get_grades, name="get_grades"),
 ]

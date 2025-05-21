@@ -1,19 +1,31 @@
 from rest_framework import serializers
 from django.utils.text import slugify
-from .models import Community, CommunityTab, TabDefinition, CommunityPermission, CommunityMembership
-from ..community.constants import COMMUNITY_TEMPLATES
+from .models import Community, CommunityTab, CommunityPermission, CommunityMembership
 from .permissions_defaults import DEFAULT_ADMIN_PERMISSIONS
+from .tab_registry import TAB_REGISTRY_FLAT
 
 class CommunityTabSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+
     class Meta:
         model = CommunityTab
-        fields = ['id', 'custom_label', 'order', 'config', 'is_active', 'tab_definition']
+        fields = ['key', 'order', 'is_active', 'label', 'icon', 'category']
 
+    def get_label(self, obj):
+        return TAB_REGISTRY_FLAT.get(obj.key, {}).get("label", obj.key.title())
 
+    def get_icon(self, obj):
+        return TAB_REGISTRY_FLAT.get(obj.key, {}).get("icon", "")
 
+    def get_category(self, obj):
+        return TAB_REGISTRY_FLAT.get(obj.key, {}).get("category", "")
+
+    
 
 class CommunityDetailSerializer(serializers.ModelSerializer):
-    tabs = CommunityTabSerializer(many=True, read_only=True)
+    tabs = serializers.SerializerMethodField()
     created_by = serializers.StringRelatedField()
     permissions = serializers.SerializerMethodField()
     members_count = serializers.SerializerMethodField()
@@ -26,8 +38,9 @@ class CommunityDetailSerializer(serializers.ModelSerializer):
             'created_by', 'created_at',
             'is_public', 'restricted_to_org_members',
             'organization', 'type',
-            'banner', 'logo', 'tabs',
+            'banner', 'logo',
             'permissions', 'members_count', 'online_members_count',
+            'tabs',
         ]
 
     def get_permissions(self, obj):
@@ -57,6 +70,9 @@ class CommunityDetailSerializer(serializers.ModelSerializer):
         # need a real implementation for this
         return 0  # placeholder or logic tied to user sessions
 
+    def get_tabs(self, obj):
+        tabs = obj.tabs.order_by('order')
+        return CommunityTabSerializer(tabs, many=True).data
 
 
 
@@ -107,23 +123,15 @@ class CommunityUpdateSerializer(serializers.ModelSerializer):
                 community_tab, created = CommunityTab.objects.get_or_create(
                     community=instance,
                     tab_definition=tab_def,
-                    defaults={
-                        'order': i,
-                        'custom_label': tab.get('label', ''),
-                        'config': tab.get('config', {}),
-                        'viewable_by_roles': tab.get('viewable_by_roles', ['member']),
-                        'editable_by_roles': tab.get('editable_by_roles', ['admin'])
-                    }
+                    defaults={'order': i, 'is_active': True}
                 )
 
+
                 if not created:
-                    # Update fields if it already existed
-                    community_tab.custom_label = tab.get('label', community_tab.custom_label)
                     community_tab.order = i
-                    community_tab.config = tab.get('config', community_tab.config)
-                    community_tab.viewable_by_roles = tab.get('viewable_by_roles', ['member'])
-                    community_tab.editable_by_roles = tab.get('editable_by_roles', ['admin'])
+                    community_tab.is_active = True
                     community_tab.save()
+
 
         return instance
 
@@ -132,44 +140,36 @@ class CommunityUpdateSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
 class CommunityCreateSerializer(serializers.ModelSerializer):
-    community_type = serializers.ChoiceField(
-        choices=[(k, v['label']) for k, v in COMMUNITY_TEMPLATES.items()],
-        required=False
-    )
     slug = serializers.CharField(required=False)
-    tabs = serializers.ListField(child=serializers.CharField(), required=False)
+    type = serializers.CharField(required=False, allow_blank=True, default='general')
 
     class Meta:
         model = Community
-        fields = ['name', 'slug', 'description', 'community_type', 'parent', 'tabs']
+        fields = ['name', 'slug', 'description', 'type', 'parent']
 
     def create(self, validated_data):
-        type_key = validated_data.pop('community_type', 'general')
-        selected_tabs = validated_data.pop('tabs', COMMUNITY_TEMPLATES[type_key]['tabs'])
-
         if 'slug' not in validated_data or not validated_data['slug']:
             validated_data['slug'] = slugify(validated_data['name'])
 
         user = self.context['request'].user
         community = Community.objects.create(**validated_data, created_by=user)
 
-        # ✅ Add membership and permissions
+        # Default membership & permissions
         CommunityMembership.objects.create(user=user, community=community, role='admin')
         CommunityPermission.objects.create(user=user, community=community, permissions=DEFAULT_ADMIN_PERMISSIONS)
 
-        for i, tab_key in enumerate(selected_tabs):
-            try:
-                tab_def = TabDefinition.objects.get(key=tab_key)
-                CommunityTab.objects.create(
-                    community=community,
-                    tab_definition=tab_def,
-                    order=i
-                )
-            except TabDefinition.DoesNotExist:
-                continue
-
         return community
+
+
+
+    
+    
+class CommunityTabCreateSerializer(serializers.Serializer):
+    key = serializers.CharField()
+
+    def validate_key(self, value):
+        from src.community.tab_registry import TAB_REGISTRY_FLAT
+        if value not in TAB_REGISTRY_FLAT:
+            raise serializers.ValidationError(f"Invalid tab key: '{value}'")
+        return value
