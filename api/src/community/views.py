@@ -3,10 +3,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 
-from .models import Community, CommunityMembership, CommunityPermission
-from .serializers import CommunityCreateSerializer, CommunityDetailSerializer, CommunityUpdateSerializer
+from .models import Community, CommunityMembership, CommunityPermission, CommunityTab
+from .serializers import CommunityCreateSerializer, CommunityDetailSerializer, CommunityUpdateSerializer, CommunityTabSerializer, CommunityTabCreateSerializer
 from ..user.models import BaseUser
+
 
 DEFAULT_ADMIN_PERMISSIONS = {
     "can_add_tabs": True,
@@ -15,6 +17,45 @@ DEFAULT_ADMIN_PERMISSIONS = {
     "can_moderate_comments": True,
     "can_invite_members": True,
 }
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_tabs_to_community(request, community_id):
+    try:
+        community = Community.objects.get(id=community_id)
+    except Community.DoesNotExist:
+        return Response({"detail": "Community not found"}, status=404)
+
+    user = request.user
+    if not CommunityMembership.objects.filter(user=user, community=community, role__in=["admin", "moderator"]).exists():
+        return Response({"detail": "Not authorized"}, status=403)
+
+    tabs_data = request.data.get("tabs", [])
+    if not isinstance(tabs_data, list):
+        return Response({"detail": "tabs must be a list"}, status=400)
+
+    existing_count = community.tabs.count()
+
+    created_tabs = []
+    for i, tab_entry in enumerate(tabs_data):
+        serializer = CommunityTabCreateSerializer(data=tab_entry)
+        serializer.is_valid(raise_exception=True)
+
+        key = serializer.validated_data["key"]
+
+        tab, _ = CommunityTab.objects.get_or_create(
+            community=community,
+            key=key,
+            defaults={"order": existing_count + i, "is_active": True}
+        )
+        created_tabs.append(tab)
+
+
+    serialized = CommunityTabSerializer(created_tabs, many=True)
+    return Response({"success": True, "tabs": serialized.data})
+
 
 
 
@@ -34,7 +75,9 @@ def update_community(request, community_id):
     serializer = CommunityUpdateSerializer(community, data=request.data, context={'request': request}, partial=True)
     if serializer.is_valid():
         updated_community = serializer.save()
-        return Response({"success": True, "community_id": updated_community.id})
+        detail_serializer = CommunityDetailSerializer(updated_community, context={'request': request})
+        return Response(detail_serializer.data)
+    #     return Response({"success": True, "community_id": updated_community.id})
     return Response(serializer.errors, status=400)
 
 
@@ -57,6 +100,12 @@ def create_community(request):
     serializer = CommunityCreateSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         community = serializer.save()
+        CommunityTab.objects.create(
+            community=community,
+            key="home",
+            order=0,
+            is_active=True
+        )
         return Response({"success": True, "community_id": community.id})
     return Response(serializer.errors, status=400)
 

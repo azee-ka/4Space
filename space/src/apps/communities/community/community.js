@@ -16,47 +16,13 @@ const Community = () => {
   const [selectedTab, setSelectedTab] = useState(null);
   const [addTabOverlayIsOpen, setAddTabOverlayIsOpen] = useState(false);
 
-  const normalizeTab = (tab) => {
-    if (!tab) return null;
-
-    if (typeof tab.tab_definition === 'string') {
-      return {
-        ...tab,
-        tab_definition: { key: tab.tab_definition, label: tab.tab_definition },
-      };
-    }
-
-    return tab;
-  };
-
-  const getTabKey = (tab) => {
-    return tab?.tab_definition?.key || null;
-  };
-
-  const getTabDisplayName = (tab) => {
-    if (!tab) return 'Untitled';
-    if (tab.custom_label?.trim()) return tab.custom_label;
-    return tab.tab_definition?.label || tab.tab_definition?.key || 'Untitled';
-  };
-
 
   const fetchCommunityData = async () => {
     try {
       const response = await callApi(`community/c/${communityId}/`);
       console.log('Community data retrieved successfully:', response.data);
-
-      const normalizedTabs = (response.data.tabs || [])
-        .map(normalizeTab)
-        .filter(t => getTabKey(t)); // discard if no valid key
-
-      const firstTab = normalizedTabs.length ? normalizedTabs[0] : null;
-
-      setCommunity({
-        ...response.data,
-        tabs: normalizedTabs,
-      });
-
-      setSelectedTab(firstTab);
+      setCommunity(response.data);
+      setSelectedTab(response.data?.tabs[0]);
     } catch (error) {
       console.error('Error retrieving community data:', error);
     }
@@ -67,38 +33,22 @@ const Community = () => {
   }, [communityId]);
 
 
-
-
   useEffect(() => {
-    if (!community) return;
-
-    const existingKeys = community.tabs.map(getTabKey);
-    if (!existingKeys.includes('home')) {
-      const homeTab = {
-        id: '__home__',
-        tab_definition: { key: 'home', label: 'Home' },
-        custom_label: 'Home',
-      };
-
-      setCommunity(prev => ({
-        ...prev,
-        tabs: [homeTab, ...prev.tabs],
-      }));
-
-      setSelectedTab(homeTab);
-    }
-  }, [community]);
-
-
+  if (community && community.tabs.length > 0 && !selectedTab) {
+    setSelectedTab(community.tabs[0]);
+  }
+}, [community]);
 
 
   if (!community) {
     return <div className="community-loading">Loading...</div>;
   }
 
+  console.log(community.tabs)
+
   return (
     <div className="community-wrapper">
-      {getTabKey(selectedTab) !== 'home' && (
+      {selectedTab.key !== 'home' && (
         <div className="community-card community-header-bar">
           <div className="community-header-left">
             <ProfilePicture src={community.logo} isCommunity={true} className="community-header-logo" />
@@ -132,23 +82,23 @@ const Community = () => {
             )}
           </div>
 
-          {community.tabs.map(tab => (
+          {community?.tabs?.map(tab => (
             <div
-              key={tab.id}
-              className={`tab-item ${selectedTab?.id === tab.id ? 'active' : ''}`}
+              key={tab.key}
+              className={`tab-item ${selectedTab?.key === tab.key ? 'active' : ''}`}
               onClick={() => setSelectedTab(tab)}
             >
-              {getTabDisplayName(tab)}
+              {tab.label || "Untitled"}
             </div>
           ))}
 
         </div>
 
         <div className="community-card community-content-card">
-          {getTabKey(selectedTab) &&
-            TAB_COMPONENTS_FLAT[getTabKey(selectedTab)] ? (
+          {selectedTab.key &&
+            TAB_COMPONENTS_FLAT[selectedTab.key] ? (
             React.createElement(
-              TAB_COMPONENTS_FLAT[getTabKey(selectedTab)].Component,
+              TAB_COMPONENTS_FLAT[selectedTab.key].Component,
               {
                 communityId: community.id,
                 tab: selectedTab,
@@ -165,7 +115,7 @@ const Community = () => {
       </div>
 
       {addTabOverlayIsOpen && (
-        <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} />
+        <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} communityId={communityId} />
       )}
     </div>
   );

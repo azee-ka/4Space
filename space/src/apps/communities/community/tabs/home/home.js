@@ -12,7 +12,7 @@ const HomeTab = ({ community }) => {
 
     return (
         <div className="community-home-tab">
-            <div className="community-card community-overview-card fixed-half">
+            <div className="community-home-card community-overview-card fixed-half">
                 <div className="community-banner-wrapper">
                     <img className="community-banner" src={community.banner || default_banner_image} alt="Banner" />
                     <div className="community-identity">
@@ -24,7 +24,7 @@ const HomeTab = ({ community }) => {
                 </div>
             </div>
 
-            <div className="community-card community-meta-card">
+            <div className="community-home-card community-meta-card">
                 {/* Meta Tabs Navigation */}
                 <div className="community-meta-tabs">
                     {metaTabs.map(tab => (
@@ -83,7 +83,7 @@ const HomeTab = ({ community }) => {
             </div>
 
 
-            <div className="community-card community-quicklinks-card fixed-small">
+            <div className="community-home-card community-quicklinks-card fixed-small">
                 <h4>Quick Access</h4>
                 <div className="quick-link-buttons">
                     <button>Button 1</button>
@@ -91,7 +91,7 @@ const HomeTab = ({ community }) => {
                 </div>
             </div>
 
-            <div className="community-card community-pinned-card">
+            <div className="community-home-card community-pinned-card">
                 <h4>Pinned Announcements</h4>
                 <ul className="pinned-list">
                     <li>🚀 Welcome to our new members!</li>
