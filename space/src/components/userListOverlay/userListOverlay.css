@@ -79,8 +79,10 @@
     font-size: 1.5em;
     margin: 0;
     padding: 0;
+    height: 100%;
     color: white;
-    background-color: rgba(0, 255, 170, 0.5);
+    display: flex;
+    background-color: rgba(0, 255, 170, 0);
     align-items: center !important;
   }
   .follow-overlay-line-seperator {

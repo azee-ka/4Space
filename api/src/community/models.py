@@ -1,112 +1,120 @@
 from django.db import models
-from django.contrib.auth import get_user_model
-from django.utils.text import slugify
 import uuid
-from src.user.models import BaseUser
+from ..user.models import BaseUser
+from ..organization.models import Organization
 
 
-class CommunityTemplate(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+def community_banner_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    return f'community_banners/{instance.slug}/{uuid.uuid4()}.{ext}'
+
+def community_logo_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    return f'community_logos/{instance.slug}/{uuid.uuid4()}.{ext}'
+
+
+class CommunityType(models.Model):
+    key = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    icon = models.CharField(max_length=100, blank=True)
+
+
+
+class TabDefinition(models.Model):
+    key = models.CharField(max_length=100, unique=True)  # e.g. "assignments", "funding", "resources"
+    label = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    icon = models.CharField(max_length=100, blank=True, help_text="Optional: FontAwesome icon name or emoji")
-    
-    suggested_tabs = models.JSONField(default=list, blank=True)
-    custom_fields_schema = models.JSONField(default=dict, blank=True)
+    icon = models.CharField(max_length=100, blank=True)
+    is_custom_allowed = models.BooleanField(default=True)
+    config_schema = models.JSONField(default=dict, blank=True)
 
-    # Control Access for Templates (Optional)
-    is_default = models.BooleanField(default=False)  # Default visible for new users
-    allow_public_creation = models.BooleanField(default=True)  # Only admin-only templates if False
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Category grouping for organizational purposes (e.g., 'school', 'startup')"
+    )
 
-    def __str__(self):
-        return self.name
 
 
 class Community(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    
-    # Identity
-    name = models.CharField(max_length=150)
-    slug = models.SlugField(max_length=160, unique=True, blank=True)
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
     description = models.TextField(blank=True, null=True)
 
-    # Ownership
-    creator = models.ForeignKey(BaseUser, related_name='created_communities', on_delete=models.CASCADE)
-    admins = models.ManyToManyField(BaseUser, related_name='admin_communities', blank=True)
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        default='General',
+        help_text="Optional category tag for filtering/grouping (e.g., 'tech', 'education')"
+    )
+    type = models.ForeignKey(CommunityType, null=True, on_delete=models.SET_NULL)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='sub_communities')
+    organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE)
 
-    # Visuals
-    logo = models.ImageField(upload_to='community_logos/', blank=True, null=True)
-    banner_image = models.ImageField(upload_to='community_banners/', blank=True, null=True)
-    theme_color = models.CharField(max_length=20, blank=True, null=True, help_text="Hex color code")
-
-    # Visibility
-    VISIBILITY_CHOICES = [
-        ('public', 'Public'),
-        ('private', 'Private (invite only)'),
-        ('hidden', 'Hidden (link-only)'),
-    ]
-    visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
-
-    # Type/Template
-    template = models.ForeignKey(CommunityTemplate, null=True, blank=True, on_delete=models.SET_NULL)
-
-    # Dynamic Fields Storage
-    custom_fields_data = models.JSONField(default=dict, blank=True)
-
-    # Status
-    is_verified = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    archived = models.BooleanField(default=False)
-
-    # Timestamps
+    created_by = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name='created_communities', null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        ordering = ['-created_at']
+    is_public = models.BooleanField(default=True)
+    allow_custom_tabs = models.BooleanField(default=True)
+    restricted_to_org_members = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.name
+    banner = models.ImageField(upload_to=community_banner_upload_path, null=True, blank=True)
+    logo = models.ImageField(upload_to=community_logo_upload_path, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.name)
-            unique_slug = base_slug
-            num = 1
-            while Community.objects.filter(slug=unique_slug).exists():
-                unique_slug = f"{base_slug}-{num}"
-                num += 1
-            self.slug = unique_slug
-        super().save(*args, **kwargs)
+
 
 
 class CommunityTab(models.Model):
-    community = models.ForeignKey(Community, related_name='tabs', on_delete=models.CASCADE)
-    
-    name = models.CharField(max_length=100)
-    tab_type = models.CharField(max_length=50, choices=[
-        ('discussion', 'Discussion Board'),
-        ('projects', 'Project Management'),
-        ('events', 'Events Calendar'),
-        ('library', 'Research/Files Library'),
-        ('funding', 'Funding Board'),
-        ('assignments', 'Assignments'),
-        ('grades', 'Grades'),
-        ('custom', 'Custom/Markdown Page'),
-        ('tasks', 'To-Do Manager'),
-        ('notebook', 'Notebook'),
-        ('whitepaper', 'Whitepapers'),
-        ('resources', 'Resources Database'),
-    ])
-    
-    settings = models.JSONField(default=dict, blank=True)  # Optional, customizable per tab
-    
-    ordering = models.PositiveIntegerField(default=0)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='tabs')
+    tab_definition = models.ForeignKey(TabDefinition, on_delete=models.CASCADE, null=True, blank=True)
+    custom_label = models.CharField(max_length=100, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    config = models.JSONField(default=dict, blank=True)
     is_active = models.BooleanField(default=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    # 🆕 Privacy Roles
+    viewable_by_roles = models.JSONField(default=list, blank=True)
+    editable_by_roles = models.JSONField(default=list, blank=True)
 
     class Meta:
-        ordering = ['ordering', 'created_at']
+        ordering = ['order']
+        unique_together = ('community', 'tab_definition')
 
-    def __str__(self):
-        return f"{self.name} ({self.community.name})"
+
+
+
+class CommunityMembership(models.Model):
+    user = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE)
+    role = models.CharField(max_length=50, choices=[
+        ('admin', 'Admin'),
+        ('moderator', 'Moderator'),
+        ('instructor', 'Instructor'),
+        ('student', 'Student'),
+        ('employee', 'Employee'),
+        ('member', 'Member'),
+    ])
+    joined_at = models.DateTimeField(auto_now_add=True)
+    invited_by = models.ForeignKey(
+        BaseUser, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='invitations_made'
+    )
+
+    class Meta:
+        unique_together = ('user', 'community')
+
+
+
+
+class CommunityPermission(models.Model):
+    community = models.ForeignKey(Community, on_delete=models.CASCADE)
+    user = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
+
+    # Each permission is a boolean toggle for specific actions
+    permissions = models.JSONField(default=dict)
+
+    class Meta:
+        unique_together = ('community', 'user')

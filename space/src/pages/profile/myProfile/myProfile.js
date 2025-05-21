@@ -9,7 +9,8 @@ import UserListOverlay from "../../../components/userListOverlay/userListOverlay
 // Tab Components
 import MyPostsTab from "./tabs/myPostsTab/myPostsTab";
 import MyCommunitiesTab from "./tabs/myCommunitiesTab/myCommunitiesTab";
-import BookmarkedPostsTab from "./tabs/bookmarkedPostsTab/bookmarkedPostsTab";
+import CollectionsPostsTab from "./tabs/bookmarkedPostsTab/collectionsTab";
+import { formatDateTime } from "../../../utils/formatDateTime";
 
 const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
     const defaultTabs = [
         { key: 'posts', label: 'My Posts' },
         { key: 'communities', label: 'My Communities' },
-        { key: 'bookmarks', label: 'My Bookmarks' },
+        { key: 'collections', label: 'My Collections' },
     ];
 
     useEffect(() => {
@@ -53,6 +54,9 @@ const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
                         My Profile
                     </Link>
                 </h2>
+                <div className="profile-top-panel-date-joined">
+                    <p>Memeber since {formatDateTime(profileInfo?.basicInfo?.date_joined)}</p>
+                </div>
             </div>
 
             <div className="profile-main-panel">
@@ -62,7 +66,7 @@ const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
                         <div className="profile-settings">
                             <FaCog onClick={() => navigate('/settings#profile-basic-info')} />
                         </div>
-                        <div className="my-profile-profile-image">
+                        <div className="profile-profile-image">
                             <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
                         </div>
                         <h2>@{profileInfo?.basicInfo?.username}</h2>
@@ -112,7 +116,7 @@ const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
                     <section className="tab-section">
                         {activeTab === 'posts' && <MyPostsTab />}
                         {activeTab === 'communities' && <MyCommunitiesTab />}
-                        {activeTab === 'bookmarks' && <BookmarkedPostsTab />}
+                        {activeTab === 'collections' && <CollectionsPostsTab />}
                     </section>
                 </main>
             </div>

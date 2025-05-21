@@ -5,7 +5,7 @@ import PartialProfile from "./partialProfile/partialProfile";
 import FullProfile from "./fullProfile/fullProfile";
 import { useLocation } from "react-router-dom";
 
-const OtherProfile = ({ username, fetchProfileData, enforceViewType = '', isCustomizing }) => {
+const OtherProfile = ({ username, fetchProfileData, enforceViewType = '', isCustomizing, handleStartChat }) => {
     const [profileInfo, setProfileInfo] = useState({});
     const location = useLocation();
 
@@ -23,20 +23,20 @@ const OtherProfile = ({ username, fetchProfileData, enforceViewType = '', isCust
 
     return enforceViewType === '' ? (
         profileInfo?.view_type === 'partial' ? (
-            <PartialProfile profileInfo={profileInfo} isCustomizing={isCustomizing} />
+            <PartialProfile profileInfo={profileInfo} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
         ) : (
             profileInfo?.view_type === 'full' ? (
-                <FullProfile profileInfo={profileInfo} isCustomizing={isCustomizing} />
+                <FullProfile profileInfo={profileInfo} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
             ) : (
                 <div>Loading...</div>
             )
         )
     ) : (
         enforceViewType === 'partial' ? (
-            <PartialProfile profileInfo={profileInfo} isCustomizing={isCustomizing} />
+            <PartialProfile profileInfo={profileInfo} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
         ) : (
             enforceViewType === 'full' ? (
-                <FullProfile profileInfo={profileInfo} isCustomizing={isCustomizing} />
+                <FullProfile profileInfo={profileInfo} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
             ) : (
                 <div>Loading...</div>
             )

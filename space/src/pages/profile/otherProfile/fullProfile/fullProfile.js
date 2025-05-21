@@ -8,9 +8,10 @@ import UserListOverlay from "../../../../components/userListOverlay/userListOver
 // Tabs (same as your MyProfile)
 import MyPostsTab from "../../myProfile/tabs/myPostsTab/myPostsTab";
 import MyCommunitiesTab from "../../myProfile/tabs/myCommunitiesTab/myCommunitiesTab";
-import BookmarkedPostsTab from "../../myProfile/tabs/bookmarkedPostsTab/bookmarkedPostsTab";
+import CollectionsPostsTab from "../../myProfile/tabs/bookmarkedPostsTab/collectionsTab";
+import { formatDateTime } from "../../../../utils/formatDateTime";
 
-const FullProfile = ({ profileInfo }) => {
+const FullProfile = ({ profileInfo, handleStartChat }) => {
     const { callApi } = useApi();
     const navigate = useNavigate();
 
@@ -23,7 +24,7 @@ const FullProfile = ({ profileInfo }) => {
     const defaultTabs = [
         { key: 'posts', label: 'Posts' },
         { key: 'communities', label: 'Communities' },
-        { key: 'bookmarks', label: 'Bookmarks' },
+        { key: 'collections', label: 'Collections' },
     ];
 
     useEffect(() => {
@@ -49,12 +50,15 @@ const FullProfile = ({ profileInfo }) => {
                         Profile @{profileInfo?.basicInfo?.username}
                     </Link>
                 </h2>
+                <div className="profile-top-panel-date-joined">
+                    <p>Memeber since {formatDateTime(profileInfo?.basicInfo?.date_joined)}</p>
+                </div>
             </div>
 
             <div className="profile-main-panel">
                 <aside className="profile-left">
                     <div className="profile-card">
-                        <div className="my-profile-profile-image">
+                        <div className="profile-profile-image">
                             <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
                         </div>
                         {profileInfo?.basicInfo?.display_name && (
@@ -72,10 +76,19 @@ const FullProfile = ({ profileInfo }) => {
                                 <span>Following</span>
                             </div>
                         </div>
-
-                        <button className="follow-button" onClick={handleFollowToggle}>
-                            {isFollowing ? 'Unfollow' : 'Follow'}
+                        
+                        <div className="profile-actions">
+                            <button className="follow-button" onClick={() =>  handleFollowToggle}>
+                                {isFollowing ? 'Unfollow' : 'Follow'}
+                            </button>
+                            <button className="message-btn" onClick={() =>  handleStartChat(
+                            [
+                                { username: profileInfo?.basicInfo?.username, id: profileInfo?.basicInfo?.id},
+                            ]
+                                )}>
+                            Message
                         </button>
+                        </div>
                     </div>
                 </aside>
 
@@ -98,7 +111,7 @@ const FullProfile = ({ profileInfo }) => {
                     <section className="tab-section">
                         {activeTab === 'posts' && <MyPostsTab />}
                         {activeTab === 'communities' && <MyCommunitiesTab />}
-                        {activeTab === 'bookmarks' && <BookmarkedPostsTab />}
+                        {activeTab === 'collections' && <CollectionsPostsTab />}
                     </section>
                 </main>
             </div>

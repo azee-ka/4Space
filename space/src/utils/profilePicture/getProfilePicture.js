@@ -3,8 +3,8 @@ import './getProfilePicture.css';
 import { imageCompile } from '../imageWrapper/imageComplie';
 import { ProfileImageCompile } from './profileImageCompile.';
 
-const ProfilePicture = ({ src, onClick, className }) => {
-    const profilePictureSrc = ProfileImageCompile(src);
+const ProfilePicture = ({ src, onClick, className, isCommunity=false }) => {
+    const profilePictureSrc = ProfileImageCompile(src, isCommunity);
 
     const handleClick = () => {
         if (onClick) {

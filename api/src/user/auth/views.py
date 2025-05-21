@@ -7,26 +7,43 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
+from ...organization.models import OrganizationMembership
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
-    serializer = UserCreateSerializer(data=request.data)
+    data = request.data.copy()
+    acc_type = data.get("type")  # "organization" or "individual"
+    org_role = data.get("org_role")  # "admin" or "member"
+
+    if acc_type not in ['organization', 'individual']:
+        return Response({"error": "Invalid account type."}, status=400)
+
+    # Keep base role for visibility mode — not for org logic
+    data['role'] = 'professional'  # Default profile role (your feature)
+
+    serializer = UserCreateSerializer(data=data)
     if serializer.is_valid():
         user = serializer.save()
         user.set_password(request.data['password'])
         user.save()
 
         token, _ = Token.objects.get_or_create(user=user)
-        return Response(
-            {
-                'user': {
-                    'id': user.id,
-                    'username': user.username
-                },
-                'token': token.key,
+        response_data = {
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'role': user.role,
+                'account_type': acc_type,
             },
-            status=201
-        )
+            'token': token.key,
+        }
+
+        # Only include org_role if it's an org-related account
+        if acc_type == 'organization' and org_role:
+            response_data['user']['org_role'] = org_role
+
+        return Response(response_data, status=201)
     return Response(serializer.errors, status=400)
 
 
@@ -38,9 +55,14 @@ def login_view(request):
     password = request.data.get('password')
     user = authenticate(username=username, password=password)
     if user:
-        if user.organization and user.org_role == 'member':
-            if not user.is_approved_by_org:
-                return Response({"message": "Your account is pending approval."}, status=403)
+        # Check all memberships for approval
+        unapproved_memberships = OrganizationMembership.objects.filter(user=user, is_approved=False)
+        if unapproved_memberships.exists():
+            return Response(
+                {"message": "Your account is pending approval by an organization."},
+                status=403
+            )
+
         # Login the user and generate a new token
         login(request, user)
         token, created = Token.objects.get_or_create(user=user)

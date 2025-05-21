@@ -51,7 +51,7 @@ const RegisterPage = () => {
             const capitalizedLastName = capitalizeFirstLetter(lastName);
 
             const data = {
-                role: 'individual',
+                type: 'individual',
                 username: username,
                 password: password,
                 email: email,
