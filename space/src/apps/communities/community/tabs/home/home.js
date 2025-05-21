@@ -5,7 +5,7 @@ import { formatDateTime } from '../../../../../utils/formatDateTime';
 import { FiSettings } from 'react-icons/fi';
 import default_banner_image from '../../../../../assets/default_banner_image.png';
 
-const HomeTab = ({ community }) => {
+const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen }) => {
 
     const [metaTab, setMetaTab] = useState('overview');
     const metaTabs = ['overview', 'analytics', 'metrics'];
@@ -38,9 +38,14 @@ const HomeTab = ({ community }) => {
                     ))}
 
                     <div className="community-meta-actions">
-                        <button className="community-join-btn">
+                        <button className={`community-join-btn ${community.is_member ? 'leave' : ''}`} onClick={handleJoinLeave}>
                             {community.is_member ? 'Leave' : 'Join'}
                         </button>
+                        {community?.permissions?.can_invite_members &&
+              <button className="community-invite-btn" onClick={() => setInviteOverlayOpen(true)}>
+                Invite
+              </button>
+            }
                         {['admin', 'owner'].includes(community.user_role) && (
                             <>
                                 <button className="community-settings-btn" title="Settings">
@@ -84,6 +89,31 @@ const HomeTab = ({ community }) => {
 
 
             <div className="community-home-card community-quicklinks-card fixed-small">
+                <h4>Quick Access</h4>
+                <div className="quick-link-buttons">
+                    <button>Button 1</button>
+                    <button>Button 1</button>
+                </div>
+            </div>
+            <div className="community-home-card community-quicklinks-card fixed-small">
+                <h4>Quick Access</h4>
+                <div className="quick-link-buttons">
+                    <button>Button 1</button>
+                    <button>Button 1</button>
+                </div>
+            </div><div className="community-home-card community-quicklinks-card fixed-small">
+                <h4>Quick Access</h4>
+                <div className="quick-link-buttons">
+                    <button>Button 1</button>
+                    <button>Button 1</button>
+                </div>
+            </div><div className="community-home-card community-quicklinks-card fixed-small">
+                <h4>Quick Access</h4>
+                <div className="quick-link-buttons">
+                    <button>Button 1</button>
+                    <button>Button 1</button>
+                </div>
+            </div><div className="community-home-card community-quicklinks-card fixed-small">
                 <h4>Quick Access</h4>
                 <div className="quick-link-buttons">
                     <button>Button 1</button>

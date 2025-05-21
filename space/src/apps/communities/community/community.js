@@ -8,6 +8,7 @@ import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddTabOverlay from './addTabOverlay/addTabOverlay';
+import InviteOverlay from './inviteOverlay/inviteOverlay';
 
 const Community = () => {
   const { communityId } = useParams();
@@ -16,12 +17,16 @@ const Community = () => {
   const [selectedTab, setSelectedTab] = useState(null);
   const [addTabOverlayIsOpen, setAddTabOverlayIsOpen] = useState(false);
 
+const [isMember, setIsMember] = useState(false);
+const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
+
 
   const fetchCommunityData = async () => {
     try {
       const response = await callApi(`community/c/${communityId}/`);
       console.log('Community data retrieved successfully:', response.data);
       setCommunity(response.data);
+      setIsMember(response.data?.is_member);
       setSelectedTab(response.data?.tabs[0]);
     } catch (error) {
       console.error('Error retrieving community data:', error);
@@ -34,19 +39,30 @@ const Community = () => {
 
 
   useEffect(() => {
-  if (community && community.tabs.length > 0 && !selectedTab) {
-    setSelectedTab(community.tabs[0]);
+    if (community && community.tabs.length > 0 && !selectedTab) {
+      setSelectedTab(community.tabs[0]);
+    }
+  }, [community]);
+
+  
+  const handleJoinLeave = async () => {
+  try {
+    if (isMember) {
+      const response = await callApi(`community/${communityId}/leave/`, 'DELETE');
+      setIsMember(false);
+      console.log(response.data)
+    } else {
+      const response = await callApi(`community/${communityId}/join/`, 'POST');
+      setIsMember(true);
+      console.log(response.data)
+    }
+  } catch (error) {
+    console.error('Error updating membership:', error);
   }
-}, [community]);
+};
 
 
-  if (!community) {
-    return <div className="community-loading">Loading...</div>;
-  }
-
-  console.log(community.tabs)
-
-  return (
+  return community ? (
     <div className="community-wrapper">
       {selectedTab.key !== 'home' && (
         <div className="community-card community-header-bar">
@@ -60,16 +76,21 @@ const Community = () => {
             </div>
           </div>
           <div className="community-header-actions">
-            <button className="community-join-btn">
+            <button className={`community-join-btn ${community.is_member ? 'leave' : ''}`} onClick={handleJoinLeave} >
               {community.is_member ? 'Leave' : 'Join'}
             </button>
+            {community?.permissions?.can_invite_members &&
+              <button className="community-invite-btn" onClick={() => setInviteOverlayOpen(true)}>
+                Invite
+              </button>
+            }
             <button className="community-guidelines-btn">Guidelines</button>
           </div>
         </div>
       )}
 
       <div className="community-bottom-row">
-        <div className="community-card community-tabs-card">
+        <div className={`community-card community-tabs-card ${selectedTab.key === 'home' ? 'home-tab' : ''}`}>
           <div className="community-tabs-header">
             <h3 className="community-tabs-title">Tabs</h3>
             {community?.permissions?.can_add_tabs && (
@@ -82,16 +103,17 @@ const Community = () => {
             )}
           </div>
 
-          {community?.tabs?.map(tab => (
-            <div
-              key={tab.key}
-              className={`tab-item ${selectedTab?.key === tab.key ? 'active' : ''}`}
-              onClick={() => setSelectedTab(tab)}
-            >
-              {tab.label || "Untitled"}
-            </div>
-          ))}
-
+          <div className='community-tabs-list'>
+            {community?.tabs?.map(tab => (
+              <div
+                key={tab.key}
+                className={`community-tab-item ${selectedTab?.key === tab.key ? 'active' : ''}`}
+                onClick={() => setSelectedTab(tab)}
+              >
+                {tab.label || "Untitled"}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="community-card community-content-card">
@@ -103,6 +125,8 @@ const Community = () => {
                 communityId: community.id,
                 tab: selectedTab,
                 community,
+                handleJoinLeave,
+                setInviteOverlayOpen,
               }
             )
           ) : (
@@ -117,7 +141,16 @@ const Community = () => {
       {addTabOverlayIsOpen && (
         <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} communityId={communityId} />
       )}
+      {inviteOverlayOpen && (
+  <InviteOverlay
+    communityId={communityId}
+    onClose={() => setInviteOverlayOpen(false)}
+  />
+)}
+
     </div>
+  ): (
+    <div className="community-loading">Loading...</div>
   );
 };
 

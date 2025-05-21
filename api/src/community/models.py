@@ -13,6 +13,12 @@ def community_logo_upload_path(instance, filename):
     return f'community_logos/{instance.slug}/{uuid.uuid4()}.{ext}'
 
 
+VISIBILITY_CHOICES = [
+    ('public', 'Public'),
+    ('private', 'Private'),
+    ('invite', 'Invite Only'),
+]
+
 
 class Community(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -33,7 +39,11 @@ class Community(models.Model):
     created_by = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name='created_communities', null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    is_public = models.BooleanField(default=True)
+    visibility = models.CharField(
+        max_length=10,
+        choices=VISIBILITY_CHOICES,
+        default='public'
+    )
     allow_custom_tabs = models.BooleanField(default=True)
     restricted_to_org_members = models.BooleanField(default=False)
 

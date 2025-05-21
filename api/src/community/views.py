@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from .models import Community, CommunityMembership, CommunityPermission, CommunityTab
 from .serializers import CommunityCreateSerializer, CommunityDetailSerializer, CommunityUpdateSerializer, CommunityTabSerializer, CommunityTabCreateSerializer
 from ..user.models import BaseUser
-
+from ..notifications.models import Notification
 
 DEFAULT_ADMIN_PERMISSIONS = {
     "can_add_tabs": True,
@@ -17,6 +17,81 @@ DEFAULT_ADMIN_PERMISSIONS = {
     "can_moderate_comments": True,
     "can_invite_members": True,
 }
+
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    # Public communities can be joined directly
+    if community.visibility == 'public':
+        CommunityMembership.objects.get_or_create(user=request.user, community=community, defaults={'role': 'member'})
+        return Response({"detail": "Joined community successfully."}, status=200)
+
+    elif community.visibility == 'invite':
+        return Response({"detail": "This community requires an invitation to join."}, status=403)
+
+    else:
+        return Response({"detail": "This community is private and cannot be joined directly."}, status=403)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def invite_user_to_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if not CommunityPermission.objects.filter(
+        community=community, user=request.user, permissions__can_invite_members=True
+    ).exists():
+        return Response({"detail": "You do not have permission to invite users."}, status=403)
+
+    target_user_id = request.data.get('user_id')
+    if not target_user_id:
+        return Response({"detail": "Missing user_id in request."}, status=400)
+
+    target_user = get_object_or_404(BaseUser, id=target_user_id)
+
+    # Create a Notification
+    Notification.objects.create(
+        user=target_user,
+        sender=request.user,
+        title=f"Invitation to join {community.name}",
+        message=f"{request.user.username} has invited you to join the community '{community.name}'.",
+        type='action',
+        action_url=f"/api/communities/{community.id}/accept-invitation/"  # frontend can map this
+    )
+
+    return Response({"detail": "Invitation sent."}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_community_invitation(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if community.visibility != 'invite':
+        return Response({"detail": "This community doesn't require invitations."}, status=400)
+
+    membership, created = CommunityMembership.objects.get_or_create(user=request.user, community=community, defaults={'role': 'member'})
+    if not created:
+        return Response({"detail": "You are already a member."}, status=400)
+
+    return Response({"detail": "Successfully joined the community."})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def leave_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    try:
+        membership = CommunityMembership.objects.get(user=request.user, community=community)
+        membership.delete()
+        return Response({"detail": "Left community successfully."})
+    except CommunityMembership.DoesNotExist:
+        return Response({"detail": "You are not a member of this community."}, status=400)
+
 
 
 

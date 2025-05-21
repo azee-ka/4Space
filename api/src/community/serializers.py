@@ -30,17 +30,18 @@ class CommunityDetailSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
     members_count = serializers.SerializerMethodField()
     online_members_count = serializers.SerializerMethodField()
+    is_member = serializers.SerializerMethodField()
     
     class Meta:
         model = Community
         fields = [
             'id', 'name', 'slug', 'description', 'category',
             'created_by', 'created_at',
-            'is_public', 'restricted_to_org_members',
+            'visibility', 'restricted_to_org_members',
             'organization', 'type',
             'banner', 'logo',
             'permissions', 'members_count', 'online_members_count',
-            'tabs',
+            'tabs', 'is_member',
         ]
 
     def get_permissions(self, obj):
@@ -74,6 +75,11 @@ class CommunityDetailSerializer(serializers.ModelSerializer):
         tabs = obj.tabs.order_by('order')
         return CommunityTabSerializer(tabs, many=True).data
 
+    def get_is_member(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        return CommunityMembership.objects.filter(user=request.user, community=obj).exists()
 
 
 
@@ -85,12 +91,12 @@ class CommunityUpdateSerializer(serializers.ModelSerializer):
         model = Community
         fields = [
             'name', 'description', 'slug',
-            'is_public', 'allow_custom_tabs', 'restricted_to_org_members',
+            'visibility', 'allow_custom_tabs', 'restricted_to_org_members',
             'banner', 'logo', 'tabs'
         ]
 
     def update(self, instance, validated_data):
-        from .models import TabDefinition, CommunityTab
+        from .models import CommunityTab
 
         tabs_data = validated_data.pop('tabs', None)
         errors = []
@@ -109,20 +115,13 @@ class CommunityUpdateSerializer(serializers.ModelSerializer):
                     errors.append(f"Missing 'key' in tab entry at index {i}")
                     continue
 
-                try:
-                    tab_def = TabDefinition.objects.get(key=tab_key)
-                except TabDefinition.DoesNotExist:
-                    errors.append(f"Invalid tab key: '{tab_key}'")
-                    continue
-
                 if action == 'delete':
-                    CommunityTab.objects.filter(community=instance, tab_definition=tab_def).delete()
+                    CommunityTab.objects.filter(community=instance).delete()
                     continue
 
                 # Add or update
                 community_tab, created = CommunityTab.objects.get_or_create(
                     community=instance,
-                    tab_definition=tab_def,
                     defaults={'order': i, 'is_active': True}
                 )
 
