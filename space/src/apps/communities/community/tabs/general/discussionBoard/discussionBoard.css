@@ -1,0 +1,90 @@
+.discussion-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+}
+
+.discussion-card {
+  background: rgba(25, 25, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  transition: 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.discussion-card:hover {
+  border-color: rgba(0, 255, 255, 0.1);
+}
+
+.discussion-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.user-icon {
+  font-size: 1.6rem;
+  color: #bbb;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 500;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.discussion-body .title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #e0f7ff;
+  margin-bottom: 6px;
+}
+
+.preview {
+  font-size: 0.95rem;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+.discussion-footer {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.action .icon {
+  font-size: 1.1rem;
+  color: #888;
+}
+
+.empty-state {
+  color: #888;
+  text-align: center;
+  font-style: italic;
+  margin-top: 40px;
+}

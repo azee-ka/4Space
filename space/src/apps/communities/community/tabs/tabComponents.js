@@ -1,6 +1,7 @@
 import CommunityGrades from './school/grades/grades';
 import CommunityAssignments from './school/assignments/assignments';
 import HomeTab from './home/home';
+import Discussion from './general/discussionBoard/discussionBoard';
 
 // import CommunityFunding from './startup/funding/funding';
 
@@ -11,6 +12,13 @@ export const TAB_COMPONENT_CATEGORIES = {
       key: 'home',
       label: 'Home',
       Component: HomeTab,
+      icon: '🏠',
+      category: 'general',
+    },
+    discussion: {
+      key: 'discussion',
+      label: 'Discussion',
+      Component: Discussion,
       icon: '🏠',
       category: 'general',
     },

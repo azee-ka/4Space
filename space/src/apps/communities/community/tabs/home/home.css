@@ -98,7 +98,8 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 12px;
-  height: 300px;
+  min-height: 200px;
+  max-height: 400px;
 }
 
 .community-meta-top {
@@ -190,9 +191,10 @@
 }
 
 /* Buttons */
-.community-join-btn,
-.community-settings-btn,
-.community-guidelines-btn {
+.community-meta-actions .community-join-btn,
+.community-meta-actions .community-invite-btn,
+.community-meta-actions .community-settings-btn,
+.community-meta-actions .community-guidelines-btn {
   background: rgba(0, 255, 255, 0.05);
   border: 1px solid rgba(0, 255, 255, 0.2);
   color: #0ff;
@@ -205,15 +207,30 @@
   align-items: center;
 }
 
+.community-meta-actions .community-invite-btn {
+    background: rgba(0, 255, 191, 0.05);
+    border: 1px solid rgba(0, 255, 191, 0.2);
+    color: rgb(0, 255, 191);
+}
+.community-meta-actions .community-join-btn.leave {
+    background: rgba(255, 0, 0, 0.05);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    color: rgb(255, 0, 0);
+}
+.community-meta-actions .community-join-btn.leave:hover {
+    background: rgba(255, 108, 108, 0.1);
+}
+
 .community-guidelines-btn {
   color: rgb(172, 172, 172);
   border: 1px solid rgba(102, 102, 102, 0.2);
   background: rgba(128, 128, 128, 0.05);
 }
 
-.community-join-btn:hover,
-.community-settings-btn:hover,
-.community-guidelines-btn:hover {
+.community-meta-actions .community-join-btn:hover,
+.community-meta-actions .community-invite-btn:hover,
+.community-meta-actions .community-settings-btn:hover,
+.community-meta-actions .community-guidelines-btn:hover {
   background: rgba(0, 255, 255, 0.12);
   color: #fff;
 }
