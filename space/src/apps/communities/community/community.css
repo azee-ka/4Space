@@ -1,25 +1,195 @@
-.community-page {
-    background-color: rgba(255, 0, 0, 0);
-    width: 100%;
-    height: 100%;
+.community-wrapper {
     display: flex;
     flex-direction: column;
+    gap: 25px;
+    padding-right: 22px;
+    padding-bottom: 18px;
+    padding-top: 12px;
+    color: #e6e6e6;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
-.community-header {
+
+
+
+
+.community-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    /* background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px); */
+}
+
+.community-header-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+.community-header-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+
+.community-header-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+.community-header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0);
+}
+
+.community-header-meta {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+.community-header-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.community-header-actions .community-join-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    color: #0ff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.community-header-actions .community-join-btn:hover {
+    background: rgba(0, 255, 255, 0.1);
+    color: white;
+}
+
+
+
+
+
+
+
+/* ===== BOTTOM ROW ===== */
+.community-bottom-row {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 25px;
     width: 100%;
-    height: 60px;
-    background-color: rgba(0, 0, 0, 0);
+    height: 100%;
+}
+
+/* Tabs Sidebar */
+.community-tabs-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    height: fit-content;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.community-tabs-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.community-page h2 {
+.community-tabs-title {
     padding: 0;
     margin: 0;
-    height: 40px;
-    background-color: rgba(187, 187, 187, 0);
-    display: flex;
-    align-items: flex-end;
+    background-color: rgba(255, 0, 0, 0);
+}
+.community-add-tab-btn {
+  margin-left: 12px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  background: rgba(108, 112, 112, 0.1);
+  border: 1px solid rgba(126, 139, 139, 0.3);
+  color: rgb(165, 165, 165);
+  cursor: pointer;
+  transition: 0.2s ease;
+  gap: 6px;
+  display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.community-add-tab-btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+  color: #fff;
+}
+
+
+.tab-item {
+    padding: 10px 14px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.02);
+    color: #ccc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.tab-item.active {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #0ff;
+    font-weight: 600;
+}
+
+/* Main Tab Content */
+.community-content-card {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    /* backdrop-filter: blur(10px); */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 300px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    overflow-y: auto;
+}
+
+.tab-title {
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.tab-content-placeholder {
+    font-size: 14px;
+    opacity: 0.85;
 }

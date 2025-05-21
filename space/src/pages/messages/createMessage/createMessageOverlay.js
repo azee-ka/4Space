@@ -25,7 +25,7 @@ const CreateMessageOverlay = ({ onClose }) => {
         }
     };
 
-    const handleStartChat = async () => {
+    const handleStartChat = async (selectedRecipients) => {
         try {
             const response = await callApi(`messages/create_conversation/`, 'POST', { recipients: selectedRecipients });
             console.log(response.data);
@@ -129,7 +129,7 @@ const CreateMessageOverlay = ({ onClose }) => {
                     <button
                         className="start-chat-btn"
                         disabled={selectedRecipients.length === 0}
-                        onClick={handleStartChat}
+                        onClick={() => handleStartChat(selectedRecipients)}
                     >
                         Start Conversation
                     </button>

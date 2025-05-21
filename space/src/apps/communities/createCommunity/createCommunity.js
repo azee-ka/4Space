@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './createCommunity.css';
 import useApi from '../../../utils/useApi';
+import { useNavigate } from 'react-router-dom';
 
 const TABS = [
     "Projects",
@@ -16,6 +17,7 @@ const TABS = [
 
 const CreateCommunity = () => {
     const { callApi } = useApi();
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -69,7 +71,9 @@ const CreateCommunity = () => {
                 description: '',
                 visibility: 'public',
                 selectedTabs: [],
+                community_type: 'general',
             });
+            navigate(`/communities/c/${response.data.community_id}/`);
         } catch (err) {
             console.error('Error creating community:', err);
             setError(err?.message || 'Unknown error occurred.');

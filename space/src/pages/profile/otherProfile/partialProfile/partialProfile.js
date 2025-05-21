@@ -4,7 +4,7 @@ import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate } from "react-router-dom";
 import useApi from "../../../../utils/useApi";
 
-const PartialProfile = ({ profileInfo }) => {
+const PartialProfile = ({ profileInfo, handleStartChat }) => {
     const { callApi } = useApi();
     const navigate = useNavigate();
     const [isPendingFollowing, setIsPendingFollowing] = useState(profileInfo?.interact?.follow_request_status === 'pending' && !profileInfo?.interact?.is_following);
@@ -57,16 +57,20 @@ const PartialProfile = ({ profileInfo }) => {
                     </div>
 
                     <div className="action-buttons">
-                    <button className="follow-btn" onClick={() => handleFollowProfile()}>
-                            {isPendingFollowing ? 'Requested': 'Follow'}
+                        <button className="follow-btn" onClick={() => handleFollowProfile()}>
+                            {isPendingFollowing ? 'Requested' : 'Follow'}
                         </button>
-                        <Link to={`/messages/${profileInfo?.basicInfo?.username}`}>
-                            <button className="message-btn">Message</button>
-                        </Link>
-                    </div>
+                        <button className="message-btn" onClick={() => handleStartChat(
+                            [
+                                { username: profileInfo?.basicInfo?.username, id: profileInfo?.basicInfo?.id},
+                            ]
+                                )}>
+                        Message
+                    </button>
                 </div>
             </div>
         </div>
+        </div >
     );
 };
 

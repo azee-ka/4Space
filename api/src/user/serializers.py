@@ -75,7 +75,7 @@ class PartialProfileSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         categories = {
-            'basicInfo': ['username', 'profile_image'],
+            'basicInfo': ['id', 'username', 'profile_image'],
             'stats': ['following_count', 'followers_count'],
             'privacy': ['is_private_profile'],
         }
@@ -87,14 +87,14 @@ class FullProfileSerializer(EntriesCountMixin, serializers.ModelSerializer):
     following = MinimalUserSerializer(many=True)
     class Meta:
         model = BaseUser
-        fields =  [ 'username', 'profile_image', 'date_joined',
+        fields =  [ 'id', 'username', 'profile_image', 'date_joined',
                    'is_private_profile', 'followers', 'following',
                    ]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         categories = {
-            'basicInfo': ['username', 'profile_image', 'date_joined'],
+            'basicInfo': ['id', 'username', 'profile_image', 'date_joined'],
             'stats': ['following_count', 'followers_count', 'entries_count', 'packets_count', 'flares_count'],
             'privacy': ['is_private_profile'],
             'data' : ['followers', 'following']
@@ -142,15 +142,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = ['email', 'password', 'username', 'first_name', 'last_name', 'org_role']
 
     def create(self, validated_data):
-        role = validated_data.pop('org_role', None)
-        # Create the user using the other validated data
+        validated_data.pop('org_role', None)  # Don't store it on BaseUser
         user = BaseUser.objects.create_user(**validated_data)
-        user.org_role = role
-        if user.org_role == 'admin':
-            user.is_approved_by_org = True  # admins are auto-approved
-
-        # Save and return the user
-        user.save()
         return user
 
 

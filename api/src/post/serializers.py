@@ -124,8 +124,8 @@ class PostRetrieveSerializer(serializers.Serializer):
     settings = serializers.SerializerMethodField()
     meta = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
-    likes = serializers.SerializerMethodField()      # ✅ New
-    dislikes = serializers.SerializerMethodField()   # ✅ New
+    likes = serializers.SerializerMethodField()
+    dislikes = serializers.SerializerMethodField()
 
     def get_post_type(self, obj):
         return obj.__class__.__name__.replace('Post', '')

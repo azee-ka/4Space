@@ -1,5 +1,4 @@
 .follow-button {
-    margin-top: 15px;
     padding: 8px 18px;
     color: white;
     font-size: 0.9em;
@@ -12,4 +11,27 @@
 .follow-button:hover {
     background-color: rgba(0, 128, 255, 0.8);
     box-shadow: 0 0 8px rgba(0, 128, 255, 0.6);
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.message-button {
+    padding: 8px 18px;
+    color: white;
+    font-size: 0.9em;
+    background-color: rgba(16, 182, 149, 0.672);
+    border: none;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.message-button:hover {
+    background-color: rgba(16, 182, 149, 0.8);
+    box-shadow: 0 0 8px rgba(16, 182, 149, 0.672);
 }
