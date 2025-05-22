@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import discussion_posts
+from .views import list_discussions, create_discussion
 
 urlpatterns = [
-    path('<uuid:community_id>/discussions/', discussion_posts, name='discussion_posts'),
+    path('list/', list_discussions, name='list_discussions'),
+    path('create/', create_discussion, name='create_discussion'),
 ]

@@ -83,11 +83,17 @@ const Community = () => {
 
   return community ? (
     <div className="community-wrapper">
-      {selectedTab.key !== 'home' && (
-        <div className="community-card community-header-bar">
-          <div className="community-header-left">
-            <ProfilePicture src={community.logo} isCommunity={true} className="community-header-logo" />
-            <div className="community-header-text">
+      {/* Fixed Sidebar */}
+      <div className="community-sidebar">
+        {/* Header Card */}
+        <div className={`community-card community-header-bar ${selectedTab.key === 'home' ? 'hidden' : ''}`}>
+          <div className="community-header-top">
+            <ProfilePicture
+              src={community.logo}
+              isCommunity={true}
+              className="community-header-logo"
+            />
+            <div className="community-header-info">
               <div className="community-header-name">{community.name}</div>
               <div className="community-header-meta">
                 {community.members_count || 0} members • {community.posts_count || 0} posts
@@ -95,22 +101,28 @@ const Community = () => {
             </div>
           </div>
           <div className="community-header-actions">
-            <button className={`community-join-btn ${community.is_member ? 'leave' : ''}`} onClick={handleJoinLeave} >
+            <button
+              className={`community-join-btn ${community.is_member ? 'leave' : ''}`}
+              onClick={handleJoinLeave}
+            >
               {community.is_member ? 'Leave' : 'Join'}
             </button>
-            {community?.visiblity === "public" && community?.permissions?.can_invite_members &&
-              <button className="community-invite-btn" onClick={() => setInviteOverlayOpen(true)}>
+            {community?.visiblity === 'public' && community?.permissions?.can_invite_members && (
+              <button
+                className="community-invite-btn"
+                onClick={() => setInviteOverlayOpen(true)}
+              >
                 Invite
               </button>
-            }
-            <button className="community-guidelines-btn">Guidelines</button>
+            )}
           </div>
         </div>
-      )}
 
-      <div className="community-bottom-row">
-        <div className={`community-card community-tabs-card ${selectedTab.key === 'home' ? 'home-tab' : ''}`}>
-          <div className="community-tabs-header">
+
+        {/* Tabs Card */}
+        <div
+          className={`community-card community-tabs-card ${selectedTab.key === 'home' ? 'shift-up' : ''}`}
+        >          <div className="community-tabs-header">
             <h3 className="community-tabs-title">Tabs</h3>
             {community?.permissions?.can_add_tabs && (
               <button
@@ -121,8 +133,7 @@ const Community = () => {
               </button>
             )}
           </div>
-
-          <div className='community-tabs-list'>
+          <div className="community-tabs-list">
             {community?.tabs?.map(tab => (
               <div
                 key={tab.key}
@@ -131,51 +142,42 @@ const Community = () => {
                   setSelectedTab(tab);
                   window.history.replaceState(null, '', `#${tab.key}`);
                 }}
-
               >
-                {tab.label || "Untitled"}
+                {tab.label || 'Untitled'}
               </div>
             ))}
           </div>
         </div>
-
-        <div className="community-card community-content-card">
-          {selectedTab.key &&
-            TAB_COMPONENTS_FLAT[selectedTab.key] ? (
-            React.createElement(
-              TAB_COMPONENTS_FLAT[selectedTab.key].Component,
-              {
-                communityId: community.id,
-                tab: selectedTab,
-                community,
-                handleJoinLeave,
-                setInviteOverlayOpen,
-                fetchCommunityData,
-              }
-            )
-          ) : (
-            <div className="tab-content-placeholder">
-              This tab is not yet supported.
-            </div>
-          )}
-
-        </div>
       </div>
 
+      {/* Main Content Area (scrolls with page) */}
+      <div className="community-card community-content-card">
+        {selectedTab.key && TAB_COMPONENTS_FLAT[selectedTab.key] ? (
+          React.createElement(TAB_COMPONENTS_FLAT[selectedTab.key].Component, {
+            communityId: community.id,
+            tab: selectedTab,
+            community,
+            handleJoinLeave,
+            setInviteOverlayOpen,
+            fetchCommunityData,
+          })
+        ) : (
+          <div className="tab-content-placeholder">This tab is not yet supported.</div>
+        )}
+      </div>
+
+      {/* Overlays */}
       {addTabOverlayIsOpen && (
         <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} communityId={communityId} />
       )}
       {inviteOverlayOpen && (
-        <InviteOverlay
-          communityId={communityId}
-          onClose={() => setInviteOverlayOpen(false)}
-        />
+        <InviteOverlay communityId={communityId} onClose={() => setInviteOverlayOpen(false)} />
       )}
-
     </div>
   ) : (
     <div className="community-loading">Loading...</div>
   );
+
 };
 
 export default Community;

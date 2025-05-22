@@ -1,66 +1,142 @@
+/* === Backdrop === */
 .discussion-overlay-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 60;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 20, 0.55);
-  backdrop-filter: blur(10px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    position: fixed;
+    inset: 0;
+    z-index: 51;
+    background: rgba(10, 10, 20, 0.55);
+    backdrop-filter: blur(20px) saturate(140%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
 }
 
+/* === Modal Card === */
 .discussion-overlay-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  width: 480px;
-  max-width: 95%;
-  padding: 24px;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: relative;
+    width: 100%;
+    max-width: 720px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 36px 32px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    color: white;
+    position: relative;
+    box-sizing: border-box;
 }
 
+/* === Close Button === */
 .overlay-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 18px;
-  background: transparent;
-  border: none;
-  color: #ccc;
-  font-size: 1.5em;
-  cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 
-.discussion-overlay-card input,
-.discussion-overlay-card textarea {
-  width: 100%;
-  padding: 12px;
-  font-size: 1em;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  color: white;
+.overlay-close-btn:hover {
+    color: white;
 }
 
-.discussion-overlay-card textarea {
-  min-height: 120px;
-  resize: vertical;
+.title-section,
+.body-section {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 0, 0, 0);
+}
+
+/* === Header === */
+.overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.overlay-heading {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+}
+
+/* === Section Wrapper === */
+.editor-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #dcdcdc;
+    margin-bottom: 10px !important;
+}
+
+/* === Title Editor Block === */
+.title-editor-block {
+    padding: 6px 18px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 35px;
+    max-height: 90px;
+    padding: 0 0.2em;
+    box-sizing: border-box;
+    color: white;
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+}
+
+.title-editor-block .editor-container {
+    flex-grow: 1;
+    padding: 6px 6px;
+    overflow-y: auto;
+}
+
+
+/* === Content Editor === */
+.body-section .editor-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 220px;
+    max-height: 450px;
+}
+
+/* === Toolbar === */
+.toolbar .button {
+    font-size: 0.95rem;
+}
+
+
+/* === Submit Button === */
+.overlay-actions {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .submit-discussion-btn {
-  align-self: flex-end;
-  padding: 10px 18px;
-  background: rgba(0, 200, 160, 0.15);
-  border: 1px solid rgba(0, 200, 160, 0.35);
-  border-radius: 10px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+    padding: 12px 26px;
+    background: rgba(0, 255, 180, 0.12);
+    border: 1px solid rgba(0, 255, 180, 0.3);
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submit-discussion-btn:hover {
+    background: rgba(0, 255, 180, 0.22);
+    transform: translateY(-1px);
+}
+
+.submit-discussion-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

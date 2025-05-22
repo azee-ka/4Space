@@ -4,38 +4,48 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import DiscussionPost
-from community.models import Community, CommunityMembership
-from .serializers import DiscussionPostSerializer
+from ..models import Community, CommunityMembership, CommunityPermission
+from .serializers import DiscussionPostSerializer, CreateDiscussionPostSerializer
 
-from community.models import CommunityPermission
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def discussion_posts(request, community_id):
+def list_discussions(request, community_id):
     try:
         community = Community.objects.get(id=community_id)
     except Community.DoesNotExist:
-        return Response({"detail": "Community not found"}, status=404)
+        return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
 
     if not CommunityMembership.objects.filter(user=request.user, community=community).exists():
-        return Response({"detail": "Unauthorized"}, status=403)
+        return Response({"detail": "Unauthorized."}, status=status.HTTP_403_FORBIDDEN)
 
-    if request.method == 'GET':
-        posts = DiscussionPost.objects.filter(community=community)
-        serializer = DiscussionPostSerializer(posts, many=True)
-        return Response(serializer.data)
+    posts = DiscussionPost.objects.filter(community=community).order_by('-created_at')
+    serializer = DiscussionPostSerializer(posts, many=True)
+    return Response(serializer.data)
 
-    if request.method == 'POST':
-        # Permission check
-        try:
-            perm = CommunityPermission.objects.get(community=community, user=request.user)
-            if not perm.permissions.get("can_post_discussions", False):
-                return Response({"detail": "Permission denied: Cannot post discussions."}, status=403)
-        except CommunityPermission.DoesNotExist:
-            return Response({"detail": "Permission denied."}, status=403)
 
-        serializer = DiscussionPostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(community=community, author=request.user)
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_discussion(request, community_id):
+    try:
+        community = Community.objects.get(id=community_id)
+    except Community.DoesNotExist:
+        return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if not CommunityMembership.objects.filter(user=request.user, community=community).exists():
+        return Response({"detail": "Unauthorized."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        perm = CommunityPermission.objects.get(community=community, user=request.user)
+        if not perm.permissions.get("can_post_discussions", False):
+            return Response({"detail": "You don't have permission to post discussions."}, status=status.HTTP_403_FORBIDDEN)
+    except CommunityPermission.DoesNotExist:
+        return Response({"detail": "Permission not configured for this user."}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = CreateDiscussionPostSerializer(data=request.data)
+    if serializer.is_valid():
+        post = serializer.save(author=request.user, community=community)
+        output = DiscussionPostSerializer(post)
+        return Response(output.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
