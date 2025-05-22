@@ -1,108 +1,154 @@
 .discussion-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 30px;
+  align-items: center;
+  height: 100%;
+}
+
+.discussion-wrapper h3 {
+  align-self: flex-start;
+}
+
+.discussion-feed {
+  width: 100%;
+  /* max-width: 900px; */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .discussion-card {
-  background: rgba(25, 25, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 20px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+.discussion-card:hover {
+  /* transform: scale(1.01); */
+  border-color: rgba(25, 255, 255, 0.2);
+}
+
+.discussion-vote-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  padding-top: 8px;
+  gap: 6px;
+  min-width: 40px;
+  color: #88e0f5;
+}
+
+.discussion-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .discussion-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .user-icon {
-  font-size: 1.6rem;
-  color: #bbb;
+  font-size: 1.5rem;
+  color: #ccc;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.user-icon img {
+    width: 100%;
+    height: 100%;
 }
 
 .meta {
   display: flex;
   flex-direction: column;
+  font-size: 0.85rem;
+  color: #aaa;
 }
-
 .username {
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
-  font-size: 0.95rem;
 }
-
 .timestamp {
   font-size: 0.75rem;
-  color: #888;
 }
 
-.title {
-  font-size: 1.2rem;
+.discussion-body .title {
+  font-size: 1.3rem;
   font-weight: 600;
-  color: #e0f7ff;
-  margin-bottom: 6px;
+  color: #eef9ff;
+  margin-bottom: 4px;
 }
-
 .preview {
   font-size: 0.95rem;
-  color: #ccc;
+  color: #b0b0b0;
   line-height: 1.5;
 }
 
 .discussion-footer {
   display: flex;
-  gap: 20px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  justify-content: flex-end;
+  margin-top: 12px;
 }
-
 .action {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.85rem;
   color: #aaa;
+  font-size: 0.85rem;
 }
 
 .icon {
-  font-size: 1.1rem;
-  color: #888;
+  font-size: 1.2rem;
+}
+.vote-icon {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.vote-icon:hover {
+  color: #50eaff;
 }
 
 .empty-state {
   color: #aaa;
   text-align: center;
   font-style: italic;
-  margin-top: 40px;
+  padding: 40px 0;
 }
 
 .floating-discussion-btn {
   position: fixed;
   bottom: 32px;
   right: 32px;
-  width: 52px;
-  height: 52px;
-  background: rgba(255, 255, 255, 0.06);
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(145deg, rgba(0, 128, 255, 0.2), rgba(0, 255, 200, 0.3));
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
-  font-size: 1.8em;
   border-radius: 50%;
-  cursor: pointer;
+  color: white;
+  font-size: 1.5rem;
   display: flex;
-  justify-content: center;
   align-items: center;
-  backdrop-filter: blur(8px);
-  transition: transform 0.2s ease;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(100, 255, 255, 0.2);
+  transition: all 0.3s ease;
   z-index: 50;
 }
-
 .floating-discussion-btn:hover {
-  transform: scale(1.05);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(100, 255, 255, 0.4);
 }

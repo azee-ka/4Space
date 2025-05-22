@@ -36,11 +36,12 @@ def join_community(request, community_id):
             defaults={'role': 'member'}
         )
         if created:
-            CommunityPermission.objects.create(
+            CommunityPermission.objects.get_or_create(
                 community=community,
                 user=request.user,
-                permissions=DEFAULT_MEMBER_PERMISSIONS
+                defaults={'permissions': DEFAULT_MEMBER_PERMISSIONS}
             )
+
         return Response({"detail": "Joined community successfully."}, status=200)
 
     elif community.visibility == 'invite':

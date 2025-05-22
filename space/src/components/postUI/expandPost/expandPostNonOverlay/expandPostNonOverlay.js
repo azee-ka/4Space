@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import './expandPostNonOverlay.css';
 import DOMPurify from 'dompurify';
 import { useAuth } from '../../../../hooks/useAuth';
@@ -41,6 +41,8 @@ const ExpandedPostNonOverlay = () => {
         renderMediaContent,
         handleCloseLikesOverlay,
     } = useExpandPostContext();
+
+    const commentEditorRef = useRef(null);
 
     const { setShowPostMoreMenuOverlay } = usePostContext();
     const { authState } = useAuth();
@@ -162,15 +164,17 @@ const ExpandedPostNonOverlay = () => {
                 </div>
                 <div className='expanded-post-comment-post-container'>
                     <div className='expanded-post-comment-post-container-inner'>
-                        <EmojiButton />
+                        <EmojiButton onEmojiSelect={(emoji) => commentEditorRef.current?.insertEmoji?.(emoji)} />
                         <CustomEditor
+                            ref={commentEditorRef}
+
                             placeholder='Comment here...'
                             content={commentText}
                             onContentChange={setCommentText}
                             showToolbar={false}
                         />
                         {(commentText !== '' || commentText === "<p><br></p>") &&
-                            <button 
+                            <button
                                 onClick={() => addComment()}
                                 className={`expanded-post-comment-post-button`}
                             >
@@ -232,7 +236,7 @@ const ExpandedPostNonOverlay = () => {
                     />
                 </div>
                 <div onClick={() => setShowPostMoreMenuOverlay(true)} >
-                <FaEllipsisH className={`icon-style`} />
+                    <FaEllipsisH className={`icon-style`} />
                 </div>
                 {post?.author?.username === authState?.author?.username &&
                     <div onClick={() => deletePost()} className='expanded-post-delete-post'>

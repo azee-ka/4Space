@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import './expandPostOverlay.css';
 import DOMPurify from 'dompurify';
 import { useAuth } from '../../../../hooks/useAuth';
@@ -54,6 +54,8 @@ const ExpandedPostOverlay = () => {
 
     const { authState } = useAuth();
     const { setShowPostMoreMenuOverlay } = usePostContext();
+
+    const commentEditorRef = useRef(null);
 
 
     const closeOverlayOnClick = () => {
@@ -179,8 +181,10 @@ const ExpandedPostOverlay = () => {
                 </div>
                 <div className='expanded-post-comment-post-container'>
                     <div className='expanded-post-comment-post-container-inner'>
-                        <EmojiButton />
+                        <EmojiButton onEmojiSelect={(emoji) => commentEditorRef.current?.insertEmoji?.(emoji)} />
                         <CustomEditor
+                            ref={commentEditorRef}
+
                             placeholder='Comment here...'
                             content={commentText}
                             onContentChange={setCommentText}
