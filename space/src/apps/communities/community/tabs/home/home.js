@@ -1,13 +1,49 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './home.css';
 import ProfilePicture from '../../../../../utils/profilePicture/getProfilePicture';
 import { formatDateTime } from '../../../../../utils/formatDateTime';
 import { FiSettings } from 'react-icons/fi';
 import default_banner_image from '../../../../../assets/default_banner_image.png';
+import CommunitySettings from '../../settings/communitySettings';
 
-const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen }) => {
+const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen, fetchCommunityData }) => {
 
     const [metaTab, setMetaTab] = useState('overview');
+    const [showSettings, setShowSettings] = useState(false);
+    const [settingsTab, setSettingsTab] = useState(null);
+
+    useEffect(() => {
+        if (window.location.hash.startsWith('#settings')) {
+            setShowSettings(true);
+            const [, tabParam] = window.location.hash.split('=');
+            if (tabParam) {
+                setSettingsTab(decodeURIComponent(tabParam));
+            }
+        }
+    }, []);
+
+    const openSettings = () => {
+        setShowSettings(true);
+        window.history.replaceState(null, '', '#settings');
+    };
+
+    const closeSettings = () => {
+        setShowSettings(false);
+        window.history.replaceState(null, '', ' ');
+    };
+
+    if (showSettings) {
+        return (
+            <CommunitySettings
+                community={community}
+                onBack={closeSettings}
+                fetchCommunityData={fetchCommunityData}
+                initialTab={settingsTab}
+            />
+        );
+    }
+
+
     const metaTabs = ['overview', 'analytics', 'metrics'];
 
     return (
@@ -41,18 +77,21 @@ const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen }) => {
                         <button className={`community-join-btn ${community.is_member ? 'leave' : ''}`} onClick={handleJoinLeave}>
                             {community.is_member ? 'Leave' : 'Join'}
                         </button>
-                        {community?.permissions?.can_invite_members &&
-              <button className="community-invite-btn" onClick={() => setInviteOverlayOpen(true)}>
-                Invite
-              </button>
-            }
-                        {['admin', 'owner'].includes(community.user_role) && (
-                            <>
-                                <button className="community-settings-btn" title="Settings">
-                                    <FiSettings size={16} />
-                                </button>
-                            </>
-                        )}
+                        {community?.visiblity === "public" && community?.permissions?.can_invite_members &&
+                            <button className="community-invite-btn" onClick={() => setInviteOverlayOpen(true)}>
+                                Invite
+                            </button>
+                        }
+                        {community?.permissions?.can_manage_settings && (
+                            <button
+                                className="community-settings-btn"
+                                title="Settings"
+                                onClick={openSettings}
+                            >
+                                <FiSettings size={16} />
+                            </button>
+                            )}
+
                         <button className="community-guidelines-btn">
                             Guidelines
                         </button>

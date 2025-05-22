@@ -15,7 +15,7 @@
 
 .community-card {
     /* flex: 1 1 calc(50% - 12px); */
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.051);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -133,9 +133,7 @@
     align-items: flex-start;
     gap: 25px;
     width: 100%;
-    /* height: 100%; */
     flex-grow: 1;
-    background-color: rgba(0, 128, 0, 0);
 }
 
 /* Tabs Sidebar */
@@ -144,15 +142,10 @@
     flex-direction: column;
     gap: 12px;
     padding: 0;
-    background: rgba(255, 255, 255, 0.04);
     border-radius: 16px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     height: 595px;
     width: 300px !important;
     box-sizing: border-box;
-    background-color: rgba(255, 0, 0, 0);
     flex-shrink: 0;
     position: fixed;
 }
@@ -231,15 +224,10 @@
 /* Main Tab Content */
 .community-content-card {
     padding: 15px;
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
     min-height: 300px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     overflow-y: auto;
     flex-grow: 1;
     height: 100%;
-    background-color: rgba(0, 0, 255, 0);
     margin-left: 325px;
 }
 

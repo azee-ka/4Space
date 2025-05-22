@@ -7,6 +7,8 @@ from .models import DiscussionPost
 from community.models import Community, CommunityMembership
 from .serializers import DiscussionPostSerializer
 
+from community.models import CommunityPermission
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def discussion_posts(request, community_id):
@@ -24,6 +26,14 @@ def discussion_posts(request, community_id):
         return Response(serializer.data)
 
     if request.method == 'POST':
+        # Permission check
+        try:
+            perm = CommunityPermission.objects.get(community=community, user=request.user)
+            if not perm.permissions.get("can_post_discussions", False):
+                return Response({"detail": "Permission denied: Cannot post discussions."}, status=403)
+        except CommunityPermission.DoesNotExist:
+            return Response({"detail": "Permission denied."}, status=403)
+
         serializer = DiscussionPostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(community=community, author=request.user)

@@ -1,158 +1,143 @@
+// CreateCommunity.jsx
 import React, { useState } from 'react';
 import './createCommunity.css';
 import useApi from '../../../utils/useApi';
 import { useNavigate } from 'react-router-dom';
 
-const TABS = [
-    "Projects",
-    "Events",
-    "Resources",
-    "Funding",
-    "Tasks",
-    "Notebook",
-    "Assignments",
-    "Grades",
-    "Whitepapers"
-];
-
 const CreateCommunity = () => {
-    const { callApi } = useApi();
-    const navigate = useNavigate();
+  const { callApi } = useApi();
+  const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        visibility: 'public',
-        selectedTabs: [],
-    });
+  const [formData, setFormData] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    category: '',
+    type: 'general',
+    visibility: 'public',
+    allow_custom_tabs: true,
+    restricted_to_org_members: false,
+    banner: null,
+    logo: null,
+  });
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
+  const handleChange = (e) => {
+    const { name, value, type, checked, files } = e.target;
+    if (type === 'file') {
+      setFormData(prev => ({ ...prev, [name]: files[0] }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
+  };
 
-    const toggleTabSelection = (tab) => {
-        setFormData(prevState => {
-            const isSelected = prevState.selectedTabs.includes(tab);
-            return {
-                ...prevState,
-                selectedTabs: isSelected
-                    ? prevState.selectedTabs.filter(t => t !== tab)
-                    : [...prevState.selectedTabs, tab]
-            };
-        });
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        setSuccess(false);
+    const formDataToSend = new FormData();
+    for (const key in formData) {
+      if (formData[key] !== null && formData[key] !== undefined) {
+        formDataToSend.append(key, formData[key]);
+      }
+    }
 
-        const formDataToSend = {
-            name: formData.name.trim(),
-            description: formData.description.trim(),
-            visibility: formData.visibility,
-            selected_tabs: formData.selectedTabs,
-        };
-        try {
-            const response = await callApi('community/create/', 'POST', formDataToSend);
-            console.log('Community created:', response.data);
-            setSuccess(true);
-            setFormData({
-                name: '',
-                description: '',
-                visibility: 'public',
-                selectedTabs: [],
-                community_type: 'general',
-            });
-            navigate(`/communities/c/${response.data.community_id}/`);
-        } catch (err) {
-            console.error('Error creating community:', err);
-            setError(err?.message || 'Unknown error occurred.');
-        }        
+    try {
+      const response = await callApi('community/create/', 'POST', formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setSuccess(true);
+      navigate(`/communities/c/${response.data.community_id}/`);
+    } catch (err) {
+      setError(err?.message || 'An error occurred.');
+    }
 
-        setLoading(false);
-    };
+    setLoading(false);
+  };
 
-    return (
-        <div className="create-community-page">
-            <div className="create-community-header">
-                <h2>Create Community</h2>
-            </div>
+  return (
+    <div className="create-community-container">
+      <h2 className="create-community-title">Create Community</h2>
+      <form className="create-community-form" onSubmit={handleSubmit}>
+        <section className="create-community-section">
+          <div className="create-community-group">
+            <label>Community Name *</label>
+            <input name="name" value={formData.name} onChange={handleChange} required disabled={loading} />
+          </div>
+          <div className="create-community-group">
+            <label>Slug (optional)</label>
+            <input name="slug" value={formData.slug} onChange={handleChange} disabled={loading} />
+          </div>
+        </section>
 
-            <form className="create-community-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Community Name *</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="Enter community name"
-                        disabled={loading}
-                    />
-                </div>
+        <section className="create-community-section">
+          <div className="create-community-group">
+            <label>Category</label>
+            <input name="category" value={formData.category} onChange={handleChange} disabled={loading} />
+          </div>
+          <div className="create-community-group">
+            <label>Type</label>
+            <select name="type" value={formData.type} onChange={handleChange} disabled={loading}>
+              <option value="general">General</option>
+              <option value="tech">Tech</option>
+              <option value="education">Education</option>
+              <option value="social">Social</option>
+            </select>
+          </div>
+          <div className="create-community-group">
+            <label>Visibility</label>
+            <select name="visibility" value={formData.visibility} onChange={handleChange} disabled={loading}>
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+              <option value="invite">Invite Only</option>
+            </select>
+          </div>
+        </section>
 
-                <div className="form-group">
-                    <label>Description</label>
-                    <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        placeholder="Enter a short description"
-                        rows="4"
-                        disabled={loading}
-                    />
-                </div>
+        <section className="create-community-section toggles">
+          <div className="create-community-toggle">
+            <input type="checkbox" id="customTabs" name="allow_custom_tabs" checked={formData.allow_custom_tabs} onChange={handleChange} />
+            <label htmlFor="customTabs">Allow Custom Tabs</label>
+          </div>
+          <div className="create-community-toggle">
+            <input type="checkbox" id="orgOnly" name="restricted_to_org_members" checked={formData.restricted_to_org_members} onChange={handleChange} />
+            <label htmlFor="orgOnly">Restrict to Organization Members</label>
+          </div>
+        </section>
 
-                <div className="form-group">
-                    <label>Visibility</label>
-                    <select
-                        name="visibility"
-                        value={formData.visibility}
-                        onChange={handleInputChange}
-                        disabled={loading}
-                    >
-                        <option value="public">Public (Everyone can join)</option>
-                        <option value="private">Private (Invite Only)</option>
-                        <option value="hidden">Hidden (Unlisted)</option>
-                    </select>
-                </div>
+        <section className="create-community-section uploads">
+          <div className="create-community-group">
+            <label>Upload Logo</label>
+            <input type="file" name="logo" accept="image/*" onChange={handleChange} />
+          </div>
+          <div className="create-community-group">
+            <label>Upload Banner</label>
+            <input type="file" name="banner" accept="image/*" onChange={handleChange} />
+          </div>
+        </section>
 
-                <div className="form-group">
-                    <label>Optional Tabs</label>
-                    <div className="tabs-selection">
-                        {TABS.map((tab) => (
-                            <div
-                                key={tab}
-                                className={`tab-option ${formData.selectedTabs.includes(tab) ? 'active' : ''}`}
-                                onClick={() => toggleTabSelection(tab)}
-                                style={{ pointerEvents: loading ? 'none' : 'auto' }}
-                            >
-                                {tab}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {error && <div className="error-message">{error}</div>}
-                {success && <div className="success-message">🎉 Community Created Successfully!</div>}
-
-                <button type="submit" className="submit-btn" disabled={loading}>
-                    {loading ? 'Creating...' : 'Create Community'}
-                </button>
-            </form>
+        <div className="create-community-group full">
+          <label>Description</label>
+          <textarea name="description" value={formData.description} onChange={handleChange} rows="5" disabled={loading} />
         </div>
-    );
+
+        {error && <div className="create-community-form-error">{error}</div>}
+        {success && <div className="create-community-form-success">Community created successfully!</div>}
+
+        <button type="submit" className="create-community-submit-button" disabled={loading}>
+          {loading ? 'Creating...' : 'Create Community'}
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default CreateCommunity;
