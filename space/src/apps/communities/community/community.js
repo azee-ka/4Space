@@ -17,8 +17,7 @@ const Community = () => {
   const [selectedTab, setSelectedTab] = useState(null);
   const [addTabOverlayIsOpen, setAddTabOverlayIsOpen] = useState(false);
 
-const [isMember, setIsMember] = useState(false);
-const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
+  const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
 
 
   const fetchCommunityData = async () => {
@@ -26,7 +25,6 @@ const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
       const response = await callApi(`community/c/${communityId}/`);
       console.log('Community data retrieved successfully:', response.data);
       setCommunity(response.data);
-      setIsMember(response.data?.is_member);
       setSelectedTab(response.data?.tabs[0]);
     } catch (error) {
       console.error('Error retrieving community data:', error);
@@ -37,29 +35,50 @@ const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
     fetchCommunityData();
   }, [communityId]);
 
-
   useEffect(() => {
-    if (community && community.tabs.length > 0 && !selectedTab) {
-      setSelectedTab(community.tabs[0]);
+    if (community?.tabs?.length > 0) {
+      const hashKey = window.location.hash.replace('#', '');
+      const initialTab = community.tabs.find(tab => tab.key === hashKey) || community.tabs[0];
+      setSelectedTab(initialTab);
     }
   }, [community]);
 
-  
+
+
   const handleJoinLeave = async () => {
-  try {
-    if (isMember) {
-      const response = await callApi(`community/${communityId}/leave/`, 'DELETE');
-      setIsMember(false);
-      console.log(response.data)
-    } else {
-      const response = await callApi(`community/${communityId}/join/`, 'POST');
-      setIsMember(true);
-      console.log(response.data)
+    if (!community) return;
+
+    const wasMember = community.is_member;
+    const newMemberStatus = !wasMember;
+    const newMemberCount = wasMember
+      ? Math.max(0, (community.members_count || 1) - 1)
+      : (community.members_count || 0) + 1;
+
+    // Optimistic update
+    setCommunity({
+      ...community,
+      is_member: newMemberStatus,
+      members_count: newMemberCount
+    });
+
+    try {
+      if (wasMember) {
+        const response = await callApi(`community/${communityId}/leave/`, 'DELETE');
+        console.log(response.data)
+      } else {
+        const response = await callApi(`community/${communityId}/join/`, 'POST');
+        console.log(response.data)
+      }
+    } catch (error) {
+      console.error('Error updating membership:', error);
+      // Revert optimistic change on error
+      setCommunity({
+        ...community,
+        is_member: wasMember,
+        members_count: community.members_count
+      });
     }
-  } catch (error) {
-    console.error('Error updating membership:', error);
-  }
-};
+  };
 
 
   return community ? (
@@ -79,7 +98,7 @@ const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
             <button className={`community-join-btn ${community.is_member ? 'leave' : ''}`} onClick={handleJoinLeave} >
               {community.is_member ? 'Leave' : 'Join'}
             </button>
-            {community?.permissions?.can_invite_members &&
+            {community?.visiblity === "public" && community?.permissions?.can_invite_members &&
               <button className="community-invite-btn" onClick={() => setInviteOverlayOpen(true)}>
                 Invite
               </button>
@@ -108,7 +127,11 @@ const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
               <div
                 key={tab.key}
                 className={`community-tab-item ${selectedTab?.key === tab.key ? 'active' : ''}`}
-                onClick={() => setSelectedTab(tab)}
+                onClick={() => {
+                  setSelectedTab(tab);
+                  window.history.replaceState(null, '', `#${tab.key}`);
+                }}
+
               >
                 {tab.label || "Untitled"}
               </div>
@@ -127,6 +150,7 @@ const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
                 community,
                 handleJoinLeave,
                 setInviteOverlayOpen,
+                fetchCommunityData,
               }
             )
           ) : (
@@ -142,14 +166,14 @@ const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
         <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} communityId={communityId} />
       )}
       {inviteOverlayOpen && (
-  <InviteOverlay
-    communityId={communityId}
-    onClose={() => setInviteOverlayOpen(false)}
-  />
-)}
+        <InviteOverlay
+          communityId={communityId}
+          onClose={() => setInviteOverlayOpen(false)}
+        />
+      )}
 
     </div>
-  ): (
+  ) : (
     <div className="community-loading">Loading...</div>
   );
 };

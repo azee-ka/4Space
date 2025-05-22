@@ -221,7 +221,7 @@
     background: rgba(255, 108, 108, 0.1);
 }
 
-.community-guidelines-btn {
+.community-meta-actions .community-guidelines-btn {
   color: rgb(172, 172, 172);
   border: 1px solid rgba(102, 102, 102, 0.2);
   background: rgba(128, 128, 128, 0.05);

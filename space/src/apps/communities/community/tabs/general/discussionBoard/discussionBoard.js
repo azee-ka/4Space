@@ -3,10 +3,12 @@ import useApi from '../../../../../../utils/useApi';
 import './discussionBoard.css';
 import { FiMessageCircle, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import { FaRegUserCircle } from 'react-icons/fa';
+import CreateDiscussionOverlay from './createDiscussionOverlay/createDiscussionOverlay';
 
-const Discussion = ({ communityId }) => {
+const Discussion = ({ communityId, community }) => {
   const { callApi } = useApi();
   const [posts, setPosts] = useState([]);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const fetchDiscussions = async () => {
@@ -22,21 +24,21 @@ const Discussion = ({ communityId }) => {
 
   return (
     <div className="discussion-wrapper">
-      {posts.length === 0 ? (
-        <div className="empty-state">No discussions yet. Start one!</div>
+      {posts?.length === 0 ? (
+        <div className="empty-state">No discussions yet. Be the first to start one.</div>
       ) : (
         posts.map(post => (
           <div className="discussion-card" key={post.id}>
             <div className="discussion-header">
               <FaRegUserCircle className="user-icon" />
               <div className="meta">
-                <span className="username">{post.author_username}</span>
+                <span className="username">@{post.author_username}</span>
                 <span className="timestamp">{new Date(post.created_at).toLocaleString()}</span>
               </div>
             </div>
             <div className="discussion-body">
               <h3 className="title">{post.title}</h3>
-              {post.content && <p className="preview">{post.content.slice(0, 140)}...</p>}
+              {post.content && <p className="preview">{post.content.slice(0, 160)}...</p>}
             </div>
             <div className="discussion-footer">
               <div className="action">
@@ -52,6 +54,19 @@ const Discussion = ({ communityId }) => {
           </div>
         ))
       )}
+
+      {community?.permissions?.can_post_discussions && 
+        <>
+          <button className="floating-discussion-btn" onClick={() => setShowForm(true)}>+</button>
+          {showForm && (
+            <CreateDiscussionOverlay
+              onClose={() => setShowForm(false)}
+              communityId={communityId}
+              onPostCreated={(post) => setPosts([post, ...posts])}
+            />
+          )}
+        </>
+      }
     </div>
   );
 };
