@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import list_discussions, create_discussion
+from .views import list_exchanges, create_exchange
 
 urlpatterns = [
-    path('list/', list_discussions, name='list_discussions'),
-    path('create/', create_discussion, name='create_discussion'),
+    path('list/', list_exchanges, name='list_exchanges'),
+    path('create/', create_exchange, name='create_exchange'),
 ]

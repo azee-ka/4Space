@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useApi from '../../../../../../utils/useApi';
-import './discussionBoard.css';
+import './exchangeBoard.css';
 import { FiMessageCircle, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import { FaRegUserCircle } from 'react-icons/fa';
 import CreateDiscussionOverlay from './createDiscussionOverlay/createDiscussionOverlay';
@@ -16,16 +16,16 @@ const Exchange = ({ communityId, community }) => {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    const fetchDiscussions = async () => {
+    const fetchExchanges = async () => {
       try {
-        const response = await callApi(`community/${communityId}/discussions/list/`);
+        const response = await callApi(`community/${communityId}/exchanges/list/`);
         setPosts(response.data);
         console.log(response.data);
       } catch (err) {
         console.error('Failed to load discussion posts', err);
       }
     };
-    fetchDiscussions();
+    fetchExchanges();
   }, [communityId]);
 
   return (

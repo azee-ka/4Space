@@ -1,19 +1,19 @@
 from rest_framework import serializers
-from .models import DiscussionPost
+from .models import ExchangePost
 
 
-class DiscussionPostSerializer(serializers.ModelSerializer):
+class ExchangePostSerializer(serializers.ModelSerializer):
     author_username = serializers.CharField(source='author.username', read_only=True)
 
     class Meta:
-        model = DiscussionPost
+        model = ExchangePost
         fields = [
             'id', 'title', 'content', 'created_at', 'updated_at',
             'author_username', 'upvotes', 'comments_count'
         ]
 
 
-class CreateDiscussionPostSerializer(serializers.ModelSerializer):
+class CreateExchangePostSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DiscussionPost
+        model = ExchangePost
         fields = ['title', 'content']

@@ -2,18 +2,18 @@ from .school.models import CommunityAssignment, CommunityGrade
 from .school.serializers import CommunityAssignmentSerializer, CommunityGradeSerializer
 from .school.views import get_assignments, get_grades  # we'll create these
 
-from .general.models import DiscussionPost
-from .general.serializers import DiscussionPostSerializer
+from .general.models import ExchangePost
+from .general.serializers import ExchangePostSerializer
 
 TAB_REGISTRY = {
     "general": {
-        "discussion": {
-            "label": "Discussion",
+        "exchange": {
+            "label": "Exchange",
             "icon": "📚",
-            "model": DiscussionPost,
-            "serializer": DiscussionPostSerializer,
+            "model": ExchangePost,
+            "serializer": ExchangePostSerializer,
             "view": get_assignments,
-            "route": "general/<uuid:community_id>/discussion/"
+            "route": "general/<uuid:community_id>/exchange/"
         },
     },
     "school": {
