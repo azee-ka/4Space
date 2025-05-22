@@ -3,7 +3,7 @@ import uuid
 from ..models import Community
 from django.conf import settings
 
-class DiscussionPost(models.Model):
+class ExchangePost(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='discussions')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)

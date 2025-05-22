@@ -3,14 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import DiscussionPost
+from .models import ExchangePost
 from ..models import Community, CommunityMembership, CommunityPermission
-from .serializers import DiscussionPostSerializer, CreateDiscussionPostSerializer
+from .serializers import ExchangePostSerializer, CreateExchangePostSerializer
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def list_discussions(request, community_id):
+def list_exchanges(request, community_id):
     try:
         community = Community.objects.get(id=community_id)
     except Community.DoesNotExist:
@@ -19,14 +19,14 @@ def list_discussions(request, community_id):
     if not CommunityMembership.objects.filter(user=request.user, community=community).exists():
         return Response({"detail": "Unauthorized."}, status=status.HTTP_403_FORBIDDEN)
 
-    posts = DiscussionPost.objects.filter(community=community).order_by('-created_at')
-    serializer = DiscussionPostSerializer(posts, many=True)
+    posts = ExchangePost.objects.filter(community=community).order_by('-created_at')
+    serializer = ExchangePostSerializer(posts, many=True)
     return Response(serializer.data)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def create_discussion(request, community_id):
+def create_exchange(request, community_id):
     try:
         community = Community.objects.get(id=community_id)
     except Community.DoesNotExist:
@@ -42,10 +42,10 @@ def create_discussion(request, community_id):
     except CommunityPermission.DoesNotExist:
         return Response({"detail": "Permission not configured for this user."}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = CreateDiscussionPostSerializer(data=request.data)
+    serializer = CreateExchangePostSerializer(data=request.data)
     if serializer.is_valid():
         post = serializer.save(author=request.user, community=community)
-        output = DiscussionPostSerializer(post)
+        output = ExchangePostSerializer(post)
         return Response(output.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -123,7 +123,7 @@ const Community = () => {
         <div
           className={`community-card community-tabs-card ${selectedTab.key === 'home' ? 'shift-up' : ''}`}
         >          <div className="community-tabs-header">
-            <h3 className="community-tabs-title">Tabs</h3>
+            <h3 className="community-tabs-title">Menu</h3>
             {community?.permissions?.can_add_tabs && (
               <button
                 className="community-add-tab-btn"

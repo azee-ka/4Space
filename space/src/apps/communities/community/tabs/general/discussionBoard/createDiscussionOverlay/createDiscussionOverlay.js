@@ -22,7 +22,7 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
 
         setLoading(true);
         try {
-            const response = await callApi(`community/${communityId}/discussions/create/`, 'POST', {
+            const response = await callApi(`community/${communityId}/exchanges/create/`, 'POST', {
                 title: titleContent,
                 content: bodyContent,
             });
@@ -61,7 +61,7 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
                             supportMedia={false}
                             ref={(ref) => (titleInsertEmojiRef.current = ref?.insertEmoji)}
                         />
-                        <EmojiButton onEmojiSelect={(emoji) => titleInsertEmojiRef.current?.(emoji)} />
+                        {/* <EmojiButton onEmojiSelect={(emoji) => titleInsertEmojiRef.current?.(emoji)} /> */}
                     </div>
                 </div>
 

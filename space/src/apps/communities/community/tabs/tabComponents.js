@@ -1,7 +1,7 @@
 import CommunityGrades from './school/grades/grades';
 import CommunityAssignments from './school/assignments/assignments';
 import HomeTab from './home/home';
-import Exchange from './general/discussionBoard/discussionBoard';
+import Exchange from './general/discussionBoard/exchangeBoard';
 
 // import CommunityFunding from './startup/funding/funding';
 
@@ -15,9 +15,9 @@ export const TAB_COMPONENT_CATEGORIES = {
       icon: '🏠',
       category: 'general',
     },
-    discussion: {
-      key: 'discussion',
-      label: 'Discussion',
+    exchange: {
+      key: 'exchange',
+      label: 'Exchange',
       Component: Exchange,
       icon: '🏠',
       category: 'general',
