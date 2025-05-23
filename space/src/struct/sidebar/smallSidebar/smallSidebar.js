@@ -65,6 +65,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
 
     return (
         <div className={`small-sidebar ${searchSidebarOpen ? 'search-sidebar-open' : ''}`}>
+            <div className='small-sidebar-inner-menu'>
             <div className="small-sidebar-top">
                 {sidebarBtns?.map((item, index) => (
                     <div
@@ -99,6 +100,10 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                     </div>
                 ))}
             </div>
+            </div>
+
+            
+
             {<SearchSidebar isOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />}
         </div>
     );

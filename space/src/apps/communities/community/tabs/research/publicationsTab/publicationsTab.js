@@ -1,7 +1,7 @@
-// components/research/PublicationsTab.jsx
 import React, { useEffect, useState } from 'react';
 import './publicationsTab.css';
 import useApi from '../../../../../../utils/useApi';
+import PublicationDetail from './publicationDetail/publicationDetail';
 
 const PublicationsTab = ({ communityId }) => {
   const { callApi } = useApi();
@@ -10,11 +10,21 @@ const PublicationsTab = ({ communityId }) => {
   const [abstract, setAbstract] = useState('');
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('upload');
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#publications-my-publications-')) return 'my-publications';
+    if (hash.startsWith('#publications-my-publications')) return 'my-publications';
+    if (hash.startsWith('#publications-upload')) return 'upload';
+    return 'upload'; // fallback default
+  });
+
+
+  const [selected, setSelected] = useState(null);
 
   const fetchPublications = async () => {
     try {
-      const response = await callApi(`communities/research/${communityId}/publications/user/`);
+      const response = await callApi(`community/research/${communityId}/my-publications/`);
       setPublications(response.data);
     } catch (err) {
       console.error('Error fetching publications', err);
@@ -22,8 +32,22 @@ const PublicationsTab = ({ communityId }) => {
   };
 
   useEffect(() => {
-    fetchPublications();
-  }, [communityId]);
+    if (activeTab === 'my-publications') {
+      fetchPublications();
+    }
+  }, [communityId, activeTab]);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#publications-my-publications-')) {
+      const id = hash.replace('#publications-my-publications-', '');
+      const match = publications.find(p => p.id === id);
+      if (match) {
+        setSelected(match);
+      }
+    }
+  }, [publications]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,9 +62,10 @@ const PublicationsTab = ({ communityId }) => {
 
     try {
       const response = await callApi(
-        `communities/research/${communityId}/publications/`,
+        `community/research/${communityId}/publications/create/`,
         'POST',
-        formData
+        formData,
+        'multipart/form-data'
       );
       setPublications([response.data, ...publications]);
       setTitle('');
@@ -54,28 +79,48 @@ const PublicationsTab = ({ communityId }) => {
     }
   };
 
-  return (
-<div className="publications-tab">
-<div className="tab-row">
-  <button
-    className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
-    onClick={() => setActiveTab('upload')}
-  >
-    Upload Publication
-  </button>
-  <button
-    className={`tab-btn ${activeTab === 'my-publications' ? 'active' : ''}`}
-    onClick={() => setActiveTab('my-publications')}
-  >
-    My Publications
-  </button>
-</div>
+  return selected ? (
+    <PublicationDetail
+      publication={selected}
+      embedded={true}
+      onBack={() => {
+        setSelected(null);
+        window.location.hash = 'publications-my-publications';
+      }}
+    />
+  ) : (
+    <div className="publications-tab">
+      <div className="tab-row">
+        <button
+          className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('upload');
+            setSelected(null);
+            window.location.hash = 'publications-upload';
+          }}
 
-<h2 className="section-title">
-  {activeTab === 'upload' ? 'Upload a New Publication' : 'Your Publications in This Community'}
-</h2>
+        >
+          Upload Publication
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'my-publications' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('my-publications');
+            setSelected(null);
+            window.location.hash = 'publications-my-publications';
+          }}
+        >
+          My Publications
+        </button>
+      </div>
 
-
+      <h2 className="section-title">
+        {activeTab === 'upload'
+          ? 'Upload a New Paper'
+          : selected
+            ? 'Viewing Publication'
+            : 'Your Publications in This Community'}
+      </h2>
 
       {activeTab === 'upload' && (
         <form className="publication-form" onSubmit={handleSubmit}>
@@ -108,30 +153,28 @@ const PublicationsTab = ({ communityId }) => {
       )}
 
       {activeTab === 'my-publications' && (
-        <div className="publication-list">
-          {publications.length === 0 ? (
-            <p>No publications found.</p>
-          ) : (
-            publications.map((pub) => (
-              <div className="publication-card" key={pub?.id}>
-                <h4>{pub?.title}</h4>
-                <p>{pub?.abstract}</p>
-                {pub?.file?.endsWith('.pdf') ? (
-                  <iframe
-                    src={pub.file}
-                    className="publication-preview"
-                    title={`Preview - ${pub.title}`}
-                    frameBorder="0"
-                  />
-                ) : (
-                  <a href={pub.file} target="_blank" rel="noopener noreferrer">
-                    Download File
-                  </a>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+        <>
+          <div className="publication-list">
+            {publications.length === 0 ? (
+              <p>No publications found.</p>
+            ) : (
+              publications.map((pub) => (
+                <div
+                  className="publication-card"
+                  key={pub.id}
+                  onClick={() => {
+                    setSelected(pub);
+                    window.location.hash = `publications-my-publications-${pub.id}`;
+                  }}
+
+                >
+                  <h4>{pub.title}</h4>
+                  <p>{pub.abstract.slice(0, 140)}...</p>
+                </div>
+              ))
+            )}
+          </div>
+        </>
       )}
     </div>
   );

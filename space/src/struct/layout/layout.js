@@ -108,11 +108,11 @@ function Layout({ children, pageName }) {
                     onClose={handleSidebarClose}
                 />
             }
-            {authState.isAuthenticated &&
+            {/* {authState.isAuthenticated &&
                 <SearchSidebar
                     isOpen={searchSidebarOpen}
                 />
-            }
+            } */}
             {authState.isAuthenticated &&
                 <NotificationSidebar
                     notificationSidebarOpen={notificationSidebarOpen}

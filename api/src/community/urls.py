@@ -18,4 +18,5 @@ urlpatterns = [
     
     
     path('', include('src.community.general.urls')),
+    path('research/', include('src.community.research.urls')),
 ]

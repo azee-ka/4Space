@@ -34,6 +34,7 @@ import ExpandPost from '../components/postUI/expandPost/expandPost';
 import CreateCommunity from '../apps/communities/createCommunity/createCommunity';
 import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
+import PublicationDetail from '../apps/communities/community/tabs/research/publicationsTab/publicationDetail/publicationDetail';
 
 
 const AppRouter = () => {
@@ -56,6 +57,7 @@ const AppRouter = () => {
         { name: 'Community', path: '/communities/c/:communityId', component: <Community />, key: 'Community' },
         { name: 'Community Exchange', path: '/communities/e/:exchangeId', component: <ExchangeDetail />, key: 'ExchangeDetail' },
         { name: 'Create Community', path: '/communities/create', component: <CreateCommunity />, key: 'CreateCommunity' },
+        { name: 'Community Publication Detail', path: '/communities/research/:publicationId', component: <PublicationDetail />, key: 'PublicationDetailPage' },
 
         
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
