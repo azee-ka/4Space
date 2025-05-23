@@ -18,6 +18,12 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
     const handleSubmit = async () => {
         const strippedTitle = titleContent.replace(/<[^>]+>/g, '').trim();
         const strippedBody = bodyContent.replace(/<[^>]+>/g, '').trim();
+
+        if (strippedTitle.length > 255) {
+    alert("Title must be 255 characters or less.");
+    return;
+}
+
         if (!strippedTitle || !strippedBody) return;
 
         setLoading(true);
@@ -48,9 +54,22 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
                 </div>
 
                 <div className="title-section">
-                    <label className="editor-label">Title</label>
+                    <label className="editor-label">
+    Title
+    <span className="char-counter">{titleContent.replace(/<[^>]+>/g, '').length}/255</span>
+</label>
+
                     <div className="title-editor-block">
-                        <CustomEditor
+                        <input
+                            type="text"
+                            className="title-input"
+                            value={titleContent}
+                            onChange={(e) => setTitleContent(e.target.value)}
+                            placeholder="e.g. How do I optimize React rendering?"
+                            maxLength={255}
+                        />
+
+                        {/* <CustomEditor
                             id="title-editor"
                             content={titleContent}
                             onContentChange={setTitleContent}
@@ -60,7 +79,7 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
                             isOverlay={true}
                             supportMedia={false}
                             ref={(ref) => (titleInsertEmojiRef.current = ref?.insertEmoji)}
-                        />
+                        /> */}
                         {/* <EmojiButton onEmojiSelect={(emoji) => titleInsertEmojiRef.current?.(emoji)} /> */}
                     </div>
                 </div>

@@ -15,6 +15,8 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+    /* overflow-y: hidden; */
+
 }
 
 .discussion-card {
@@ -28,10 +30,11 @@
   background: rgba(255, 255, 255, 0.04);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  
 }
 .discussion-card:hover {
-  /* transform: scale(1.01); */
   border-color: rgba(25, 255, 255, 0.2);
+  cursor: pointer;
 }
 
 .discussion-vote-panel {
@@ -39,10 +42,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  padding-top: 8px;
-  gap: 6px;
-  min-width: 40px;
-  color: #88e0f5;
+  gap: 4px;
+  padding-top: 6px;
+  width: 32px;
+  color: #7be5ec;
 }
 
 .discussion-content {
@@ -86,6 +89,7 @@
   font-size: 0.75rem;
 }
 
+
 .discussion-body .title {
   font-size: 1.3rem;
   font-weight: 600;
@@ -96,12 +100,31 @@
   font-size: 0.95rem;
   color: #b0b0b0;
   line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4; /* Number of lines to show */
+  text-overflow: ellipsis;
 }
+.discussion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+  overflow: hidden;
+}
+.preview, .discussion-body {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+
 
 .discussion-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-top: 12px;
+  background-color: rgba(255, 0, 0, 0);
 }
 .action {
   display: flex;
@@ -116,10 +139,20 @@
 }
 .vote-icon {
   cursor: pointer;
-  transition: color 0.2s;
+  font-size: 1.6rem;
+  color: #949494;
+  transition: transform 0.2s ease, color 0.3s ease;
+  transform: translateZ(0);
+  padding: 3px;
+  border-radius: 50%;
 }
 .vote-icon:hover {
-  color: #50eaff;
+  color: #ffffff;
+  /* transform: scale(1.1); */
+  background-color: rgba(128, 128, 128, 0.438);
+}
+.discussion-vote-panel span {
+  color: rgb(176, 176, 176);
 }
 
 .empty-state {
@@ -143,12 +176,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 10px rgba(100, 255, 255, 0.2);
   transition: all 0.3s ease;
   z-index: 50;
 }
 .floating-discussion-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 0 12px rgba(100, 255, 255, 0.4);
+  cursor: pointer;
 }

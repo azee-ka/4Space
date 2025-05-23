@@ -9,11 +9,25 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import RenderText from '../../../../../../utils/autoCompleteInput/renderText';
 import { formatDateTime } from '../../../../../../utils/formatDateTime';
 import ProfilePicture from '../../../../../../utils/profilePicture/getProfilePicture';
+import ExchangeDetail from './exchangeDetail/exchangeDetail';
 
 const Exchange = ({ communityId, community }) => {
   const { callApi } = useApi();
   const [posts, setPosts] = useState([]);
   const [showForm, setShowForm] = useState(false);
+
+  const [selectedPostId, setSelectedPostId] = useState(null);
+
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#exchange-')) {
+      const postId = hash.replace('#exchange-', '');
+      setSelectedPostId(postId);
+    }
+  }, []);
+
+
 
   useEffect(() => {
     const fetchExchanges = async () => {
@@ -30,46 +44,68 @@ const Exchange = ({ communityId, community }) => {
 
   return (
     <div className="discussion-wrapper">
+      {!selectedPostId &&
         <h3>Exchange</h3>
+      }
       <div className="discussion-feed">
         {posts?.length === 0 ? (
           <div className="empty-state">No discussions yet. Be the first to start one.</div>
         ) : (
-          posts.map(post => (
-            <div className="discussion-card futuristic-glass" key={post.id}>
-              <div className="discussion-vote-panel">
-                <FiArrowUp className="icon vote-icon" />
-                <span>{post.upvotes}</span>
-                <FiArrowDown className="icon vote-icon" />
-              </div>
+          selectedPostId ? (
+            <ExchangeDetail
+              postId={selectedPostId}
+              embedded={true}
+              onClose={() => {
+                setSelectedPostId(null);
 
-              <div className="discussion-content">
-                <div className="discussion-header">
+                // Preserve tab hash, strip only post ID part
+                window.location.hash = '#exchange';
+              }}
+            />
+          ) : (
+            posts.map(post => (
+              <div className="discussion-card"
+                key={post.id}
+                onClick={() => {
+                  window.location.hash = `exchange-${post.id}`;
+                  setSelectedPostId(post.id);
+                }}
+              >
+                <div className="discussion-vote-panel">
+                  <FiArrowUp className="icon vote-icon" />
+                  <span>{post.upvotes}</span>
+                  <FiArrowDown className="icon vote-icon" />
+                </div>
+
+                <div className="discussion-content">
+                  <div className="discussion-header">
                     <div className="user-icon">
-                  <ProfilePicture src={post?.author?.profile_image} />
-                </div>
-                  <div className="meta">
-                    <span className="username">@{post.author_username}</span>
-                    <span className="timestamp">{formatDateTime(post.created_at, true)}</span>
+                      <ProfilePicture src={post?.author?.profile_image} />
+                    </div>
+                    <div className="meta">
+                      <span className="username">@{post?.author?.username}</span>
+                      <span className="timestamp">{formatDateTime(post.created_at, true)}</span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="discussion-body">
-                  <RenderText text={post.title} />
-                  {post.content && (
-                      <RenderText text={post.content.slice(0, 160)} />
-                  )}
-                </div>
+                  <div className="discussion-body">
+                    <RenderText text={post.title} />
+                    <div className="preview">
+                      <RenderText text={post.content} />
+                    </div>
 
-                <div className="discussion-footer">
-                  <div className="action">
-                    <FiMessageCircle className="icon" />
-                    <span>{post.comments_count} comments</span>
+                  </div>
+
+                  <div className="discussion-footer">
+                    <div className="action">
+                      <FiMessageCircle className="icon" />
+                      <span>{post.comments_count} comments</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))
+          )
         )}
       </div>
 

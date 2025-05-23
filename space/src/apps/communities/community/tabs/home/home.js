@@ -101,13 +101,14 @@ const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen, fetchCommun
                 {/* Meta Card Content */}
                 {metaTab === 'overview' && (
                     <>
+                    {community?.description !== '' &&
                         <div className="community-meta-top">
                             <div className="community-description-block">
                                 <label className="meta-label">Description</label>
-                                <p className="community-description">{community.description}</p>
+                                <p className="community-description">{community?.description}</p>
                             </div>
                         </div>
-
+                    }
                         <div className="community-meta-grid">
                             <div className="meta-item"><label>Members</label>{community.members_count || 0}</div>
                             <div className="meta-item"><label>Online</label>{community.online_members_count || 0}</div>
@@ -135,30 +136,29 @@ const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen, fetchCommun
                 </div>
             </div>
             <div className="community-home-card community-quicklinks-card fixed-small">
-                <h4>Quick Access</h4>
-                <div className="quick-link-buttons">
-                    <button>Button 1</button>
-                    <button>Button 1</button>
-                </div>
-            </div><div className="community-home-card community-quicklinks-card fixed-small">
-                <h4>Quick Access</h4>
-                <div className="quick-link-buttons">
-                    <button>Button 1</button>
-                    <button>Button 1</button>
-                </div>
-            </div><div className="community-home-card community-quicklinks-card fixed-small">
-                <h4>Quick Access</h4>
-                <div className="quick-link-buttons">
-                    <button>Button 1</button>
-                    <button>Button 1</button>
-                </div>
-            </div><div className="community-home-card community-quicklinks-card fixed-small">
-                <h4>Quick Access</h4>
-                <div className="quick-link-buttons">
-                    <button>Button 1</button>
-                    <button>Button 1</button>
-                </div>
-            </div>
+    <h4>Community Shortcuts</h4>
+    <div className="quick-link-buttons">
+        <button>📢 Announcements</button>
+        <button>🎯 Join a Focus Group</button>
+        <button>📄 Drafts</button>
+    </div>
+</div>
+
+<div className="community-home-card community-quicklinks-card fixed-small">
+    <h4>Engage More</h4>
+    <div className="quick-link-buttons">
+        <button>👑 Top Contributors</button>
+        <button>🔥 Trending Posts</button>
+    </div>
+</div>
+
+<div className="community-home-card community-quicklinks-card fixed-small">
+    <h4>Community Tools</h4>
+    <div className="quick-link-buttons">
+        <button>🧭 Browse Tags</button>
+        <button>💡 Suggest Feature</button>
+    </div>
+</div>
 
             <div className="community-home-card community-pinned-card">
                 <h4>Pinned Announcements</h4>
