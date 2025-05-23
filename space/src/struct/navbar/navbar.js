@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import './navbar.css';
 import { useAuth } from '../../hooks/useAuth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faSearch } from '@fortawesome/free-solid-svg-icons';
 import ProfilePicture from '../../utils/profilePicture/getProfilePicture';
 import NineDotIcon from '../../utils/nine-dot';
 import SidebarMenuIcon from './iconMenu';
@@ -40,6 +40,8 @@ const Navbar = ({
     const profileMenuRef = useRef(null);
     const notificationsMenuRef = useRef(null);
     const appMenuRef = useRef(null);
+
+    const [navbarSearchValue, setNavbarSearchValue] = useState('');
 
 
     useEffect(() => {
@@ -115,6 +117,21 @@ const Navbar = ({
                     </div>
                 </div>
             </div>
+<div className='navbar-center'>
+  <div className='navbar-search-container'>
+    <span className='navbar-search-icon'>
+      <FontAwesomeIcon icon={faSearch} />
+    </span>
+    <input 
+      className='navbar-search-field'
+      value={navbarSearchValue}
+      onChange={(e) => setNavbarSearchValue(e.target.value)}
+      placeholder='Search'
+    />
+  </div>
+</div>
+
+
             <div className='navbar-right'>
                 <div className='navbar-pages'>
                     <ul>
