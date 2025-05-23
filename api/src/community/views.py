@@ -129,7 +129,7 @@ def leave_community(request, community_id):
         return Response({"detail": "You are not a member of this community."}, status=400)
 
     # Prevent the creator (admin) from leaving for now
-    if membership.role == 'admin' and community.creator == request.user:
+    if membership.role == 'admin' and community.created_by == request.user:
         return Response({
             "detail": "You are the creator of this community. Transfer ownership before leaving."
         }, status=403)

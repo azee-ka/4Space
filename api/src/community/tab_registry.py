@@ -5,6 +5,9 @@ from .school.views import get_assignments, get_grades  # we'll create these
 from .general.models import ExchangePost
 from .general.serializers import ExchangePostSerializer
 
+from .research.models import ResearchPublication, PeerReview, Preprint, Dataset, CollaborationCall
+from .research.serializers import ResearchPublicationSerializer
+
 TAB_REGISTRY = {
     "general": {
         "exchange": {
@@ -34,7 +37,48 @@ TAB_REGISTRY = {
             "route": "school/<uuid:community_id>/grades/"
         }
     },
-    # Add other categories here...
+    "research": {
+        "publications": {
+            "label": "Publications",
+            "icon": "📚",
+            "model": ResearchPublication,
+            "serializer": CommunityAssignmentSerializer,
+            "view": get_assignments,
+            "route": "school/<uuid:community_id>/publications/"
+        },
+        "peerreview": {
+            "label": "Peer Review",
+            "icon": "📚",
+            "model": PeerReview,
+            "serializer": ResearchPublicationSerializer,
+            "view": get_assignments,
+            "route": "school/<uuid:community_id>/peerreview/"
+        },
+        "preprints": {
+            "label": "Preprints",
+            "icon": "📚",
+            "model": Preprint,
+            "serializer": CommunityAssignmentSerializer,
+            "view": get_assignments,
+            "route": "school/<uuid:community_id>/preprints/"
+        },
+        "datasets": {
+            "label": "Datasets",
+            "icon": "📚",
+            "model": Dataset,
+            "serializer": CommunityAssignmentSerializer,
+            "view": get_assignments,
+            "route": "school/<uuid:community_id>/dataset/"
+        },
+        "collaboration": {
+            "label": "Collaboration",
+            "icon": "📚",
+            "model": CollaborationCall,
+            "serializer": CommunityAssignmentSerializer,
+            "view": get_assignments,
+            "route": "school/<uuid:community_id>/collaboration/"
+        },
+    },
 }
 
 # Flat registry for quick lookup
