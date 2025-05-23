@@ -36,19 +36,18 @@ const Community = () => {
   }, [communityId]);
 
 
-  useEffect(() => {
-    if (community?.tabs?.length > 0) {
-      const rawHash = window.location.hash.replace('#', '');
+useEffect(() => {
+  if (community?.tabs?.length > 0) {
+const rawHash = window.location.hash.replace('#', '');
+const tabPrefix = rawHash.split('-')[0];
+const matchingTab = community.tabs.find(tab => tab.key === tabPrefix);
 
-      // Match `exchange` or `exchange-[postId]`
-      const tabKey = rawHash.startsWith('exchange-')
-        ? 'exchange'
-        : community.tabs.find(tab => tab.key === rawHash)?.key;
 
-      const initialTab = community.tabs.find(tab => tab.key === tabKey) || community.tabs[0];
-      setSelectedTab(initialTab);
-    }
-  }, [community]);
+    const initialTab = matchingTab || community.tabs[0];
+    setSelectedTab(initialTab);
+  }
+}, [community]);
+
 
 
 

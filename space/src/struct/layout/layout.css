@@ -30,21 +30,24 @@
 }
 
 .layout-small-sidebar {
-    width: 80px;
-    height: 100%;
-    background-color: rgba(255, 0, 0, 0.018);
+    position: fixed;
+    /* width: 80px; */
+    height: calc(100% - 70px);
     box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    /* position: fixed; */
-    background-color: rgba(0, 128, 0, 0);
-    border-right: 1px solid rgba(128, 128, 128, 0.235);
+    margin-left: 10px;
+    margin-top: 10px;
     left: 0;
     bottom: 0;
     top: 60px;
     box-sizing: border-box;
     z-index: 48;
+    background-color: rgba(255, 0, 0, 0);
+    padding: 2px;
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
 .layout-page-content {
@@ -58,6 +61,7 @@
     align-items: flex-start;
     padding: 0;
     margin: 0;
+    margin-left: 100px;
     box-sizing: border-box;
     background-color: rgba(255, 0, 0, 0);
 }
