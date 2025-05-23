@@ -1,26 +1,31 @@
 .navbar-container {
   width: 100%;
   height: 100%;
-  background-color: rgba(30, 30, 30, 0.200);
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   /* backdrop-filter: blur(10px); */
-  box-shadow: 0px 0px 4px 4px rgba(128, 128, 128, 0.149);
+    /* background-color: rgba(30, 30, 30, 0.200);
+  box-shadow: 0px 0px 4px 4px rgba(128, 128, 128, 0.149); */
   /* box-shadow: 0 7px 15px rgba(0, 0, 0, 0.631); */
   z-index: 49;
   overflow: hidden;
+  padding-top: 4px;
 
 }
 
 .navbar-left {
-  height: 100%;
+  height: 55px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  background-color: rgba(0, 128, 0, 0);
+
+    background-color: rgba(30, 30, 30, 0.200);
+  box-shadow: 0px 0px 4px 2px rgba(128, 128, 128, 0.149);
+  border-radius: 40px;
+  margin-left: 8px;
 }
 
 .navbar-icon-logo-container {
@@ -104,13 +109,18 @@
 
 
 .navbar-right {
-  flex-grow: 1;
-  height: 100%;
+  /* flex-grow: 1; */
+  height: 55px;
   display: flex;
   flex-direction: row;
   /* align-items: center; */
   justify-content: flex-end;
   gap: 10px;
+
+  background-color: rgba(30, 30, 30, 0.200);
+  box-shadow: 0px 0px 4px 2px rgba(128, 128, 128, 0.149);
+  border-radius: 40px;
+  margin-right: 8px;
 }
 
 
@@ -334,3 +344,74 @@
   aspect-ratio: 1 / 1;
   color: rgb(255, 255, 255);
 }
+
+
+
+
+
+
+
+
+
+.navbar-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  width: 350px;
+  /* background: linear-gradient(135deg,  rgba(170, 74, 208, 0.649), rgba(58, 55, 155, 0.592), rgba(44, 70, 102, 0.7)); */
+  background-color: rgba(50, 50, 50, 0.247);
+  border-radius: 30px;
+  padding: 2px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 0 4px 3px rgba(99, 89, 89, 0.255);
+  /* box-shadow: 0 4px 10px rgba(156, 89, 182, 0.212),
+              inset 0 0 3px rgba(255, 255, 255, 0.05); */
+  transition: all 0.4s ease;
+        border: 2px solid rgba(128, 128, 128, 0);
+}
+
+.navbar-search-container:focus-within {
+  /* border-color: rgba(167, 139, 250, 0.3); */
+      border: 2px solid rgba(128, 128, 128, 0.226);
+  /* box-shadow: 0 0 12px 4px rgba(103, 232, 249, 0.3), 0 0 4px rgba(255, 255, 255, 0.2); */
+}
+
+
+
+
+
+
+
+.navbar-search-field {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1em;
+  color: white;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0 45px 0 15px;
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
+}
+
+.navbar-search-field::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+
+.navbar-search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2em;
+  color: rgba(255, 255, 255, 0.65);
+  text-shadow: 0 0 4px rgba(167, 139, 250, 0.3);
+}
+
+
