@@ -45,7 +45,7 @@ const Exchange = ({ communityId, community }) => {
   return (
     <div className="discussion-wrapper">
       {!selectedPostId &&
-        <h3>Exchange</h3>
+        <h3>Exchanges</h3>
       }
       <div className="discussion-feed">
         {posts?.length === 0 ? (

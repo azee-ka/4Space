@@ -98,20 +98,18 @@ const ExchangeDetail = ({ postId: propPostId, embedded = false, onClose }) => {
                                     <RenderText text={post?.title} />
                                 </div>
                             </div>
-<div className="exchange-post-meta-row">
-    <div className="exchange-post-meta">
-        <span>Posted by @{post?.author?.username}</span>
-        <span className="dot">•</span>
-        <span>{formatDateTime(post.created_at)}</span>
-    </div>
-    <Link to={`/communities/${post?.community?.slug}`} className="exchange-meta-community-link">
-        c/community-1{post?.community?.name}
-    </Link>
-</div>
-
+                            <div className="exchange-post-meta-row">
+                                <div className="exchange-post-meta">
+                                    <span>Posted by @{post?.author?.username}</span>
+                                    <span className="dot">•</span>
+                                    <span>{formatDateTime(post.created_at)}</span>
+                                </div>
+                                <Link to={`/communities/${post?.community?.slug}`} className="exchange-meta-community-link">
+                                    c/community-1{post?.community?.name}
+                                </Link>
+                            </div>
                         </div>
                     )}
-
 
                     <div className="community-card exchange-post-card">
                         <div className="vote-bar">
@@ -153,30 +151,30 @@ const ExchangeDetail = ({ postId: propPostId, embedded = false, onClose }) => {
                 {!embedded && (
                     <div className="exchange-detail-sidebar-wrapper">
                         <div className="community-card exchange-detail-sidebar">
-    <div className="exchange-sidebar-section">
-        <h4>Quick Actions</h4>
-        <div className="sidebar-button-group">
-            <button className="sidebar-button">Follow @{post.author.username}</button>
-            <button className="sidebar-button">Send Message</button>
-            <button className="sidebar-button">Save Post</button>
-        </div>
-    </div>
+                            <div className="exchange-sidebar-section">
+                                <h4>Quick Actions</h4>
+                                <div className="sidebar-button-group">
+                                    <button className="sidebar-button">Follow @{post.author.username}</button>
+                                    <button className="sidebar-button">Send Message</button>
+                                    <button className="sidebar-button">Save Post</button>
+                                </div>
+                            </div>
 
-    <div className="exchange-sidebar-section">
-        <h4>Explore More</h4>
-        <ul className="sidebar-links">
-            <li><Link to="#">Related Discussion</Link></li>
-            <li><Link to="#">Hot Threads</Link></li>
-            <li><Link to="#">New This Week</Link></li>
-        </ul>
-    </div>
+                            <div className="exchange-sidebar-section">
+                                <h4>Explore More</h4>
+                                <ul className="sidebar-links">
+                                    <li><Link to="#">Related Discussion</Link></li>
+                                    <li><Link to="#">Hot Threads</Link></li>
+                                    <li><Link to="#">New This Week</Link></li>
+                                </ul>
+                            </div>
 
-    <div className="exchange-sidebar-section">
-        <h4>Community</h4>
-        <p>Respectful dialogue. Stay on topic. Contribute meaningfully.</p>
-        <button className="sidebar-button join-btn">Join Community</button>
-    </div>
-</div>
+                            <div className="exchange-sidebar-section">
+                                <h4>Community</h4>
+                                <p>Respectful dialogue. Stay on topic. Contribute meaningfully.</p>
+                                <button className="sidebar-button join-btn">Join Community</button>
+                            </div>
+                        </div>
 
                     </div>
                 )}
