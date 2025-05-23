@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -9,15 +9,19 @@ from .serializers import ExchangePostSerializer, CreateExchangePostSerializer
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])  # AllowAny initially; auth is checked manually
 def list_exchanges(request, community_id):
     try:
         community = Community.objects.get(id=community_id)
     except Community.DoesNotExist:
         return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    if not CommunityMembership.objects.filter(user=request.user, community=community).exists():
-        return Response({"detail": "Unauthorized."}, status=status.HTTP_403_FORBIDDEN)
+    if community.visibility == 'private':
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required for private communities."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not CommunityMembership.objects.filter(user=request.user, community=community).exists():
+            return Response({"detail": "You are not a member of this private community."}, status=status.HTTP_403_FORBIDDEN)
 
     posts = ExchangePost.objects.filter(community=community).order_by('-created_at')
     serializer = ExchangePostSerializer(posts, many=True)
@@ -49,3 +53,25 @@ def create_exchange(request, community_id):
         return Response(output.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def retrieve_exchange(request, exchange_id):
+    try:
+        post = ExchangePost.objects.get(id=exchange_id)
+    except ExchangePost.DoesNotExist:
+        return Response({"detail": "Exchange not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    community = post.community
+    if community.visibility == 'private':
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+        if not CommunityMembership.objects.filter(user=request.user, community=community).exists():
+            return Response({"detail": "You are not a member of this private community."}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = ExchangePostSerializer(post)
+    return Response(serializer.data)

@@ -17,5 +17,5 @@ urlpatterns = [
     path('<uuid:community_id>/permissions/<int:user_id>/', views.user_permissions),
     
     
-    path('<uuid:community_id>/exchanges/', include('src.community.general.urls')),
+    path('', include('src.community.general.urls')),
 ]

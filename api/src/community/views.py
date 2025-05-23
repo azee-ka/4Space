@@ -122,12 +122,20 @@ def accept_community_invitation(request, community_id):
 @permission_classes([IsAuthenticated])
 def leave_community(request, community_id):
     community = get_object_or_404(Community, id=community_id)
+
     try:
         membership = CommunityMembership.objects.get(user=request.user, community=community)
-        membership.delete()
-        return Response({"detail": "Left community successfully."})
     except CommunityMembership.DoesNotExist:
         return Response({"detail": "You are not a member of this community."}, status=400)
+
+    # Prevent the creator (admin) from leaving for now
+    if membership.role == 'admin' and community.creator == request.user:
+        return Response({
+            "detail": "You are the creator of this community. Transfer ownership before leaving."
+        }, status=403)
+
+    membership.delete()
+    return Response({"detail": "Left community successfully."})
 
 
 

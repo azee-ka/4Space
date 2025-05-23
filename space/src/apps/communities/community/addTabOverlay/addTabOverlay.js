@@ -4,7 +4,7 @@ import { IoClose, IoSearch, IoCheckmark, IoCloseCircle } from 'react-icons/io5';
 import { TAB_COMPONENT_CATEGORIES } from '../tabs/tabComponents';
 import useApi from '../../../../utils/useApi';
 
-const AddTabOverlay = ({ onClose, communityId }) => {
+const AddTabOverlay = ({ onClose, communityId, setCommunity }) => {
     const { callApi } = useApi();
 
     const categoryKeys = Object.keys(TAB_COMPONENT_CATEGORIES);
@@ -42,6 +42,17 @@ const AddTabOverlay = ({ onClose, communityId }) => {
 
 
     const handleSubmitNewTabs = async () => {
+        const newTabs = Object.values(selectedTabs).map(tab => ({
+        key: tab.key,
+        label: tab.customLabel || tab.label || tab.key,
+    }));
+
+    // Optimistically update community.tabs
+    setCommunity(prev => ({
+        ...prev,
+        tabs: [...(prev.tabs || []), ...newTabs]
+    }));
+
         try {
             const response = await callApi(`community/c/${communityId}/tabs/`, 'POST', {
                 tabs: Object.values(selectedTabs).map(tab => ({

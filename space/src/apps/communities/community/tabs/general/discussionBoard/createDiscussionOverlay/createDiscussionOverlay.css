@@ -74,27 +74,6 @@
     margin-bottom: 10px !important;
 }
 
-/* === Title Editor Block === */
-.title-editor-block {
-    padding: 6px 18px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    min-height: 35px;
-    max-height: 90px;
-    padding: 0 0.2em;
-    box-sizing: border-box;
-    color: white;
-    width: 100%;
-    display: flex;
-    overflow: hidden;
-}
-
-.title-editor-block .editor-container {
-    flex-grow: 1;
-    padding: 6px 6px;
-    overflow-y: auto;
-}
 
 
 /* === Content Editor === */
@@ -102,7 +81,7 @@
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    padding: 14px;
+    padding: 0.65em 0.55em;
     min-height: 220px;
     max-height: 450px;
 }
@@ -110,6 +89,25 @@
 /* === Toolbar === */
 .toolbar .button {
     font-size: 0.95rem;
+}
+
+
+.title-input {
+    width: 100%;
+    padding: 0.65em 0.9em;
+    font-size: 0.95em;
+    background: rgba(255, 255, 255, 0.02);
+    color: #e2e2e2;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    outline: none;
+    transition: border 0.2s ease, background 0.2s ease;
+    box-sizing: border-box;
+}
+
+.title-input:focus {
+    border-color: rgba(0, 200, 255, 0.5);
+    background: rgba(255, 255, 255, 0.04);
 }
 
 
@@ -138,4 +136,14 @@
 .submit-discussion-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+
+
+
+.char-counter {
+    float: right;
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-left: auto;
 }

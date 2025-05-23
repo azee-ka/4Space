@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import list_exchanges, create_exchange
+from . import views
 
 urlpatterns = [
-    path('list/', list_exchanges, name='list_exchanges'),
-    path('create/', create_exchange, name='create_exchange'),
+    path('<uuid:community_id>/exchanges/list/', views.list_exchanges, name='list_exchanges'),
+    path('<uuid:community_id>/exchanges/create/', views.create_exchange, name='create_exchange'),
+    path('exchanges/e/<uuid:exchange_id>/', views.retrieve_exchange),
 ]

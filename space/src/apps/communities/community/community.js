@@ -35,10 +35,17 @@ const Community = () => {
     fetchCommunityData();
   }, [communityId]);
 
+
   useEffect(() => {
     if (community?.tabs?.length > 0) {
-      const hashKey = window.location.hash.replace('#', '');
-      const initialTab = community.tabs.find(tab => tab.key === hashKey) || community.tabs[0];
+      const rawHash = window.location.hash.replace('#', '');
+
+      // Match `exchange` or `exchange-[postId]`
+      const tabKey = rawHash.startsWith('exchange-')
+        ? 'exchange'
+        : community.tabs.find(tab => tab.key === rawHash)?.key;
+
+      const initialTab = community.tabs.find(tab => tab.key === tabKey) || community.tabs[0];
       setSelectedTab(initialTab);
     }
   }, [community]);
@@ -151,24 +158,26 @@ const Community = () => {
       </div>
 
       {/* Main Content Area (scrolls with page) */}
-      <div className="community-card community-content-card">
-        {selectedTab.key && TAB_COMPONENTS_FLAT[selectedTab.key] ? (
-          React.createElement(TAB_COMPONENTS_FLAT[selectedTab.key].Component, {
-            communityId: community.id,
-            tab: selectedTab,
-            community,
-            handleJoinLeave,
-            setInviteOverlayOpen,
-            fetchCommunityData,
-          })
-        ) : (
-          <div className="tab-content-placeholder">This tab is not yet supported.</div>
-        )}
+      <div className='community-card-wrapper'>
+        <div className="community-card community-content-card">
+          {selectedTab.key && TAB_COMPONENTS_FLAT[selectedTab.key] ? (
+            React.createElement(TAB_COMPONENTS_FLAT[selectedTab.key].Component, {
+              communityId: community.id,
+              tab: selectedTab,
+              community,
+              handleJoinLeave,
+              setInviteOverlayOpen,
+              fetchCommunityData,
+            })
+          ) : (
+            <div className="tab-content-placeholder">This tab is not yet supported.</div>
+          )}
+        </div>
       </div>
 
       {/* Overlays */}
       {addTabOverlayIsOpen && (
-        <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} communityId={communityId} />
+        <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} communityId={communityId} setCommunity={setCommunity} />
       )}
       {inviteOverlayOpen && (
         <InviteOverlay communityId={communityId} onClose={() => setInviteOverlayOpen(false)} />
