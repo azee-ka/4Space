@@ -4,6 +4,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    gap: 20px;
 }
 
 .communities-timeline-header {
@@ -23,4 +24,125 @@
     background-color: rgba(187, 187, 187, 0);
     display: flex;
     align-items: flex-end;
+}
+
+
+.timeline-feed {
+  width: 70%;
+  /* margin: 0 auto; */
+  /* padding: 30px 24px; */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  /* background-color: red; */
+}
+
+.timeline-title h3 {
+  /* font-size: 1rem; */
+  color: white;
+  text-align: left;
+  margin: 0;
+  padding: 0
+}
+
+.community-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.community-post {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.community-post:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.community-banner {
+  width: 100%;
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.community-post-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.community-header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.community-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.community-title h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+}
+
+.community-meta {
+  font-size: 0.85rem;
+  color: #b0b0b0;
+}
+
+.community-description {
+  color: #ddd;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.community-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.community-tags span {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+
+
+
+.community-post-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  width: 100%;
+}
+
+.community-post-link:hover .community-post {
+  background: rgba(255, 255, 255, 0.07);
 }

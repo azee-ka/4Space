@@ -56,7 +56,7 @@ const PublicationDetail = ({
   }
 
   const renderPdfViewer = () => (
-    <div className={`community-card pdf-viewer-frame ${isExpanded ? 'overlay' : ''}`}>
+    <div className={`community-card pdf-viewer-frame ${isExpanded ? 'overlay' : 'non-overlay'}`}>
       <div className={`pdf-viewer-toolbar ${isExpanded ? 'overlay' : ''}`}>
         <div className="left-tools">
           {pdfSrc && (

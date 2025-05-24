@@ -16,6 +16,7 @@ urlpatterns = [
     path('<uuid:community_id>/members/', views.community_members),
     path('<uuid:community_id>/permissions/<int:user_id>/', views.user_permissions),
     
+    path('timeline/get-communities/', views.list_communities, name='list_communities'),
     
     path('', include('src.community.general.urls')),
     path('research/', include('src.community.research.urls')),

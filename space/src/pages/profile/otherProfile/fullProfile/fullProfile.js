@@ -34,7 +34,8 @@ const FullProfile = ({ profileInfo, handleStartChat }) => {
     const handleFollowToggle = async () => {
         try {
             setIsFollowing(prev => !prev);
-            await callApi(`profile/follow-toggle/${profileInfo?.basicInfo?.username}/`, 'POST');
+            const response = await callApi(`profile/follow-toggle/${profileInfo?.basicInfo?.username}/`, 'POST');
+            console.log('Follow toggle response:', response.data);
             navigate(`/profile/${profileInfo?.basicInfo?.username}`, { state: { refreshed: true } });
         } catch (err) {
             console.error('Follow toggle failed', err);
@@ -78,7 +79,7 @@ const FullProfile = ({ profileInfo, handleStartChat }) => {
                         </div>
                         
                         <div className="profile-actions">
-                            <button className="follow-button" onClick={() =>  handleFollowToggle}>
+                            <button className="follow-button" onClick={() =>  handleFollowToggle()}>
                                 {isFollowing ? 'Unfollow' : 'Follow'}
                             </button>
                             <button className="message-btn" onClick={() =>  handleStartChat(

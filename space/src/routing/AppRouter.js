@@ -35,6 +35,10 @@ import CreateCommunity from '../apps/communities/createCommunity/createCommunity
 import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
 import PublicationDetail from '../apps/communities/community/tabs/research/publicationsTab/publicationDetail/publicationDetail';
+import SpaceDashboard from '../apps/space/dashboard/dashboard';
+import SpaceTools from '../apps/space/tools/tools';
+import SpaceProjects from '../apps/space/projects/projects';
+import SpacePortfolio from '../apps/space/portfolio/portfolio';
 
 
 const AppRouter = () => {
@@ -59,7 +63,16 @@ const AppRouter = () => {
         { name: 'Create Community', path: '/communities/create', component: <CreateCommunity />, key: 'CreateCommunity' },
         { name: 'Community Publication Detail', path: '/communities/research/:publicationId', component: <PublicationDetail />, key: 'PublicationDetailPage' },
 
-        
+
+        // Space
+        { name: 'Space Dashboard', path: '/space', component: <SpaceDashboard />, key: 'SpaceDashboard' },
+        { name: 'Space Dashboard', path: '/space/dashboard', component: <SpaceDashboard />, key: 'SpaceDashboard' },
+        { name: 'Space Portfolio', path: '/space/portfolio', component: <SpacePortfolio />, key: 'SpacePortfolio' },
+        { name: 'Space Projects', path: '/space/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
+        { name: 'Space Tools', path: '/space/tools', component: <SpaceTools />, key: 'SpaceTools' },
+        { name: 'Create Space', path: '/space/create', component: <SpaceProjects />, key: 'SpaceCreate' },
+
+
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
         { name: 'My Profile', path: '/profile', component: <Profile />, key: 'MyProfile' },
         { name: 'Settings', path: '/settings', component: <Settings />, key: 'Settings' },
