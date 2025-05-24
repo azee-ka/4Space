@@ -39,6 +39,12 @@ import SpaceDashboard from '../apps/space/dashboard/dashboard';
 import SpaceTools from '../apps/space/tools/tools';
 import SpaceProjects from '../apps/space/projects/projects';
 import SpacePortfolio from '../apps/space/portfolio/portfolio';
+import RichTextEditor from '../apps/space/tools/docsEditor/richEditor';
+import CodeEditor from '../apps/space/tools/ide/ide';
+import LaTeXEditor from '../apps/space/tools/latexEditor/latexEditor';
+import MarkdownEditor from '../apps/space/tools/markdownEditor/markdownEditor';
+import Calculator from '../apps/space/tools/calculator/calculator';
+import NotebookEditor from '../apps/space/tools/notebookEditor/notebookEditor';
 
 
 const AppRouter = () => {
@@ -71,6 +77,13 @@ const AppRouter = () => {
         { name: 'Space Projects', path: '/space/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
         { name: 'Space Tools', path: '/space/tools', component: <SpaceTools />, key: 'SpaceTools' },
         { name: 'Create Space', path: '/space/create', component: <SpaceProjects />, key: 'SpaceCreate' },
+
+        { name: 'Rich Editor', path: '/space/project/:projectId/rich-editor', component: <RichTextEditor />, key: 'RichTextEditor' },
+        { name: 'Code Editor', path: '/space/project/:projectId/code-editor', component: <CodeEditor />, key: 'CodeEditor' },
+        { name: 'Latex Editor', path: '/space/project/:projectId/latex-editor', component: <LaTeXEditor />, key: 'LaTeXEditor' },
+        { name: 'Markdown Editor', path: '/space/project/:projectId/markdown-editor', component: <MarkdownEditor />, key: 'MarkdownEditor' },
+        { name: 'Notebook', path: '/space/project/:projectId/notebook', component: <NotebookEditor />, key: 'NotebookEditor' },
+        { name: 'Calculator', path: '/space//calculator', component: <Calculator />, key: 'Calculator' },
 
 
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },

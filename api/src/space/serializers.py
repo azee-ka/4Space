@@ -1,48 +1,32 @@
 from rest_framework import serializers
-from .models import Space, SpaceMembership, Widget
+from .models import *
 
-class SpaceSerializer(serializers.ModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Space
-        fields = ['uuid', 'name', 'description', 'owner', 'privacy', 'category', 'theme', 'created_at', 'updated_at']
-        
-    
-class ListSpacesSerializer(serializers.ModelSerializer):
+        model = Project
+        fields = "__all__"
+
+class MarkdownSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Space
-        fields = ['uuid', 'name', 'description']
-        
+        model = MarkdownContent
+        fields = "__all__"
 
-class SpaceMembershipSerializer(serializers.ModelSerializer):
+class RichTextSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SpaceMembership
-        fields = '__all__'
+        model = RichTextContent
+        fields = "__all__"
 
-class WidgetSerializer(serializers.ModelSerializer):
+class LaTeXSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Widget
-        fields = '__all__'
+        model = LaTeXContent
+        fields = "__all__"
 
-
-
-
-class EditSpaceSerializer(serializers.ModelSerializer):
+class CodeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Space
-        fields = ['name', 'description', 'privacy', 'category']
-    
-    def create(self, validated_data):
-        # Automatically assign the current user as the author
-        validated_data['owner'] = self.context['request'].user
-        return super().create(validated_data)
-    
+        model = CodeContent
+        fields = "__all__"
 
-class CreateSpaceSerializer(serializers.ModelSerializer):
+class NotebookSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Space
-        fields = ['name', 'description', 'privacy', 'category']
-    
-    def create(self, validated_data):
-        # Automatically assign the current user as the author
-        validated_data['owner'] = self.context['request'].user
-        return super().create(validated_data)
+        model = NotebookContent
+        fields = "__all__"

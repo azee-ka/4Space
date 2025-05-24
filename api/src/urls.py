@@ -10,4 +10,5 @@ urlpatterns = [
     path('search/', include('src.userSearchHistory.urls')),
     path('report/', include('src.report.urls')),
     path('community/', include('src.community.urls')),
+    path('space/', include('src.space.urls')),
 ]
