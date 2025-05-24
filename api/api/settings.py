@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'src.organization',
     'src.community',
     
+    'src.space',
+    
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken', 

@@ -1,58 +1,47 @@
-# from django.db import models
-# from django.utils.translation import gettext_lazy as _
-# import uuid
-# from ..user.models import BaseUser
+import uuid
+from django.db import models
+from django.conf import settings
 
-# class Space(models.Model):
-#     class Privacy(models.TextChoices):
-#         PUBLIC = 'public', _('Public')
-#         PRIVATE = 'private', _('Private')
-#         INVITE_ONLY = 'invite-only', _('Invite-Only')
+class Project(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-#     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-#     name = models.CharField(max_length=255)
-#     description = models.TextField(blank=True)
-#     owner = models.ForeignKey(BaseUser, on_delete=models.SET_NULL, null=True, related_name='owned_spaces', editable=False)
-#     privacy = models.CharField(max_length=20, choices=Privacy.choices, default=Privacy.PRIVATE)
-#     category = models.CharField(max_length=100, default='general')
-#     theme = models.CharField(max_length=100, default='default')  # e.g., light, dark, custom themes
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
+    TOOL_CHOICES = [
+        ("markdown", "Markdown"),
+        ("richtext", "Rich Text"),
+        ("latex", "LaTeX"),
+        ("code", "Code"),
+        ("notebook", "Notebook"),
+        ("mindmap", "Mind Map"),
+    ]
 
-#     # More complex configurations for the space
-#     custom_css = models.TextField(blank=True, null=True)  # Allow custom CSS for flexible design
-#     template = models.CharField(max_length=100, blank=True, null=True)  # Custom templates
+    title = models.CharField(max_length=255)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    tool_type = models.CharField(max_length=50, choices=TOOL_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    config = models.JSONField(default=dict, blank=True)
 
-#     def __str__(self):
-#         return self.name
-        
+    def __str__(self):
+        return f"{self.title} ({self.tool_type})"
 
-# class SpaceMembership(models.Model):
-#     class Role(models.TextChoices):
-#         OWNER = 'owner', _('Owner')
-#         ADMIN = 'admin', _('Admin')
-#         MEMBER = 'member', _('Member')
-#         VIEWER = 'viewer', _('Viewer')
 
-#     user = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
-#     space = models.ForeignKey(Space, on_delete=models.CASCADE, related_name='memberships')
-#     role = models.CharField(max_length=10, choices=Role.choices, default=Role.VIEWER)
-#     can_customize = models.BooleanField(default=False)  # Allow admins/members to customize widgets and layout
+class MarkdownContent(models.Model):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="markdown")
+    content = models.TextField()
 
-#     class Meta:
-#         unique_together = ('user', 'space')
+class RichTextContent(models.Model):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="richtext")
+    content = models.TextField()
 
-#     def __str__(self):
-#         return f"{self.user.username} - {self.role} of {self.space.name}"
+class LaTeXContent(models.Model):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="latex")
+    content = models.TextField()
 
-# class Widget(models.Model):
-#     space = models.ForeignKey(Space, on_delete=models.CASCADE, related_name='widgets')
-#     widget_type = models.CharField(max_length=50)
-#     config = models.JSONField()  # Store widget-specific configurations
-#     position = models.JSONField()  # {x: 0, y: 0, width: 100, height: 100}
-#     settings = models.JSONField(default=dict)  # Store customizable settings for the widget
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-    
-#     def __str__(self):
-#         return f"{self.widget_type} Widget for {self.space.name}"
+class CodeContent(models.Model):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="code")
+    language = models.CharField(max_length=30, default="javascript")
+    code = models.TextField()
+
+class NotebookContent(models.Model):
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="notebook")
+    cells = models.JSONField(default=list)  # [{type, input, output}]
