@@ -22,7 +22,7 @@
     padding-right: 0rem;
     padding-left: 0;
     padding-top: 0;
-    position: relative;
+    /* position: relative; */
     height: 100%;
     box-sizing: border-box;
 }
@@ -34,7 +34,7 @@
 
 
 .publication-main-column {
-    overflow-y: auto !important;
+    overflow-y: auto;
     padding-right: 350px;
     height: 100%;
     box-sizing: border-box;
@@ -71,7 +71,7 @@
 }
 
 /* PDF Viewer */
-.pdf-viewer-frame {
+.pdf-viewer-frame.non-overlay {
     min-height: 1300px;
     overflow: hidden;
     display: flex;
@@ -80,6 +80,11 @@
 .pdf-viewer-frame.overlay {
     border-radius: 0px;
     min-height: 100%;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .pdf-embed {
@@ -279,7 +284,7 @@
     align-items: center;
     background: rgba(231, 231, 231, 0);
     z-index: 5;
-    position: relative;
+    /* position: relative; */
     box-sizing: border-box;
 }
 

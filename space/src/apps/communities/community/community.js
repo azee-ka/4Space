@@ -36,17 +36,17 @@ const Community = () => {
   }, [communityId]);
 
 
-useEffect(() => {
-  if (community?.tabs?.length > 0) {
-const rawHash = window.location.hash.replace('#', '');
-const tabPrefix = rawHash.split('-')[0];
-const matchingTab = community.tabs.find(tab => tab.key === tabPrefix);
+  useEffect(() => {
+    if (community?.tabs?.length > 0) {
+      const rawHash = window.location.hash.replace('#', '');
+      const tabPrefix = rawHash.split('-')[0];
+      const matchingTab = community.tabs.find(tab => tab.key === tabPrefix);
 
 
-    const initialTab = matchingTab || community.tabs[0];
-    setSelectedTab(initialTab);
-  }
-}, [community]);
+      const initialTab = matchingTab || community.tabs[0];
+      setSelectedTab(initialTab);
+    }
+  }, [community]);
 
 
 

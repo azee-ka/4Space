@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream, faLayerGroup, faSearch, faDashboard, faDatabase, faChartBar, faGear, faUser, faListAlt, faThList, faGauge, faChartLine, faUsers, faPeopleGroup, faUserGroup, faPlusCircle, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream, faLayerGroup, faSearch, faDashboard, faDatabase, faChartBar, faGear, faUser, faListAlt, faThList, faGauge, faChartLine, faUsers, faPeopleGroup, faUserGroup, faPlusCircle, faPenToSquare, faTools } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import SearchSidebar from '../searchSidebar/searchSidebar';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
@@ -29,6 +29,17 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
         { icon: <FontAwesomeIcon icon={faPenToSquare} />, label: 'Create Community', path: '/communities/create', type: 'link' },
     ];
+    const spaceIcons = [
+        { icon: <FontAwesomeIcon icon={faChartLine} />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faUserGroup} />, label: 'Space Projects', path: '/space/projects', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Create Space', path: '/space/create', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faTools} />, label: 'Space Tools', path: '/space/tools', type: 'link' },
+    ];
+
+
+
     const bottomIcons = [
         { icon: <FontAwesomeIcon icon={faGear} />, label: 'Settings', path: '/settings', type: 'link' },
         {
@@ -61,7 +72,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         }
     };
 
-    const sidebarBtns = mode === 'communities' ? communitiesIcons : homeIcons;    
+    const sidebarBtns = mode === 'communities' ? communitiesIcons : mode === 'space' ? spaceIcons :  homeIcons;
 
     return (
         <div className={`small-sidebar ${searchSidebarOpen ? 'search-sidebar-open' : ''}`}>

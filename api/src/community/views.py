@@ -11,6 +11,16 @@ from ..user.models import BaseUser
 from ..notifications.models import Notification
 from .permissions_defaults import DEFAULT_MEMBER_PERMISSIONS
 
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_communities(request):
+    communities = Community.objects.all().order_by('-created_at')
+    serializer = CommunityDetailSerializer(communities, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def community_members(request, community_id):
