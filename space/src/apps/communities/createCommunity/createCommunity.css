@@ -50,19 +50,20 @@
 .create-community-group select,
 .create-community-group textarea {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.187);
   border-radius: 9px;
   padding: 10px 14px;
   font-size: 0.9rem;
   color: #eef9ff;
   transition: border 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
 }
 
 .create-community-group input:focus,
 .create-community-group select:focus,
 .create-community-group textarea:focus {
-  border-color: rgba(0, 160, 255, 0.4);
-  box-shadow: 0 0 0 2px rgba(0, 160, 255, 0.1);
+  border-color: rgba(0, 247, 255, 0.4);
+  /* box-shadow: 0 0 0 2px rgba(0, 160, 255, 0.1); */
   outline: none;
 }
 
@@ -116,9 +117,9 @@
   height: 22px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(100, 200, 255, 0.25);
+  border: 1px solid rgba(209, 209, 209, 0.25);
   position: relative;
-  transition: background 0.3s ease-in-out, border 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out, border 0.3s ease-in-out;
   cursor: pointer;
 }
 
@@ -136,8 +137,8 @@
 }
 
 .create-community-toggle input[type="checkbox"]:checked {
-  background: rgba(0, 238, 255, 0.15);
-  border-color: rgba(0, 238, 255, 0.5);
+  /* background: rgba(167, 167, 167, 0.15); */
+  /* border-color: rgba(191, 191, 191, 0.5); */
 }
 
 .create-community-toggle input[type="checkbox"]:checked::after {

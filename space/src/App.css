@@ -2,9 +2,9 @@
   width: 100%;
   height: 100vh;
   /* background-color: rgb(2, 2, 2) !important; */
-  background: radial-gradient(circle at top, rgba(153, 102, 255, 0.133), rgba(153, 102, 255, 0));
+  /* background: radial-gradient(circle at top, rgba(153, 102, 255, 0.133), rgba(153, 102, 255, 0)); */
   background-color: rgb(0, 0, 0) !important;
-  /* background: radial-gradient(circle at top, rgba(77, 121, 167, 0.157), rgba(14, 14, 14, 0)); */
+  background: radial-gradient(circle at top, rgba(83, 135, 190, 0.157), rgba(14, 14, 14, 0));
 }
 
 a {
