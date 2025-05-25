@@ -35,11 +35,12 @@ import {
   List, ListOrdered, Link as LinkIcon, Image as ImageIcon,
   Code, Table as TableIcon, PaintBucket, Type,
   ArrowRight, ArrowLeft, Subscript as SubIcon, Superscript as SuperIcon,
-  Save, Share2
+  Share2
 } from "lucide-react";
 
 import useApi from "../../../../utils/useApi";
 import "./richEditor.css";
+import { timeAgo } from "../../../../utils/convertDateTIme";
 
 const lowlight = createLowlight();
 lowlight.register("javascript", js);
@@ -53,16 +54,11 @@ const RichTextEditor = () => {
   const { callApi } = useApi();
   const [initialContent, setInitialContent] = useState("");
   const [loading, setLoading] = useState(true);
+  const [lastSaved, setLastSaved] = useState(null);
+  const autoSaveRef = useRef(null);
+  const prevContentRef = useRef("");
   const [activeMenu, setActiveMenu] = useState(null);
   const [margin, setMargin] = useState("1in");
-
-  const [pageCount, setPageCount] = useState([0]);
-const pagesRef = useRef(null);
-
-
-const contentRef = useRef(null);
-const [pages, setPages] = useState([]);
-
 
   const editor = useEditor({
     extensions: [
@@ -85,80 +81,23 @@ const [pages, setPages] = useState([]);
       TableCell,
       HorizontalRule,
       Subscript,
-      Superscript
+      Superscript,
     ],
     content: initialContent,
     editorProps: {
-      attributes: {
-        class: "editor-content",
-      },
+      attributes: { class: "editor-content" },
     },
     onUpdate: ({ editor }) => {
       setInitialContent(editor.getHTML());
     },
   });
 
-
-  const paginateContent = () => {
-  const container = contentRef.current;
-  if (!container) return;
-
-  const maxPageHeight = 1056;
-  const children = Array.from(container.children);
-  let currentPage = [];
-  let currentHeight = 0;
-  const newPages = [];
-
-  children.forEach(child => {
-    const height = child.offsetHeight;
-
-    if (currentHeight + height > maxPageHeight) {
-      newPages.push([...currentPage]);
-      currentPage = [child];
-      currentHeight = height;
-    } else {
-      currentPage.push(child);
-      currentHeight += height;
-    }
-  });
-
-  if (currentPage.length) newPages.push(currentPage);
-  setPages(newPages);
-};
-
-
-useEffect(() => {
-  if (!editor) return;
-  const timeout = setTimeout(paginateContent, 100); // debounce
-  return () => clearTimeout(timeout);
-}, [initialContent, editor]);
-
-
-  useEffect(() => {
-  if (!editor || !pagesRef.current) return;
-
-  const resizeObserver = new ResizeObserver(() => {
-    const contentHeight = pagesRef.current.querySelector(".editor-page")?.scrollHeight || 0;
-    const visibleHeight = 1056; // same as .editor-page height
-    const pagesNeeded = Math.ceil(contentHeight / visibleHeight);
-    const currentPages = pageCount.length;
-
-    if (pagesNeeded !== currentPages) {
-      setPageCount(new Array(pagesNeeded).fill(0));
-    }
-  });
-
-  resizeObserver.observe(pagesRef.current);
-
-  return () => resizeObserver.disconnect();
-}, [editor, initialContent]);
-
-
   useEffect(() => {
     const fetchContent = async () => {
       try {
         const res = await callApi(`space/tools/${projectId}/richtext/`, "GET");
         setInitialContent(res.data.content || "");
+        prevContentRef.current = res.data.content || "";
       } catch (err) {
         console.error("Failed to load content:", err);
       } finally {
@@ -168,21 +107,26 @@ useEffect(() => {
     fetchContent();
   }, [projectId]);
 
-  const save = async () => {
-    try {
-      const response = await callApi(`space/tools/${projectId}/richtext/`, "PUT", {
-        content: initialContent,
-      });
-      console.log("Save response:", response.data);
-      alert("Saved!");
-    } catch (err) {
-      console.error("Save error:", err);
-      alert("Save failed.");
-    }
-  };
+  useEffect(() => {
+    if (!editor) return;
+    autoSaveRef.current = setInterval(() => {
+      const currentContent = editor.getHTML();
+      if (currentContent !== prevContentRef.current) {
+        callApi(`space/tools/${projectId}/richtext/`, "PUT", {
+          content: currentContent,
+        }).then(() => {
+          prevContentRef.current = currentContent;
+          setLastSaved(new Date());
+        }).catch(err => {
+          console.error("Auto-save failed:", err);
+        });
+      }
+    }, 5000);
+    return () => clearInterval(autoSaveRef.current);
+  }, [editor, projectId]);
 
   const menus = {
-    File: ["New", "Open", "Rename", "Save", "Download as PDF", "Print"],
+    File: ["New", "Open", "Rename", "Download as PDF", "Print"],
     Edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Find and Replace"],
     View: ["Show Ruler", "Document Outline", "Compact Mode"],
     Insert: ["Image", "Table", "Link", "Horizontal Line", "Page Break"],
@@ -192,38 +136,38 @@ useEffect(() => {
   };
 
   const toolbarActions = [
-    [<Bold size={18} />, () => editor.chain().focus().toggleBold().run()],
-    [<Italic size={18} />, () => editor.chain().focus().toggleItalic().run()],
-    [<UnderlineIcon size={18} />, () => editor.chain().focus().toggleUnderline().run()],
-    [<Strikethrough size={18} />, () => editor.chain().focus().toggleStrike().run()],
-    [<SuperIcon size={18} />, () => editor.chain().focus().toggleSuperscript().run()],
-    [<SubIcon size={18} />, () => editor.chain().focus().toggleSubscript().run()],
-    [<Eraser size={18} />, () => editor.chain().focus().unsetAllMarks().run()],
-    [<AlignLeft size={18} />, () => editor.chain().focus().setTextAlign("left").run()],
-    [<AlignCenter size={18} />, () => editor.chain().focus().setTextAlign("center").run()],
-    [<AlignRight size={18} />, () => editor.chain().focus().setTextAlign("right").run()],
-    [<List size={18} />, () => editor.chain().focus().toggleBulletList().run()],
-    [<ListOrdered size={18} />, () => editor.chain().focus().toggleOrderedList().run()],
-    [<ArrowRight size={18} />, () => editor.chain().focus().sinkListItem("listItem").run()],
-    [<ArrowLeft size={18} />, () => editor.chain().focus().liftListItem("listItem").run()],
+    [<Bold size={18} />, () => editor.chain().focus().toggleBold().run(), () => editor.isActive('bold')],
+    [<Italic size={18} />, () => editor.chain().focus().toggleItalic().run(), () => editor.isActive('italic')],
+    [<UnderlineIcon size={18} />, () => editor.chain().focus().toggleUnderline().run(), () => editor.isActive('underline')],
+    [<Strikethrough size={18} />, () => editor.chain().focus().toggleStrike().run(), () => editor.isActive('strike')],
+    [<SuperIcon size={18} />, () => editor.chain().focus().toggleSuperscript().run(), () => editor.isActive('superscript')],
+    [<SubIcon size={18} />, () => editor.chain().focus().toggleSubscript().run(), () => editor.isActive('subscript')],
+    [<Eraser size={18} />, () => editor.chain().focus().unsetAllMarks().run(), null],
+    [<AlignLeft size={18} />, () => editor.chain().focus().setTextAlign("left").run(), () => editor.isActive({ textAlign: "left" })],
+    [<AlignCenter size={18} />, () => editor.chain().focus().setTextAlign("center").run(), () => editor.isActive({ textAlign: "center" })],
+    [<AlignRight size={18} />, () => editor.chain().focus().setTextAlign("right").run(), () => editor.isActive({ textAlign: "right" })],
+    [<List size={18} />, () => editor.chain().focus().toggleBulletList().run(), () => editor.isActive('bulletList')],
+    [<ListOrdered size={18} />, () => editor.chain().focus().toggleOrderedList().run(), () => editor.isActive('orderedList')],
+    [<ArrowRight size={18} />, () => editor.chain().focus().sinkListItem("listItem").run(), null],
+    [<ArrowLeft size={18} />, () => editor.chain().focus().liftListItem("listItem").run(), null],
     [<LinkIcon size={18} />, () => {
       const url = prompt("Enter URL");
       if (url) editor.chain().focus().setLink({ href: url }).run();
-    }],
+    }, () => editor.isActive('link')],
     [<ImageIcon size={18} />, () => {
       const url = prompt("Image URL");
       if (url) editor.chain().focus().setImage({ src: url }).run();
-    }],
-    [<TableIcon size={18} />, () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()],
-    [<Code size={18} />, () => editor.chain().focus().toggleCodeBlock().run()],
+    }, null],
+    [<TableIcon size={18} />, () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(), null],
+    [<Code size={18} />, () => editor.chain().focus().toggleCodeBlock().run(), () => editor.isActive('codeBlock')],
     [<PaintBucket size={18} />, () => {
       const color = prompt("Highlight color?");
       if (color) editor.chain().focus().setHighlight({ color }).run();
-    }],
+    }, null],
     [<Type size={18} />, () => {
       const color = prompt("Text color?");
       if (color) editor.chain().focus().setColor(color).run();
-    }]
+    }, null],
   ];
 
   if (loading || !editor) return <p>Loading editor...</p>;
@@ -235,8 +179,10 @@ useEffect(() => {
           Untitled Document
         </div>
         <div className="doc-actions">
+          <span className="autosave-indicator">
+            {lastSaved ? `Last Updated ${timeAgo(lastSaved)}` : "Not saved yet"}
+          </span>
           <button className="share-btn"><Share2 size={16} /> Share</button>
-          <button className="save-btn" onClick={save}><Save size={16} /> Save</button>
         </div>
       </header>
 
@@ -276,20 +222,24 @@ useEffect(() => {
           <option value="1in">Normal</option>
           <option value="1.5in">Wide</option>
         </select>
-        {toolbarActions.map(([icon, action], i) => (
-          <button key={i} onClick={action} className="toolbar-btn">{icon}</button>
+        {toolbarActions.map(([icon, action, isActive], i) => (
+          <button
+            key={i}
+            onClick={action}
+            className={`toolbar-btn ${isActive && isActive() ? "active" : ""}`}
+          >
+            {icon}
+          </button>
         ))}
       </div>
 
       <div className="ruler" />
 
-<main className="page-container">
-  <div className="editor-pages">
-    <EditorContent editor={editor} />
-  </div>
-</main>
-
-
+      <main className="page-container">
+        <div className="editor-pages">
+          <EditorContent editor={editor} />
+        </div>
+      </main>
 
       <footer className="editor-footer">
         {editor.storage.characterCount.words()} words • {editor.storage.characterCount.characters()} characters

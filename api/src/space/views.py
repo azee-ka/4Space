@@ -21,6 +21,22 @@ SPACE_APP_DIR = apps.get_app_config("space").path
 STATIC_LATEX_DIR = os.path.join(SPACE_APP_DIR, "static_latex")
 
 
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def save_richtext_version(request, project_id):
+    project = Project.objects.get(id=project_id, owner=request.user)
+    content = request.data.get("content", "")
+    RichTextContent.objects.create(project=project, content=content)
+    return Response({"status": "version saved"})
+
+
+
+
+
+
+
 def sanitize_latex(text):
     """
     Replace common problematic Unicode characters in LaTeX source with ASCII equivalents.

@@ -117,7 +117,8 @@ const Navbar = ({
                     </div>
                 </div>
             </div>
-<div className='navbar-center'>
+{authState.isAuthenticated &&
+    <div className='navbar-center'>
   <div className='navbar-search-container'>
     <span className='navbar-search-icon'>
       <FontAwesomeIcon icon={faSearch} />
@@ -130,9 +131,10 @@ const Navbar = ({
     />
   </div>
 </div>
+}
 
 
-            <div className='navbar-right'>
+            <div className={`navbar-right ${authState.isAuthenticated ? '' : 'unauthenticated'}`}>
                 <div className='navbar-pages'>
                     <ul>
                         {pagesNavbar?.map((item, index) => (
