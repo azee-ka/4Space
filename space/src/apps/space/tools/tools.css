@@ -38,12 +38,12 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
   will-change: transform;
 }
 
 .tool-card:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
   box-shadow: 0 0 0 1px rgba(0, 200, 255, 0.1),
     0 12px 24px rgba(0, 200, 255, 0.08);
 }

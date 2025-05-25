@@ -1,8 +1,9 @@
+// apiCall.js
 import axios from 'axios';
 import API_BASE_URL from './apiUrl';
 import getConfig from '../config';
-// General API call function
-const apiCall = async (endpoint, method = 'GET', data = null, contentType, authState) => {
+
+const apiCall = async (endpoint, method = 'GET', data = null, contentType, authState, customConfig = {}) => {
     const config = getConfig(authState?.token, contentType);
 
     try {
@@ -12,10 +13,10 @@ const apiCall = async (endpoint, method = 'GET', data = null, contentType, authS
             data: data,
             headers: config.headers || {},
             params: config.params || {},
+            ...customConfig // <-- Merge in custom Axios config like `responseType`
         });
-        return response;  // returning data directly
+        return response;
     } catch (error) {
-        // console.error(`Error calling ${endpoint}:`, error);
         throw error;
     }
 };

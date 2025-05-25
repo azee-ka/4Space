@@ -3,5 +3,8 @@ from . import views
 
 urlpatterns = [
     path("projects/", views.projects_view),
-    path("tools/<int:project_id>/<str:tool>/", views.tool_content_view),
+    path("tools/<uuid:project_id>/<str:tool>/", views.tool_content_view),
+    
+    path('tools/<uuid:project_id>/latex/render/', views.render_latex_pdf, name="render_latex_pdf"),
+
 ]
