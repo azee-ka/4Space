@@ -14,6 +14,7 @@ import SmallSidebar from '../sidebar/smallSidebar/smallSidebar';
 import { usePostContext } from '../../context/PostContext';
 import ExpandPost from '../../components/postUI/expandPost/expandPost';
 import Post from '../../apps/home/post/post';
+import { useLocation } from 'react-router-dom';
 
 function Layout({ children, pageName }) {
     const { authState } = useAuth();
@@ -29,6 +30,20 @@ function Layout({ children, pageName }) {
     const [notificationSidebarOpen, setNotificationSidebarOpen] = useState(false);
     const [notificationIdForSidebar, setNotificationIdForSidebar] = useState(null);
     const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
+
+
+const location = useLocation();
+
+const fullScreenRoutes = [
+  '/rich-editor',
+  '/latex-editor',
+  '/code-editor'
+];
+
+const isFullScreenRoute = fullScreenRoutes.some(route =>
+  location.pathname.includes(route)
+);
+
 
     const handleSidebarClose = () => {
         setSidebarOpen(false);
@@ -74,6 +89,15 @@ function Layout({ children, pageName }) {
         setAppMenuOpen(false);
         setNotificationsMenuOpen(false);
     };
+
+
+  if (isFullScreenRoute) {
+    return (
+      <div className="editor-isolated-layout">
+        {children}
+      </div>
+    );
+  }
 
     return (
         <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>

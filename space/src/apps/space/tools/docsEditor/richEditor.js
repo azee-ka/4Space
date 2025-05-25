@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -25,7 +25,7 @@ import Superscript from "@tiptap/extension-superscript";
 import { createLowlight } from "lowlight";
 import js from "highlight.js/lib/languages/javascript";
 import html from "highlight.js/lib/languages/xml";
-import css from "highlight.js/lib/languages/css";
+import cssLang from "highlight.js/lib/languages/css";
 import json from "highlight.js/lib/languages/json";
 import python from "highlight.js/lib/languages/python";
 
@@ -34,7 +34,8 @@ import {
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Link as LinkIcon, Image as ImageIcon,
   Code, Table as TableIcon, PaintBucket, Type,
-  ArrowRight, ArrowLeft, Subscript as SubIcon, Superscript as SuperIcon
+  ArrowRight, ArrowLeft, Subscript as SubIcon, Superscript as SuperIcon,
+  Save, Share2
 } from "lucide-react";
 
 import useApi from "../../../../utils/useApi";
@@ -43,7 +44,7 @@ import "./richEditor.css";
 const lowlight = createLowlight();
 lowlight.register("javascript", js);
 lowlight.register("html", html);
-lowlight.register("css", css);
+lowlight.register("css", cssLang);
 lowlight.register("json", json);
 lowlight.register("python", python);
 
@@ -53,15 +54,15 @@ const RichTextEditor = () => {
   const [initialContent, setInitialContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [margin, setMargin] = useState("1in");
 
-  const menus = {
-    File: ["New", "Open", "Save", "Download"],
-    Edit: ["Undo", "Redo", "Cut", "Copy", "Paste"],
-    Insert: ["Image", "Table", "Link", "Horizontal Line"],
-    Format: ["Bold", "Italic", "Underline", "Highlight", "Clear Format"],
-    Tools: ["Word Count"],
-    Help: ["Docs", "Keyboard Shortcuts"]
-  };
+  const [pageCount, setPageCount] = useState([0]);
+const pagesRef = useRef(null);
+
+
+const contentRef = useRef(null);
+const [pages, setPages] = useState([]);
+
 
   const editor = useEditor({
     extensions: [
@@ -97,64 +98,66 @@ const RichTextEditor = () => {
     },
   });
 
-  const toolbarGroups = [
-    {
-      label: "Font",
-      items: [
-        [<Bold size={18} />, () => editor.chain().focus().toggleBold().run()],
-        [<Italic size={18} />, () => editor.chain().focus().toggleItalic().run()],
-        [<UnderlineIcon size={18} />, () => editor.chain().focus().toggleUnderline().run()],
-        [<SuperIcon size={18} />, () => editor.chain().focus().toggleSuperscript().run()],
-        [<SubIcon size={18} />, () => editor.chain().focus().toggleSubscript().run()],
-        [<Eraser size={18} />, () => editor.chain().focus().unsetAllMarks().run()],
-      ]
-    },
-    {
-      label: "Color",
-      items: [
-        [<Type size={18} />, () => {
-          const color = prompt("Text color?");
-          if (color) editor.chain().focus().setColor(color).run();
-        }],
-        [<PaintBucket size={18} />, () => {
-          const color = prompt("Highlight color?");
-          if (color) editor.chain().focus().setHighlight({ color }).run();
-        }]
-      ]
-    },
-    {
-      label: "Paragraph",
-      items: [
-        [<AlignLeft size={18} />, () => editor.chain().focus().setTextAlign("left").run()],
-        [<AlignCenter size={18} />, () => editor.chain().focus().setTextAlign("center").run()],
-        [<AlignRight size={18} />, () => editor.chain().focus().setTextAlign("right").run()],
-        [<List size={18} />, () => editor.chain().focus().toggleBulletList().run()],
-        [<ListOrdered size={18} />, () => editor.chain().focus().toggleOrderedList().run()],
-        [<ArrowRight size={18} />, () => editor.chain().focus().sinkListItem("listItem").run()],
-        [<ArrowLeft size={18} />, () => editor.chain().focus().liftListItem("listItem").run()],
-      ]
-    },
-    {
-      label: "Insert",
-      items: [
-        [<LinkIcon size={18} />, () => {
-          const url = prompt("Enter URL");
-          if (url) editor.chain().focus().setLink({ href: url }).run();
-        }],
-        [<ImageIcon size={18} />, () => {
-          const url = prompt("Image URL");
-          if (url) editor.chain().focus().setImage({ src: url }).run();
-        }],
-        [<TableIcon size={18} />, () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()],
-        [<Code size={18} />, () => editor.chain().focus().toggleCodeBlock().run()]
-      ]
+
+  const paginateContent = () => {
+  const container = contentRef.current;
+  if (!container) return;
+
+  const maxPageHeight = 1056;
+  const children = Array.from(container.children);
+  let currentPage = [];
+  let currentHeight = 0;
+  const newPages = [];
+
+  children.forEach(child => {
+    const height = child.offsetHeight;
+
+    if (currentHeight + height > maxPageHeight) {
+      newPages.push([...currentPage]);
+      currentPage = [child];
+      currentHeight = height;
+    } else {
+      currentPage.push(child);
+      currentHeight += height;
     }
-  ];
+  });
+
+  if (currentPage.length) newPages.push(currentPage);
+  setPages(newPages);
+};
+
+
+useEffect(() => {
+  if (!editor) return;
+  const timeout = setTimeout(paginateContent, 100); // debounce
+  return () => clearTimeout(timeout);
+}, [initialContent, editor]);
+
+
+  useEffect(() => {
+  if (!editor || !pagesRef.current) return;
+
+  const resizeObserver = new ResizeObserver(() => {
+    const contentHeight = pagesRef.current.querySelector(".editor-page")?.scrollHeight || 0;
+    const visibleHeight = 1056; // same as .editor-page height
+    const pagesNeeded = Math.ceil(contentHeight / visibleHeight);
+    const currentPages = pageCount.length;
+
+    if (pagesNeeded !== currentPages) {
+      setPageCount(new Array(pagesNeeded).fill(0));
+    }
+  });
+
+  resizeObserver.observe(pagesRef.current);
+
+  return () => resizeObserver.disconnect();
+}, [editor, initialContent]);
+
 
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await callApi(`tools/${projectId}/richtext/`, "GET");
+        const res = await callApi(`space/tools/${projectId}/richtext/`, "GET");
         setInitialContent(res.data.content || "");
       } catch (err) {
         console.error("Failed to load content:", err);
@@ -167,9 +170,10 @@ const RichTextEditor = () => {
 
   const save = async () => {
     try {
-      await callApi(`tools/${projectId}/richtext/`, "PUT", {
+      const response = await callApi(`space/tools/${projectId}/richtext/`, "PUT", {
         content: initialContent,
       });
+      console.log("Save response:", response.data);
       alert("Saved!");
     } catch (err) {
       console.error("Save error:", err);
@@ -177,20 +181,66 @@ const RichTextEditor = () => {
     }
   };
 
+  const menus = {
+    File: ["New", "Open", "Rename", "Save", "Download as PDF", "Print"],
+    Edit: ["Undo", "Redo", "Cut", "Copy", "Paste", "Find and Replace"],
+    View: ["Show Ruler", "Document Outline", "Compact Mode"],
+    Insert: ["Image", "Table", "Link", "Horizontal Line", "Page Break"],
+    Format: ["Bold", "Italic", "Underline", "Highlight", "Clear Format", "Text Color", "Background Color"],
+    Tools: ["Word Count", "Voice Typing (TBD)", "Spelling & Grammar"],
+    Help: ["Docs", "Keyboard Shortcuts", "Send Feedback"]
+  };
+
+  const toolbarActions = [
+    [<Bold size={18} />, () => editor.chain().focus().toggleBold().run()],
+    [<Italic size={18} />, () => editor.chain().focus().toggleItalic().run()],
+    [<UnderlineIcon size={18} />, () => editor.chain().focus().toggleUnderline().run()],
+    [<Strikethrough size={18} />, () => editor.chain().focus().toggleStrike().run()],
+    [<SuperIcon size={18} />, () => editor.chain().focus().toggleSuperscript().run()],
+    [<SubIcon size={18} />, () => editor.chain().focus().toggleSubscript().run()],
+    [<Eraser size={18} />, () => editor.chain().focus().unsetAllMarks().run()],
+    [<AlignLeft size={18} />, () => editor.chain().focus().setTextAlign("left").run()],
+    [<AlignCenter size={18} />, () => editor.chain().focus().setTextAlign("center").run()],
+    [<AlignRight size={18} />, () => editor.chain().focus().setTextAlign("right").run()],
+    [<List size={18} />, () => editor.chain().focus().toggleBulletList().run()],
+    [<ListOrdered size={18} />, () => editor.chain().focus().toggleOrderedList().run()],
+    [<ArrowRight size={18} />, () => editor.chain().focus().sinkListItem("listItem").run()],
+    [<ArrowLeft size={18} />, () => editor.chain().focus().liftListItem("listItem").run()],
+    [<LinkIcon size={18} />, () => {
+      const url = prompt("Enter URL");
+      if (url) editor.chain().focus().setLink({ href: url }).run();
+    }],
+    [<ImageIcon size={18} />, () => {
+      const url = prompt("Image URL");
+      if (url) editor.chain().focus().setImage({ src: url }).run();
+    }],
+    [<TableIcon size={18} />, () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()],
+    [<Code size={18} />, () => editor.chain().focus().toggleCodeBlock().run()],
+    [<PaintBucket size={18} />, () => {
+      const color = prompt("Highlight color?");
+      if (color) editor.chain().focus().setHighlight({ color }).run();
+    }],
+    [<Type size={18} />, () => {
+      const color = prompt("Text color?");
+      if (color) editor.chain().focus().setColor(color).run();
+    }]
+  ];
+
   if (loading || !editor) return <p>Loading editor...</p>;
 
   return (
     <div className="doc-editor-container">
-      <div className="editor-header">
+      <header className="editor-header">
         <div className="doc-title" contentEditable suppressContentEditableWarning>
           Untitled Document
         </div>
-        <button className="save-btn" onClick={save}>
-          💾
-        </button>
-      </div>
+        <div className="doc-actions">
+          <button className="share-btn"><Share2 size={16} /> Share</button>
+          <button className="save-btn" onClick={save}><Save size={16} /> Save</button>
+        </div>
+      </header>
 
-      <div className="editor-menubar">
+      <nav className="editor-menubar">
         {Object.keys(menus).map(menu => (
           <div
             className="menu-item"
@@ -208,44 +258,42 @@ const RichTextEditor = () => {
             )}
           </div>
         ))}
+      </nav>
+
+      <div className="editor-toolbar">
+        <select onChange={e => editor.chain().focus().setFontFamily?.(e.target.value).run()}>
+          {["Arial", "Inter", "Georgia", "Courier New"].map(f => (
+            <option key={f} value={f}>{f}</option>
+          ))}
+        </select>
+        <select onChange={e => editor.chain().focus().setFontSize?.(e.target.value).run()}>
+          {[8, 10, 12, 14, 16, 18, 24, 32, 48].map(size => (
+            <option key={size} value={size}>{size}px</option>
+          ))}
+        </select>
+        <select onChange={e => setMargin(e.target.value)} value={margin}>
+          <option value="0.5in">Narrow</option>
+          <option value="1in">Normal</option>
+          <option value="1.5in">Wide</option>
+        </select>
+        {toolbarActions.map(([icon, action], i) => (
+          <button key={i} onClick={action} className="toolbar-btn">{icon}</button>
+        ))}
       </div>
 
-<div className="editor-toolbar">
-  <div className="toolbar-selects">
-    <select onChange={(e) => editor.chain().focus().setFontFamily?.(e.target.value).run()}>
-      <option value="Arial">Arial</option>
-      <option value="Inter">Inter</option>
-      <option value="Georgia">Georgia</option>
-      <option value="Courier New">Courier New</option>
-    </select>
+      <div className="ruler" />
 
-    <select onChange={(e) => editor.chain().focus().setFontSize?.(e.target.value).run()}>
-      {[8, 10, 12, 14, 16, 18, 24, 32, 48].map(size => (
-        <option key={size} value={size}>{size}px</option>
-      ))}
-    </select>
+<main className="page-container">
+  <div className="editor-pages">
+    <EditorContent editor={editor} />
   </div>
-
-  {/* FLATTENED BUTTONS */}
-  <div className="toolbar-buttons">
-    {toolbarGroups.flatMap(group =>
-      group.items.map(([icon, action], idx) => (
-        <button key={idx} onClick={action} className="toolbar-btn">{icon}</button>
-      ))
-    )}
-  </div>
-</div>
+</main>
 
 
-      <div className="page-container">
-        <div className="editor-paper">
-          <EditorContent editor={editor} />
-        </div>
-      </div>
 
-      <div className="editor-footer">
+      <footer className="editor-footer">
         {editor.storage.characterCount.words()} words • {editor.storage.characterCount.characters()} characters
-      </div>
+      </footer>
     </div>
   );
 };

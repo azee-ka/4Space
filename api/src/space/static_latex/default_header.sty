@@ -1,0 +1,85 @@
+\ProvidesPackage{header}
+
+% --- Core Packages ---
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{amsfonts}
+\RequirePackage{mathtools}
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+\RequirePackage{enumitem}
+\RequirePackage{geometry}
+\RequirePackage{hyperref}
+\RequirePackage{titlesec}
+\RequirePackage{caption}
+\RequirePackage{fancyhdr}
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\RequirePackage{pgfplotstable}
+\RequirePackage{listings}
+\RequirePackage{tcolorbox}
+\RequirePackage{lipsum}
+\RequirePackage{fancyvrb}
+\RequirePackage{xparse}
+
+% --- Geometry Setup ---
+\geometry{margin=1in}
+
+% --- Hyperref Setup ---
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  filecolor=magenta,
+  urlcolor=blue,
+  pdftitle={Untitled Document},
+  pdfpagemode=FullScreen,
+}
+
+% --- Custom Commands and Shortcuts ---
+% Safe single definition
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Bin}{\mathrm{Bin}}
+\newcommand{\Exp}{\mathrm{Exp}}
+\newcommand{\Geom}{\mathrm{Geom}}
+\newcommand{\var}{\operatorname{Var}}
+
+
+% --- \notelinks command (hyperlinked or fallback text) ---
+\NewDocumentCommand{\notelinks}{ O{} m }{%
+  \IfNoValueTF{#1}
+    {\textit{#2}}%
+    {\href{#1}{\textit{#2}}}%
+}
+
+% --- Title Logic ---
+\makeatletter
+\providecommand{\@title}{(Untitled)}
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\LARGE \@title \par}
+    \vspace{0.5em}
+    \hrule
+    \vspace{0.5em}
+  \end{center}
+}
+\providecommand{\title}[1]{\def\@title{#1}}
+\makeatother
+
+% --- Homework Formatting Utilities ---
+\newcommand{\Question}[1]{\section*{#1}}
+\newenvironment{Parts}{
+  \begin{enumerate}[label=\textbf{\alph*.}]
+}{
+  \end{enumerate}
+}
+\newcommand{\Part}{\item}
+
+% --- Paragraph Styling ---
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+
+% --- Math Mode Defaults ---
+\everymath{\displaystyle}
