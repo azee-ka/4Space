@@ -1,12 +1,133 @@
+import React, { useEffect, useState } from "react";
+import "./projects.css";
+import {
+  FiFileText,
+  FiEdit3,
+  FiLayers,
+  FiCode,
+  FiTerminal,
+  FiList,
+  FiGrid,
+} from "react-icons/fi";
+import { Link } from "react-router-dom";
+import useApi from "../../../utils/useApi";
+
+const toolIcons = {
+  richtext: <FiFileText />,
+  markdown: <FiEdit3 />,
+  latex: <FiLayers />,
+  code: <FiCode />,
+  notebook: <FiTerminal />,
+};
+
+const toolLaunchPaths = {
+  richtext: "/space/project/{id}/rich-editor",
+  markdown: "/space/project/{id}/markdown-editor",
+  latex: "/space/project/{id}/latex-editor",
+  code: "/space/project/{id}/code-editor",
+  notebook: "/space/project/{id}/notebook",
+};
+
 const SpaceProjects = () => {
-    return (
+  const { callApi } = useApi();
+  const [projects, setProjects] = useState([]);
+  const [viewMode, setViewMode] = useState("grid");
+
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const res = await callApi("space/projects/");
+        setProjects(res.data || []);
+      } catch (err) {
+        console.error("Failed to load projects:", err);
+      }
+    }
+    fetchProjects();
+  }, []);
+
+  return (
     <div className="space-projects-page">
       <div className="space-projects-header">
-        <h2>Space projects</h2>
-        <div className="space-projects-content">
-          <p>Welcome to the Space projects!</p>
+        <h2>My Projects</h2>
+        <div className="projects-view-toggle">
+          <button
+            className={viewMode === "grid" ? "active" : ""}
+            onClick={() => setViewMode("grid")}
+          >
+            <FiGrid />
+          </button>
+          <button
+            className={viewMode === "list" ? "active" : ""}
+            onClick={() => setViewMode("list")}
+          >
+            <FiList />
+          </button>
         </div>
       </div>
+
+
+
+{viewMode === "list" && (
+  <div className="list-header-row">
+    <div className="col-icon-title">Name</div>
+    <div className="col-type">Type</div>
+    <div className="col-updated">Last Updated</div>
+    <div className="col-id">ID</div>
+  </div>
+)}
+
+<div className={`space-projects-content ${viewMode}`}>
+  {projects.map((project) => {
+    const updated = new Date(project.updated_at).toLocaleDateString();
+    const idShort = project.id.slice(0, 8);
+    const title = project.title;
+
+    if (viewMode === "list") {
+      return (
+        <Link
+          key={project.id}
+          to={toolLaunchPaths[project.tool_type]?.replace("{id}", project.id)}
+          className="project-card list-row"
+        >
+          <div className="project-card-blur" />
+          <div className="list-row-inner">
+            <div className="col-icon-title">
+              <span className="project-card-icon">{toolIcons[project.tool_type]}</span>
+              <span className="list-title">{title}</span>
+            </div>
+            <div className="col-type">{project.tool_type}</div>
+            <div className="col-updated">{updated}</div>
+            <div className="col-id">#{idShort}</div>
+          </div>
+        </Link>
+      );
+    }
+
+    // Grid
+    return (
+      <Link
+        key={project.id}
+        to={toolLaunchPaths[project.tool_type]?.replace("{id}", project.id)}
+        className="project-card"
+      >
+        <div className="project-card-blur" />
+        <div className="project-card-inner">
+          <div className="project-card-icon top">{toolIcons[project.tool_type]}</div>
+          <h3>{title}</h3>
+          <div className="project-meta">
+            <p className="project-type">{project.tool_type}</p>
+            <p className="project-dates">Updated: {updated}</p>
+            <p className="project-id">#{idShort}</p>
+          </div>
+        </div>
+      </Link>
+    );
+  })}
+</div>
+
+
+
+
     </div>
   );
 };

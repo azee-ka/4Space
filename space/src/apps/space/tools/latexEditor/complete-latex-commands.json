@@ -1,0 +1,592 @@
+[
+  {
+    "label": "\\alpha",
+    "apply": "\\alpha",
+    "type": "variable"
+  },
+  {
+    "label": "\\beta",
+    "apply": "\\beta",
+    "type": "variable"
+  },
+  {
+    "label": "\\gamma",
+    "apply": "\\gamma",
+    "type": "variable"
+  },
+  {
+    "label": "\\delta",
+    "apply": "\\delta",
+    "type": "variable"
+  },
+  {
+    "label": "\\epsilon",
+    "apply": "\\epsilon",
+    "type": "variable"
+  },
+  {
+    "label": "\\zeta",
+    "apply": "\\zeta",
+    "type": "variable"
+  },
+  {
+    "label": "\\eta",
+    "apply": "\\eta",
+    "type": "variable"
+  },
+  {
+    "label": "\\theta",
+    "apply": "\\theta",
+    "type": "variable"
+  },
+  {
+    "label": "\\iota",
+    "apply": "\\iota",
+    "type": "variable"
+  },
+  {
+    "label": "\\kappa",
+    "apply": "\\kappa",
+    "type": "variable"
+  },
+  {
+    "label": "\\lambda",
+    "apply": "\\lambda",
+    "type": "variable"
+  },
+  {
+    "label": "\\mu",
+    "apply": "\\mu",
+    "type": "variable"
+  },
+  {
+    "label": "\\nu",
+    "apply": "\\nu",
+    "type": "variable"
+  },
+  {
+    "label": "\\xi",
+    "apply": "\\xi",
+    "type": "variable"
+  },
+  {
+    "label": "\\omicron",
+    "apply": "\\omicron",
+    "type": "variable"
+  },
+  {
+    "label": "\\pi",
+    "apply": "\\pi",
+    "type": "variable"
+  },
+  {
+    "label": "\\rho",
+    "apply": "\\rho",
+    "type": "variable"
+  },
+  {
+    "label": "\\sigma",
+    "apply": "\\sigma",
+    "type": "variable"
+  },
+  {
+    "label": "\\tau",
+    "apply": "\\tau",
+    "type": "variable"
+  },
+  {
+    "label": "\\upsilon",
+    "apply": "\\upsilon",
+    "type": "variable"
+  },
+  {
+    "label": "\\phi",
+    "apply": "\\phi",
+    "type": "variable"
+  },
+  {
+    "label": "\\chi",
+    "apply": "\\chi",
+    "type": "variable"
+  },
+  {
+    "label": "\\psi",
+    "apply": "\\psi",
+    "type": "variable"
+  },
+  {
+    "label": "\\omega",
+    "apply": "\\omega",
+    "type": "variable"
+  },
+  {
+    "label": "\\frac",
+    "apply": "\\frac{}",
+    "type": "function"
+  },
+  {
+    "label": "\\sqrt",
+    "apply": "\\sqrt{}",
+    "type": "function"
+  },
+  {
+    "label": "\\sum_^",
+    "apply": "\\sum_{}^{}",
+    "type": "function"
+  },
+  {
+    "label": "\\prod_^",
+    "apply": "\\prod_{}^{}",
+    "type": "function"
+  },
+  {
+    "label": "\\int_^",
+    "apply": "\\int_{}^{}",
+    "type": "function"
+  },
+  {
+    "label": "\\lim_{x \\to }",
+    "apply": "\\lim_{x \\to }",
+    "type": "function"
+  },
+  {
+    "label": "\\log",
+    "apply": "\\log",
+    "type": "function"
+  },
+  {
+    "label": "\\ln",
+    "apply": "\\ln",
+    "type": "function"
+  },
+  {
+    "label": "\\exp",
+    "apply": "\\exp",
+    "type": "function"
+  },
+  {
+    "label": "\\sin",
+    "apply": "\\sin",
+    "type": "function"
+  },
+  {
+    "label": "\\cos",
+    "apply": "\\cos",
+    "type": "function"
+  },
+  {
+    "label": "\\tan",
+    "apply": "\\tan",
+    "type": "function"
+  },
+  {
+    "label": "\\arcsin",
+    "apply": "\\arcsin",
+    "type": "function"
+  },
+  {
+    "label": "\\arccos",
+    "apply": "\\arccos",
+    "type": "function"
+  },
+  {
+    "label": "\\arctan",
+    "apply": "\\arctan",
+    "type": "function"
+  },
+  {
+    "label": "\\sinh",
+    "apply": "\\sinh",
+    "type": "function"
+  },
+  {
+    "label": "\\cosh",
+    "apply": "\\cosh",
+    "type": "function"
+  },
+  {
+    "label": "\\tanh",
+    "apply": "\\tanh",
+    "type": "function"
+  },
+  {
+    "label": "\\max",
+    "apply": "\\max",
+    "type": "function"
+  },
+  {
+    "label": "\\min",
+    "apply": "\\min",
+    "type": "function"
+  },
+  {
+    "label": "\\sup",
+    "apply": "\\sup",
+    "type": "function"
+  },
+  {
+    "label": "\\inf",
+    "apply": "\\inf",
+    "type": "function"
+  },
+  {
+    "label": "\\det",
+    "apply": "\\det",
+    "type": "function"
+  },
+  {
+    "label": "\\gcd",
+    "apply": "\\gcd",
+    "type": "function"
+  },
+  {
+    "label": "\\textbf",
+    "apply": "\\textbf{}",
+    "type": "function"
+  },
+  {
+    "label": "\\textit",
+    "apply": "\\textit{}",
+    "type": "function"
+  },
+  {
+    "label": "\\underline",
+    "apply": "\\underline{}",
+    "type": "function"
+  },
+  {
+    "label": "\\text",
+    "apply": "\\text{}",
+    "type": "function"
+  },
+  {
+    "label": "\\emph",
+    "apply": "\\emph{}",
+    "type": "function"
+  },
+  {
+    "label": "\\mathrm",
+    "apply": "\\mathrm{}",
+    "type": "function"
+  },
+  {
+    "label": "\\mathbf",
+    "apply": "\\mathbf{}",
+    "type": "function"
+  },
+  {
+    "label": "\\mathit",
+    "apply": "\\mathit{}",
+    "type": "function"
+  },
+  {
+    "label": "\\mathsf",
+    "apply": "\\mathsf{}",
+    "type": "function"
+  },
+  {
+    "label": "\\mathtt",
+    "apply": "\\mathtt{}",
+    "type": "function"
+  },
+  {
+    "label": "\\begin",
+    "apply": "\\begin{equation}\n\n\\end{equation}",
+    "type": "keyword"
+  },
+  {
+    "label": "\\infty",
+    "apply": "\\infty",
+    "type": "symbol"
+  },
+  {
+    "label": "\\partial",
+    "apply": "\\partial",
+    "type": "symbol"
+  },
+  {
+    "label": "\\nabla",
+    "apply": "\\nabla",
+    "type": "symbol"
+  },
+  {
+    "label": "\\forall",
+    "apply": "\\forall",
+    "type": "symbol"
+  },
+  {
+    "label": "\\exists",
+    "apply": "\\exists",
+    "type": "symbol"
+  },
+  {
+    "label": "\\neg",
+    "apply": "\\neg",
+    "type": "symbol"
+  },
+  {
+    "label": "\\therefore",
+    "apply": "\\therefore",
+    "type": "symbol"
+  },
+  {
+    "label": "\\because",
+    "apply": "\\because",
+    "type": "symbol"
+  },
+  {
+    "label": "\\rightarrow",
+    "apply": "\\rightarrow",
+    "type": "symbol"
+  },
+  {
+    "label": "\\leftarrow",
+    "apply": "\\leftarrow",
+    "type": "symbol"
+  },
+  {
+    "label": "\\Rightarrow",
+    "apply": "\\Rightarrow",
+    "type": "symbol"
+  },
+  {
+    "label": "\\Leftarrow",
+    "apply": "\\Leftarrow",
+    "type": "symbol"
+  },
+  {
+    "label": "\\leftrightarrow",
+    "apply": "\\leftrightarrow",
+    "type": "symbol"
+  },
+  {
+    "label": "\\Leftrightarrow",
+    "apply": "\\Leftrightarrow",
+    "type": "symbol"
+  },
+  {
+    "label": "\\mapsto",
+    "apply": "\\mapsto",
+    "type": "symbol"
+  },
+  {
+    "label": "\\to",
+    "apply": "\\to",
+    "type": "symbol"
+  },
+  {
+    "label": "\\gets",
+    "apply": "\\gets",
+    "type": "symbol"
+  },
+  {
+    "label": "\\implies",
+    "apply": "\\implies",
+    "type": "symbol"
+  },
+  {
+    "label": "\\hat",
+    "apply": "\\hat{}",
+    "type": "function"
+  },
+  {
+    "label": "\\bar",
+    "apply": "\\bar{}",
+    "type": "function"
+  },
+  {
+    "label": "\\vec",
+    "apply": "\\vec{}",
+    "type": "function"
+  },
+  {
+    "label": "\\tilde",
+    "apply": "\\tilde{}",
+    "type": "function"
+  },
+  {
+    "label": "\\dot",
+    "apply": "\\dot{}",
+    "type": "function"
+  },
+  {
+    "label": "\\ddot",
+    "apply": "\\ddot{}",
+    "type": "function"
+  },
+  {
+    "label": "\\left(",
+    "apply": "\\left( \\right(",
+    "type": "function"
+  },
+  {
+    "label": "\\left[",
+    "apply": "\\left[ \\right[",
+    "type": "function"
+  },
+  {
+    "label": "\\left\\{",
+    "apply": "\\left\\{ \\right{",
+    "type": "function"
+  },
+  {
+    "label": "\\left|",
+    "apply": "\\left| \\right|",
+    "type": "function"
+  },
+  {
+    "label": "\\left\\langle",
+    "apply": "\\left\\langle \\righte",
+    "type": "function"
+  },
+  {
+    "label": "\\land",
+    "apply": "\\land",
+    "type": "operator"
+  },
+  {
+    "label": "\\lor",
+    "apply": "\\lor",
+    "type": "operator"
+  },
+  {
+    "label": "\\lnot",
+    "apply": "\\lnot",
+    "type": "operator"
+  },
+  {
+    "label": "\\iff",
+    "apply": "\\iff",
+    "type": "operator"
+  },
+  {
+    "label": "\\leq",
+    "apply": "\\leq",
+    "type": "operator"
+  },
+  {
+    "label": "\\geq",
+    "apply": "\\geq",
+    "type": "operator"
+  },
+  {
+    "label": "\\neq",
+    "apply": "\\neq",
+    "type": "operator"
+  },
+  {
+    "label": "\\approx",
+    "apply": "\\approx",
+    "type": "operator"
+  },
+  {
+    "label": "\\equiv",
+    "apply": "\\equiv",
+    "type": "operator"
+  },
+  {
+    "label": "\\sim",
+    "apply": "\\sim",
+    "type": "operator"
+  },
+  {
+    "label": "\\cong",
+    "apply": "\\cong",
+    "type": "operator"
+  },
+  {
+    "label": "\\cdot",
+    "apply": "\\cdot",
+    "type": "operator"
+  },
+  {
+    "label": "\\times",
+    "apply": "\\times",
+    "type": "operator"
+  },
+  {
+    "label": "\\div",
+    "apply": "\\div",
+    "type": "operator"
+  },
+  {
+    "label": "\\ast",
+    "apply": "\\ast",
+    "type": "operator"
+  },
+  {
+    "label": "\\star",
+    "apply": "\\star",
+    "type": "operator"
+  },
+  {
+    "label": "\\cup",
+    "apply": "\\cup",
+    "type": "operator"
+  },
+  {
+    "label": "\\cap",
+    "apply": "\\cap",
+    "type": "operator"
+  },
+  {
+    "label": "\\oplus",
+    "apply": "\\oplus",
+    "type": "operator"
+  },
+  {
+    "label": "\\otimes",
+    "apply": "\\otimes",
+    "type": "operator"
+  },
+  {
+    "label": "\\E",
+    "apply": "\\E",
+    "type": "function"
+  },
+  {
+    "label": "\\Var",
+    "apply": "\\Var",
+    "type": "function"
+  },
+  {
+    "label": "\\Cov",
+    "apply": "\\Cov",
+    "type": "function"
+  },
+  {
+    "label": "\\Prob",
+    "apply": "\\Prob",
+    "type": "function"
+  },
+  {
+    "label": "\\Bin",
+    "apply": "\\Bin",
+    "type": "function"
+  },
+  {
+    "label": "\\Exp",
+    "apply": "\\Exp",
+    "type": "function"
+  },
+  {
+    "label": "\\Geom",
+    "apply": "\\Geom",
+    "type": "function"
+  },
+  {
+    "label": "\\Poisson",
+    "apply": "\\Poisson",
+    "type": "function"
+  },
+  {
+    "label": "\\Uniform",
+    "apply": "\\Uniform",
+    "type": "function"
+  },
+  {
+    "label": "\\Normal",
+    "apply": "\\Normal",
+    "type": "function"
+  }
+]

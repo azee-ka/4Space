@@ -123,6 +123,11 @@
   margin-right: 8px;
 }
 
+.navbar-right.unauthenticated {
+  background-color: rgba(30, 30, 30, 0);
+    box-shadow: 0 0 0px 0px rgba(202, 202, 202, 0);
+}
+
 
 
 .navbar-pages {
