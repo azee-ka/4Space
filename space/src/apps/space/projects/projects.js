@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import useApi from "../../../utils/useApi";
+import { formatDateTime } from "../../../utils/formatDateTime";
 
 const toolIcons = {
   richtext: <FiFileText />,
@@ -96,7 +97,7 @@ const SpaceProjects = () => {
               <span className="list-title">{title}</span>
             </div>
             <div className="col-type">{project.tool_type}</div>
-            <div className="col-updated">{updated}</div>
+            <div className="col-updated">{formatDateTime(updated)}</div>
             <div className="col-id">#{idShort}</div>
           </div>
         </Link>
@@ -116,7 +117,7 @@ const SpaceProjects = () => {
           <h3>{title}</h3>
           <div className="project-meta">
             <p className="project-type">{project.tool_type}</p>
-            <p className="project-dates">Updated: {updated}</p>
+            <p className="project-dates">Last Updated: {formatDateTime(updated)}</p>
             <p className="project-id">#{idShort}</p>
           </div>
         </div>
