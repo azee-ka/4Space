@@ -19,7 +19,7 @@ import CreateSpaceTulip from '../../apps/space/createSpaceTulip/createSpaceTulip
 import DisplayMenu from '../navbar/displayMenu/displayMenu';
 
 function Layout({ children, pageName }) {
-    const { authState } = useAuth();
+    const { authState, isAuthenticated } = useAuth();
 
     const { expandPostIdReciever } = usePostContext();
 
@@ -36,17 +36,31 @@ function Layout({ children, pageName }) {
 
 
 
-const location = useLocation();
+    const location = useLocation();
 
-const fullScreenRoutes = [
-  '/rich-editor',
-  '/latex-editor',
-  '/code-editor'
-];
+    const fullScreenRoutes = [
+        '/rich-editor',
+        '/latex-editor',
+        '/code-editor'
+    ];
 
-const isFullScreenRoute = fullScreenRoutes.some(route =>
-  location.pathname.includes(route)
-);
+    const isFullScreenRoute = fullScreenRoutes.some(route =>
+        location.pathname.includes(route)
+    );
+
+
+
+// useEffect(() => {
+//   const handleMessage = (event) => {
+//     if (event.origin !== window.location.origin) return;
+//     if (event.data?.type === 'ACCOUNT_ADDED') {
+//       window.location.reload(); // Or re-fetch authAccounts only
+//     }
+//   };
+
+//   window.addEventListener('message', handleMessage);
+//   return () => window.removeEventListener('message', handleMessage);
+// }, []);
 
 
 
@@ -109,13 +123,13 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
     };
 
 
-  if (isFullScreenRoute) {
-    return (
-      <div className="editor-isolated-layout">
-        {children}
-      </div>
-    );
-  }
+    if (isFullScreenRoute) {
+        return (
+            <div className="editor-isolated-layout">
+                {children}
+            </div>
+        );
+    }
 
     return (
         <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
@@ -132,32 +146,32 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
             </div>
 
             <div className='layout-page'>
-                {authState.isAuthenticated &&
+                {isAuthenticated &&
 
                     <div className='layout-small-sidebar'>
                         <SmallSidebar
                             searchSidebarOpen={searchSidebarOpen}
                             setSearchSidebarOpen={setSearchSidebarOpen}
-                            // setCreateSpaceOpen={setCreateSpaceOpen}
+                        // setCreateSpaceOpen={setCreateSpaceOpen}
                         />
                     </div>
                 }
-                <div className={`layout-page-content ${authState.isAuthenticated ? 'sidebar' : ''}`}>
+                <div className={`layout-page-content ${isAuthenticated ? 'sidebar' : ''}`}>
                     {children}
                 </div>
             </div>
-            {authState.isAuthenticated &&
+            {isAuthenticated &&
                 <Sidebar
                     isOpen={sidebarOpen}
                     onClose={handleSidebarClose}
                 />
             }
-            {/* {authState.isAuthenticated &&
+            {/* {isAuthenticated &&
                 <SearchSidebar
                     isOpen={searchSidebarOpen}
                 />
             } */}
-            {authState.isAuthenticated &&
+            {isAuthenticated &&
                 <NotificationSidebar
                     notificationSidebarOpen={notificationSidebarOpen}
                     notificationIdForSidebar={notificationIdForSidebar}
@@ -172,8 +186,8 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
                 <NotificationsMenu
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />}
-                {expandPostIdReciever && <Post />}
-                {displayMenuVisible && <DisplayMenu onClose={() => setDisplayMenuVisible(false)} />}
+            {expandPostIdReciever && <Post />}
+            {displayMenuVisible && <DisplayMenu onClose={() => setDisplayMenuVisible(false)} />}
         </div>
     );
 }

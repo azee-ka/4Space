@@ -41,11 +41,11 @@ const Profile = ({ enforceViewType = '', isCustomizing = false }) => {
         if (
             window.location.pathname.includes('profile') &&
             !enforceViewType &&
-            (!username || authState.user.username === username)
+            (!username || authState?.current?.user.username === username)
         ) {
             cleanUrl();
         }
-    }, [enforceViewType, username, authState.user.username]);
+    }, [enforceViewType, username, authState?.current?.user.username]);
     
 
 
@@ -63,16 +63,16 @@ const Profile = ({ enforceViewType = '', isCustomizing = false }) => {
 
 
     return enforceViewType === '' ? (
-        (!username || authState.user.username === username || window.location.pathname === "/profile") ? (
+        (!username || authState?.current?.user.username === username || window.location.pathname === "/profile") ? (
         <MyProfile username={username} fetchProfileData={fetchProfileData} isCustomizing={isCustomizing} />
     ) : (
         <OtherProfile username={username} fetchProfileData={fetchProfileData} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
     )
     ) : (
         enforceViewType === 'self' ? (
-            <MyProfile username={authState.user.username} fetchProfileData={fetchProfileData} isCustomizing={isCustomizing} />
+            <MyProfile username={authState?.current?.user.username} fetchProfileData={fetchProfileData} isCustomizing={isCustomizing} />
         ) : (
-            <OtherProfile username={authState.user.username} fetchProfileData={fetchProfileData} enforceViewType={enforceViewType} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
+            <OtherProfile username={authState?.current?.user.username} fetchProfileData={fetchProfileData} enforceViewType={enforceViewType} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
         )
     )
 

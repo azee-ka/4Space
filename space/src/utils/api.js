@@ -4,7 +4,7 @@ import API_BASE_URL from './apiUrl';
 import getConfig from '../config';
 
 const apiCall = async (endpoint, method = 'GET', data = null, contentType, authState, customConfig = {}) => {
-    const config = getConfig(authState?.token, contentType);
+    const config = getConfig(authState?.current?.token, contentType);
 
     try {
         const response = await axios({

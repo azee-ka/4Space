@@ -17,7 +17,7 @@ const defaultSettings = {
 const DisplaySettingsContext = createContext();
 
 export const DisplaySettingsProvider = ({ children }) => {
-    const { authState } = useAuth();
+    const { authState, isAuthenticated } = useAuth();
     const [settings, setSettings] = useState(defaultSettings);
     const [loaded, setLoaded] = useState(false);
     const { callApi } = useApi();
@@ -77,7 +77,7 @@ export const DisplaySettingsProvider = ({ children }) => {
                 setLoaded(true);
             }
         };
-        if (authState.isAuthenticated) {
+        if (isAuthenticated) {
             load();
         }
     }, []);

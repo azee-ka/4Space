@@ -9,6 +9,67 @@ from ..notifications.models import Notification
 
 
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_account(request):
+    """
+    Link the newly logged-in account with the current user's session.
+    Frontend stores accounts locally (e.g. in cookies or secure localStorage),
+    and this endpoint logs it on backend for record if needed.
+    """
+    linked_username = request.data.get("username")
+    if not linked_username:
+        return Response({'error': 'Username is required.'}, status=400)
+
+    if linked_username == request.user.username:
+        return Response({'message': 'Already current account.'}, status=200)
+
+    # Optional: store linked accounts on backend if needed
+    # You can create a model/table if you want a persistent record
+
+    return Response({'message': 'Account added for switching.'}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_accounts(request):
+    """
+    Return the list of user accounts saved locally (client-side) + current session.
+    """
+    # On backend, just return the current user
+    from .serializers import MinimalUserSerializer
+    return Response([MinimalUserSerializer(request.user).data])
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Not IsAuthenticated because they might be switching TO a new login
+def switch_account(request):
+    """
+    Accepts credentials/token and switches the session to that account.
+    This would typically be a login call + storing session for switch.
+    """
+    from django.contrib.auth import authenticate, login
+
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    user = authenticate(username=username, password=password)
+    if user:
+        login(request, user)
+        return Response({'message': 'Switched account successfully.'})
+    else:
+        return Response({'error': 'Invalid credentials.'}, status=401)
+
+
+
+
+
+
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_profile_view(request, username):

@@ -9,7 +9,7 @@ import { useAuth } from './useAuth';
 const useNotifications = () => {
     const dispatch = useDispatch();
     const { callApi } = useApi();
-    const { authState } = useAuth();
+    const { authState, isAuthenticated } = useAuth();
 
     // Select notifications and related state
     const notifications = useSelector(selectNotifications);
@@ -19,10 +19,10 @@ const useNotifications = () => {
 
     // Automatically load notifications when the hook is used
     useEffect(() => {
-        if(authState.isAuthenticated) {
+        if(isAuthenticated) {
             dispatch(loadNotifications({ callApi })); // Pass callApi here
         }
-    }, [dispatch, authState.isAuthenticated]);
+    }, [dispatch, isAuthenticated]);
 
     return { notifications, count, isLoading, error };
 };

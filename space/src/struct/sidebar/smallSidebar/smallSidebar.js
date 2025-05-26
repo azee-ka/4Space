@@ -40,6 +40,22 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         { icon: <FontAwesomeIcon icon={faBook} />, label: 'Library', path: '/space/library', type: 'link' },
         { icon: <FontAwesomeIcon icon={faCodeBranch} />, label: 'Repositories', path: '/space/repositories', type: 'link' },
         { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        {
+            type: 'dropdown',
+            component: (
+                <DropdownButton
+                    toggleContent={
+                        <button className="create-space-btn" ref={plusBtnRef}>
+                            <FontAwesomeIcon icon={faPlus} />
+                        </button>
+                    }
+                    placement="right"
+                >
+                    <CreateSpaceTulip anchorRef={plusBtnRef} onClose={() => setCreateMenuOpen(false)} />
+                </DropdownButton>
+            ),
+            label: 'Create Space',
+        },
         { icon: <FontAwesomeIcon icon={faTools} />, label: 'Tools', path: '/space/tools', type: 'link' },
     ];
 
@@ -89,7 +105,9 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                             className="small-sidebar-item"
                             onClick={(e) => { handleClick(item); e.stopPropagation(); }}
                         >
-                            {item.type === 'button' ? (
+                            {item.type === 'dropdown' ? (
+                                item.component
+                            ) : item.type === 'button' ? (
                                 item.label === 'Create Space' ? (
                                     <button ref={plusBtnRef}>{item.icon}</button>
                                 ) : (
@@ -101,24 +119,8 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                             <div className="tooltip">{item.label}</div>
                         </div>
                     ))}
-                    {
-                        mode === 'space' &&
-                        <div className="small-sidebar-item">
-                            <DropdownButton
-                                placement="right"
-                                toggleContent={
-                                    <button className="create-space-btn">
-                                        <FontAwesomeIcon icon={faPlus} />
-                                    </button>
-                                }
-                            >
-                                <CreateSpaceTulip />
-                            </DropdownButton>
-                            <div className="tooltip">Create Space</div>
-                        </div>
-                    }
-
                 </div>
+
                 <div className="small-sidebar-bottom">
                     {bottomIcons?.map((item, index) => (
                         <div

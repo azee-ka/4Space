@@ -50,8 +50,7 @@ import SpaceLibrary from '../apps/space/library/library';
 
 
 const AppRouter = () => {
-    const { authState, isLoading } = useAuth();
-    const isAuthenticated = authState.isAuthenticated;
+    const { authState, isLoading, isAuthenticated, isAddingAccount } = useAuth();
 
     const privateRoutes = [
         // Home
@@ -102,6 +101,7 @@ const AppRouter = () => {
 
     const publicRoutes = [
         { name: 'Login', path: '/login', component: <LoginPage />, key: 'Login' },
+        { name: 'Login', path: '/login?from=add-account', component: <LoginPage />, key: 'Login' },
         { name: 'Register', path: '/register', component: <RegisterPage />, key: 'Register' },
         { name: 'Home', path: '/', component: <FrontPage />, key: 'FrontPage' },
         { name: 'Home', path: '/home', component: <FrontPage />, key: 'FrontPage' },
@@ -169,7 +169,7 @@ const AppRouter = () => {
 
 
                                         {/* If not authenticated, redirect to login page */}
-                                        {!isAuthenticated && (
+                                        {!isAuthenticated && !isAddingAccount && (
                                             <Route path="/*" element={<Navigate to="/login" />} />
                                         )}
 

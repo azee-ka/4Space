@@ -1,72 +1,73 @@
 // ProfileMenu.js
 import React from 'react';
-import { useNavigate } from 'react-router';
 import { useAuth } from '../../../hooks/useAuth';
 import './profileMenu.css';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
-import useApi from '../../../utils/useApi';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileMenu = ({ profileData, onClose }) => {
+    const { authState, logout, switchProfile } = useAuth();
     const navigate = useNavigate();
-    const { logout } = useAuth();
 
-    const profileMenuLinks = [
-        { label: 'Profile', path: '/profile', type: 'link' },
-        { label: 'Settings', path: '/settings', type: 'link' },
-        { label: 'Messages', path: '/messages/inbox', type: 'link' },
-    ];
+    const currentUsername = authState.current?.user?.username;
+    const otherAccounts = authState?.accounts?.filter(a => a.user.username !== currentUsername);
 
-    const handleClick = (item) => {
-        console.log('item', item)
-        if (item.type === 'button') {
-            if (typeof item.onClick === 'function') {
-                item.onClick();
-            }
-        } else if (item.type === 'link') {
-            navigate(item.path);
-        } else if (item.type === 'context') {
-            navigate(item.path);
-        }
-        onClose();
-    };
+const handleAddAccount = () => {
+  localStorage.setItem('suppressAutoRedirect', 'true');
+  const win = window.open('/login?from=add-account', '_blank', 'noopener,noreferrer');
+};
+
+
 
     return (
         <div className="profile-menu-container" onClick={(e) => e.stopPropagation()}>
-            <div className='profile-menu-user-info-container'>
-                <div className='profile-menu-profile-picture-container'>
-                    <div className='learner-profile-menu-user-profile-picture'>
-                        <ProfilePicture src={profileData?.profile_image} />
-                    </div>
-                    <div className='learner-profile-menu-user-info-text'>
-                        <div className='learner-profile-menu-name-text'>{profileData?.first_name} {profileData?.last_name}</div>
-                        <div className='learner-profile-menu-username-text'>@{profileData?.username}</div>
-                    </div>
+            {/* CURRENT ACCOUNT */}
+            <div className="profile-section-header">Signed In</div>
+            <div className="profile-menu-user-info">
+                <div className="profile-avatar">
+                    <ProfilePicture src={profileData?.profile_image} />
+                </div>
+                <div className="profile-text">
+                    <p className="profile-name">{profileData?.first_name} {profileData?.last_name}</p>
+                    <p className="profile-username">@{profileData?.username}</p>
                 </div>
             </div>
-            <div className="profile-menu-links">
-                <ul>
-                    {profileMenuLinks.map((item, index) => (
-                        <li onClick={() => handleClick(item)} id='exclude-link' key={`${item.label}-${index}`}>
-                            <div className='profile-menu-per-link'>
-                                <div className='profile-menu-link-label'>
-                                    {item.label}
-                                </div>
-                                {item.icon && <span className="link-icon">{item.icon}</span>}
+
+            {/* SWITCH ACCOUNTS */}
+            {otherAccounts.length > 0 && (
+                <div className="account-list">
+                    {otherAccounts.map(acc => (
+                        <div
+                            key={acc?.user?.username}
+                            className="account-item"
+                            onClick={() => switchProfile(acc)}
+                        >
+                            <div className="account-avatar">
+                                <ProfilePicture src={acc?.user?.profile_image} />
                             </div>
-                        </li>
+                            <div className="account-meta">
+                                <p className="account-name">{acc?.first_name} {acc?.last_name}</p>
+                                <p className="account-username">@{acc?.username}</p>
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
+            )}
+
+            {/* ADD ACCOUNT */}
+            <div className="profile-section-header">Add Account</div>
+            <div className="profile-account-actions">
+                <button className="account-button" onClick={handleAddAccount}>
+                    + Add Another Account
+                </button>
             </div>
-            <div className='profile-menu-sign-out-button-container'>
+
+            {/* SIGN OUT */}
+            <div className="profile-signout">
                 <button onClick={logout}>Sign Out</button>
             </div>
         </div>
     );
 };
-
-// ProfileMenu.propTypes = {
-//     user: PropTypes.object.isRequired,
-//     logout: PropTypes.func.isRequired,
-// };
 
 export default ProfileMenu;
