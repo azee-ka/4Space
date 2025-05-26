@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     
     'src.space',
     
+    'src.settings',
+    
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken', 

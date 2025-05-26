@@ -45,6 +45,7 @@ import LaTeXEditor from '../apps/space/tools/latexEditor/latexEditor';
 import MarkdownEditor from '../apps/space/tools/markdownEditor/markdownEditor';
 import Calculator from '../apps/space/tools/calculator/calculator';
 import NotebookEditor from '../apps/space/tools/notebookEditor/notebookEditor';
+import { DisplaySettingsProvider } from '../context/DisplaySettingsContext';
 
 
 const AppRouter = () => {
@@ -133,6 +134,7 @@ const AppRouter = () => {
     return (
         <Router>
             <DndProvider backend={HTML5Backend}>
+                <DisplaySettingsProvider>
             <ModeProvider>
                 <ReportOverlayProvider>
                     <EditorProvider>
@@ -180,6 +182,7 @@ const AppRouter = () => {
                     </EditorProvider>
                 </ReportOverlayProvider>
                 </ModeProvider>
+            </DisplaySettingsProvider>
             </DndProvider>
         </Router>
     );

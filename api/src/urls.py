@@ -11,4 +11,5 @@ urlpatterns = [
     path('report/', include('src.report.urls')),
     path('community/', include('src.community.urls')),
     path('space/', include('src.space.urls')),
+    path('settings/', include('src.settings.urls')),
 ]
