@@ -150,22 +150,24 @@ const Navbar = ({
 
 
             <div className={`navbar-right ${authState.isAuthenticated ? '' : 'unauthenticated'}`}>
-                {/* <div className='navbar-pages'>
-                    <ul>
-                        {pagesNavbar?.map((item, index) => (
-                            <li
-                                key={index}
-                                className={location.pathname === item.path ? 'active' : ''}
-                                id={item.id}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Link to={item.path} onClick={() => handleMenuClick(item.path, item.action)}>
-                                    {item.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </div> */}
+                {!authState.isAuthenticated &&
+                    <div className='navbar-pages'>
+                        <ul>
+                            {pagesNavbar?.map((item, index) => (
+                                <li
+                                    key={index}
+                                    className={location.pathname === item.path ? 'active' : ''}
+                                    id={item.id}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <Link to={item.path} onClick={() => handleMenuClick(item.path, item.action)}>
+                                        {item.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                }
                 <div className='navbar-items'>
                     {authState.isAuthenticated && (
                         <ul>

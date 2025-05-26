@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'src.organization',
     'src.community',
     
-    'src.space',
+    'src.space.projects',
+    'src.space.library',
     
     'src.settings',
     

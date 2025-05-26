@@ -1,4 +1,4 @@
-# space/views.py
+# space/projects/views.py
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +18,7 @@ from django.apps import apps
 import re
 import unicodedata
 
-SPACE_APP_DIR = apps.get_app_config("space").path
+SPACE_APP_DIR = apps.get_app_config("projects").path
 STATIC_LATEX_DIR = os.path.join(SPACE_APP_DIR, "static_latex")
 
 

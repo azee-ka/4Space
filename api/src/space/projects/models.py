@@ -1,4 +1,4 @@
-# space/models.py
+# space/projects/models.py
 import uuid
 from django.db import models
 from django.conf import settings

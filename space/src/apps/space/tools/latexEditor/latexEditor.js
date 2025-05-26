@@ -110,7 +110,7 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
   useEffect(() => {
     const fetchLatex = async () => {
       try {
-        const response = await callApi(`space/tools/${projectId}/latex/`);
+        const response = await callApi(`space/projects/tools/${projectId}/latex/`);
         setLatex(response.data.content || "");
         setErrorMsg(null);
       } catch {
@@ -141,7 +141,7 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
 
   const save = useCallback(() => {
     if (!projectId) return;
-    callApi(`space/tools/${projectId}/latex/`, "PUT", { content: latex })
+    callApi(`space/projects/tools/${projectId}/latex/`, "PUT", { content: latex })
       .then(() => setSaved(true))
       .catch(() => setErrorMsg("Save failed."));
   }, [latex, projectId]);
@@ -165,7 +165,7 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
       const formData = new FormData();
       formData.append("tex", file);
       customFiles.forEach(f => formData.append("files", f));
-      const response = await callApi(`space/tools/${projectId}/latex/render/`, "POST", formData, "multipart/form-data", null, { responseType: "blob" });
+      const response = await callApi(`space/projects/tools/${projectId}/latex/render/`, "POST", formData, "multipart/form-data", null, { responseType: "blob" });
       setPdfURL(URL.createObjectURL(response.data));
     } catch (error) {
       setErrorMsg(error.message);
@@ -178,15 +178,6 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
     const { from } = view.state.selection.main;
     view.dispatch({ changes: { from, insert: snippet }, selection: { anchor: from + snippet.length } });
     view.focus();
-  };
-
-
-  const splitLatexBlocks = (text) => {
-    return text.split(/\n+/).map(line => {
-      const trimmed = line.trim();
-      if (trimmed === "") return { type: "text", content: "" };
-      return { type: "math", content: trimmed };
-    });
   };
 
 

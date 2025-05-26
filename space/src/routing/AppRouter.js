@@ -46,6 +46,7 @@ import MarkdownEditor from '../apps/space/tools/markdownEditor/markdownEditor';
 import Calculator from '../apps/space/tools/calculator/calculator';
 import NotebookEditor from '../apps/space/tools/notebookEditor/notebookEditor';
 import { DisplaySettingsProvider } from '../context/DisplaySettingsContext';
+import SpaceLibrary from '../apps/space/library/library';
 
 
 const AppRouter = () => {
@@ -76,6 +77,7 @@ const AppRouter = () => {
         { name: 'Space Dashboard', path: '/space/dashboard', component: <SpaceDashboard />, key: 'SpaceDashboard' },
         { name: 'Space Portfolio', path: '/space/portfolio', component: <SpacePortfolio />, key: 'SpacePortfolio' },
         { name: 'Space Projects', path: '/space/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
+        { name: 'Space Library', path: '/space/library', component: <SpaceLibrary />, key: 'SpaceLibrary' },
         { name: 'Space Tools', path: '/space/tools', component: <SpaceTools />, key: 'SpaceTools' },
         { name: 'Create Space', path: '/space/create', component: <SpaceProjects />, key: 'SpaceCreate' },
 
