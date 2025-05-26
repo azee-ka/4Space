@@ -173,7 +173,7 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />}
                 {expandPostIdReciever && <Post />}
-                {displayMenuVisible && <DisplayMenu />}
+                {displayMenuVisible && <DisplayMenu onClose={() => setDisplayMenuVisible(false)} />}
         </div>
     );
 }

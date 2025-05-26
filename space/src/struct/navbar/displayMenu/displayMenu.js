@@ -1,55 +1,76 @@
 import React, { useState } from 'react';
 import './displayMenu.css';
+import useApi from '../../../utils/useApi';
+
+const defaultSettings = {
+  gradient: 'radial',
+  color: '#5387be',
+  fontSize: '1em',
+  darkMode: true,
+  padding: 'medium',
+  animations: true,
+  transparency: 0.15,
+  radialPosition: 'top',
+  linearAngle: '135deg',
+};
 
 const DisplayMenu = ({ onClose }) => {
-  const defaultSettings = {
-    gradient: 'radial',
-    color: '#5387be',
-    fontSize: '1em',
-    darkMode: true,
-    padding: 'medium',
-    animations: true,
-    transparency: 0.15,
-  };
+  const { callApi } = useApi();
 
   const [savedSettings, setSavedSettings] = useState(defaultSettings);
   const [settings, setSettings] = useState(defaultSettings);
 
-  const { gradient, color, fontSize, darkMode, padding, animations, transparency } = settings;
+  const {
+    gradient, color, fontSize, darkMode, padding, animations, transparency
+  } = settings;
 
   function colorToRgba(hex, alpha) {
-    const r = parseInt(hex.substr(1, 2), 16);
-    const g = parseInt(hex.substr(3, 2), 16);
-    const b = parseInt(hex.substr(5, 2), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  if (!hex || typeof hex !== 'string' || hex.length !== 7) {
+    hex = '#5387be';
+  }
+  const r = parseInt(hex.substr(1, 2), 16);
+  const g = parseInt(hex.substr(3, 2), 16);
+  const b = parseInt(hex.substr(5, 2), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+  function applySettings(customSettings = settings) {
+  const {
+    fontSize,
+    color,
+    darkMode,
+    gradient,
+    transparency,
+    radialPosition,
+    linearAngle
+  } = customSettings;
+
+  document.documentElement.style.setProperty('--base-font-size', fontSize);
+  document.documentElement.style.setProperty('--theme-color', color);
+  document.body.className = darkMode ? 'dark' : 'light';
+
+  let backgroundValue;
+
+  if (gradient === 'radial') {
+    const transparentColor = colorToRgba(color, transparency);
+    backgroundValue = `radial-gradient(circle at ${radialPosition}, ${transparentColor}, rgba(0,0,0,0))`;
+  } else if (gradient === 'linear') {
+    const transparentColor = colorToRgba(color, transparency);
+    backgroundValue = `linear-gradient(${linearAngle}, ${transparentColor}, rgba(0,0,0,0))`;
+  } else {
+    backgroundValue = color; // solid uses hex directly
   }
 
-  const applySettings = (customSettings = settings) => {
-    const {
-      fontSize, color, darkMode, gradient, transparency
-    } = customSettings;
+  const app = document.querySelector('.App');
+  if (app) app.style.background = backgroundValue;
+}
 
-    document.documentElement.style.setProperty('--base-font-size', fontSize);
-    document.documentElement.style.setProperty('--theme-color', color);
-    document.body.className = darkMode ? 'dark' : 'light';
+const updateSetting = (key, value) => {
+  const updated = { ...settings, [key]: value };
+  applySettings(updated);
+  setSettings(updated);
+};
 
-    const transparentColor = colorToRgba(color, transparency);
-    let backgroundValue = gradient === 'radial'
-      ? `radial-gradient(circle at top, ${transparentColor}, rgba(0, 0, 0, 0))`
-      : gradient === 'linear'
-      ? `linear-gradient(to bottom right, ${transparentColor}, rgba(0, 0, 0, 0))`
-      : transparentColor;
-
-    document.querySelector('.App').style.background = backgroundValue;
-  };
-
-  const updateSetting = (key, value) => {
-    setSettings(prev => {
-      const updated = { ...prev, [key]: value };
-      applySettings(updated);
-      return updated;
-    });
-  };
 
   const resetSettings = () => {
     setSettings(savedSettings);
@@ -58,14 +79,14 @@ const DisplayMenu = ({ onClose }) => {
 
   const saveSettings = async () => {
     try {
-      await fetch('/api/user/display-settings/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(settings),
+      await callApi('settings/save/', 'POST', {
+        category: 'display',
+        settings,
       });
+
+    //   console.log("Settings saved successfully");
       setSavedSettings(settings);
+      onClose();
     } catch (err) {
       console.error("Error saving settings:", err);
     }
@@ -84,13 +105,52 @@ const DisplayMenu = ({ onClose }) => {
         </select>
       </div>
 
+      {gradient === 'radial' && (
+  <div className="display-setting">
+    <label>Radial Position</label>
+    <select
+      value={settings.radialPosition}
+      onChange={(e) => updateSetting('radialPosition', e.target.value)}
+    >
+      <option value="top">Top</option>
+      <option value="center">Center</option>
+      <option value="bottom">Bottom</option>
+      <option value="left">Left</option>
+      <option value="right">Right</option>
+      <option value="top left">Top Left</option>
+      <option value="top right">Top Right</option>
+      <option value="bottom left">Bottom Left</option>
+      <option value="bottom right">Bottom Right</option>
+    </select>
+  </div>
+)}
+
+{gradient === 'linear' && (
+  <div className="display-setting">
+    <label>Linear Angle</label>
+    <div className="slider-wrapper">
+      <input
+        type="range"
+        min="0"
+        max="360"
+        step="1"
+        value={parseInt(settings.linearAngle)}
+        onChange={(e) => updateSetting('linearAngle', `${e.target.value}deg`)}
+      />
+      <span className="slider-value">{parseInt(settings.linearAngle)}°</span>
+    </div>
+  </div>
+)}
+
+
+
       <div className="display-setting">
         <label>Primary Gradient Color</label>
         <div className="color-swatch-grid">
           {[
             '#5387be', '#ff6b6b', '#ffd166', '#06d6a0', '#118ab2',
             '#9d4edd', '#e63946', '#f1fa8c', '#00b4d8', '#ff61a6'
-          ].map((presetColor) => (
+          ].map(presetColor => (
             <div
               key={presetColor}
               className={`color-swatch ${color === presetColor ? 'active' : ''}`}
@@ -120,7 +180,7 @@ const DisplayMenu = ({ onClose }) => {
             value={transparency}
             onChange={(e) => updateSetting('transparency', parseFloat(e.target.value))}
           />
-          <span className="slider-value">{transparency.toFixed(2)}</span>
+          <span className="slider-value">{(transparency ?? 0.15).toFixed(2)}</span>
         </div>
       </div>
 
@@ -135,16 +195,15 @@ const DisplayMenu = ({ onClose }) => {
             value={parseFloat(fontSize)}
             onChange={(e) => updateSetting('fontSize', `${e.target.value}em`)}
           />
-          <span className="slider-value">{parseFloat(fontSize).toFixed(1)}em</span>
+          <span className="slider-value">{parseFloat(fontSize || '1').toFixed(1)}em</span>
         </div>
       </div>
 
       <div className="display-setting toggle-group">
-        <label htmlFor="darkModeToggle">Dark Mode</label>
+        <label>Dark Mode</label>
         <label className="display-toggle">
           <input
             type="checkbox"
-            id="darkModeToggle"
             checked={darkMode}
             onChange={() => updateSetting('darkMode', !darkMode)}
           />
@@ -162,11 +221,10 @@ const DisplayMenu = ({ onClose }) => {
       </div>
 
       <div className="display-setting toggle-group">
-        <label htmlFor="animationsToggle">Enable Animations</label>
+        <label>Enable Animations</label>
         <label className="display-toggle">
           <input
             type="checkbox"
-            id="animationsToggle"
             checked={animations}
             onChange={() => updateSetting('animations', !animations)}
           />
