@@ -82,6 +82,7 @@
   transform: scale(1.02);
   box-shadow: 0 0 0 1px rgba(0, 200, 255, 0.08),
               0 8px 16px rgba(0, 200, 255, 0.06);
+              background-color: rgba(255, 255, 255, 0.07);
 }
 
 .project-card-blur {
@@ -156,6 +157,7 @@
   overflow-y: auto;
   padding-right: 20%;
   padding-bottom: 20px;
+  padding-top: 0;
 }
 
 /* List header */
@@ -188,7 +190,7 @@
 }
 
 .project-card.list-row:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: rgba(255, 255, 255, 0.106);
   box-shadow: 0 0 8px rgba(0, 200, 255, 0);
   transform: scale(1.01);
 }

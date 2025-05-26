@@ -1,3 +1,4 @@
+# space/serializers.py
 from rest_framework import serializers
 from .models import *
 
@@ -21,10 +22,10 @@ class LaTeXSerializer(serializers.ModelSerializer):
         model = LaTeXContent
         fields = "__all__"
 
-class CodeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CodeContent
-        fields = "__all__"
+# class CodeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CodeContent
+#         fields = "__all__"
 
 class NotebookSerializer(serializers.ModelSerializer):
     class Meta:

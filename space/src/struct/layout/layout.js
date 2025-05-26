@@ -15,6 +15,7 @@ import { usePostContext } from '../../context/PostContext';
 import ExpandPost from '../../components/postUI/expandPost/expandPost';
 import Post from '../../apps/home/post/post';
 import { useLocation } from 'react-router-dom';
+import CreateSpaceTulip from '../../apps/space/createSpaceTulip/createSpaceTulip';
 
 function Layout({ children, pageName }) {
     const { authState } = useAuth();
@@ -31,6 +32,8 @@ function Layout({ children, pageName }) {
     const [notificationIdForSidebar, setNotificationIdForSidebar] = useState(null);
     const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
 
+    // const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
+
 
 const location = useLocation();
 
@@ -43,6 +46,8 @@ const fullScreenRoutes = [
 const isFullScreenRoute = fullScreenRoutes.some(route =>
   location.pathname.includes(route)
 );
+
+
 
 
     const handleSidebarClose = () => {
@@ -88,6 +93,8 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
         setMenuOpen(false);
         setAppMenuOpen(false);
         setNotificationsMenuOpen(false);
+
+        // setCreateSpaceOpen(false);
     };
 
 
@@ -119,6 +126,7 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
                         <SmallSidebar
                             searchSidebarOpen={searchSidebarOpen}
                             setSearchSidebarOpen={setSearchSidebarOpen}
+                            // setCreateSpaceOpen={setCreateSpaceOpen}
                         />
                     </div>
                 }
@@ -153,6 +161,8 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />}
                 {expandPostIdReciever && <Post />}
+                {/* {createSpaceOpen && <CreateSpaceTulip open={createSpaceOpen} setOpen={setCreateSpaceOpen} />} */}
+
         </div>
     );
 }

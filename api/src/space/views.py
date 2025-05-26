@@ -1,3 +1,4 @@
+# space/views.py
 from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
@@ -144,15 +145,18 @@ def render_latex_pdf(request, project_id):
 def projects_view(request):
     if request.method == "POST":
         data = request.data.copy()
-        data["owner"] = request.user.id  # Set owner directly
+        data["owner"] = request.user.id
         serializer = ProjectSerializer(data=data)
         if serializer.is_valid():
             project = serializer.save()
             return Response(ProjectSerializer(project).data)
         return Response(serializer.errors, status=400)
+
     else:
         projects = Project.objects.filter(owner=request.user)
         return Response(ProjectSerializer(projects, many=True).data)
+
+
 
 
 
@@ -168,7 +172,7 @@ def tool_content_view(request, project_id, tool):
         "markdown": (MarkdownContent, MarkdownSerializer),
         "richtext": (RichTextContent, RichTextSerializer),
         "latex": (LaTeXContent, LaTeXSerializer),
-        "code": (CodeContent, CodeSerializer),
+        # "code": (CodeContent, CodeSerializer),
         "notebook": (NotebookContent, NotebookSerializer),
     }
 

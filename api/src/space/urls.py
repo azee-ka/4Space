@@ -1,4 +1,5 @@
-from django.urls import path
+# spaace/urls.py
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -7,4 +8,5 @@ urlpatterns = [
     
     path('tools/<uuid:project_id>/latex/render/', views.render_latex_pdf, name="render_latex_pdf"),
 
+    path("", include("src.space.ide.urls")),
 ]

@@ -78,57 +78,58 @@ const SpaceProjects = () => {
 )}
 
 <div className={`space-projects-content ${viewMode}`}>
-  {projects.map((project) => {
-    const updated = new Date(project.updated_at).toLocaleDateString();
-    const idShort = project.id.slice(0, 8);
-    const title = project.title;
+{projects.map((project) => {
+  const updated = new Date(project.updated_at).toLocaleDateString();
+  const idShort = project.id.slice(0, 8);
+  const title = project.title;
+  const href = toolLaunchPaths[project.tool_type]?.replace("{id}", project.id);
 
-    if (viewMode === "list") {
-      return (
-        <Link
-          key={project.id}
-          to={toolLaunchPaths[project.tool_type]?.replace("{id}", project.id)}
-          className="project-card list-row"
-        >
-          <div className="project-card-blur" />
-          <div className="list-row-inner">
-            <div className="col-icon-title">
-              <span className="project-card-icon">{toolIcons[project.tool_type]}</span>
-              <span className="list-title">{title}</span>
-            </div>
-            <div className="col-type">{project.tool_type}</div>
-            <div className="col-updated">{formatDateTime(updated)}</div>
-            <div className="col-id">#{idShort}</div>
-          </div>
-        </Link>
-      );
-    }
-
-    // Grid
+  if (viewMode === "list") {
     return (
-      <Link
+      <a
         key={project.id}
-        to={toolLaunchPaths[project.tool_type]?.replace("{id}", project.id)}
-        className="project-card"
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="project-card list-row"
       >
         <div className="project-card-blur" />
-        <div className="project-card-inner">
-          <div className="project-card-icon top">{toolIcons[project.tool_type]}</div>
-          <h3>{title}</h3>
-          <div className="project-meta">
-            <p className="project-type">{project.tool_type}</p>
-            <p className="project-dates">Last Updated: {formatDateTime(updated)}</p>
-            <p className="project-id">#{idShort}</p>
+        <div className="list-row-inner">
+          <div className="col-icon-title">
+            <span className="project-card-icon">{toolIcons[project.tool_type]}</span>
+            <span className="list-title">{title}</span>
           </div>
+          <div className="col-type">{project.tool_type}</div>
+          <div className="col-updated">{formatDateTime(updated)}</div>
+          <div className="col-id">#{idShort}</div>
         </div>
-      </Link>
+      </a>
     );
-  })}
+  }
+
+  // Grid view
+  return (
+    <a
+      key={project.id}
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="project-card"
+    >
+      <div className="project-card-blur" />
+      <div className="project-card-inner">
+        <div className="project-card-icon top">{toolIcons[project.tool_type]}</div>
+        <h3>{title}</h3>
+        <div className="project-meta">
+          <p className="project-type">{project.tool_type}</p>
+          <p className="project-dates">Last Updated: {formatDateTime(updated)}</p>
+          <p className="project-id">#{idShort}</p>
+        </div>
+      </div>
+    </a>
+  );
+})}
 </div>
-
-
-
-
     </div>
   );
 };

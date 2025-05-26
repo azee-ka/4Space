@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,10 +9,15 @@ import { useCreatePostContext } from '../../../context/CreatePostContext';
 import ProfileMenuSidebar from './profileMenuSidebar.js/profileMenuSidebar';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { useModeContext } from '../../../context/modeContext';
+import CreateSpaceTulip from '../../../apps/space/createSpaceTulip/createSpaceTulip';
 
 const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     const { mode, setMode } = useModeContext();
     const { openCreatePostOverlay } = useCreatePostContext();
+
+    const [createMenuOpen, setCreateMenuOpen] = useState(false);
+    const plusBtnRef = useRef(null);
+
 
     const homeIcons = [
         { icon: <FontAwesomeIcon icon={faChartBar} />, label: 'Dasboard', path: '/dashboard', type: 'link' },
@@ -34,7 +39,13 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         { icon: <FontAwesomeIcon icon={faUserGroup} />, label: 'Space Projects', path: '/space/projects', type: 'link' },
         { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
         { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faPlus} />, label: 'Create Space', path: '/space/create', type: 'link' },
+        {
+            icon: <FontAwesomeIcon icon={faPlus} />,
+            label: 'Create Space',
+            type: 'button',
+            onClick: () => setCreateMenuOpen(prev => !prev),
+            ref: plusBtnRef // optional for tracking
+        },
         { icon: <FontAwesomeIcon icon={faTools} />, label: 'Space Tools', path: '/space/tools', type: 'link' },
     ];
 
@@ -72,50 +83,62 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         }
     };
 
-    const sidebarBtns = mode === 'communities' ? communitiesIcons : mode === 'space' ? spaceIcons :  homeIcons;
+    const sidebarBtns = mode === 'communities' ? communitiesIcons : mode === 'space' ? spaceIcons : homeIcons;
 
     return (
         <div className={`small-sidebar ${searchSidebarOpen ? 'search-sidebar-open' : ''}`}>
             <div className='small-sidebar-inner-menu'>
-            <div className="small-sidebar-top">
-                {sidebarBtns?.map((item, index) => (
-                    <div
-                        key={index}
-                        className="small-sidebar-item"
-                        onClick={(e) => { handleClick(item); e.stopPropagation(); }}
-                    >
-                        {item.type === 'button' ? (
-                            <button>{item.icon}</button>
-                        ) : (
-                            <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
-                        )}
-                        <div className="tooltip">{item.label}</div>
-                    </div>
-                ))}
-            </div>
-            <div className="small-sidebar-bottom">
-                {bottomIcons?.map((item, index) => (
-                    <div
-                        key={index}
-                        className="small-sidebar-item"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {item.type === 'dropdown' ? (
-                            item.component
-                        ) : item.type === 'button' ? (
-                            <button onClick={item.onClick}>{item.icon}</button>
-                        ) : (
-                            <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
-                        )}
-                        <div className="tooltip">{item.label}</div>
-                    </div>
-                ))}
-            </div>
+                <div className="small-sidebar-top">
+                    {sidebarBtns?.map((item, index) => (
+                        <div
+                            key={index}
+                            className="small-sidebar-item"
+                            onClick={(e) => { handleClick(item); e.stopPropagation(); }}
+                        >
+                            {item.type === 'button' ? (
+                                item.label === 'Create Space' ? (
+                                    <button ref={plusBtnRef}>{item.icon}</button>
+                                ) : (
+                                    <button>{item.icon}</button>
+                                )
+                            ) : (
+                                <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
+                            )}
+                            <div className="tooltip">{item.label}</div>
+                        </div>
+                    ))}
+                </div>
+                <div className="small-sidebar-bottom">
+                    {bottomIcons?.map((item, index) => (
+                        <div
+                            key={index}
+                            className="small-sidebar-item"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {item.type === 'dropdown' ? (
+                                item.component
+                            ) : item.type === 'button' ? (
+                                <button onClick={item.onClick}>{item.icon}</button>
+                            ) : (
+                                <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
+                            )}
+                            <div className="tooltip">{item.label}</div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            
+
 
             {<SearchSidebar isOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />}
+
+            {createMenuOpen && (
+                <CreateSpaceTulip
+                    anchorRef={plusBtnRef}
+                    onClose={() => setCreateMenuOpen(false)}
+                />
+            )}
+
         </div>
     );
 

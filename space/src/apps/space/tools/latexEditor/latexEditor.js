@@ -90,7 +90,7 @@ const customLatexInputHandler = EditorView.inputHandler.of((view, from, to, text
 
 
 
-const LaTeXEditor = ({ projectIdProp }) => {
+const LaTeXEditor = ({ projectId : projectIdProp }) => {
   const { projectId: projectIdUrl } = useParams();
   const { callApi } = useApi();
   const [latex, setLatex] = useState("");
