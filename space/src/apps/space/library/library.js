@@ -1,88 +1,103 @@
 import React, { useEffect, useState } from "react";
-import { FiUpload, FiFolder, FiFile } from "react-icons/fi";
+import "./library.css";
 import useApi from "../../../utils/useApi";
-import "./projects.css"; // Reuse existing styles
+import {
+    FiUpload,
+    FiFolderPlus,
+    FiFilePlus,
+    FiFolder,
+    FiFile
+} from "react-icons/fi";
 
-const Library = () => {
-  const { callApi } = useApi();
-  const [items, setItems] = useState([]);
-  const [currentFolderId, setCurrentFolderId] = useState(null);
+const SpaceLibrary = () => {
+    const { callApi } = useApi();
+    const [items, setItems] = useState([]);
+    const [currentFolderId, setCurrentFolderId] = useState(null);
 
-  useEffect(() => {
-    async function fetchItems() {
-      try {
-        const res = await callApi(`space/library/?parent=${currentFolderId || ""}`);
-        setItems(res.data || []);
-      } catch (err) {
-        console.error("Failed to load library items:", err);
-      }
-    }
-    fetchItems();
-  }, [currentFolderId]);
+    useEffect(() => {
+        fetchItems();
+    }, [currentFolderId]);
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("parent", currentFolderId);
+    const fetchItems = async () => {
+        try {
+            const res = await callApi(`space/library/${currentFolderId ? "parent=" + currentFolderId : ""}`);
+            setItems(res.data || []);
+            console.log("Library items loaded:", res.data);
+        } catch (err) {
+            console.error("Failed to load library items:", err);
+        }
+    };
 
-    try {
-      await callApi("space/library/upload/", {
-        method: "POST",
-        body: formData,
-        headers: {},
-      });
-      setItems((prev) => [...prev, { title: file.name, type: "file" }]);
-    } catch (err) {
-      console.error("Upload failed:", err);
-    }
-  };
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-  return (
-    <div className="space-projects-page">
-      <div className="space-projects-header">
-        <h2>Library</h2>
-        <label className="projects-view-toggle">
-          <FiUpload />
-          <input
-            type="file"
-            onChange={handleFileUpload}
-            style={{ display: "none" }}
-          />
-        </label>
-      </div>
+        const form = new FormData();
+        form.append("file", file);
+        if (currentFolderId) {
+            form.append("parent", currentFolderId);
+        }
 
-      <div className="space-projects-content">
-        <div className="project-row">
-          {items.map((item) => (
-            <div
-              key={item.id || item.title}
-              className="project-card"
-              onClick={() => {
-                if (item.type === "folder") setCurrentFolderId(item.id);
-              }}
-              style={{ cursor: item.type === "folder" ? "pointer" : "default" }}
-            >
-              <div className="project-card-blur" />
-              <div className="project-card-inner">
-                <div className="project-card-icon top">
-                  {item.type === "folder" ? <FiFolder /> : <FiFile />}
+
+        try {
+            const response = await callApi("space/library/upload/", "POST", form, 'multipart/form-data');
+            console.log("File uploaded successfully", response.data);
+            fetchItems();
+        } catch (err) {
+            console.error("Upload failed:", err);
+        }
+    };
+
+    const handleNewFolder = async () => {
+        const folderName = prompt("Enter folder name:");
+        if (!folderName) return;
+
+        try {
+            const payload = { title: folderName };
+            if (currentFolderId) payload.parent = currentFolderId;
+
+            const response = await callApi("space/library/folder/", "POST", payload);
+            console.log("Folder created successfully:", response.data);
+            fetchItems();
+        } catch (err) {
+            console.error("Failed to create folder:", err);
+        }
+    };
+
+    return (
+        <div className="library-page">
+            <div className="library-header">
+                <h2>Library</h2>
+                <div className="library-actions">
+                    <label className="upload-btn">
+                        <FiUpload />
+                        <input type="file" onChange={handleFileUpload} hidden />
+                    </label>
+                    <button className="toolbar-btn" onClick={handleNewFolder}>
+                        <FiFolderPlus /> New Folder
+                    </button>
+                    <button className="toolbar-btn" disabled>
+                        <FiFilePlus /> New File
+                    </button>
                 </div>
-                <h3>{item.title}</h3>
-                <div className="project-meta">
-                  <p className="project-type">{item.type}</p>
-                  <p className="project-dates">
-                    Last Updated: {item.updated_at?.split("T")[0] || "-"}
-                  </p>
-                </div>
-              </div>
             </div>
-          ))}
+
+            <div className="library-grid">
+                {items.map((item) => (
+                    <div
+                        key={item.id}
+                        className="library-item"
+                        onClick={() => item.type === "folder" && setCurrentFolderId(item.id)}
+                    >
+                        <div className="icon">
+                            {item.type === "folder" ? <FiFolder /> : <FiFile />}
+                        </div>
+                        <div className="title">{item.title}</div>
+                    </div>
+                ))}
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-export default Library;
+export default SpaceLibrary;

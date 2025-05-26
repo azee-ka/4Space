@@ -18,7 +18,7 @@ const CodeIDE = ({ projectId: projectIdProp }) => {
   useEffect(() => {
     const load = async () => {
       try {
-        const response = await callApi(`space/tools/${projectId}/code/files/`);
+        const response = await callApi(`space/projects/tools/${projectId}/code/files/`);
         console.log("Loaded files:", response.data);
         setFiles(response.data || []);
         setActiveFile(response.data?.[0] || null);
@@ -33,7 +33,7 @@ const CodeIDE = ({ projectId: projectIdProp }) => {
     try {
       const filename = prompt("Filename?");
       if (!filename) return;
-      const res = await callApi(`space/tools/${projectId}/code/files/`, "POST", { filename, language: "javascript", content: "" });
+      const res = await callApi(`space/projects/tools/${projectId}/code/files/`, "POST", { filename, language: "javascript", content: "" });
       setFiles((prev) => [...prev, res.data]);
       setActiveFile(res.data);
     } catch (error) {

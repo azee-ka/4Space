@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream, faLayerGroup, faSearch, faDashboard, faDatabase, faChartBar, faGear, faUser, faListAlt, faThList, faGauge, faChartLine, faUsers, faPeopleGroup, faUserGroup, faPlusCircle, faPenToSquare, faTools } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream, faLayerGroup, faSearch, faDashboard, faDatabase, faChartBar, faGear, faUser, faListAlt, faThList, faGauge, faChartLine, faUsers, faPeopleGroup, faUserGroup, faPlusCircle, faPenToSquare, faTools, faBook, faBoxesStacked, faArchive, faCodeBranch, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import SearchSidebar from '../searchSidebar/searchSidebar';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
@@ -36,16 +36,10 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     ];
     const spaceIcons = [
         { icon: <FontAwesomeIcon icon={faChartLine} />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faUserGroup} />, label: 'Space Projects', path: '/space/projects', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faDiagramProject} />, label: 'Projects', path: '/space/projects', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faBook} />, label: 'Library', path: '/space/library', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faCodeBranch} />, label: 'Repositories', path: '/space/repositories', type: 'link' },
         { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
-        { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
-        // {
-        //     icon: <FontAwesomeIcon icon={faPlus} />,
-        //     label: 'Create Space',
-        //     type: 'button',
-        //     onClick: () => setCreateMenuOpen(prev => !prev),
-        //     ref: plusBtnRef // optional for tracking
-        // },
         { icon: <FontAwesomeIcon icon={faTools} />, label: 'Tools', path: '/space/tools', type: 'link' },
     ];
 

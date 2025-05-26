@@ -95,7 +95,7 @@ const RichTextEditor = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await callApi(`space/tools/${projectId}/richtext/`, "GET");
+        const res = await callApi(`space/projects/tools/${projectId}/richtext/`, "GET");
         setInitialContent(res.data.content || "");
         prevContentRef.current = res.data.content || "";
       } catch (err) {
@@ -112,7 +112,7 @@ const RichTextEditor = () => {
     autoSaveRef.current = setInterval(() => {
       const currentContent = editor.getHTML();
       if (currentContent !== prevContentRef.current) {
-        callApi(`space/tools/${projectId}/richtext/`, "PUT", {
+        callApi(`space/projects/tools/${projectId}/richtext/`, "PUT", {
           content: currentContent,
         }).then(() => {
           prevContentRef.current = currentContent;
