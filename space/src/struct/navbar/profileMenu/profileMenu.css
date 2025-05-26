@@ -21,21 +21,15 @@
     max-height: 515px;
     gap: 13px;
     z-index: 100;
-    /* border: 0.1px solid rgba(88, 88, 88, 0.6); */
-    transition: box-shadow 0.3s ease;
-    backdrop-filter: blur(50px) !important;
-    /* box-shadow: 0px 0px 7px 1px rgba(98, 98, 98, 0.409); */
-    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.631);
-    border: 1px solid rgba(128, 128, 128, 0.174);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     overflow: hidden;
-    background-color: rgba(40, 39, 39, 0.119);
 }
 
-.profile-menu-container {
-    opacity: 1;
-  }
 
 
 .profile-menu-user-info-container {

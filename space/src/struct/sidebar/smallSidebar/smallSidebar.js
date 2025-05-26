@@ -39,13 +39,13 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         { icon: <FontAwesomeIcon icon={faUserGroup} />, label: 'Space Projects', path: '/space/projects', type: 'link' },
         { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
         { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
-        {
-            icon: <FontAwesomeIcon icon={faPlus} />,
-            label: 'Create Space',
-            type: 'button',
-            onClick: () => setCreateMenuOpen(prev => !prev),
-            ref: plusBtnRef // optional for tracking
-        },
+        // {
+        //     icon: <FontAwesomeIcon icon={faPlus} />,
+        //     label: 'Create Space',
+        //     type: 'button',
+        //     onClick: () => setCreateMenuOpen(prev => !prev),
+        //     ref: plusBtnRef // optional for tracking
+        // },
         { icon: <FontAwesomeIcon icon={faTools} />, label: 'Space Tools', path: '/space/tools', type: 'link' },
     ];
 
@@ -107,6 +107,23 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                             <div className="tooltip">{item.label}</div>
                         </div>
                     ))}
+                    {
+                        mode === 'space' &&
+                        <div className="small-sidebar-item">
+                            <DropdownButton
+                                placement="right"
+                                toggleContent={
+                                    <button className="create-space-btn">
+                                        <FontAwesomeIcon icon={faPlus} />
+                                    </button>
+                                }
+                            >
+                                <CreateSpaceTulip />
+                            </DropdownButton>
+                            <div className="tooltip">Create Space</div>
+                        </div>
+                    }
+
                 </div>
                 <div className="small-sidebar-bottom">
                     {bottomIcons?.map((item, index) => (

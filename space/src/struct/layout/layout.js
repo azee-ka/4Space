@@ -16,6 +16,7 @@ import ExpandPost from '../../components/postUI/expandPost/expandPost';
 import Post from '../../apps/home/post/post';
 import { useLocation } from 'react-router-dom';
 import CreateSpaceTulip from '../../apps/space/createSpaceTulip/createSpaceTulip';
+import DisplayMenu from '../navbar/displayMenu/displayMenu';
 
 function Layout({ children, pageName }) {
     const { authState } = useAuth();
@@ -31,8 +32,8 @@ function Layout({ children, pageName }) {
     const [notificationSidebarOpen, setNotificationSidebarOpen] = useState(false);
     const [notificationIdForSidebar, setNotificationIdForSidebar] = useState(null);
     const [notificationsMenuOpen, setNotificationsMenuOpen] = useState(false);
+    const [displayMenuVisible, setDisplayMenuVisible] = useState(false);
 
-    // const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
 
 
 const location = useLocation();
@@ -66,23 +67,34 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
 
     const handleProfileMenuToggle = () => {
         setMenuOpen(!menuOpen);
-        if (appMenuOpen || notificationsMenuOpen) {
+        if (appMenuOpen || notificationsMenuOpen || displayMenuVisible) {
             setAppMenuOpen(false);
             setNotificationsMenuOpen(false);
+            setDisplayMenuVisible(false);
         }
     };
     const handleAppMenuToggle = () => {
         setAppMenuOpen(!appMenuOpen);
-        if (menuOpen || notificationsMenuOpen) {
+        if (menuOpen || notificationsMenuOpen || displayMenuVisible) {
             setMenuOpen(false);
             setNotificationsMenuOpen(false);
+            setDisplayMenuVisible(false);
         }
     };
     const handleNotificationsMenuToggle = () => {
         setNotificationsMenuOpen(!notificationsMenuOpen);
-        if (menuOpen || appMenuOpen) {
+        if (menuOpen || appMenuOpen || displayMenuVisible) {
             setMenuOpen(false);
             setAppMenuOpen(false);
+            setDisplayMenuVisible(false);
+        }
+    };
+    const handleDisplayMenuToggle = () => {
+        setDisplayMenuVisible(!displayMenuVisible);
+        if (menuOpen || appMenuOpen || notificationsMenuOpen) {
+            setMenuOpen(false);
+            setAppMenuOpen(false);
+            setNotificationsMenuOpen(false);
         }
     };
 
@@ -93,8 +105,7 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
         setMenuOpen(false);
         setAppMenuOpen(false);
         setNotificationsMenuOpen(false);
-
-        // setCreateSpaceOpen(false);
+        setDisplayMenuVisible(false);
     };
 
 
@@ -113,6 +124,7 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
                     handleProfileMenuToggle={handleProfileMenuToggle}
                     handleAppMenuToggle={handleAppMenuToggle}
                     handleNotificationsMenuToggle={handleNotificationsMenuToggle}
+                    handleDisplayMenuToggle={handleDisplayMenuToggle}
                     sidebarOpen={sidebarOpen}
                     setSidebarOpen={setSidebarOpen}
                     profileData={profileData}
@@ -161,8 +173,7 @@ const isFullScreenRoute = fullScreenRoutes.some(route =>
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />}
                 {expandPostIdReciever && <Post />}
-                {/* {createSpaceOpen && <CreateSpaceTulip open={createSpaceOpen} setOpen={setCreateSpaceOpen} />} */}
-
+                {displayMenuVisible && <DisplayMenu />}
         </div>
     );
 }
