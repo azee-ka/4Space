@@ -15,84 +15,144 @@
 
 .settings-left-panel {
     height: 100%;
-    width: 300px;
+    width: 330px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
     align-items: center;
-    background-color: rgba(255, 0, 0, 0);
-    gap: 25px;
-    padding: 32px 5px 20px 5px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    padding: 20px 10px 0px 10px;
+    gap: 22px;
     box-sizing: border-box;
-    box-shadow: 4px 4px 5px 0px rgba(128, 128, 128, 0.115);
     overflow-y: auto;
+    border-radius: 0px 20px 0px 0px;
     flex-shrink: 0;
 }
 
+.settings-search-bar {
+    width: 80%;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-bottom: -10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #e3e3e3;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.settings-search-bar::placeholder {
+    color: #aaa;
+}
+
+.settings-search-bar:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+}
+
+
+
+/* Section container */
 .settings-left-panel section {
-    background-color: rgba(255, 255, 0, 0);
     width: 90%;
+    padding-bottom: 15px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.283);
-    padding: 0px 0px 15px 0;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .settings-left-panel section:last-child {
-    border-bottom: 1px solid rgba(128, 128, 128, 0);
+    border-bottom: none;
 }
 
 .settings-left-panel section h3 {
-    margin: 0;
-    padding: 0;
-    font-size: 1.05em;
-    align-self: flex-start;
-    color: rgb(186, 186, 186);
+    color: #ccc;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: left;
+    width: 100%;
 }
 
+/* Tab container */
 .settings-left-panel section > div {
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    background-color: rgba(73, 109, 133, 0);
+    gap: 6px;
 }
-.settings-left-panel section div div {
-    background-color: rgba(255, 0, 0, 0);
-    width: 95%;
-    padding: 10px 10px;
-    box-sizing: border-box;
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
+
+.tab-item {
+    position: relative;
     display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
     align-items: center;
-}
-
-.settings-left-panel section .tab-item:hover {
-    background-color: rgba(128, 128, 128, 0.37);
+    justify-content: flex-start;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    color: #dcdcdc;
+    font-size: 0.9rem;
     cursor: pointer;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: all 0.3s ease !important;
 }
 
-.settings-left-panel section  div div p {
-    padding: 0;
-    margin: 0;
-    font-size: 0.9em;
-    color: rgb(201, 201, 201);
+.tab-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background-color: cyan;
+    transform: scaleY(0.5);
+    opacity: 0;
+    transition: all 0.3s ease;
 }
 
+/* On hover: scale and fade in accent */
+.tab-item:hover::before {
+    transform: scaleY(1);
+    opacity: 1;
+}
+
+.tab-item:hover {
+    background-color: rgba(0, 255, 255, 0.06);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    transform: scale(1.03);
+}
+
+/* Active style */
+.tab-item.active::before {
+    transform: scaleY(1);
+    opacity: 1;
+}
 
 .tab-item.active {
-    background-color: rgba(0, 174, 171, 0.472);
+    background-color: rgba(0, 255, 255, 0.1);
+    font-weight: 500;
+    color: white;
+    /* border-top-left-radius: 0;
+    border-bottom-left-radius: 0; */
 }
-.tab-item.active p {
-    color: rgb(255, 255, 255);
+
+/* Label styling */
+.tab-item p {
+    margin: 0;
+    padding: 0;
+    color: inherit;
 }
+
+
 
 
 

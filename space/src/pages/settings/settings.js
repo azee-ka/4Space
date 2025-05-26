@@ -7,6 +7,9 @@ import BasicInfo from "./tabs/basicInfo/basicInfo";
 import NotificationsTab from "./tabs/notifications/notifications";
 import MessagesControl from "./tabs/messagesControl/messagesControl";
 
+
+const Placeholder = () => <div style={{ padding: "20px", color: "#ccc" }}>Coming soon...</div>;
+
 const Settings = () => {
     const [isCustomizing, setIsCustomizing] = useState(false);
 
@@ -23,58 +26,78 @@ const Settings = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     const tabs = {
-        'Profile': [
+        'Account & Identity': [
             { label: 'Basic Info', component: <BasicInfo /> },
-            { label: 'Your Activity', component: <Visiblity /> },
-        ],
-        'Interactions Control': [
-            { label: 'Messages Control', component: <MessagesControl /> },
-        ],
-        'Account Settings': [
-            { label: 'Profile Design', component: <ProfileAppearance handleStartCustomization={handleStartCustomization} /> },
-            { label: 'Restrictions', component: <Visiblity /> },
-            { label: 'Local Visibility', component: <Visiblity /> },
-        ],
-        'Privacy and Security': [
-            { label: 'Visibility', component: <Visiblity /> },
-            { label: 'Restrictions', component: <Visiblity /> },
-            { label: 'Two-Factor Authentication', component: <Visiblity /> },
-            { label: 'Account Activity', component: <NotificationsTab /> },
-            { label: 'Local Visibility', component: <Visiblity /> },
-        ],
-        'Appearance': [
+            { label: 'Username & Handle', component: <Placeholder /> },
             { label: 'Profile Appearance', component: <ProfileAppearance handleStartCustomization={handleStartCustomization} /> },
-            { label: 'Theme Preferences', component: <ProfileAppearance /> },
-            { label: 'Restrictions', component: <Visiblity /> },
-            { label: 'Local Visibility', component: <Visiblity /> },
+            { label: 'Status / Mood', component: <Placeholder /> },
+        ],
+        'Privacy & Safety': [
+            { label: 'Visibility Controls', component: <Visiblity /> },
+            { label: 'Blocked & Muted', component: <Placeholder /> },
+            { label: 'Tagging & Mentions', component: <Placeholder /> },
+            { label: 'Sensitive Content', component: <Placeholder /> },
+            { label: 'Search Visibility', component: <Placeholder /> },
+        ],
+        'Security': [
+            { label: 'Password & Login', component: <Placeholder /> },
+            { label: 'Two-Factor Auth', component: <Placeholder /> },
+            { label: 'Session Control', component: <Placeholder /> },
+            { label: 'Security Alerts', component: <Placeholder /> },
+        ],
+        'Communication': [
+            { label: 'Message Controls', component: <MessagesControl /> },
+            { label: 'Replies & Comments', component: <Placeholder /> },
+            { label: 'Interaction Requests', component: <Placeholder /> },
         ],
         'Notifications': [
-            { label: 'Notifications', component: <NotificationsTab /> },
-            { label: 'Email Notifications', component: <NotificationsTab /> },
-            { label: 'Push Notifications', component: <NotificationsTab /> },
-            { label: 'In-App Notifications', component: <NotificationsTab /> },
+            { label: 'In-App', component: <NotificationsTab /> },
+            { label: 'Email Alerts', component: <NotificationsTab /> },
+            { label: 'Push Alerts', component: <NotificationsTab /> },
+            { label: 'Quiet Mode', component: <Placeholder /> },
         ],
-        'Subscriptions': [
-            { label: 'Billing Information', component: <ProfileAppearance /> },
-            { label: 'Subscription Plans', component: <ProfileAppearance /> },
-            { label: 'Payment Methods', component: <ProfileAppearance /> },
+        'Appearance & Display': [
+            { label: 'Themes & Colors', component: <ProfileAppearance /> },
+            { label: 'Dark Mode Schedule', component: <Placeholder /> },
+            { label: 'Text Size & Spacing', component: <Placeholder /> },
+            { label: 'UI Layout', component: <Placeholder /> },
         ],
-        'Connected Accounts': [
-            { label: 'Social Media Accounts', component: <Visiblity /> },
-            { label: 'External Services', component: <Visiblity /> },
+        'Feed & Discovery': [
+            { label: 'Feed Preferences', component: <Placeholder /> },
+            { label: 'Muted Topics', component: <Placeholder /> },
+            { label: 'AI Recommendation Tuning', component: <Placeholder /> },
         ],
-        'Management': [
-            { label: 'Download Your Data', component: <Visiblity /> },
-            { label: 'Delete Your Account', component: <Visiblity /> },
+        'Data & Permissions': [
+            { label: 'Download Your Data', component: <Placeholder /> },
+            { label: 'Ad Preferences', component: <Placeholder /> },
+            { label: 'Clear Cache', component: <Placeholder /> },
         ],
-    }
-
+        'Accessibility': [
+            { label: 'Contrast & Font', component: <Placeholder /> },
+            { label: 'Screen Reader', component: <Placeholder /> },
+            { label: 'Reduced Motion', component: <Placeholder /> },
+        ],
+        'Connected Services': [
+            { label: 'Social Media Links', component: <Placeholder /> },
+            { label: 'App Integrations', component: <Placeholder /> },
+            { label: 'API Access', component: <Placeholder /> },
+        ],
+        'Experimental & AI': [
+            { label: 'Beta Features', component: <Placeholder /> },
+            { label: 'AI Assistant', component: <Placeholder /> },
+        ],
+        'Danger Zone': [
+            { label: 'Deactivate Account', component: <Placeholder /> },
+            { label: 'Delete Account', component: <Placeholder /> },
+            { label: 'Reset All Settings', component: <Placeholder /> },
+        ]
+    };
 
 
     const formatHash = (str) => {
         return str.trim().replace(/\s+/g, '-').toLowerCase(); // Replace spaces with dashes and convert to lowercase
     };
-    
+
     const tabKeys = Object.entries(tabs).flatMap(([sectionKey, sectionItems], parentIndex) =>
         sectionItems.map((item, index) => ({
             hash: `#${formatHash(sectionKey)}-${formatHash(item.label)}`,
@@ -82,7 +105,7 @@ const Settings = () => {
             index,
         }))
     );
-    
+
 
 
     useEffect(() => {
@@ -127,6 +150,23 @@ const Settings = () => {
     ) : (
         <div className="settings-page">
             <div className="settings-left-panel">
+                <input
+                    type="text"
+                    className="settings-search-bar"
+                    placeholder="Search settings..."
+                    onChange={(e) => {
+                        const search = e.target.value.toLowerCase();
+                        const tabIndex = tabKeys.findIndex(tab =>
+                            tab.hash.toLowerCase().includes(search)
+                        );
+                        if (tabIndex !== -1) {
+                            const tab = tabKeys[tabIndex];
+                            setSelectedParentIndex(tab.parentIndex);
+                            setSelectedIndex(tab.index);
+                        }
+                    }}
+                />
+
                 {Object.entries(tabs).map(([sectionKey, sectionItems], parentIndex) => (
                     <section key={parentIndex}>
                         <h3>{sectionKey}</h3>
