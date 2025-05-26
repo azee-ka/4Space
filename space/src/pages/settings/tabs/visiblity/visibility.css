@@ -61,10 +61,12 @@
 
 .visiblity-setting-content-control {
     background-color: rgb(255, 0, 242, 0);
-    height: 100%;
+    height: 32px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 5px;
+    box-sizing: border-box;
 }
 
