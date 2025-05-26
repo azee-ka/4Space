@@ -52,12 +52,12 @@ const Settings = () => {
         ],
         'Notifications': [
             { label: 'In-App', component: <NotificationsTab /> },
-            { label: 'Email Alerts', component: <NotificationsTab /> },
-            { label: 'Push Alerts', component: <NotificationsTab /> },
+            { label: 'Email Alerts', component: <Placeholder /> },
+            { label: 'Push Alerts', component: <Placeholder /> },
             { label: 'Quiet Mode', component: <Placeholder /> },
         ],
         'Appearance & Display': [
-            { label: 'Themes & Colors', component: <ProfileAppearance /> },
+            { label: 'Themes & Colors', component: <Placeholder /> },
             { label: 'Dark Mode Schedule', component: <Placeholder /> },
             { label: 'Text Size & Spacing', component: <Placeholder /> },
             { label: 'UI Layout', component: <Placeholder /> },
@@ -156,13 +156,13 @@ const Settings = () => {
                     placeholder="Search settings..."
                     onChange={(e) => {
                         const search = e.target.value.toLowerCase();
-                        const tabIndex = tabKeys.findIndex(tab =>
+                        const tab = tabKeys.find(tab =>
                             tab.hash.toLowerCase().includes(search)
                         );
-                        if (tabIndex !== -1) {
-                            const tab = tabKeys[tabIndex];
+                        if (tab) {
                             setSelectedParentIndex(tab.parentIndex);
                             setSelectedIndex(tab.index);
+                            window.location.hash = tab.hash;
                         }
                     }}
                 />
