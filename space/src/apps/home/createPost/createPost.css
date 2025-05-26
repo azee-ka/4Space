@@ -15,7 +15,7 @@
 .create-post-card {
     min-width: 48%;
     max-width: 70%;
-    height: 780px;
+    height: 740px;
     background-color: rgba(0, 0, 0, 0);
     display: flex;
     flex-direction: column;
