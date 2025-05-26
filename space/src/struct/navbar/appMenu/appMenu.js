@@ -78,7 +78,7 @@ const AppMenu = () => {
                     Shortcuts
                 </button>
             </div>
-            <hr/>
+            <hr />
             <div className='apps-grid'>
                 {renderItems()}
             </div>

@@ -32,7 +32,7 @@ const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
 
     useEffect(() => {
         setIsLoading(true);
-        fetchProfileData(username || authState.user.username, (data) => {
+        fetchProfileData(username || authState?.current?.user.username, (data) => {
             setProfileInfo(data);
             setIsLoading(false);
         });

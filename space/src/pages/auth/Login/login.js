@@ -1,7 +1,7 @@
 // LoginForm.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios'; // Import Axios
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import './login.css';
 import API_BASE_URL from '../../../utils/apiUrl';
@@ -11,6 +11,8 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
 
+    const location = useLocation();
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -18,11 +20,39 @@ const LoginPage = () => {
 
     const [loginError, setLoginError] = useState('');
 
+const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
+
+const handleLoginSuccess = () => {
+  if (isAddAccount) {
+    // 🔁 Notify original tab
+    window.opener?.postMessage({ type: 'ACCOUNT_ADDED' }, window.location.origin);
+
+    // ✅ Reset suppress flag after adding account
+    localStorage.removeItem('suppressAutoRedirect');
+
+    // Keep this tab open and redirect to home
+    navigate('/timeline');
+  } else {
+    // Regular login
+    navigate('/timeline');
+  }
+};
 
 
-    const handleLoginSuccess = () => {
-        navigate('/timeline');
-    };
+
+useEffect(() => {
+  const isFromAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
+  if (isFromAddAccount) {
+    sessionStorage.setItem('addAccountMode', 'true');
+  }
+  return () => {
+    sessionStorage.removeItem('addAccountMode');
+  };
+}, [location.search]);
+
+
+
+
 
     const handlePasswordToggle = () => {
         setShowPassword(!showPassword);
@@ -40,7 +70,7 @@ const LoginPage = () => {
                 password,
             });
             console.log(response.data)
-            login(response.data);
+            login(response.data, { switchTo: !isAddAccount });
             handleLoginSuccess(response.data);
             // Handle successful login here, for example, update state or redirect
         } catch (error) {

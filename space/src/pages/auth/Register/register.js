@@ -27,6 +27,10 @@ const RegisterPage = () => {
     const isOrganizationRegister = location.hash === '#organization';
     const [isOrganizationRegisterPage, setIsOrganizationRegisterPage] = useState(isOrganizationRegister);
 
+
+    const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
+
+
     const capitalizeFirstLetter = (string) => {
         return string.charAt(0).toUpperCase() + string.slice(1);
     };
@@ -63,7 +67,7 @@ const RegisterPage = () => {
 
             // Handle the response from the backend as needed
             console.log(response.data);
-            login(response.data);
+            login(response.data, { switchTo: !isAddAccount });
             navigate('/timeline');
 
         } catch (error) {

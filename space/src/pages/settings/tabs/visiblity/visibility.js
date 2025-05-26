@@ -52,7 +52,7 @@ const Visiblity = () => {
                 <h3>Profile Visiblity</h3>
                 <div className="visiblity-setting-content">
                     <div className="visiblity-setting-content-description">
-                    <p>
+                        <p>
                             Toggle profile to private or public mode.
                             {isPrivate ? "Your profile is private" : "Your profile is public"}
                         </p>

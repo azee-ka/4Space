@@ -25,7 +25,7 @@ const Navbar = ({
     setSidebarOpen,
     profileData,
 }) => {
-    const { authState } = useAuth();
+    const { authState, isAuthenticated } = useAuth();
     const { mode } = useModeContext();
 
     const { count: notificationsCount } = useNotifications();
@@ -112,13 +112,13 @@ const Navbar = ({
         setSidebarOpen(!sidebarOpen);
     };
 
-    const pagesNavbar = authState.isAuthenticated ? privatePagesNavbar : publicPagesNavbar;
+    const pagesNavbar = isAuthenticated ? privatePagesNavbar : publicPagesNavbar;
 
     return (
         <div className='navbar-container'>
             <div className='navbar-left'>
                 <div className='navbar-icon-logo-container'>
-                    {authState.isAuthenticated &&
+                    {isAuthenticated &&
                         <SidebarMenuIcon sidebarOpen={sidebarOpen} handleHighOrderSidebarToggle={handleHighOrderSidebarToggle} />
                     }
                     <div className='navbar-logo-container'>
@@ -132,7 +132,7 @@ const Navbar = ({
                     </div>
                 </div>
             </div>
-            {authState.isAuthenticated &&
+            {isAuthenticated &&
                 <div className='navbar-center'>
                     <div className='navbar-search-container'>
                         <span className='navbar-search-icon'>
@@ -149,8 +149,8 @@ const Navbar = ({
             }
 
 
-            <div className={`navbar-right ${authState.isAuthenticated ? '' : 'unauthenticated'}`}>
-                {!authState.isAuthenticated &&
+            <div className={`navbar-right ${isAuthenticated ? '' : 'unauthenticated'}`}>
+                {!isAuthenticated &&
                     <div className='navbar-pages'>
                         <ul>
                             {pagesNavbar?.map((item, index) => (
@@ -169,7 +169,7 @@ const Navbar = ({
                     </div>
                 }
                 <div className='navbar-items'>
-                    {authState.isAuthenticated && (
+                    {isAuthenticated && (
                         <ul>
                             <li className='messages-page-link'>
                                 <Link to={`/messages/inbox`}>

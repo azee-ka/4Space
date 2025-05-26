@@ -112,7 +112,7 @@ const ProfilePictureEditor = ({ selectedProfilePicture, setSelectedProfilePictur
       const config = {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Token ${authState.token}`
+          Authorization: `Token ${authState?.current?.token}`
         }
       };
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './organization.css'; // optional
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useApi from '../../../../utils/useApi';
 import { useAuth } from '../../../../hooks/useAuth';
 import axios from 'axios';
@@ -11,6 +11,8 @@ const roles = ['Admin', 'Member'];
 
 const OrganizationalRegister = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    
     const { login } = useAuth();
     const { callApi } = useApi();
 
@@ -21,6 +23,8 @@ const OrganizationalRegister = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const [registerError, setRegisterError] = useState(null);
+
+    const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
 
     const [formData, setFormData] = useState({
@@ -102,7 +106,7 @@ const OrganizationalRegister = () => {
             const response = await axios.post(`${API_BASE_URL}api/register/`, data, config);
             // Handle the response from the backend as needed
             console.log(response.data);
-            setTempAuthData(response.data);  // defer login
+            login(tempAuthData, { switchTo: !isAddAccount });  // defer login
             handleNext();                    // go to role selection/setup
         } catch (error) {
             // Handle registration error

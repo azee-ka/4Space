@@ -8,16 +8,16 @@ import { useAuth } from './useAuth';
 const useProfile = () => {
     const dispatch = useDispatch();
     const { callApi } = useApi();
-    const { authState } = useAuth();
+    const { authState, isAuthenticated } = useAuth();
     const minimalProfileData = useSelector(selectMinimalProfileData);  // Get profile data from Redux state
     const isLoading = useSelector(selectIsProfileLoading);  // Get loading state from Redux
     const error = useSelector(selectProfileError);  // Get error state from Redux
 
     useEffect(() => {
-        if(authState.isAuthenticated) {
+        if(isAuthenticated) {
             dispatch(loadMinimalProfileData({ callApi })); // Dispatch action to load profile data
           }  
-    }, [dispatch, authState.isAuthenticated])
+    }, [dispatch, isAuthenticated])
 
 
     return { minimalProfileData, isLoading, error };
