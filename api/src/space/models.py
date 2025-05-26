@@ -1,3 +1,4 @@
+# space/models.py
 import uuid
 from django.db import models
 from django.conf import settings
@@ -37,10 +38,10 @@ class LaTeXContent(models.Model):
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="latex")
     content = models.TextField()
 
-class CodeContent(models.Model):
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="code")
-    language = models.CharField(max_length=30, default="javascript")
-    code = models.TextField()
+# class CodeContent(models.Model):
+#     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="code")
+#     language = models.CharField(max_length=30, default="javascript")
+#     code = models.TextField()
 
 class NotebookContent(models.Model):
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name="notebook")

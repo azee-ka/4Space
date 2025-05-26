@@ -79,11 +79,17 @@ const Navbar = ({
         { label: "Create Post", action: () => openCreatePostOverlay(window.location.pathname) },
     ];
     const communitiesPagesNavbar = [
-        // Home
+        // Communities
         { label: "Dashboard", path: "/communities/dashboard" },
         { label: "Timeline", path: "/communities/timeline" },
     ];
-    const privatePagesNavbar = mode === 'communities' ? communitiesPagesNavbar : homePagesNavbar;
+    const spacePagesNavbar = [
+        // Space
+        { label: "Dashboard", path: "/space/dashboard" },
+        { label: "Timeline", path: "/space/timeline" },
+        { label: "Tools", path: "/space/tools" },
+    ];
+    const privatePagesNavbar = mode === 'communities' ? communitiesPagesNavbar : mode === 'space' ? spacePagesNavbar : homePagesNavbar;
 
     const handleMenuClick = (path, action) => {
         if (action) {
