@@ -1,243 +1,245 @@
 .display-settings-container {
-  top: 64px;
-  right: 75px;
-  width: 280px;
-  position: absolute;
-  padding: 16px 14px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-  color: #e4e4e4;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  z-index: 1000;
-  transition: all 0.3s ease;
+    top: 64px;
+    right: 75px;
+    width: 300px;
+    position: absolute;
+    padding: 16px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    color: #e4e4e4;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 1000;
+    transition: all 0.3s ease;
 }
 
 .display-settings-container h3 {
-  font-size: 1rem;
-  font-weight: 500;
-  margin: 0;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .display-setting {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .display-setting label {
-  font-size: 0.8rem;
-  color: #ccc;
-  font-weight: 400;
+    font-size: 0.8rem;
+    color: #ccc;
+    font-weight: 400;
 }
 
 /* -------- Dropdown Styling -------- */
 .display-setting select {
-  appearance: none;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 6px 8px;
-  font-size: 0.85rem;
-  color: #f2f2f2;
-  border-radius: 8px;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg fill='%23f2f2f2' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414L10 13.414 5.293 8.707a1 1 0 010-1.414z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 14px 14px;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    color: #f2f2f2;
+    border-radius: 8px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg fill='%23f2f2f2' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414L10 13.414 5.293 8.707a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px 14px;
 }
 
 .display-setting select:hover {
-  background-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.12);
 }
 
 /* -------- Range Input -------- */
 .display-setting input[type="range"] {
-  width: 100%;
-  accent-color: #6ec1e4;
-  height: 18px;
+    width: 100%;
+    accent-color: #6ec1e4;
+    height: 18px;
 }
 
 /* -------- Color Picker -------- */
 .display-setting input[type="color"] {
-  width: 32px;
-  height: 26px;
-  border: none;
-  border-radius: 6px;
-  background-color: transparent;
-  cursor: pointer;
-  padding: 0;
+    width: 32px;
+    height: 26px;
+    border: none;
+    border-radius: 6px;
+    background-color: transparent;
+    cursor: pointer;
+    padding: 0;
 }
 
 /* -------- Custom Toggle Switch -------- */
 .toggle-group {
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .display-toggle {
-  display: inline-block;
-  position: relative;
-  width: 38px;
-  height: 20px;
+    display: inline-block;
+    position: relative;
+    width: 38px;
+    height: 20px;
 }
 
 .display-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .display-toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  background-color: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  transition: 0.3s;
+    position: absolute;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: 0.3s;
 }
 
 .display-toggle-slider::before {
-  content: "";
-  position: absolute;
-  height: 14px;
-  width: 14px;
-  left: 3px;
-  bottom: 2px;
-  background-color: #ccc;
-  border-radius: 50%;
-  transition: 0.3s;
+    content: "";
+    position: absolute;
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 2px;
+    background-color: #ccc;
+    border-radius: 50%;
+    transition: 0.3s;
 }
 
-.display-toggle input:checked + .display-toggle-slider {
-  background-color: rgba(110, 228, 210, 0.2);
+.display-toggle input:checked+.display-toggle-slider {
+    background-color: rgba(110, 228, 210, 0.2);
 }
 
-.display-toggle input:checked + .display-toggle-slider::before {
-  transform: translateX(16px);
-  background-color: rgb(66, 253, 232);
+.display-toggle input:checked+.display-toggle-slider::before {
+    transform: translateX(16px);
+    background-color: rgb(66, 253, 232);
 }
 
 /* -------- Button Styling -------- */
 .display-settings-container button {
-  align-self: center;
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  border-radius: 10px;
-  border: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+    align-self: center;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .display-settings-container button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
 }
 
 /* -------- Color Swatches -------- */
 .color-swatch-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px; /* reduced from 8px */
-  margin-top: 4px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    /* reduced from 8px */
+    margin-top: 4px;
 }
 
 .color-swatch {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .color-swatch:hover {
-  transform: scale(1.1);
-  border-color: white;
+    transform: scale(1.1);
+    border-color: white;
 }
 
 .color-swatch.active {
-  border: 2px solid #ffffff;
+    border: 2px solid #ffffff;
 }
 
 
 .color-picker-trigger input[type="color"] {
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 30px;   /* adjust if needed */
-  height: 30px;
-  opacity: 0;
-  cursor: pointer;
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 30px;
+    /* adjust if needed */
+    height: 30px;
+    opacity: 0;
+    cursor: pointer;
 }
 
 
 
 
 .slider-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
 }
 
 .slider-wrapper input[type="range"] {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 4px;
-  outline: none;
-  transition: background 0.3s ease;
-  cursor: pointer;
-  background-color: #636363;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 4px;
+    outline: none;
+    transition: background 0.3s ease;
+    cursor: pointer;
+    background-color: #636363;
 }
 
 .slider-wrapper input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #39ffff;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 2px rgba(0, 255, 255, 0.3);
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #39ffff;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 2px rgba(0, 255, 255, 0.3);
 }
 
 .slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 .slider-wrapper input[type="range"]::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #00fff7;
-  cursor: pointer;
-  transition: all 0.3s ease;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #00fff7;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .slider-value {
-  font-size: 0.75rem;
-  color: #aaa;
-  min-width: 40px;
-  text-align: right;
+    font-size: 0.75rem;
+    color: #aaa;
+    min-width: 40px;
+    text-align: right;
 }
 
 
@@ -245,13 +247,23 @@
 
 .button-row {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.button-row .inline-buttons {
+  display: flex;
   justify-content: space-between;
   gap: 6px;
-  margin-top: 8px;
 }
 
 .button-row button {
-  flex: 1;
-  font-size: 0.8rem;
-  padding: 6px;
+    flex: 1;
+    font-size: 0.8rem;
+    padding: 6px;
+}
+
+.button-row .save-button {
+  width: 100%;
 }
