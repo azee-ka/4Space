@@ -46,7 +46,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         //     onClick: () => setCreateMenuOpen(prev => !prev),
         //     ref: plusBtnRef // optional for tracking
         // },
-        { icon: <FontAwesomeIcon icon={faTools} />, label: 'Space Tools', path: '/space/tools', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faTools} />, label: 'Tools', path: '/space/tools', type: 'link' },
     ];
 
 
