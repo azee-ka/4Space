@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import './navbar.css';
 import { useAuth } from '../../hooks/useAuth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faSearch, faSliders } from '@fortawesome/free-solid-svg-icons';
 import ProfilePicture from '../../utils/profilePicture/getProfilePicture';
 import NineDotIcon from '../../utils/nine-dot';
 import SidebarMenuIcon from './iconMenu';
@@ -13,12 +13,14 @@ import appLogoComplete from '../../assets/logo-comp.png';
 import useNotifications from '../../hooks/useNotifications';
 import { useCreatePostContext } from '../../context/CreatePostContext';
 import { useModeContext } from '../../context/modeContext';
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
+import { AdjustmentsVerticalIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
+import DisplayMenu from './displayMenu/displayMenu';
 
 const Navbar = ({
     handleProfileMenuToggle,
     handleAppMenuToggle,
     handleNotificationsMenuToggle,
+    handleDisplayMenuToggle,
     sidebarOpen,
     setSidebarOpen,
     profileData,
@@ -33,6 +35,8 @@ const Navbar = ({
     const [profileMenuVisible, setProfileMenuVisible] = useState(false);
     const [notificationsMenuVisible, setNotificationsMenuVisible] = useState(false);
     const [appMenuVisible, setAppMenuVisible] = useState(false)
+    const [displayMenuVisible, setDisplayMenuVisible] = useState(false);
+
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -40,6 +44,7 @@ const Navbar = ({
     const profileMenuRef = useRef(null);
     const notificationsMenuRef = useRef(null);
     const appMenuRef = useRef(null);
+    const displayMenuRef = useRef(null);
 
     const [navbarSearchValue, setNavbarSearchValue] = useState('');
 
@@ -55,6 +60,10 @@ const Navbar = ({
             if (appMenuRef.current && !appMenuRef.current.contains(event.target)) {
                 setAppMenuVisible(false);
             }
+            if (displayMenuRef.current && !displayMenuRef.current.contains(event.target)) {
+                setDisplayMenuVisible(false);
+            }
+
         };
 
         document.addEventListener('click', handleOutsideClick);
@@ -123,25 +132,25 @@ const Navbar = ({
                     </div>
                 </div>
             </div>
-{authState.isAuthenticated &&
-    <div className='navbar-center'>
-  <div className='navbar-search-container'>
-    <span className='navbar-search-icon'>
-      <FontAwesomeIcon icon={faSearch} />
-    </span>
-    <input 
-      className='navbar-search-field'
-      value={navbarSearchValue}
-      onChange={(e) => setNavbarSearchValue(e.target.value)}
-      placeholder='Search'
-    />
-  </div>
-</div>
-}
+            {authState.isAuthenticated &&
+                <div className='navbar-center'>
+                    <div className='navbar-search-container'>
+                        <span className='navbar-search-icon'>
+                            <FontAwesomeIcon icon={faSearch} />
+                        </span>
+                        <input
+                            className='navbar-search-field'
+                            value={navbarSearchValue}
+                            onChange={(e) => setNavbarSearchValue(e.target.value)}
+                            placeholder='Search'
+                        />
+                    </div>
+                </div>
+            }
 
 
             <div className={`navbar-right ${authState.isAuthenticated ? '' : 'unauthenticated'}`}>
-                <div className='navbar-pages'>
+                {/* <div className='navbar-pages'>
                     <ul>
                         {pagesNavbar?.map((item, index) => (
                             <li
@@ -156,7 +165,7 @@ const Navbar = ({
                             </li>
                         ))}
                     </ul>
-                </div>
+                </div> */}
                 <div className='navbar-items'>
                     {authState.isAuthenticated && (
                         <ul>
@@ -188,6 +197,13 @@ const Navbar = ({
                                 </button>
                             </li>
 
+                            {/* Display Settings Menu */}
+                            <li className="display-settings-menu" ref={displayMenuRef} onClick={(e) => e.stopPropagation()}>
+                                <button onClick={handleDisplayMenuToggle}>
+                                    <FontAwesomeIcon icon={faSliders} className="display-settings-icon" />
+                                </button>
+                            </li>
+
                             {/* Profile Menu */}
                             <li
                                 className={`profile-menu ${profileMenuVisible ? 'active' : ''}`}
@@ -198,6 +214,7 @@ const Navbar = ({
                                     <ProfilePicture src={profileData?.profile_image} />
                                 </button>
                             </li>
+
                         </ul>
                     )}
                 </div>

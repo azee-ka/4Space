@@ -121,6 +121,7 @@
     box-shadow: 0 0 4px 2px rgba(202, 202, 202, 0.159);
   border-radius: 40px;
   margin-right: 8px;
+  padding: 0 0px 0 10px;
 }
 
 .navbar-right.unauthenticated {
@@ -269,7 +270,7 @@
 }
 
 
-.navbar-items li:nth-child(4) button {
+.navbar-items li:nth-child(5) button {
   background-color: rgba(244, 244, 244, 0);
   display: flex;
   /* flex-direction: row; */
@@ -282,11 +283,11 @@
   border: 2px solid rgba(244, 244, 244, 0);
   transition: all 0.3 ease;
 }
-.navbar-items li:nth-child(4) button:hover {
+.navbar-items li:nth-child(5) button:hover {
   border: 2px solid rgb(255, 255, 255);
   cursor: pointer;
 }
-.navbar-items li:nth-child(4) button img {
+.navbar-items li:nth-child(5) button img {
   display: flex;
   align-self: center;
   height: 100%;
@@ -294,7 +295,7 @@
   /* aspect-ratio: 1 / 1; */
   transition: all 0.3 ease;
 }
-.navbar-items li::nth-child(4) button img:hover {
+.navbar-items li::nth-child(5) button img:hover {
   cursor: pointer;
 }
 
@@ -323,6 +324,40 @@
   gap: 30px;
   margin-right: 15px;
 }
+
+
+
+/* Display Settings Menu Icon */
+.display-settings-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  position: relative;
+}
+
+.display-settings-menu button {
+  height: 40px !important;
+  width: 40px !important;
+  aspect-ratio: 1 / 1;
+  font-size: 22px;
+  color: white;
+  background-color: rgba(0, 255, 255, 0);
+  border: 0;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.display-settings-menu button:hover {
+  background-color: rgba(128, 128, 128, 0.551);
+  cursor: pointer;
+}
+
+
 
 
 

@@ -1,7 +1,7 @@
 .notifications-menu-container {
     position: absolute;
-    top: 58px;
-    right: 120px;
+    top: 64px;
+    right: 175px;
     color: #ffffff;
     padding: 0.7em 0.5em;
     box-sizing: border-box;
@@ -13,13 +13,15 @@
     gap: 10px;
     z-index: 10;
     transition: box-shadow 0.3s ease;
-    backdrop-filter: blur(100px) !important;
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
     overflow: hidden;
-    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.631);
-    border: 1px solid rgba(128, 128, 128, 0.174);
-    background-color: rgba(18, 15, 15, 0.41);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
