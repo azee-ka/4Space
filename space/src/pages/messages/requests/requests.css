@@ -5,10 +5,10 @@
 }
 
 .requests-panel {
-  width: 320px;
+  width: 340px;
   display: flex;
   flex-direction: column;
-  padding: 20px 24px;
+  padding: 20px 12px;
   box-sizing: border-box;
   background: rgba(24, 24, 24, 0.3);
   border-right: 1px solid rgba(255, 255, 255, 0.05);

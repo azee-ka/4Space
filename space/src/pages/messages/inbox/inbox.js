@@ -31,6 +31,7 @@ const MessageInbox = ({ setShowCreateMessageOverlay }) => {
         <button onClick={() => setShowCreateMessageOverlay(true)}>+ New</button>
       </div>
 
+<div className="inbox-chats-container">
       <div className="inbox-chats">
         {chats.length > 0 ? (
           chats.map((chat) => {
@@ -58,6 +59,7 @@ const MessageInbox = ({ setShowCreateMessageOverlay }) => {
         ) : (
           <div className="inbox-empty">No conversations yet.</div>
         )}
+      </div>
       </div>
     </div>
   );

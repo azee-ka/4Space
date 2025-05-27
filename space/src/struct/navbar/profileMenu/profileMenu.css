@@ -2,7 +2,7 @@
     position: absolute;
     top: 64px;
     right: 20px;
-    width: 280px;
+    width: 300px;
     padding: 16px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.06);
@@ -23,7 +23,7 @@
     font-weight: 700;
     color: #ccc;
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     letter-spacing: 0.5px;
 }
 
@@ -140,7 +140,7 @@
 
 .account-username {
     font-size: 0.8rem;
-    color: #999;
+    color: #b6b6b6;
     margin: 0;
 }
 
