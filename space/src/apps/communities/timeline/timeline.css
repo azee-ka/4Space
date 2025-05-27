@@ -8,7 +8,7 @@
   box-sizing: border-box;
   color: #f2f2f2;
   font-family: inherit;
-  background: rgba(255, 255, 255, 0.01);
+  /* background: rgba(255, 255, 255, 0.01); */
 }
 
 
@@ -94,7 +94,7 @@
 .lane-logo img {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: 15px;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -114,7 +114,7 @@
 }
 
 .lane-title {
-  font-size: 1.1rem;
+  /* font-size: 1.1rem; */
   font-weight: 600;
   color: #ffffff;
   margin: 0;
@@ -180,78 +180,69 @@
 
 
 
-
+/* === SIDEBAR CONTAINER === */
 .community-timeline-sidebar {
-  width: 290px;
+  width: 280px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 20px 16px;
+  gap: 10px;
+  padding: 18px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(25,25,35,0.35) 0%, rgba(25,25,30,0.2) 100%);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(14px);
+  background: rgba(25, 25, 30, 0.28);
+  backdrop-filter: blur(16px);
   box-shadow: 0 6px 20px rgba(0, 255, 255, 0.025);
   color: #e4e4e4;
-  overflow-y: auto;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
-/* Section Layout */
-.sidebar-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.sidebar-section:last-of-type {
-  border-bottom: none;
-}
-
-.section-title {
-  font-size: 0.88rem;
+.community-timeline-sidebar h4 {
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #90eaff;
-  margin: 0 0 6px 0;
-  letter-spacing: 0.3px;
-}
-
-/* Trending List */
-.sidebar-trending {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  list-style: none;
-  padding: 0;
+  color: #ffffff;
   margin: 0;
 }
 
-.sidebar-trending li {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
-  padding-left: 10px;
-  border-left: 2px solid rgba(255, 255, 255, 0.06);
-  color: #dffeff;
-}
-
-.sidebar-trending li a {
-  color: #b7f6ff;
-  text-decoration: none;
-}
-
-.sidebar-trending li a:hover {
-  text-decoration: underline;
-}
-
-/* Suggested Communities */
-.sidebar-suggested {
+/* === SECTION STYLING === */
+.sidebar-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative;
+}
+
+.community-timeline-sidebar .section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #c7f5ff;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 2px;
+  position: relative;
+}
+
+.section-title::after {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin-top: 10px;
+  background-color: cyan;
+}
+
+
+
+
+
+
+
+/* === SUGGESTED COMMUNITIES === */
+.sidebar-suggested {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .suggested-community {
@@ -262,12 +253,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.83rem;
+  font-size: 0.82rem;
 }
 
 .suggested-community strong {
   color: #ffffff;
-  font-size: 0.89rem;
+  font-size: 0.9rem;
 }
 
 .suggested-community span {
@@ -292,32 +283,12 @@
   color: #ffffff;
 }
 
-/* Your Activity */
-.sidebar-mini-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.8rem;
-}
-
-.sidebar-mini-list li a {
-  color: #aef6ff;
-  text-decoration: none;
-}
-
-.sidebar-mini-list li a:hover {
-  text-decoration: underline;
-}
-
-/* Tag Pills */
+/* === TAG FILTERS === */
 .sidebar-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .tag-pill {
@@ -328,20 +299,21 @@
   padding: 4px 10px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .tag-pill:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(0, 255, 255, 0.06);
+  border-color: rgba(0, 255, 255, 0.2);
 }
 
-/* Action Buttons */
+/* === ACTION BUTTONS === */
 .sidebar-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 10px;
-  padding-top: 12px;
+  padding-top: 16px;
+  margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -350,14 +322,93 @@
   text-align: center;
   font-size: 0.85rem;
   color: #aaf2ff;
-  border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  padding: 0.55em 1em;
-  transition: background 0.2s ease;
+  border-radius: 8px;
+  padding: 0.5em 1em;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
 }
 
 .sidebar-actions button:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background: rgba(0, 255, 255, 0.1);
+  color: white;
+}
+
+
+
+
+
+
+
+
+/* === Trending Community Items Styled Like Buttons === */
+/* === TRENDING & MINI LIST === */
+.sidebar-trending,
+.sidebar-mini-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-mini-list li,
+.sidebar-trending li {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #dffeff;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.sidebar-mini-list li::before,
+.sidebar-trending li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0px;
+  bottom: 0px;
+  width: 4px;
+  background: rgba(0, 255, 255, 0.08);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.sidebar-mini-list li:hover,
+.sidebar-trending li:hover {
+  background: rgba(0, 255, 255, 0.07);
+  border-color: rgba(0, 255, 255, 0.15);
+  color: white;
+}
+
+.sidebar-mini-list li:hover::before,
+.sidebar-trending li:hover::before {
+  background: linear-gradient(to bottom, #00ffe7, #0affda);
+}
+
+.sidebar-mini-list li a,
+.sidebar-trending li a {
+  all: unset;
+  font-weight: 500;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 60%;
+}
+
+.sidebar-trending li span {
+  font-size: 0.75rem;
+  color: #b7f6ff;
 }
