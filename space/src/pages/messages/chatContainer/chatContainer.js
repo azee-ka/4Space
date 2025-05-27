@@ -105,25 +105,6 @@ const ChatContainer = ({ conversationId }) => {
 
     const centerPanelRef = useRef(null);
 
-    const insertEmoji = (emoji) => {
-        const el = textareaRef.current;
-        if (!el) return;
-
-        const start = el.selectionStart;
-        const end = el.selectionEnd;
-        const value = input;
-        const emojiChar = emoji.native || emoji;
-
-        const newText = value.slice(0, start) + emojiChar + value.slice(end);
-        setInput(newText);
-
-        // Move cursor after inserted emoji
-        setTimeout(() => {
-            el.focus();
-            el.setSelectionRange(start + emojiChar.length, start + emojiChar.length);
-        }, 0);
-    };
-
     const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
         onMessage: (data) => {
             console.log("WebSocket message received:", data);
@@ -163,9 +144,9 @@ const ChatContainer = ({ conversationId }) => {
 
     const handleAcceptRequest = async () => {
         try {
-        await callApi(`messages/request/${conversationId}/accept/`, "POST");
-        const updated = await callApi(`messages/get_conversation_details/${conversationId}`);
-        setConversation(updated.data);
+            await callApi(`messages/request/${conversationId}/accept/`, "POST");
+            const updated = await callApi(`messages/get_conversation_details/${conversationId}`);
+            setConversation(updated.data);
         } catch (error) {
             console.error("Error accepting request:", error);
         }
@@ -173,8 +154,8 @@ const ChatContainer = ({ conversationId }) => {
 
     const handleRejectRequest = async () => {
         try {
-        await callApi(`messages/request/${conversationId}/reject/`, "POST");
-        navigate("/messages/requests");
+            await callApi(`messages/request/${conversationId}/reject/`, "POST");
+            navigate("/messages/requests");
         } catch (error) {
             console.error("Error rejecting request:", error);
         }
@@ -182,8 +163,8 @@ const ChatContainer = ({ conversationId }) => {
 
     const handleBlockRequest = async () => {
         try {
-        await callApi(`messages/request/${conversationId}/block/`, "POST");
-        navigate("/messages/requests");
+            await callApi(`messages/request/${conversationId}/block/`, "POST");
+            navigate("/messages/requests");
         } catch (error) {
             console.error("Error blocking request:", error);
         }
@@ -196,130 +177,131 @@ const ChatContainer = ({ conversationId }) => {
         (p) => p.user.id !== authState?.current?.user?.id
     );
 
-const renderFooter = () => {
-  if (!conversation) return null;
+    const renderFooter = () => {
+        if (!conversation) return null;
 
-  const { view_type, conversation_status } = conversation;
-  const isBlocked = conversation_status === "blocked";
-  const isInvite = conversation_status === "invite";
-  const isInviteAccepted = conversation_status === "allowed";
-  const isInboxView = view_type === "inbox";
-  const isRequestView = view_type === "request";
-  const hasSentInvite = messages.length >= 1;
+        const { view_type, conversation_status } = conversation;
+        const isBlocked = conversation_status === "blocked";
+        const isInvite = conversation_status === "invite";
+        const isInviteAccepted = conversation_status === "allowed";
+        const isInboxView = view_type === "inbox";
+        const isRequestView = view_type === "request";
+        const hasSentInvite = messages.length >= 1;
 
-  if (isBlocked) {
-    return (
-      <div className="request-warning-container">
-        You cannot send messages in this conversation.
-      </div>
-    );
-  }
+        if (isBlocked) {
+            return (
+                <div className="request-warning-container">
+                    You cannot send messages in this conversation.
+                </div>
+            );
+        }
 
-  if (isInvite && hasSentInvite) {
-    return (
-      <div className="request-warning-container">
-        <h3>Invite Sent</h3>
-        You can send more messages once your request is accepted.
-      </div>
-    );
-  }
+        if (isInvite && hasSentInvite) {
+            return (
+                <div className="request-warning-container">
+                    <h3>Invite Sent</h3>
+                    You can send more messages once your request is accepted.
+                </div>
+            );
+        }
 
-  if ((isInvite || isInviteAccepted) && isInboxView) {
-    return (
-      <>
-        {isInvite && (
-          <div className="invite-info-panel">
-            {messages.length === 0 ? (
-              <>
-                <h4 className="invite-heading">New Chat Request</h4>
-                <p className="invite-description">
-                  You can send <strong>one message</strong> as a request. The recipient must accept it before further replies.
-                </p>
-              </>
-            ) : (
-              <p className="invite-description">
-                Your message has been sent. You’ll be able to continue once your request is accepted.
-              </p>
-            )}
-          </div>
-        )}
-        <div className="write-message-container">
-          <EmojiButton onEmojiSelect={insertEmoji} />
-          <CustomTextarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Type a message..."
-            className="chat-textarea"
-          />
-          <button className="send-message-btn" onClick={handleSend}>
-            <FaPaperPlane />
-          </button>
-        </div>
-      </>
-    );
-  }
+        if ((isInvite || isInviteAccepted) && isInboxView) {
+            return (
+                <>
+                    {isInvite && (
+                        <div className="invite-info-panel">
+                            {messages.length === 0 ? (
+                                <>
+                                    <h4 className="invite-heading">New Chat Request</h4>
+                                    <p className="invite-description">
+                                        You can send <strong>one message</strong> as a request. The recipient must accept it before further replies.
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="invite-description">
+                                    Your message has been sent. You’ll be able to continue once your request is accepted.
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    <div className="write-message-container">
+                        <EmojiButton inputRef={textareaRef} value={input} onChange={setInput} />
+                        <CustomTextarea
+                            ref={textareaRef}
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSend();
+                                }
+                            }}
+                            placeholder="Type a message..."
+                            className="chat-textarea"
+                        />
+                        <button className="send-message-btn" onClick={handleSend}>
+                            <FaPaperPlane />
+                        </button>
+                    </div>
+                </>
+            );
+        }
 
-  if (isRequestView) {
-    return (
-      <div className="message-request-btns">
-        <button onClick={handleAcceptRequest} className="accept-request-btn">Accept</button>
-        <button onClick={handleRejectRequest} className="reject-request-btn">Reject</button>
-        <button onClick={handleBlockRequest} className="block-request-btn">Block</button>
-        <button onClick={() => handleBlockRequest()} className="report-request-btn">Report & Block</button>
-      </div>
-    );
-  }
+        if (isRequestView) {
+            return (
+                <div className="message-request-actions">
+  <button className="request-btn primary" onClick={handleAcceptRequest}>Accept</button>
+  <button className="request-btn subtle" onClick={handleRejectRequest}>Reject</button>
+  <button className="request-btn danger" onClick={handleBlockRequest}>Block</button>
+  <button className="request-btn danger-outline" onClick={handleBlockRequest}>Report & Block</button>
+</div>
 
-  return null;
-};
+            );
+        }
+
+        return null;
+    };
 
 
     return (
         <div className="chat-container">
             <div className="chat-header">
                 {conversation?.participants?.length > 0 && (
-  <>
-    <div className="chat-header-avatar-group">
-      {conversation.participants
-  .filter(p => p.user.id !== authState?.current?.user?.id)
-  .slice(0, 3)
-  .map((p, idx) => (
-    <ProfilePicture
-      key={p.user.id}
-      src={p.user.profile_image}
-      className={`chat-header-avatar stacked-avatar stacked-avatar-${idx}`}
-    />
-))}
-{conversation.participants.length > 4 && (
-  <div className="stacked-avatar stacked-avatar-3 stacked-extra">
-    +{conversation.participants.length - 3}
-  </div>
-)}
+                    <>
+                        <div className="chat-header-avatar-group">
+                            {conversation.participants
+                                .filter(p => p.user.id !== authState?.current?.user?.id)
+                                .slice(0, 3)
+                                .map((p, idx) => (
+                                    <ProfilePicture
+                                        key={p.user.id}
+                                        src={p.user.profile_image}
+                                        className={`chat-header-avatar stacked-avatar stacked-avatar-${idx}`}
+                                    />
+                                ))}
+                            {conversation.participants.length > 4 && (
+                                <div className="stacked-avatar stacked-avatar-3 stacked-extra">
+                                    +{conversation.participants.length - 3}
+                                </div>
+                            )}
 
-    </div>
-    <div className="chat-header-info">
-      <p className="chat-header-name">
-        {conversation.participants
-          .filter(p => p.user.id !== authState?.current?.user?.id)
-          .map(p => `${p.user.first_name} ${p.user.last_name}`)
-          .join(", ")}
-      </p>
-      <p className="chat-header-username">
-        {conversation.participants
-          .filter(p => p.user.id !== authState?.current?.user?.id)
-          .map(p => `@${p.user.username}`)
-          .join(", ")}
-      </p>
-    </div>
-  </>
-)}
+                        </div>
+                        <div className="chat-header-info">
+                            <p className="chat-header-name">
+                                {conversation.participants
+                                    .filter(p => p.user.id !== authState?.current?.user?.id)
+                                    .map(p => `${p.user.first_name} ${p.user.last_name}`)
+                                    .join(", ")}
+                            </p>
+                            <p className="chat-header-username">
+                                {conversation.participants
+                                    .filter(p => p.user.id !== authState?.current?.user?.id)
+                                    .map(p => `@${p.user.username}`)
+                                    .join(", ")}
+                            </p>
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="chat-body" ref={centerPanelRef}>

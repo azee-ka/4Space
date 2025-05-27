@@ -1,26 +1,198 @@
 .communities-dashboard-page {
-    background-color: rgba(255, 0, 0, 0);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  padding: 2em;
+  font-family: 'Segoe UI', sans-serif;
+  color: #e4e4e4;
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+  padding: 1em 2em 1.5em 1em;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background-color: transparent;
 }
 
+/* Header */
 .communities-dashboard-header {
-    width: 100%;
-    height: 40px;
-    background-color: rgba(0, 0, 0, 0);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.communities-dashboard-page h2 {
-    padding: 0;
-    margin: 0;
-    height: 40px;
-    font-size: 1.5em;
-    background-color: rgba(187, 187, 187, 0);
-    display: flex;
-    align-items: flex-end;
+.communities-dashboard-header h2 {
+  font-size: 1.6rem;
+  color: #f2f2f2;
+}
+
+.dashboard-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.85rem;
+  color: #cbd8e2;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dashboard-user .user-avatar {
+  font-size: 1.3rem;
+}
+
+/* Stats Cards */
+.dashboard-cards-row {
+  display: flex;
+  gap: 1.2em;
+  flex-wrap: wrap;
+}
+
+.dashboard-card {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 12px;
+  padding: 1em 1.2em;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 12px rgba(0, 200, 255, 0.02);
+}
+
+.dashboard-card h4 {
+  font-size: 0.9rem;
+  margin-bottom: 0.4em;
+  color: #c0eaff;
+  font-weight: 500;
+}
+
+.dashboard-card p {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #f8f8f8;
+  margin: 0;
+}
+
+/* Section Panels */
+.dashboard-section-row {
+  display: flex;
+  gap: 1.2em;
+  flex-wrap: wrap;
+}
+
+.dashboard-panel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.2em;
+  border-radius: 14px;
+  flex: 1;
+  min-width: 260px;
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  box-shadow: 0 6px 18px rgba(0, 255, 255, 0.035);
+}
+
+.dashboard-panel h3 {
+  margin: 0 0 0.5em;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.4em;
+  color: #e1f1f6;
+  font-weight: 500;
+}
+
+/* Activity Lists */
+.recent-activity ul,
+.moderators ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recent-activity li,
+.moderators li {
+  color: #d9e1e8;
+  padding-left: 1em;
+  position: relative;
+}
+
+.recent-activity li::before,
+.moderators li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #79e6f5;
+}
+
+/* Graph Placeholder */
+.graph-panel .graph-placeholder {
+  height: 160px;
+  background: linear-gradient(to right, rgba(0,255,255,0.04), rgba(0,255,255,0.015));
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.07);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #8ce7f5;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Community Chips */
+.top-communities .chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-block;
+  background: rgba(0, 255, 255, 0.06);
+  border: 1px solid rgba(0, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: #d3faff;
+  cursor: default;
+}
+
+.chip.large {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+}
+
+/* Reports */
+.reports p {
+  margin: 0.4em 0;
+  font-size: 0.82rem;
+  color: #d8e9ef;
+}
+
+/* Button Actions */
+.actions .button-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions button {
+  all: unset;
+  padding: 0.5em 0.8em;
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.18);
+  color: #c8faff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  text-align: center;
+}
+
+.actions button:hover {
+  background: rgba(0, 255, 255, 0.1);
+  color: #ffffff;
 }

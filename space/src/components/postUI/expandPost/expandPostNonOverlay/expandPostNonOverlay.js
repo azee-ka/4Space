@@ -17,6 +17,7 @@ import CustomEditor from '../../../../utils/editor/editor';
 import EmojiButton from '../../../../utils/editor/EmojiButton';
 import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import { usePostContext } from '../../../../context/PostContext';
+import CustomTextarea from '../../../../pages/messages/chatContainer/customTextarea';
 
 const ExpandedPostNonOverlay = () => {
     const {
@@ -42,7 +43,7 @@ const ExpandedPostNonOverlay = () => {
         handleCloseLikesOverlay,
     } = useExpandPostContext();
 
-    const commentEditorRef = useRef(null);
+    const commentTextareaRef = useRef(null);
 
     const { setShowPostMoreMenuOverlay } = usePostContext();
     const { authState } = useAuth();
@@ -164,19 +165,26 @@ const ExpandedPostNonOverlay = () => {
                 </div>
                 <div className='expanded-post-comment-post-container'>
                     <div className='expanded-post-comment-post-container-inner'>
-                        <EmojiButton onEmojiSelect={(emoji) => commentEditorRef.current?.insertEmoji?.(emoji)} />
-                        <CustomEditor
-                            ref={commentEditorRef}
-
-                            placeholder='Comment here...'
-                            content={commentText}
-                            onContentChange={setCommentText}
-                            showToolbar={false}
+                        <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
+                        <CustomTextarea
+                            ref={commentTextareaRef}
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            placeholder="Comment here..."
+                            className="expanded-post-comment-textarea"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (commentText.trim()) {
+                                        addComment();
+                                    }
+                                }
+                            }}
                         />
-                        {(commentText !== '' || commentText === "<p><br></p>") &&
+                        {(commentText !== '') &&
                             <button
                                 onClick={() => addComment()}
-                                className={`expanded-post-comment-post-button`}
+                                className="expanded-post-comment-post-button"
                             >
                                 <FaPaperPlane />
                             </button>

@@ -47,21 +47,7 @@ function Layout({ children, pageName }) {
     const isFullScreenRoute = fullScreenRoutes.some(route =>
         location.pathname.includes(route)
     );
-
-
-
-// useEffect(() => {
-//   const handleMessage = (event) => {
-//     if (event.origin !== window.location.origin) return;
-//     if (event.data?.type === 'ACCOUNT_ADDED') {
-//       window.location.reload(); // Or re-fetch authAccounts only
-//     }
-//   };
-
-//   window.addEventListener('message', handleMessage);
-//   return () => window.removeEventListener('message', handleMessage);
-// }, []);
-
+ 
 
 
 

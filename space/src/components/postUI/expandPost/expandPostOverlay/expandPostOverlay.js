@@ -17,6 +17,8 @@ import CustomEditor from '../../../../utils/editor/editor';
 import EmojiButton from '../../../../utils/editor/EmojiButton';
 import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import { usePostContext } from '../../../../context/PostContext';
+import CustomTextarea from '../../../../pages/messages/chatContainer/customTextarea';
+import { formatDateTime } from '../../../../utils/formatDateTime';
 
 const ExpandedPostOverlay = () => {
     const {
@@ -55,7 +57,8 @@ const ExpandedPostOverlay = () => {
     const { authState } = useAuth();
     const { setShowPostMoreMenuOverlay } = usePostContext();
 
-    const commentEditorRef = useRef(null);
+
+    const commentTextareaRef = useRef(null);
 
 
     const closeOverlayOnClick = () => {
@@ -63,7 +66,7 @@ const ExpandedPostOverlay = () => {
     };
 
 
-    // console.log('ExpandedPostOverlay post:', post);
+    console.log('ExpandedPostOverlay post:', post?.meta?.created_at);
 
     return post ? (
         <div className="expanded-post-container">
@@ -128,7 +131,7 @@ const ExpandedPostOverlay = () => {
                                         </div>
                                     </div>
                                     <div className='expanded-post-comment-info'>
-                                        <p>Posted {timeAgo(commentData?.meta?.created_at)}</p>
+                                        <p>Posted {timeAgo(commentData?.created_at)}</p>
                                     </div>
                                 </div>
                                 <div className='expanded-post-comments-text'>
@@ -181,18 +184,26 @@ const ExpandedPostOverlay = () => {
                 </div>
                 <div className='expanded-post-comment-post-container'>
                     <div className='expanded-post-comment-post-container-inner'>
-                        <EmojiButton onEmojiSelect={(emoji) => commentEditorRef.current?.insertEmoji?.(emoji)} />
-                        <CustomEditor
-                            ref={commentEditorRef}
-                            placeholder='Comment here...'
-                            content={commentText}
-                            onContentChange={setCommentText}
-                            showToolbar={false}
+                        <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
+                        <CustomTextarea
+                            ref={commentTextareaRef}
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            placeholder="Comment here..."
+                            className="expanded-post-comment-textarea"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (commentText.trim()) {
+                                        addComment();
+                                    }
+                                }
+                            }}
                         />
-                        {(commentText !== '' || commentText === "<p><br></p>") &&
+                        {(commentText !== '') &&
                             <button
                                 onClick={() => addComment()}
-                                className={`expanded-post-comment-post-button`}
+                                className="expanded-post-comment-post-button"
                             >
                                 <FaPaperPlane />
                             </button>
