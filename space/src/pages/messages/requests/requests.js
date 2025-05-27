@@ -1,92 +1,80 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import useApi from "../../../utils/useApi";
-import './requests.css';
-import { FaArrowCircleLeft, FaArrowLeft, FaChevronLeft, FaFacebookMessenger } from "react-icons/fa";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import ChatContainer from "../chatContainer/chatContainer";
+import "./requests.css";
 
 const MessageRequests = () => {
-    const navigate = useNavigate();
-    const { conversationId } = useParams();
-    const { callApi } = useApi();
+  const navigate = useNavigate();
+  const { conversationId } = useParams();
+  const { callApi } = useApi();
+  const [requests, setRequests] = useState([]);
 
-    const [messageRequests, setMessagesRequests] = useState([]);
-
-    // Fetch messages when the conversation changes
-    const fetchMessageRequests = async () => {
-        try {
-            const response = await callApi(`messages/list_conversations_requests/`);
-            setMessagesRequests(response.data);
-            console.log(response.data);
-        } catch (err) {
-            console.error("Error fetching messages", err);
-        }
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const res = await callApi("messages/list_conversations_requests/");
+        setRequests(res.data);
+      } catch (err) {
+        console.error("Failed to fetch requests", err);
+      }
     };
+    fetchRequests();
+  }, []);
 
-    useEffect(() => {
-        fetchMessageRequests();
-    }, []);
-
-    const handleRequestNavigation = (requestId) => {
-        navigate(`/messages/requests/c/${requestId}`);
-    };
-
-    return (
-        <div className="messages-bottom-panel">
-            <div className="message-requests-left-panel">
-                <div className="message-requests-left-panel-top">
-                    <Link to={'/messages/inbox'} >
-                        <FaArrowLeft className="icon-style" />
-                    </Link>
-                    <h3>Requests</h3>
-                </div>
-                <div className="message-requests-left-panel-bottom">
-                    {messageRequests?.length > 0 ? (
-                        <div className="chats-list">
-                            {messageRequests.map((chat, index) => (
-                                <div
-                                    key={index}
-                                    className="chats-list-per-chat"
-                                    onClick={() => handleRequestNavigation(chat.uuid)}
-                                >
-                                    <div className="per-chat-profile-image">
-                                        <ProfilePicture src={chat?.other_participant?.user?.profile_image} />
-                                    </div>
-                                    <div className="per-chat-info">
-                                        <p>
-                                            {chat?.other_participant?.user?.first_name} {chat?.other_participant?.user?.last_name}
-                                            <span>{chat?.group_participant_count > 1 ? ` and ${chat?.group_participant_count - 1} more` : ''}</span>
-                                        </p>
-                                        <p>@{chat?.other_participant?.user?.username}</p>
-                                    </div>
-                                </div>
-                            ))
-                            }
-                        </div>
-                    ) : (
-                        <div className="no-chats-panel">
-                            <h3>No Requests!</h3>
-                        </div>
-                    )
-                    }
-                </div>
-            </div>
-            <div className="message-requests-right-panel">
-            {conversationId ? (
-                    <ChatContainer conversationId={conversationId} />
-                ) : (
-                    <div className="no-conversation-selected-panel">
-                        <div className="no-conversation-message-icon">
-                            <FaFacebookMessenger className="icon-style" />
-                        </div>
-                        <h3>Select a Request</h3>
-                    </div>
-                )
-                }
-            </div>
+  return (
+    <div className="requests-layout">
+      <div className="requests-panel">
+        <div className="requests-header-bar">
+          <h2>Message Requests</h2>
         </div>
-    )
+
+        <div className="requests-list">
+          {requests.length > 0 ? (
+            requests.map((chat) => (
+              <div
+                key={chat.uuid}
+                className={`chat-request-item ${
+                  chat.uuid === conversationId ? "active" : ""
+                }`}
+                onClick={() => navigate(`/messages/requests/c/${chat.uuid}`)}
+              >
+                <ProfilePicture
+                  src={chat?.other_participant?.user?.profile_image}
+                  className="chat-avatar"
+                />
+                <div className="chat-info">
+                  <p className="chat-name">
+                    {chat?.other_participant?.user?.first_name}{" "}
+                    {chat?.other_participant?.user?.last_name}
+                    {chat?.group_participant_count > 1 && (
+                      <span> +{chat.group_participant_count - 1}</span>
+                    )}
+                  </p>
+                  <p className="chat-username">
+                    @{chat?.other_participant?.user?.username}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="requests-empty">No message requests.</div>
+          )}
+        </div>
+      </div>
+
+      <div className="requests-chat-panel">
+        {conversationId ? (
+          <ChatContainer conversationId={conversationId} />
+        ) : (
+          <div className="requests-placeholder">
+            <p>Select a request to preview</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default MessageRequests;

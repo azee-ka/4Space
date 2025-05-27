@@ -1,320 +1,271 @@
 import React, { useEffect, useRef, useState } from "react";
 import useApi from "../../../utils/useApi";
-import DOMPurify from 'dompurify';
-import './chatContainer.css';
-import { FaEllipsisV, FaReply } from "react-icons/fa";
-import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
+import DOMPurify from "dompurify";
+import "./chatContainer.css";
+import { FaEllipsisV, FaPaperPlane, FaRegSmile } from "react-icons/fa";
 import { useAuth } from "../../../hooks/useAuth";
 import RenderText from "../../../utils/autoCompleteInput/renderText";
-import DropdownButton from "../../../utils/popperButton/DropdownButton";
+import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
+import CustomTextarea from "./customTextarea";
+import {
+    shouldGroupMessages,
+    isFirstGroupedMessage,
+    isLastGroupedMessage,
+} from "./messageGrouping";
 import { formatDateTime } from "../../../utils/formatDateTime";
-import { useReportOverlayContext } from "../../../context/ReportOverlayContext";
-import { useNavigate } from "react-router-dom";
-import { shouldGroupMessages, isFirstGroupedMessage, isLastGroupedMessage } from "./messageGrouping";
-import renderSendMessagePanel from "./renderSendMessagePanel";
 import useWebSocket from "../../../hooks/useWebSocket";
+import EmojiButton from "../../../utils/editor/EmojiButton";
+import CustomEditor from "../../../utils/editor/editor";
+import { useNavigate } from "react-router-dom";
+import DropdownButton from "../../../utils/popperButton/DropdownButton";
 
+const TIME_GAP_THRESHOLD = 15 * 60 * 1000;
 
-const Message = React.memo(({
-    message, 
-    previousMessage, 
-    nextMessage, 
-    authState, 
-    centerPanelRef, 
-    handleReport,
-    handleCopy,
+const ChatMessage = React.memo(({ message, previous, next, isOwn, centerPanelRef
 }) => {
-    const TIME_THRESHOLD = 15 * 60 * 1000; // 10 minutes in milliseconds
-
-    const timeDifferenceExceedsThreshold = (currentMessage, previousMessage) => {
-        if (!previousMessage || !currentMessage) return false;
-        const timeDifference = new Date(currentMessage.sent_at) - new Date(previousMessage.sent_at);
-        return timeDifference >= TIME_THRESHOLD; // Return true if time difference exceeds the threshold
-    };
-
-
-    // Determine whether the message should be grouped or separated
-    const isGrouped = shouldGroupMessages(message, previousMessage);
-    const isFirstGrouped = isFirstGroupedMessage(message, previousMessage);
-    const isLastGrouped = isLastGroupedMessage(message, nextMessage);
-
-    // Determine whether the message is completely separated or partially separated
-    const isSeparatedFromPrevious = !isGrouped;
-    const isSeparatedFromNext = !shouldGroupMessages(nextMessage, message);
-
-    // Determine class names based on the message position (first, middle, last, or separated)
-    let classNameCustom = '';
-
-    // Handle grouped messages first
-    if (isGrouped) {
-        if (isFirstGrouped) {
-            classNameCustom += ' first-grouped'; // First message in a group
-        }
-        if (isLastGrouped) {
-            classNameCustom += ' last-grouped'; // Last message in a group
-        }
-        if (!isFirstGrouped && !isLastGrouped) {
-            classNameCustom += ' middle-grouped'; // Middle message in a group
-        }
-    }
-    // Handle separated messages
-    else {
-        if (isSeparatedFromPrevious && isSeparatedFromNext) {
-            classNameCustom += ' completely-separated'; // Completely separated message
-        } else if (isSeparatedFromPrevious && !isSeparatedFromNext) {
-            classNameCustom += ' separated-from-previous'; // Separated from previous, grouped with next
-        } else if (!isSeparatedFromPrevious && isSeparatedFromNext) {
-            classNameCustom += ' separated-from-next'; // Separated from next, grouped with previous
-        }
-    }
-
-    const plainText = message?.text.replace(/<\/?[^>]+(>|$)/g, '').trim();  // Strips HTML tags
+    const grouped = shouldGroupMessages(message, previous);
+    const first = isFirstGroupedMessage(message, previous);
+    const last = isLastGroupedMessage(message, next);
+    const plainText = message?.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
     const isEmojiOnly = /^[\p{Emoji}\u200B\s]+$/u.test(plainText);
-        console.log('isEmojiOnly', isEmojiOnly)
-    // Add specific classes for sent vs received messages
-    const senderClass = message.sender_username === authState.user.username ? 'sent' : 'received';
+    const timeGap =
+        !grouped ||
+        new Date(message.sent_at) - new Date(previous?.sent_at || 0) > TIME_GAP_THRESHOLD;
 
+    const containerClasses = [
+        "chat-bubble-row",
+        isOwn ? "own" : "other",
+        grouped ? "grouped" : "separate",
+    ].join(" ");
+
+    const bubbleClasses = [
+        "chat-bubble",
+        grouped ? "grouped" : "separate",
+        first && "first",
+        last && "last",
+        isOwn ? "own" : "other",
+        isEmojiOnly && "emoji-only",
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     return (
         <>
-            {timeDifferenceExceedsThreshold(message, previousMessage) &&
-                <div className="time-separator">
-                    {formatDateTime(message.sent_at, true)} {/* Format the timestamp accordingly */}
-                </div>}
-            <div
-                className={`message ${senderClass} ${classNameCustom}`}
-            >
-
-                {message?.sender_username === authState.user.username &&
-                    <div className="message-action-btns">
-                        <DropdownButton
-                            toggleContent={
-                                <button className="ellipsis-btn">
-                                    <FaEllipsisV className="icon-style" />
-                                </button>
-                            }
-                            boundaryRef={centerPanelRef}
-                            placement="bottom-end"
-                        >
-                            <div className="message-more-dropdown">
-                                <div className="message-time">
-                                    {formatDateTime(message.sent_at, true)}
-                                </div>
-                                <div className="more-menu-btns">
-                                    <button>
-                                        Forward
-                                    </button>
-                                    <button onClick={() => handleCopy(message.text)}>
-                                        Copy
-                                    </button>
-                                </div>
-                                <div className="report-button-container">
-                                    <button>
-                                        Unsend
-                                    </button>
-                                </div>
-                            </div>
-                        </DropdownButton>
-                        <button>
-                            <FaReply />
-                        </button>
-                    </div>
-                }
-                <div className={`message-content ${isEmojiOnly ? 'emoji-only' : ''}`}>
-                    <RenderText text={message?.text} />
+            {timeGap && (
+                <div className="chat-timestamp">
+                    {formatDateTime(message.sent_at, true)}
                 </div>
-                {message?.sender_username !== authState.user.username &&
+            )}
+            <div className={containerClasses}>
+                <div className="bubble-wrapper">
+                    <div className={bubbleClasses}>
+                        <RenderText text={message.text} />
+                    </div>
+
                     <div className="message-action-btns">
-                        <button>
-                            <FaReply />
-                        </button>
                         <DropdownButton
+                            boundaryRef={centerPanelRef?.current}
                             toggleContent={
                                 <button className="ellipsis-btn">
-                                    <FaEllipsisV className="icon-style" />
+                                    <FaEllipsisV />
                                 </button>
                             }
-                            boundaryRef={centerPanelRef}
-                            placement="top-start"
+                            placement={isOwn ? "left-start" : "right-start"}
                         >
-                            <div className="message-more-dropdown">
-                                <div className="message-time">
-                                    {formatDateTime(message.sent_at, true)}
-                                </div>
-                                <div className="more-menu-btns">
-                                    <button>
-                                        Forward
-                                    </button>
-                                    <button onClick={() => handleCopy(message.text)}>
-                                        Copy
-                                    </button>
-                                </div>
-                                <div className="report-button-container">
-                                    <button onClick={() => handleReport('message', message.uuid)} >
-                                        Report
-                                    </button>
+                            <div className="message-dropdown">
+                                <div className="message-time">{formatDateTime(message.sent_at, true)}</div>
+                                <div className="dropdown-options">
+                                    <button>Forward</button>
+                                    {isOwn ? (
+                                        <button className="unsend-btn">Unsend</button>
+                                    ) : (
+                                        <button className="report-btn">Report</button>
+                                    )}
                                 </div>
                             </div>
                         </DropdownButton>
                     </div>
-                }
+                </div>
             </div>
+
+
         </>
     );
 });
 
-
-
-
-
 const ChatContainer = ({ conversationId }) => {
-    const socketRef = useRef(null);
-    const navigate = useNavigate();
-    const centerPanelRef = useRef(null);
-    const { authState } = useAuth();
     const { callApi } = useApi();
-    const { openReportOverlay } = useReportOverlayContext();
-    const [typeMessageContent, setTypeMessageContent] = useState('');
-    const [conversationDetails, setConversationDetails] = useState();
+    const { authState } = useAuth();
+    const navigate = useNavigate();
+
+    const [conversation, setConversation] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState("");
+    const endRef = useRef();
 
-    // Fetch messages when the conversation changes
-    const fetchMessages = async (conversationId) => {
-        try {
-            const response = await callApi(`messages/get_messages/${conversationId}/`);
-            setMessages(response.data);
-            console.log(response.data);
-        } catch (err) {
-            console.error("Error fetching messages", err);
-        }
-    };
+    const centerPanelRef = useRef(null);
 
-    const fetchConversationDetails = async (conversationId) => {
-        try {
-            const response = await callApi(`messages/get_conversation_details/${conversationId}`);
-            console.log(response.data);
-            setConversationDetails(response.data);
-        } catch (err) {
-            console.error('Error fetching messages', err);
-        }
-    };
-
-    useEffect(() => {
-        fetchConversationDetails(conversationId);
-        fetchMessages(conversationId);
-    }, [conversationId]);
-
-
-
-
-    // Using useWebSocket hook
     const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
         onMessage: (data) => {
-            const { text, sender_username, sent_at, uuid } = data;
-            setMessages(prevMessages => {
-                if (prevMessages.some(msg => msg.uuid === uuid)) {
-                    return prevMessages;
-                }
-                return [...prevMessages, { text, sender_username, sent_at, uuid }];
-            });
-        }
+            if (!messages.some((m) => m.uuid === data.uuid)) {
+                setMessages((prev) => [...prev, data]);
+            }
+        },
     });
 
-    const handleSendMessage = () => {
-        if (typeMessageContent.trim() !== '') {
-            const messageData = {
-                text: DOMPurify.sanitize(typeMessageContent),
-                sender_username: authState.user.username,
-            };
-            sendMessage(messageData);  // Send the message through the WebSocket
-            setTypeMessageContent('');  // Clear the input field
+    useEffect(() => {
+        const fetchData = async () => {
+            const [convRes, msgRes] = await Promise.all([
+                callApi(`messages/get_conversation_details/${conversationId}`),
+                callApi(`messages/get_messages/${conversationId}/`),
+            ]);
+            setConversation(convRes.data);
+            setMessages(msgRes.data);
+        };
+        fetchData();
+    }, [conversationId]);
+
+    useEffect(() => {
+        endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    const handleSend = () => {
+        const trimmed = input.trim();
+        if (!trimmed) return;
+        const safe = DOMPurify.sanitize(trimmed);
+        sendMessage({
+            text: safe,
+            sender_username: authState?.current?.user?.username,
+        });
+        setInput("");
+    };
+
+    const handleAcceptRequest = async () => {
+        await callApi(`messages/request/${conversationId}/accept/`, "POST");
+        const updated = await callApi(`messages/get_conversation_details/${conversationId}`);
+        setConversation(updated.data);
+    };
+
+    const handleRejectRequest = async () => {
+        await callApi(`messages/request/${conversationId}/reject/`, "POST");
+        navigate("/messages/requests");
+    };
+
+    const handleBlockRequest = async () => {
+        await callApi(`messages/request/${conversationId}/block/`, "POST");
+    };
+
+    const isOwn = (msg) =>
+        msg.sender_username === authState?.current?.user?.username;
+
+    const recipient = conversation?.participants?.find(
+        (p) => p.user.id !== authState?.current?.user?.id
+    );
+
+    const renderFooter = () => {
+        if (!conversation) return null;
+
+        const { view_type, conversation_status } = conversation;
+        const isBlocked = conversation_status === "blocked";
+        const isInvite = conversation_status === "invite";
+        const isInviteAccepted = conversation_status === "allowed";
+        const inviteSent = messages.length >= 1;
+
+        if (isBlocked) {
+            return (
+                <div className="request-warning-container">
+                    You cannot send messages in this conversation.
+                </div>
+            );
         }
-    };
 
-
-
-    const handleUnsend = async (messageId) => {
-        try {
-            const response = await callApi(`messages/unsend/${messageId}`, 'POST');
-            console.log(response.data);
-            // Update the local state to reflect the unsent message
-        } catch (err) {
-            console.error('Error unsending message', err);
+        if (isInvite && inviteSent) {
+            return (
+                <div className="request-warning-container">
+                    <h3>Invite Sent</h3>
+                    You can send more messages once your request is accepted.
+                </div>
+            );
         }
-    };
 
-    const handleReport = async (contentType = 'message', messageId) => {
-        openReportOverlay(contentType, messageId);
-    };
+        if ((isInvite && !inviteSent && view_type === "inbox") || (isInviteAccepted && view_type === "inbox")) {
+            return (
+                <>
+                    {isInvite && messages.length === 0 && (
+                        <div className="request-warning-container invite">
+                            You can only send <strong>one</strong> message as an invitation until your request is accepted.
+                        </div>
+                    )}
+                    <div className="write-message-container">
+                        <EmojiButton />
+                        <CustomTextarea
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Type a message..."
+                            className="chat-textarea"
+                        />
+                        <button className="send-message-btn" onClick={handleSend}>
+                            <FaPaperPlane />
+                        </button>
+                    </div>
+                </>
+            );
+        }
 
-    const handleCopy = (htmlText) => {
-        // Strip HTML tags using DOMPurify
-        const plainText = DOMPurify.sanitize(htmlText, { ALLOWED_TAGS: [] });
-    
-        navigator.clipboard.writeText(plainText)
-            .then(() => alert('Message copied to clipboard'))
-            .catch(err => console.error('Error copying text to clipboard', err));
+        if (view_type === "request") {
+            return (
+                <div className="message-request-btns">
+                    <button onClick={handleAcceptRequest} className="accept-request-btn">Accept</button>
+                    <button onClick={handleRejectRequest} className="reject-request-btn">Reject</button>
+                    <button onClick={handleBlockRequest} className="block-request-btn">Block</button>
+                    <button onClick={() => { handleBlockRequest(); }} className="report-request-btn">Report & Block</button>
+                </div>
+            );
+        }
+
+        return null;
     };
 
     return (
         <div className="chat-container">
-            <div className="chat-container-top-panel">
-                <div className="chat-profiles-list-container">
-                    <div className={`participants-profile-image-container`}>
-                        {conversationDetails?.participants?.slice(0, 2).map((participant, index) => (
-                            <ProfilePicture
-                                key={index}
-                                src={participant?.profile_image}
-                                className={`profile-image profile-image-${index}`}
-                            />
-                        ))}
-                    </div>
-                    <div className="participants-profile-username-container">
-                        {conversationDetails?.participants?.map((participant, index, arr) => (
-                            <span key={index} className="participant-username">
-                                {participant?.user?.username}
-                                {index < arr.length - 1 ? ', ' : ''}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-                <div className="conversation-info-container">
-
-                </div>
-            </div>
-            <div className="chat-container-center-panel" ref={centerPanelRef} >
-                {messages?.map((message, index) => {
-                    return (
-                        <Message
-                            key={message.uuid} // Use UUID as key for better list reconciliation
-                            message={message}
-                            previousMessage={messages[index - 1]}
-                            nextMessage={messages[index + 1]}
-                            authState={authState}
-                            centerPanelRef={centerPanelRef}
-                            handleReport={handleReport}
-                            handleCopy={handleCopy}
+            <div className="chat-header">
+                {recipient && (
+                    <>
+                        <ProfilePicture
+                            src={recipient?.user?.profile_image}
+                            className="chat-header-avatar"
                         />
-                    )
-                })}
+                        <div className="chat-header-info">
+                            <p className="chat-header-name">
+                                {recipient?.user?.first_name} {recipient?.user?.last_name}
+                            </p>
+                            <p className="chat-header-username">
+                                @{recipient?.user?.username}
+                            </p>
+                        </div>
+                    </>
+                )}
+            </div>
+
+            <div className="chat-body" ref={centerPanelRef}>
+                {messages.map((msg, i) => (
+                    <ChatMessage
+                        key={msg?.uuid}
+                        message={msg}
+                        previous={messages[i - 1]}
+                        next={messages[i + 1]}
+                        isOwn={isOwn(msg)}
+                        centerPanelRef={centerPanelRef}
+                    />
+                ))}
+                <div ref={endRef} />
             </div>
 
             <div className="chat-container-bottom-panel">
-                {renderSendMessagePanel(
-                    conversationId,
-                    conversationDetails,
-                    setConversationDetails,
-                    messages.length,
-                    typeMessageContent,
-                    setTypeMessageContent,
-                    callApi,
-                    navigate,
-                    handleSendMessage,
-                    authState.user.id,
-                )}
+                {renderFooter()}
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default ChatContainer;

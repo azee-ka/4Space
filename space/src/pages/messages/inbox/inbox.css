@@ -1,6 +1,109 @@
+.inbox-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-grow: 1;
+  overflow: hidden;
+}
 
-.no-conversation-message-icon .chat-icon {
-    width: 40px;
-    aspect-ratio: 1 / 1;
-    color: rgb(255, 255, 255);
-  }
+.inbox-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inbox-top h3 {
+  font-size: 1em;
+  font-weight: 500;
+  margin: 0;
+  color: #f1f1f1;
+}
+
+.inbox-top button {
+  all: unset;
+  font-size: 0.9em;
+  color: #e0e0e0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inbox-top button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+
+.inbox-chats {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+.chat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.chat-card:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.chat-card.active {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.chat-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-name {
+  font-size: 0.95em;
+  color: #f0f0f0;
+  margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.chat-username {
+  font-size: 0.82em;
+  color: #999;
+  margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.inbox-empty {
+  font-size: 0.9em;
+  color: #999;
+  padding: 1em 0;
+  text-align: center;
+}
