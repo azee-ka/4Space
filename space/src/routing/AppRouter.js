@@ -47,6 +47,7 @@ import Calculator from '../apps/space/tools/calculator/calculator';
 import NotebookEditor from '../apps/space/tools/notebookEditor/notebookEditor';
 import { DisplaySettingsProvider } from '../context/DisplaySettingsContext';
 import SpaceLibrary from '../apps/space/library/library';
+import { CreateCommunityProvider } from '../context/CreateCommunityContext';
 
 
 const AppRouter = () => {
@@ -141,6 +142,7 @@ const AppRouter = () => {
                 <ReportOverlayProvider>
                     <EditorProvider>
                         <PostProvider>
+                            <CreateCommunityProvider>
                             <CreatePostProvider>
                                 <React.Suspense fallback={<div>Loading...</div>}>
                                     <Routes>
@@ -180,6 +182,7 @@ const AppRouter = () => {
                                     </Routes>
                                 </React.Suspense>
                             </CreatePostProvider>
+                            </CreateCommunityProvider>
                         </PostProvider>
                     </EditorProvider>
                 </ReportOverlayProvider>

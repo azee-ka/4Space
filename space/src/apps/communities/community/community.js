@@ -158,7 +158,7 @@ const Community = () => {
 
       {/* Main Content Area (scrolls with page) */}
       <div className='community-card-wrapper'>
-        <div className="community-card community-content-card">
+        <div className="community-content-card">
           {selectedTab.key && TAB_COMPONENTS_FLAT[selectedTab.key] ? (
             React.createElement(TAB_COMPONENTS_FLAT[selectedTab.key].Component, {
               communityId: community.id,

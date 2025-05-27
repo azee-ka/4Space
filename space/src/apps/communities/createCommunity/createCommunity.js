@@ -1,12 +1,17 @@
 // CreateCommunity.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './createCommunity.css';
 import useApi from '../../../utils/useApi';
 import { useNavigate } from 'react-router-dom';
+import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
+import { FaTimes } from 'react-icons/fa';
 
 const CreateCommunity = () => {
   const { callApi } = useApi();
   const navigate = useNavigate();
+
+      const { closeCreateCommunityOverlay: onClose } = useCreateCommunityContext();
+  
 
   const [formData, setFormData] = useState({
     name: '',
@@ -24,6 +29,12 @@ const CreateCommunity = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+
+      useEffect(() => {
+          window.history.pushState(null, '', '/communities/create');
+      }, []);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -64,7 +75,12 @@ const CreateCommunity = () => {
   };
 
   return (
-    <div className="create-community-container">
+    <div className='create-community-wrapper' onClick={() => onClose()}>
+      <div className="create-community-container" onClick={(e) => e.stopPropagation()} >
+        <button className="create-community-close-btn" onClick={onClose}>
+          <FaTimes className="icon-style" />
+        </button>
+
       <h2 className="create-community-title">Create Community</h2>
       <form className="create-community-form" onSubmit={handleSubmit}>
         <section className="create-community-section">
@@ -136,6 +152,8 @@ const CreateCommunity = () => {
           {loading ? 'Creating...' : 'Create Community'}
         </button>
       </form>
+    </div>
+
     </div>
   );
 };
