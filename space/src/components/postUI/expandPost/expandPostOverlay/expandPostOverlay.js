@@ -184,7 +184,6 @@ const ExpandedPostOverlay = () => {
                         <EmojiButton onEmojiSelect={(emoji) => commentEditorRef.current?.insertEmoji?.(emoji)} />
                         <CustomEditor
                             ref={commentEditorRef}
-
                             placeholder='Comment here...'
                             content={commentText}
                             onContentChange={setCommentText}
