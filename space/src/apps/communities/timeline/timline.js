@@ -84,40 +84,73 @@ const CommunitiesTimeline = () => {
           )}
         </div>
       </div>
-      <aside className="community-timeline-sidebar">
-  <h4>Explore & Filter</h4>
 
-  <div className="filter-group">
-    <label htmlFor="category">Category</label>
-    <select id="category">
-      <option>All</option>
-      <option>Tech</option>
-      <option>Gaming</option>
-      <option>Art</option>
-    </select>
+
+<aside className="community-timeline-sidebar">
+  <h4>Explore</h4>
+
+  <div className="sidebar-section">
+    <h5 className="section-title">Trending</h5>
+    <ul className="sidebar-trending">
+      {communities
+        .slice()
+        .sort((a, b) => b.members_count - a.members_count)
+        .slice(0, 3)
+        .map((c) => (
+          <li key={c.id}>
+            <Link to={`/communities/c/${c.id}`}>{c.name}</Link>
+            <span>{c.members_count} members</span>
+          </li>
+        ))}
+    </ul>
   </div>
 
-  <div className="filter-group">
-    <label htmlFor="type">Type</label>
-    <select id="type">
-      <option>All</option>
-      <option>Public</option>
-      <option>Private</option>
-      <option>Invite Only</option>
-    </select>
+  <div className="sidebar-section">
+  <h5 className="section-title">Suggested</h5>
+  <div className="sidebar-suggested">
+    <div className="suggested-community">
+      <strong>DesignHub</strong>
+      <span>UI/UX • 482 members</span>
+      <button>Join</button>
+    </div>
+    <div className="suggested-community">
+      <strong>React Masters</strong>
+      <span>Tech • 1.2k members</span>
+      <button>Join</button>
+    </div>
+  </div>
+</div>
+
+
+  <div className="sidebar-section">
+    <h5 className="section-title">Your Activity</h5>
+    <ul className="sidebar-mini-list">
+      <li>
+        <Link to="/communities/joined">Joined Communities</Link>
+      </li>
+      <li>
+        <Link to="/communities/manage">Moderating</Link>
+      </li>
+    </ul>
   </div>
 
-  <div className="sidebar-summary">
-    <span><strong>Total</strong> {communities.length}</span>
-    <span><strong>Public</strong> {communities.filter(c => c.type === 'Public').length}</span>
-    <span><strong>Private</strong> {communities.filter(c => c.type === 'Private').length}</span>
+  <div className="sidebar-section">
+    <h5 className="section-title">Filter by Type</h5>
+    <div className="sidebar-tags">
+      {['Public', 'Private', 'Invite Only'].map((type) => (
+        <span key={type} className="tag-pill">
+          {type}
+        </span>
+      ))}
+    </div>
   </div>
 
   <div className="sidebar-actions">
     <button>Create Community</button>
-    <button>Manage Joined</button>
+    <button>Explore All</button>
   </div>
 </aside>
+
 
     </div>
   );

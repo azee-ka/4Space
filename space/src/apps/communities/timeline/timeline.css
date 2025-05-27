@@ -11,114 +11,7 @@
   background: rgba(255, 255, 255, 0.01);
 }
 
-/* === Sidebar === */
-.community-timeline-sidebar {
-  width: 320px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 8px 20px rgba(0, 255, 255, 0.02);
-  box-sizing: border-box;
-}
 
-/* Sidebar Title */
-.community-sidebar h4 {
-  font-size: 1.1em;
-  font-weight: 600;
-  color: #b8f4ff;
-  margin-bottom: 0.75em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 6px;
-}
-
-/* Sidebar Summary */
-.sidebar-summary {
-  background: rgba(255, 255, 255, 0.015);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: #dcdcdc;
-}
-
-.sidebar-summary span {
-  display: flex;
-  justify-content: space-between;
-}
-
-.sidebar-summary strong {
-  color: #91ecff;
-}
-
-/* Filter Controls */
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.filter-group label {
-  font-size: 0.75rem;
-  color: #c3c3c3;
-}
-
-.filter-group select {
-  padding: 8px 10px;
-  font-size: 0.85rem;
-  color: #eaeaea;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  appearance: none;
-  outline: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-}
-
-.filter-group select:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  cursor: pointer;
-}
-
-/* Sidebar Actions */
-.sidebar-actions {
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sidebar-actions button {
-  all: unset;
-  padding: 0.5em 0.8em;
-  font-size: 0.8rem;
-  color: #aadffb;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.025);
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.sidebar-actions button:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  color: white;
-  cursor: pointer;
-}
 
 /* === Main Content === */
 .community-main-content {
@@ -274,4 +167,197 @@
   color: #999;
   padding: 20px;
   text-align: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.community-timeline-sidebar {
+  width: 290px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(25,25,35,0.35) 0%, rgba(25,25,30,0.2) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 6px 20px rgba(0, 255, 255, 0.025);
+  color: #e4e4e4;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Section Layout */
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.sidebar-section:last-of-type {
+  border-bottom: none;
+}
+
+.section-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #90eaff;
+  margin: 0 0 6px 0;
+  letter-spacing: 0.3px;
+}
+
+/* Trending List */
+.sidebar-trending {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-trending li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding-left: 10px;
+  border-left: 2px solid rgba(255, 255, 255, 0.06);
+  color: #dffeff;
+}
+
+.sidebar-trending li a {
+  color: #b7f6ff;
+  text-decoration: none;
+}
+
+.sidebar-trending li a:hover {
+  text-decoration: underline;
+}
+
+/* Suggested Communities */
+.sidebar-suggested {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggested-community {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.83rem;
+}
+
+.suggested-community strong {
+  color: #ffffff;
+  font-size: 0.89rem;
+}
+
+.suggested-community span {
+  color: #b6d9e6;
+  font-size: 0.75rem;
+}
+
+.suggested-community button {
+  align-self: flex-start;
+  all: unset;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: #00eaff;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  background: rgba(0, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.suggested-community button:hover {
+  background: rgba(0, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Your Activity */
+.sidebar-mini-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.sidebar-mini-list li a {
+  color: #aef6ff;
+  text-decoration: none;
+}
+
+.sidebar-mini-list li a:hover {
+  text-decoration: underline;
+}
+
+/* Tag Pills */
+.sidebar-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.tag-pill {
+  font-size: 0.75rem;
+  color: #c2f6ff;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tag-pill:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Action Buttons */
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-actions button {
+  all: unset;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #aaf2ff;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 0.55em 1em;
+  transition: background 0.2s ease;
+}
+
+.sidebar-actions button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
