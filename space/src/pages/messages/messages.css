@@ -10,6 +10,7 @@
   font-family: 'Inter', sans-serif;
   color: white;
   padding: 20px;
+  padding-top: 6px;
   box-sizing: border-box;
 }
 
@@ -20,7 +21,7 @@
   height: 100%;
   background: rgba(107, 107, 107, 0.069);           /* slightly richer than layout */
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.085);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   backdrop-filter: blur(12px) saturate(140%);
@@ -123,13 +124,13 @@
   color: #eaeaea;
 }
 
-.chat-pane {
+/* .chat-pane {
   flex-grow: 1;
   height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
+} */
 
 .chat-placeholder {
   display: flex;
@@ -139,4 +140,5 @@
   font-size: 0.95em;
   font-style: italic;
   height: 100%;
+  width: 100%;
 }
