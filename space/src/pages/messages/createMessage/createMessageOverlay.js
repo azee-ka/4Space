@@ -4,8 +4,10 @@ import { FaTimes } from "react-icons/fa";
 import useApi from "../../../utils/useApi";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import "./createMessageOverlay.css";
+import { useAuth } from "../../../hooks/useAuth";
 
 const CreateMessageOverlay = ({ onClose }) => {
+    const { authState } = useAuth();
   const { callApi } = useApi();
   const navigate = useNavigate();
 
@@ -42,17 +44,27 @@ const CreateMessageOverlay = ({ onClose }) => {
     }
   };
 
-  const startConversation = async () => {
-    try {
-      const res = await callApi("messages/create_conversation/", "POST", {
-        recipients: selected.map((u) => ({ id: u.id, username: u.username })),
-      });
-      navigate(`/messages/inbox/c/${res.data.conversation_uuid}`);
-      onClose();
-    } catch (err) {
-      console.error("Start conversation error", err);
-    }
-  };
+
+const startConversation = async () => {
+  try {
+    console.log("Starting conversation with:", selected);
+    const payload = selected.map((u) => ({
+      id: u.user?.id ?? u.id,
+      username: u.user?.username ?? u.username,
+    }));
+
+    const res = await callApi("messages/create_conversation/", "POST", {
+      recipients: payload,
+    });
+
+    navigate(`/messages/inbox/c/${res.data.conversation_uuid}`);
+    onClose();
+  } catch (err) {
+    console.error("Start conversation error", err.response?.data || err);
+  }
+};
+
+
 
   return (
     <div className="msg-overlay" onClick={onClose}>
