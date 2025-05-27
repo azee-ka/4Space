@@ -37,6 +37,7 @@
   align-items: center;
   padding: 28px 0;
   gap: 24px;
+  flex-shrink: 0;
 }
 
 .messages-sidebar-item {
@@ -105,6 +106,7 @@
   padding: 20px 24px;
   box-sizing: border-box;
   display: flex;
+    flex-shrink: 0;
   flex-direction: column;
 }
 

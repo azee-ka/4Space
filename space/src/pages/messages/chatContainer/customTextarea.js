@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef, forwardRef } from "react";
 
-const CustomTextarea = ({
+const CustomTextarea = forwardRef(({
   value,
   onChange,
   placeholder = "Type your message...",
@@ -8,8 +8,9 @@ const CustomTextarea = ({
   minHeight = 40,
   className = "",
   ...props
-}) => {
-  const textareaRef = useRef(null);
+}, ref) => {
+  const innerRef = useRef(null);
+  const textareaRef = ref || innerRef;
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -17,7 +18,6 @@ const CustomTextarea = ({
 
     el.style.height = "auto";
 
-    // Manually enforce initial height and max height
     const scrollHeight = el.scrollHeight;
     const finalHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
     el.style.height = `${finalHeight}px`;
@@ -41,6 +41,6 @@ const CustomTextarea = ({
       {...props}
     />
   );
-};
+});
 
 export default CustomTextarea;

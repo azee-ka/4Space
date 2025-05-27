@@ -14,7 +14,9 @@
 
 /* ==== Header ==== */
 .chat-header {
-    padding: 12px 18px;
+    padding: 6px 18px;
+    height: 60px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -63,7 +65,7 @@
 .chat-timestamp {
     text-align: center;
     font-size: 0.75em;
-    color: #8ecde8;
+    color: #bababa;
     margin: 10px 0 6px;
     text-shadow: 0 0 2px rgba(120, 255, 255, 0.1);
 }
@@ -98,10 +100,11 @@
     border: 1px solid transparent;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
     transition: all 0.25s ease-in-out;
+    text-align: left;
 }
 
 .chat-bubble.own {
-    background: linear-gradient(135deg, rgba(109, 186, 212, 0.1), rgba(43, 118, 169, 0.255));
+    background: linear-gradient(135deg, rgba(135, 170, 181, 0.28), rgba(87, 187, 253, 0.397));
     border: 1px solid rgba(0, 161, 220, 0.128);
     backdrop-filter: blur(10px);
     color: #e0f8ff;
@@ -109,7 +112,7 @@
 }
 
 .chat-bubble.other {
-    background: linear-gradient(135deg, rgba(150, 136, 220, 0.08), rgba(89, 89, 166, 0.358));
+    background: linear-gradient(135deg, rgba(104, 99, 127, 0.274), rgba(124, 124, 232, 0.358));
     border: 1px solid rgba(120, 100, 200, 0.128);
     backdrop-filter: blur(10px);
     color: #e3e6ff;
@@ -146,11 +149,14 @@
 
 
 .chat-bubble.emoji-only {
-    font-size: 2em;
+    font-size: 3em;
     line-height: 1;
     background: none;
     box-shadow: none;
     padding: 4px;
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
 
@@ -173,24 +179,54 @@
     box-sizing: border-box;
 }
 
-/* Emoji Button */
-.emoji-btn {
-    all: unset;
-    width: 38px;
-    height: 38px;
+
+
+.emoji-btn-container {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    width: 43px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.06);
     color: #ccc;
     cursor: pointer;
+    transition: all 0.4s ease;
+    box-sizing: border-box;
+}
+.emoji-btn-container:hover {
+    background: rgba(255, 255, 255, 0.226);
+    color: #fff;
+}
+.emoji-btn-container > div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
     transition: all 0.2s ease;
 }
 
-.emoji-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+/* Emoji Button */
+.emoji-button {
+    all: unset;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    color: #ccc;
+    background-color: rgba(128, 128, 128, 0) !important;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emoji-button:hover {
+    transform: none;
 }
 
 
@@ -226,72 +262,23 @@
 /* Send Button */
 .send-message-btn {
     all: unset;
-    width: 40px;
-    height: 40px;
     font-size: 1.2em;
     border-radius: 50%;
+    padding: 12px 12px;
     display: flex;
     justify-content: center;
     align-items: center;
     background: rgba(0, 255, 255, 0.1);
     color: #00eaff;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .send-message-btn:hover {
     background: rgba(0, 255, 255, 0.2);
-    transform: scale(1.1);
-    box-shadow: 0 0 6px rgba(0, 255, 255, 0.4);
+    box-shadow: 0 0 6px rgba(0, 255, 255, 0.203);
 }
 
-/* ==== Request Handling Buttons ==== */
-.message-request-btns {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    gap: 10px;
-    padding: 1em;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background-color: rgba(28, 28, 36, 0.25);
-}
-
-.message-request-btns button {
-    flex: 1;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 0.9em;
-    font-weight: 500;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: white;
-}
-
-.accept-request-btn {
-    background-color: rgba(0, 200, 150, 0.3);
-    border-color: rgba(0, 200, 150, 0.6);
-    color: #b2fff1;
-}
-
-.reject-request-btn {
-    background-color: rgba(255, 165, 0, 0.25);
-    border-color: rgba(255, 180, 90, 0.6);
-    color: #ffe7b0;
-}
-
-.block-request-btn {
-    background-color: rgba(200, 60, 60, 0.25);
-    border-color: rgba(200, 60, 60, 0.6);
-    color: #ffc7c7;
-}
-
-.report-request-btn {
-    background-color: rgba(255, 60, 60, 0.3);
-    border-color: rgba(255, 60, 60, 0.6);
-    color: #ffb8b8;
-    font-weight: bold;
-}
 
 
 
@@ -396,3 +383,85 @@
 .report-btn {
     color: #ff5c5c;
 }
+
+
+
+
+
+
+.chat-header-avatar-group {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  position: relative;
+  min-width: 40px;
+  height: 100%;
+}
+
+.stacked-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  position: absolute;
+  object-fit: cover;
+  background-color: #2e2e2e;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+  top: 2px;
+}
+
+.stacked-avatar-0 { left: 0px; z-index: 3; }
+.stacked-avatar-1 { left: 22px; z-index: 2; }
+.stacked-avatar-2 { left: 44px; z-index: 1; }
+
+
+
+
+
+
+
+/* Unified warning and info panels */
+.request-warning-container,
+.invite-info-panel {
+  padding: 1em;
+  margin-bottom: 0.5em;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #d5d5d5;
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+/* Heading */
+.request-warning-container h3,
+.invite-info-panel .invite-heading {
+  margin: 0 0 6px;
+  font-size: 1em;
+  font-weight: 600;
+  color: #00eaff;
+}
+
+/* Text content */
+.invite-description,
+.request-warning-container p {
+  margin: 0;
+  color: #c4c4c4;
+}
+
+
+
+.stacked-extra {
+  left: 66px;
+  z-index: 0;
+  background-color: #444;
+  color: #fff;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+
