@@ -124,13 +124,6 @@
   color: #eaeaea;
 }
 
-/* .chat-pane {
-  flex-grow: 1;
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-} */
 
 .chat-placeholder {
   display: flex;
