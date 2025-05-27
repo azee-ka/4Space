@@ -150,25 +150,21 @@ const MediaPreview = ({ mediaFiles, onBack }) => {
 
             <div className='media-preview-meta-header'>
                 <div className="media-preview-meta-container">
-                    <div className="media-preview-meta">
-                        <div className="meta-item">
-                            <span className="meta-label">File Size:</span> <span className="meta-value">{formatFileSize(mediaMetaData.size)}</span>
-                        </div>
-                        <div className="meta-item">
-                            <span className="meta-label">Last Modified:</span> <span className="meta-value">{mediaMetaData.uploadDate}</span>
-                        </div>
-                        {mediaMetaData.width && mediaMetaData.height && (
-                            <div className="meta-item">
-                                <span className="meta-label">Dimensions:</span> <span className="meta-value">{mediaMetaData.width} x {mediaMetaData.height}</span>
-                            </div>
-                        )}
-                        {mediaMetaData.duration && (
-                            <div className="meta-item">
-                                <span className="meta-label">Duration:</span> <span className="meta-value">{Math.floor(mediaMetaData.duration / 60)}:{Math.floor(mediaMetaData.duration % 60)}</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
+  <div className="media-preview-meta">
+    <div className="meta-item">
+      <span className="meta-label">File Size:</span>
+      <span className="meta-value">{formatFileSize(mediaMetaData.size)}</span>
+    </div>
+    <div className="meta-item">
+      <span className="meta-label">Last Modified:</span>
+      <span className="meta-value">{mediaMetaData.uploadDate}</span>
+    </div>
+    <div className="meta-item">
+      <span className="meta-label">Dimensions:</span>
+      <span className="meta-value">{mediaMetaData.width} x {mediaMetaData.height}</span>
+    </div>
+  </div>
+</div>
 
                 <div className="media-preview-btns-container">
                     <button className="save-btn" onClick={handleTemporarySave}>

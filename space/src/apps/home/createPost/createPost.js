@@ -168,7 +168,7 @@ const CreatePost = () => {
         const formData = new FormData();
 
         formData.append('post_type', activeButton === 'Poll' || activeButton === 'Event' ? 'Thread' : activeButton);
-        formData.append('author', authState.user.username);
+        formData.append('author', authState?.current?.user?.username);
         formData.append('visibility', visibilityActiveBtn);
         formData.append('restriction', restrictionActiveBtn);
         formData.append('comments_setting', commentsActiveBtn);

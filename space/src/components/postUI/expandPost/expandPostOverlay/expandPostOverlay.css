@@ -1,16 +1,30 @@
 .expanded-post-comment-top-panel.overlay {
-    background-color: rgb(0, 0, 0);
+    /* background-color: rgb(0, 0, 0); */
+      background: rgba(20, 20, 20, 0.403);
+  border: 1px solid rgba(255, 255, 255, 0.121);
+  backdrop-filter: blur(20px);
 }
 
 .expanded-post-comments.overlay {
-    background-color: rgb(0, 0, 0);
+    /* background-color: rgb(0, 0, 0); */
+      background: rgba(20, 20, 20, 0.403);
+  border: 1px solid rgba(255, 255, 255, 0.121);
+  backdrop-filter: blur(20px);
 }
 
 .expanded-post-creation-time.overlay {
-    background-color: black;
+    /* background-color: black; */
+      background: rgba(20, 20, 20, 0.403);
+  border: 1px solid rgba(255, 255, 255, 0.121);
+  backdrop-filter: blur(20px);
 }
+
+
 .expanded-post-info-likes-unlikes-comments-count.overlay {
-    background-color: black;
+    /* background-color: black; */
+          background: rgba(20, 20, 20, 0.403);
+  border: 1px solid rgba(255, 255, 255, 0.121);
+  backdrop-filter: blur(20px);
 }
 
 .expanded-post-media.overlay img {
@@ -81,5 +95,5 @@
 
 
 .expanded-post-interaction-container.overlay {
-    background-color: rgb(0, 0, 0);
+    /* background-color: rgb(0, 0, 0); */
 }
