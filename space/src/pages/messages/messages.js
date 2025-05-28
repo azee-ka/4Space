@@ -19,6 +19,7 @@ const Messages = () => {
   const isRequests = location.pathname.startsWith("/messages/requests");
 
   return (
+    <>
     <div className="messages-layout">
       <div className="messages-app-card">
         <aside className="messages-sidebar-mini left">
@@ -73,9 +74,9 @@ const Messages = () => {
           )}
         </main>
       </div>
-
-      {showOverlay && <CreateMessageOverlay onClose={() => setShowOverlay(false)} />}
     </div>
+        {showOverlay && <CreateMessageOverlay onClose={() => setShowOverlay(false)} />}
+    </>
   );
 };
 

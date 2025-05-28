@@ -14,7 +14,7 @@
 
 .thread-post-container {
     width: 650px;
-    min-height: 100%;
+    /* min-height: 100%; */
     height: auto;
     backdrop-filter: blur(15px);
     background: rgba(255, 255, 255, 0.04);
@@ -175,22 +175,28 @@
     flex-grow: 1;
 }
 
+
+.thread-post-reply .emoji-btn-container {
+    width: 36px !important;
+    height: 36px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .thread-post-reply .emoji-button {
     background: rgba(255, 255, 255, 0.08);
     border: none;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
 }
-.thread-post-reply .editor-container {
+.thread-post-reply textarea {
     flex-grow: 1;
     width: 100%;
-    padding: 3px 10px;
+    padding: 12px 15px;
     background: rgba(255, 255, 255, 0.07);
     border: none;
     border-radius: 20px;
@@ -200,9 +206,6 @@
     max-height: 150px;
 }
 
-.thread-post-reply input::placeholder {
-    color: rgba(220, 220, 220, 0.6);
-}
 
 .thread-post-reply-container button {
     background: rgba(0, 120, 134, 0.8);
@@ -243,6 +246,9 @@
     border-bottom: 1px solid rgba(255,255,255,0.08);
     padding-bottom: 16px;
     padding-top: 10px;
+}
+.comment-item:last-child {
+    border-bottom: 1px solid rgba(255,255,255,0);
 }
 
 .comment-header {
