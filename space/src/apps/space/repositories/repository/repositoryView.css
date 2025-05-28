@@ -336,7 +336,7 @@
   max-height: 85vh;
   color: #ecf1f8;
   z-index: 50 !important;
-  overflow: hidden;
+  /* overflow: auto; */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -533,4 +533,40 @@
 }
 .repo-back-btn:hover {
   text-decoration: underline;
+}
+
+
+
+.repo-file-item[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+}
+
+
+
+
+.repo-file-item {
+  pointer-events: auto; /* just to be safe */
+}
+.file-drag-handle {
+  cursor: grab;
+  user-select: text;
+  pointer-events: auto;
+}
+.repo-file-item {
+  cursor: grab;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.repo-file-item:active {
+  cursor: grabbing;
+}
+
+
+
+.repo-list.small {
+  overflow-y: auto;
+  max-height: 400px;
+  padding-right: 20px;
 }
