@@ -48,6 +48,8 @@ import NotebookEditor from '../apps/space/tools/notebookEditor/notebookEditor';
 import { DisplaySettingsProvider } from '../context/DisplaySettingsContext';
 import SpaceLibrary from '../apps/space/library/library';
 import { CreateCommunityProvider } from '../context/CreateCommunityContext';
+import SpaceRepositories from '../apps/space/repositories/repositories';
+import RepositoryView from '../apps/space/repositories/repository/repositoryView';
 
 
 const AppRouter = () => {
@@ -80,6 +82,8 @@ const AppRouter = () => {
         { name: 'Space Library', path: '/space/library', component: <SpaceLibrary />, key: 'SpaceLibrary' },
         { name: 'Space Tools', path: '/space/tools', component: <SpaceTools />, key: 'SpaceTools' },
         { name: 'Create Space', path: '/space/create', component: <SpaceProjects />, key: 'SpaceCreate' },
+        { name: 'Space Repositories', path: '/space/repositories', component: <SpaceRepositories />, key: 'SpaceRepositories' },
+        { name: 'Space Repository', path: '/space/repositories/r/:repositoryId', component: <RepositoryView />, key: 'RepositoryView' },
 
         { name: 'Rich Editor', path: '/space/project/:projectId/rich-editor', component: <RichTextEditor />, key: 'RichTextEditor' },
         { name: 'Code Editor', path: '/space/project/:projectId/code-editor', component: <CodeEditor />, key: 'CodeEditor' },

@@ -1,0 +1,410 @@
+/* === LAYOUT ROOT === */
+.repo-view__shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  padding-right: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  color: #ecf1f8;
+  box-sizing: border-box;
+}
+
+/* === HEADER BAR === */
+.repo-view__header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 1.2rem 1.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  margin-bottom: 1.5rem;
+}
+
+.repo-view__title-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.repo-view__title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.repo-view__visibility {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  color: #a9f0ef;
+  font-weight: 500;
+}
+
+.repo-view__subtitle {
+  font-size: 0.85rem;
+  color: #a6b5c4;
+  margin-top: 0.3rem;
+}
+
+/* === TABS === */
+.repo-view__tab-bar {
+  display: flex;
+  gap: 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 2rem;
+}
+
+.repo-view__tab {
+  all: unset;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.6rem 0;
+  cursor: pointer;
+  color: #b5c1cf;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.repo-view__tab:hover {
+  color: #ffffff;
+}
+
+.repo-view__tab--active {
+  color: #ffffff;
+}
+
+.repo-view__tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #00ffe7;
+  border-radius: 2px;
+}
+
+/* === LAYOUT GRID === */
+.repo-view__layout {
+  display: flex;
+  gap: 2rem;
+}
+
+/* === MAIN CONTENT === */
+.repo-view__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* === SIDEBAR === */
+.repo-view__sidebar {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* === CARD COMPONENT === */
+.repo-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.repo-card:hover {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+}
+
+.repo-card__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.repo-card > *:not(:first-child) {
+  margin-top: 2rem;
+}
+
+.repo-card__title::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background-color: #00ffe7;
+  border-radius: 999px;
+}
+
+
+.repo-card__desc {
+  font-size: 0.88rem;
+  color: #cfd9e4;
+  margin-bottom: 1.2rem;
+}
+
+.repo-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #aab7c3;
+}
+
+/* === INPUTS & FORMS === */
+.repo-card input,
+.repo-card textarea,
+.repo-card select {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #eaf4ff;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.8rem;
+  transition: border 0.2s ease;
+}
+
+.repo-card input:focus,
+.repo-card textarea:focus,
+.repo-card select:focus {
+  border-color: #00ffe7;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 255, 231, 0.2);
+}
+
+.repo-card textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* === BUTTONS === */
+.repo-card button {
+  background: rgba(0, 255, 231, 0.06);
+  color: #e0fdfc;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  border: 1px solid rgba(0, 255, 231, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.3rem;
+}
+
+.repo-card button:hover {
+  background: rgba(0, 255, 231, 0.12);
+  box-shadow: 0 0 6px rgba(0, 255, 231, 0.08);
+}
+
+.repo-view__btn--danger {
+  background: transparent;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  margin-top: 1rem;
+}
+
+.repo-view__btn--danger:hover {
+  background: rgba(255, 0, 0, 0.08);
+}
+
+/* === LIST === */
+.repo-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.repo-list li {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.035);
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  color: #e2ecf4;
+}
+
+.repo-list li strong {
+  color: #ffffff;
+}
+
+/* === LOADING === */
+.repo-view__loading {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #99a6b2;
+  padding: 2rem 0;
+}
+
+
+
+
+
+
+/* === TAB SECTION FIXES === */
+
+/* Form inside cards */
+.repo-section__form,
+.repo-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.repo-section__form--inline {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.repo-section__form--inline input {
+  flex: 1;
+}
+
+.repo-list li:only-child {
+  background: none;
+  border: none;
+  color: #999;
+  font-style: italic;
+}
+
+
+/* Info/meta lines inside cards */
+.repo-section__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #a5b3c5;
+  margin-top: 1rem;
+}
+
+/* Clean list in card */
+.repo-section__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.repo-section__list li {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: #e3edf5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.repo-section__list li strong {
+  color: #ffffff;
+}
+
+/* Tag for Done/Pending */
+.repo-status-tag {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.repo-status-tag.done {
+  background: rgba(0, 255, 165, 0.2);
+  color: #00ff8a;
+}
+
+.repo-status-tag.pending {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cccccc;
+}
+
+
+
+
+
+
+/* === SETTINGS SECTION === */
+
+.repo-card__group {
+  margin-top: 1.6rem;
+}
+
+.repo-card__group label,
+.repo-card__group h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #e7f0f9;
+  display: block;
+}
+
+/* Optional: apply a small bottom divider under groups */
+.repo-card__group + .repo-card__group {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 1.6rem;
+}
+
+/* Form inside a group */
+.repo-card__group input,
+.repo-card__group select {
+  width: 100%;
+  max-width: 340px;
+  padding: 0.55rem 0.9rem;
+  background: rgba(255, 255, 255, 0.035);
+  color: #eaf4ff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: border 0.2s ease;
+}
+
+.repo-card__group input:focus,
+.repo-card__group select:focus {
+  border-color: #00ffe7;
+  box-shadow: 0 0 0 2px rgba(0, 255, 231, 0.2);
+  outline: none;
+}
+
+/* Invite button */
+.repo-card__group button {
+  margin-top: 0.5rem;
+  background: rgba(0, 255, 231, 0.06);
+  color: #e0fdfc;
+  font-size: 0.85rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 255, 231, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.repo-card__group button:hover {
+  background: rgba(0, 255, 231, 0.1);
+  box-shadow: 0 0 6px rgba(0, 255, 231, 0.08);
+}
