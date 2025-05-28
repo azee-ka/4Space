@@ -175,6 +175,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+DATA_UPLOAD_MAX_NUMBER_FILES = 2000
 
 
 AUTH_USER_MODEL = 'user.BaseUser'

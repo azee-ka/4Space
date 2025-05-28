@@ -74,9 +74,36 @@ export default function UploadModal({ onClose, onUpload }) {
 
   const currentFolder = getCurrentFolder();
 
+  // Recursively pull every File object out of your tree
+  const flattenTreeFiles = (nodes) => {
+    let out = [];
+    for (let entry of nodes) {
+      if (entry.type === "file") {
+        out.push(entry.file);
+      } else if (entry.type === "folder" && entry.children) {
+        out.push(...flattenTreeFiles(entry.children));
+      }
+    }
+    return out;
+  };
+
   const handleUpload = () => {
-    onUpload(selectedFiles); // You can pass more data if needed
+    // 1) all “root” files
+    const roots = selectedFiles;
+    // 2) all files inside any folders
+    const nested = flattenTreeFiles(folderStructure);
+    // 3) merge, dedupe by name (just in case)
+    const allFiles = [
+      ...roots,
+      ...nested.filter((f) => !roots.some((r) => r.name === f.name)),
+    ];
+
+    // hand off to parent
+    onUpload(allFiles);
+
+    // reset state & close
     setSelectedFiles([]);
+    // you may also want to clear folderStructure here if desired
     onClose();
   };
 

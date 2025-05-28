@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useApi from "../../../../utils/useApi";
 import "./repositoryView.css";
 import { formatDateTime } from "../../../../utils/formatDateTime";
 import UploadModal from "./UploadModal";
+import FileExplorer from "./FileExplorer";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -31,6 +32,10 @@ export default function RepositoryView() {
   });
 
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const [explorerPath, setExplorerPath] = useState(null);
+  // track which file we just clicked
+  const [initialFile, setInitialFile] = useState(null);
 
   const fetchRepo = async () => {
     try {
@@ -82,8 +87,62 @@ export default function RepositoryView() {
     }
   };
 
-  const renderTab = () => {
-    if (!repo) return <div className="repo-view__loading">Loading...</div>;
+  async function handleUpload(files) {
+    try {
+      const fd = new FormData();
+      files.forEach((file) => {
+        // 1) append the actual file
+        fd.append("files", file, file.webkitRelativePath || file.name);
+        // 2) append its path in the same order
+        fd.append("paths", file.webkitRelativePath || file.name);
+      });
+
+      const res = await callApi(
+        `space/repositories/repository/${repositoryId}/upload-structure/`,
+        "POST",
+        fd,
+        "multipart/form-data"
+      );
+      console.log("res", res.data);
+      fetchRepo();
+      setShowUploadModal(false);
+    } catch (err) {
+      console.error("Error uploadinf struct", err);
+    }
+  }
+
+  // build a single, memoized file-tree at top level
+  const fileTree = useMemo(() => {
+    if (!repo) return { children: [] };
+    const root = { name: "/", type: "folder", children: [] };
+    repo.files.forEach((f) => {
+      const parts = f.path.split("/");
+      let node = root;
+      parts.forEach((seg, i) => {
+        const isFile = i === parts.length - 1;
+        if (isFile) {
+          node.children.push({ name: seg, type: "file", url: f.file_url });
+        } else {
+          let child = node.children.find(
+            (c) => c.type === "folder" && c.name === seg
+          );
+          if (!child) {
+            child = { name: seg, type: "folder", children: [] };
+            node.children.push(child);
+          }
+          node = child;
+        }
+      });
+    });
+    return root;
+  }, [repo?.files]);
+
+  const rootEntries = fileTree.children;
+
+  function renderTab() {
+    if (!repo) {
+      return <div className="repo-view__loading">Loading…</div>;
+    }
 
     switch (tab) {
       case "overview":
@@ -110,8 +169,22 @@ export default function RepositoryView() {
         );
 
       case "library":
+        // if we’re drilled in, show explorer
+        if (explorerPath !== null) {
+          return (
+            <FileExplorer
+              files={repo.files}
+              initialPath={explorerPath}
+              onClose={() => {
+                setExplorerPath(null);
+              }}
+            />
+          );
+        }
+
+        // otherwise show root listing
         return (
-          <section className="repo-card">
+          <div className="repo-card">
             <div className="repo-card__header-row">
               <h2 className="repo-card__title">Files</h2>
               <button
@@ -121,18 +194,29 @@ export default function RepositoryView() {
                 Add Files
               </button>
             </div>
-            <ul className="repo-list">
-              {repo.files.length === 0 ? (
-                <li>No files available.</li>
-              ) : (
-                repo.files.map((file) => (
-                  <li key={file.item}>
-                    <strong>{file.alias || file.item}</strong>
-                  </li>
-                ))
-              )}
+
+            <ul className="repo-root-list">
+              {rootEntries.map((e) => (
+                <li
+                  key={e.name}
+                  className={`repo-root-item ${e.type}`}
+                  onClick={() => {
+                    if (e.type === "folder") {
+                      setExplorerPath([e.name]);
+                    } else {
+                      setExplorerPath([]);
+                    }
+                  }}
+                >
+                  <span className="file-icon">
+                    {e.type === "folder" ? "📁" : "📄"}
+                  </span>
+                  <span>{e.name}</span>
+                </li>
+              ))}
+              {rootEntries.length === 0 && <li>(no files)</li>}
             </ul>
-          </section>
+          </div>
         );
 
       case "boards":
@@ -275,7 +359,7 @@ export default function RepositoryView() {
       default:
         return null;
     }
-  };
+  }
 
   return (
     <div className="repo-view__shell">
@@ -311,38 +395,46 @@ export default function RepositoryView() {
       </div>
 
       {/* === BODY === */}
-      <div className="repo-view__layout">
+      <div
+        className={`repo-view__layout ${tab === "library" ? "no-sidebar" : ""}`}
+      >
+        {" "}
         <main className="repo-view__main">{renderTab()}</main>
-        <aside className="repo-view__sidebar">
-          <div className="repo-card">
-            <h4 className="repo-card__title">Collaborators</h4>
-            <ul className="repo-list">
-              {repo?.collaborators?.length ? (
-                repo.collaborators.map((c) => (
-                  <li key={c.email}>
-                    <strong>{c.username}</strong> — {c.email}
-                  </li>
-                ))
-              ) : (
-                <li>No collaborators yet.</li>
-              )}
-            </ul>
-          </div>
-          <div className="repo-card">
-            <h4 className="repo-card__title">Tags</h4>
-            <p>{repo?.tags || "None"}</p>
-          </div>
-          <div className="repo-card">
-            <h4 className="repo-card__title">Actions</h4>
-            <button className="repo-view__btn--danger" onClick={handleDelete}>
-              Delete Repository
-            </button>
-          </div>
-        </aside>
+        {tab !== "library" && (
+          <aside className="repo-view__sidebar">
+            <div className="repo-card">
+              <h4 className="repo-card__title">Collaborators</h4>
+              <ul className="repo-list">
+                {repo?.collaborators?.length ? (
+                  repo.collaborators.map((c) => (
+                    <li key={c.email}>
+                      <strong>{c.username}</strong> — {c.email}
+                    </li>
+                  ))
+                ) : (
+                  <li>No collaborators yet.</li>
+                )}
+              </ul>
+            </div>
+            <div className="repo-card">
+              <h4 className="repo-card__title">Tags</h4>
+              <p>{repo?.tags || "None"}</p>
+            </div>
+            <div className="repo-card">
+              <h4 className="repo-card__title">Actions</h4>
+              <button className="repo-view__btn--danger" onClick={handleDelete}>
+                Delete Repository
+              </button>
+            </div>
+          </aside>
+        )}
       </div>
 
       {showUploadModal && (
-        <UploadModal onClose={() => setShowUploadModal(false)} />
+        <UploadModal
+          onUpload={handleUpload}
+          onClose={() => setShowUploadModal(false)}
+        />
       )}
     </div>
   );
