@@ -1,0 +1,162 @@
+.space-repositories-page {
+    padding: 2rem;
+    font-family: "Segoe UI", sans-serif;
+    color: #eefaff;
+}
+
+.space-repositories-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.repo-create-btn {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    color: #aefbff;
+    padding: 0.5em 1em;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.repo-create-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.15);
+}
+
+.space-repositories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.4rem;
+}
+
+.repo-card {
+    position: relative;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    padding: 1.2rem 1.4rem;
+    transition: all 0.25s ease;
+}
+
+.repo-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.repo-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.4rem;
+}
+
+.repo-description {
+    font-size: 0.85rem;
+    color: #cdd9e5;
+    margin-bottom: 0.5rem;
+}
+
+.repo-meta {
+    font-size: 0.75rem;
+    color: #9acbd7;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+/* Modal */
+.repo-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 10, 15, 0.55);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.repo-modal {
+    background: rgba(20, 24, 28, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+}
+
+.repo-modal h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: #aefbff;
+}
+
+.modal-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.modal-field label {
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+    color: #d0e4f0;
+}
+
+.modal-field input,
+.modal-field textarea {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.modal-field.checkbox label {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    display: flex;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.modal-actions button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: #00ffe7;
+    color: #04161c;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.modal-actions button.secondary {
+    background: none;
+    color: #c5c5c5;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-actions button:hover {
+    opacity: 0.9;
+}
