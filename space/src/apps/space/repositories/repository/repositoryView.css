@@ -282,3 +282,255 @@
   color: #99a6b2;
   padding: 2rem 0;
 }
+
+
+
+
+
+
+
+.repo-card__header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.repo-card__btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: #def5ff;
+  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.repo-card__btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* === MODAL === */
+/* Fullscreen modal overlay */
+.repo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+/* Modal inner content */
+.repo-modal-content {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  color: #ecf1f8;
+  z-index: 50 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.repo-modal__content h3 {
+  font-size: 1rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.repo-modal__content input[type="file"] {
+  margin-bottom: 1rem;
+  color: #cde8f2;
+}
+
+.repo-list.small {
+    overflow-y: auto;
+    max-height: 400px;
+    padding-right: 20px;
+}
+
+.repo-modal__actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.repo-modal__actions button {
+  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #00ffe7;
+  background: transparent;
+  color: #00ffe7;
+  transition: 0.2s ease;
+}
+
+.repo-modal__actions button:hover {
+  background: rgba(0, 255, 231, 0.1);
+}
+
+.repo-modal__actions .cancel {
+  border-color: #999;
+  color: #ccc;
+}
+
+.repo-modal__actions .cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+
+
+
+
+
+.repo-file-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.repo-file-input {
+  display: none;
+}
+
+
+
+
+
+.repo-file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.repo-file-item .file-icon {
+  font-size: 1.1rem;
+  color: #afafaf;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+
+.repo-drop-zone {
+  border: 2px dashed rgba(255,255,255,0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  /* margin-bottom: 1rem; */
+  text-align: center;
+  cursor: pointer;
+  color: #c8e3ea;
+  box-sizing: border-box;
+}
+
+.repo-folder-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0rem 0;
+}
+
+.repo-folder-bar input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+
+.repo-folder-bar button {
+  padding: 0.4rem 0.8rem;
+  background: rgba(0, 255, 231, 0.08);
+  border: 1px solid rgba(0,255,231,0.2);
+  color: #aefcf3;
+  border-radius: 6px;
+}
+
+.repo-folder h4 {
+  font-size: 0.9rem;
+  color: #aefcf3;
+  margin-top: 1rem;
+}
+
+.repo-file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.repo-file-item .file-icon {
+  font-size: 1.1rem;
+  color: #9ad8ff;
+}
+
+.remove-btn {
+  background: transparent;
+  color: #f88;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+
+.repo-folder.drag-over {
+  border: 2px dashed #00ffe7;
+  background: rgba(0, 255, 231, 0.05);
+}
+
+
+.repo-file-tree {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+
+.repo-folder h4 {
+  font-size: 0.9rem;
+  color: #d8d8d8;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-right: 10px;
+}
+
+.repo-folder h4::after {
+  content: "Drop files in folder here";
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: #797979;
+  left: 0;
+}
+
+
+
+.repo-back-btn {
+  background: none;
+  border: none;
+  color: #aefcf3;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+.repo-back-btn:hover {
+  text-decoration: underline;
+}
