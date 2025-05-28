@@ -2,6 +2,7 @@
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from .models import *
 from .serializers import *
 from rest_framework.parsers import MultiPartParser
@@ -14,40 +15,48 @@ from .serializers import RepositoryLibraryItemSerializer
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser])
-def upload_files_to_repository(request, repo_id):
-    try:
-        repo = Repository.objects.get(id=repo_id)
-    except Repository.DoesNotExist:
-        return Response({"error": "Repository not found."}, status=404)
+def upload_repository_structure(request, repo_id):
+    """
+    Accepts multipart/form-data with multiple files under key 'files'.
+    Each File.name should be the webkitRelativePath (e.g. 'src/components/Button.js').
+    """
+    repo = get_object_or_404(Repository, id=repo_id)
 
     files = request.FILES.getlist("files")
+    paths = request.data.getlist("paths")
+
     if not files:
-        return Response({"error": "No files provided."}, status=400)
+        return Response({"detail": "No files provided."}, status=400)
+    if len(files) != len(paths):
+        return Response({"detail": "Malformed upload (paths/files length mismatch)"},
+                        status=400)
 
-    uploaded_items = []
-
-    for file in files:
-        # Step 1: Create a LibraryItem
-        item = LibraryItem.objects.create(
-            title=file.name,
+    created = []
+    for uploaded, rel_path in zip(files, paths):
+        filename = rel_path.split("/")[-1]
+        # … same as before …
+        lib = LibraryItem.objects.create(
+            title=filename,
             type="file",
-            file=file,
+            file=uploaded,
             owner=request.user,
         )
-
-        # Step 2: Link to the repository
         link = RepositoryLibraryItem.objects.create(
             repository=repo,
-            item=item,
-            alias=file.name,
+            item=lib,
+            alias=filename,
+            path=rel_path,      # now uses the explicit path you passed
         )
+        created.append(link)
 
-        uploaded_items.append(RepositoryLibraryItemSerializer(link).data)
 
-    return Response({
-        "uploaded": len(uploaded_items),
-        "items": uploaded_items
-    }, status=201)
+    serializer = RepositoryLibraryItemSerializer(created, many=True)
+    return Response(
+        {"uploaded": len(created), "items": serializer.data},
+        status=status.HTTP_201_CREATED
+    )
+
+
 
 
 
@@ -101,7 +110,7 @@ def repository_detail(request, repo_id):
         repo = Repository.objects.get(id=repo_id)
         data = RepositorySerializer(repo).data
         data["projects"] = RepositoryProjectSerializer(repo.linked_projects.all(), many=True).data
-        data["files"] = RepositoryLibraryItemSerializer(repo.linked_items.all(), many=True).data
+        data["files"] = RepositoryLibraryItemSerializer(repo.linked_items.all(), many=True, context={"request": request}).data        
         data["tasks"] = RepositoryTaskSerializer(repo.tasks.all(), many=True).data
         data["notes"] = RepositoryNoteSerializer(repo.notes.all(), many=True).data
         return Response(data)

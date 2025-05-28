@@ -28,6 +28,7 @@ class RepositoryLibraryItem(models.Model):
     repository = models.ForeignKey(Repository, on_delete=models.CASCADE, related_name="linked_items")
     item = models.ForeignKey(LibraryItem, on_delete=models.CASCADE)
     alias = models.CharField(max_length=255, blank=True)
+    path = models.CharField(max_length=512, blank=True)
     pinned = models.BooleanField(default=False)
 
 class RepositoryTask(models.Model):

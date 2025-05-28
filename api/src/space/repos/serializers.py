@@ -13,9 +13,20 @@ class RepositoryProjectSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class RepositoryLibraryItemSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if request is not None:
+            # Return absolute URL
+            return request.build_absolute_uri(obj.item.file.url)
+        # fallback (shouldn't happen in API views)
+        return obj.item.file.url
+
     class Meta:
         model = RepositoryLibraryItem
-        fields = "__all__"
+        fields = ["id", "repository", "alias", "path", "file_url", "pinned"]
+
 
 class RepositoryTaskSerializer(serializers.ModelSerializer):
     class Meta:

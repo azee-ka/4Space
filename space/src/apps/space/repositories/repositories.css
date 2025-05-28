@@ -1,225 +1,208 @@
-/* === Upload Modal (Neutral Palette) === */
+/* === GLOBAL RESET === */
+.repo-page * {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
 
-/* Overlay */
-.repo-modal-overlay {
+/* === PAGE LAYOUT === */
+.repo-page {
+  padding: 2rem;
+  color: #e0e0e0;
+  height: 100%;
+  width: 100%;
+}
+
+/* === HEADER === */
+.repo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.repo-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+/* === BUTTON STYLES === */
+.btn-primary,
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  border: none;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-primary {
+  background: #4fd1c5;
+  color: #121217;
+}
+.btn-primary:hover {
+  background: #7ee8d9;
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: transparent;
+  color: #c4c4c4;
+  border: 1px solid #555;
+}
+.btn-secondary:hover {
+  background: #333;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* === GRID OF CARDS === */
+.repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* === REPO CARD === */
+.repo-card {
+  background: #1e1e25;
+  border: 1px solid #2c2c33;
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.repo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+/* Top row with title + badge */
+.repo-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.repo-card-top h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+.badge {
+  background: #4fd1c5;
+  color: #121217;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* description */
+.repo-desc {
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+  color: #bbb;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* tags */
+.repo-tags {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.tag {
+  background: #333;
+  color: #ccc;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+}
+
+/* === MODAL OVERLAY === */
+.modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
   z-index: 1000;
-  animation: fadeIn 180ms ease-in-out forwards;
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
 }
 
-/* Modal container */
-.repo-modal-content {
-  background: #2c2f33;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* === MODAL CARD === */
+.modal-card {
+  background: #1e1e25;
+  border: 1px solid #2c2c33;
   border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 85vh;
+  width: 100%;
+  max-width: 480px;
   padding: 1.5rem;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  overflow: hidden;
-  animation: slideIn 220ms ease-out forwards;
+  gap: 1rem;
+  animation: popIn 0.2s ease-out;
 }
-@keyframes slideIn {
+@keyframes popIn {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-12px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
-.repo-modal-content h3 {
-  margin: 0;
-  font-size: 1.3rem;
-  color: #e0e0e0;
-  text-align: left;
-  font-weight: 500;
+.modal-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+  color: #fff;
 }
 
-/* Drop zone */
-.repo-drop-zone {
-  border: 2px dashed rgba(255, 255, 255, 0.25);
-  border-radius: 6px;
-  padding: 1.2rem;
-  text-align: center;
-  color: #c4c4c4;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-.repo-drop-zone:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: #00796f;
-}
-.repo-drop-zone p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #d0d0d0;
-}
-
-/* Hidden file input */
-.repo-file-input {
-  display: none;
-}
-
-/* Folder bar */
-.repo-folder-bar {
+/* form fields */
+.modal-card label {
   display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+.modal-card input,
+.modal-card textarea {
+  margin-top: 0.3rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2c2c33;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+.modal-card input:focus,
+.modal-card textarea:focus {
+  outline: none;
+  border-color: #4fd1c5;
+}
+.modal-card textarea { resize: vertical; min-height: 80px; }
+
+/* checkbox row */
+.checkbox {
+  flex-direction: row;
+  align-items: center;
   gap: 0.5rem;
 }
-.repo-folder-bar input {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #e0e0e0;
-  font-size: 0.9rem;
-}
-.repo-folder-bar input::placeholder {
-  color: #aaa;
-}
-.repo-folder-bar button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #888;
-  border-radius: 6px;
-  background: rgba(200, 200, 200, 0.1);
-  color: #e0e0e0;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-.repo-folder-bar button:hover {
-  background: rgba(200, 200, 200, 0.2);
-  border-color: #aaa;
-}
-
-/* Scrollable file tree */
-.repo-file-tree {
-  overflow-y: auto;
-  flex: 1;
-  padding-right: 4px;
-}
-
-/* Folder entries */
-.repo-folder {
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.03);
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.repo-folder h4 {
+.checkbox input {
+  width: auto;
   margin: 0;
-  font-size: 0.9rem;
-  color: #dcdcdc;
-}
-.repo-folder:hover {
-  background: rgba(105, 234, 214, 0.08);
-  border-color: #06736c;
-}
-.repo-folder.drag-over {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: #aaa;
 }
 
-/* File items */
-.repo-file-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0.6rem;
-  margin-bottom: 0.3rem;
-  border-radius: 4px;
-  cursor: grab;
-  transition: background 0.2s;
-}
-.repo-file-item:active {
-  cursor: grabbing;
-}
-.repo-file-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-.repo-file-item .file-icon {
-  margin-right: 0.6rem;
-  font-size: 1.1rem;
-  color: #aaa;
-}
-
-/* Remove button */
-.remove-btn {
-  background: transparent;
-  border: none;
-  font-size: 1rem;
-  color: #d26969;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.remove-btn:hover {
-  color: #ff6b6b;
-}
-
-/* Back button */
-.repo-back-btn {
-  background: none;
-  border: none;
-  color: #c4c4c4;
-  font-size: 0.9rem;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
-  align-self: flex-start;
-  transition: color 0.2s;
-}
-.repo-back-btn:hover {
-  color: #e0e0e0;
-}
-
-/* Action buttons */
-.repo-modal__actions {
+/* modal footer */
+.modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-.repo-modal__actions button {
-  padding: 0.6rem 1.2rem;
-  font-size: 0.9rem;
-  border-radius: 6px;
-  border: 1px solid #888;
-  background: #444;
-  color: #f1f1f1;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-.repo-modal__actions button:hover {
-  background: #555;
-}
-.repo-modal__actions .cancel {
-  background: transparent;
-  border-color: #aaa;
-  color: #ccc;
-}
-.repo-modal__actions .cancel:hover {
-  background: rgba(255, 255, 255, 0.05);
 }
