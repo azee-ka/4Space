@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './threadPost.css';
 import useApi from '../../../utils/useApi';
 import { useExpandPostContext } from '../expandPost/expandPostContext';
@@ -8,6 +8,7 @@ import { FaHeart, FaCommentDots, FaRetweet, FaBookmark, FaShareAlt, FaArrowUp, F
 import { formatDateTime } from '../../../utils/formatDateTime';
 import CustomEditor from '../../../utils/editor/editor';
 import EmojiButton from '../../../utils/editor/EmojiButton';
+import CustomTextarea from '../../../pages/messages/chatContainer/customTextarea';
 
 const ThreadPost = () => {
     const {
@@ -33,6 +34,10 @@ const ThreadPost = () => {
     } = useExpandPostContext();
 
     const [replyText, setReplyText] = useState('');
+
+
+    const commentTextareaRef = useRef(null);
+
 
     useEffect(() => {
         if (post) {
@@ -108,59 +113,66 @@ const ThreadPost = () => {
                         {/* Reply field */}
                         <div className="thread-post-reply-container">
                             <div className="thread-post-reply">
-                            <EmojiButton />
-                            <CustomEditor
-                                placeholder='Write your reply here...'
-                                content={commentText}
-                                onContentChange={setCommentText}
-                                showToolbar={false}
-                            />
+                                <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
+                                <CustomTextarea
+                                    ref={commentTextareaRef}
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    placeholder="Comment here..."
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                            e.preventDefault();
+                                            if (commentText.trim()) {
+                                                addComment();
+                                            }
+                                        }
+                                    }}
+                                />
                             </div>
-                            
-                        {(commentText !== '' || commentText === "<p><br></p>") &&
-                            <button onClick={addComment}>Reply</button>
-                        }
+
+
+                            {(commentText !== '' || commentText === "<p><br></p>") &&
+                                <button onClick={addComment}>Reply</button>
+                            }
                         </div>
                     </div>
                 </div>
 
                 {/* Comments List */}
                 {/* Comments List */}
-<div className="thread-post-comments">
-    <p className="comments-heading">Comments</p>
+                <div className="thread-post-comments">
+                    <p className="comments-heading">Comments</p>
 
-    {post?.comments?.length > 0 ? (
-        post.comments.map((comment) => (
-            <div key={comment.id} className="comment-item">
-                <div className="comment-header">
-                    <div className="comment-profile-image">
-                        <ProfilePicture src={comment.author?.profile_image} />
-                    </div>
-                    <div className="comment-author-info">
-                        <span className="comment-username">@{comment.author?.username}</span>
-                        <span className="comment-time">{formatDateTime(comment.created_at, true)}</span>
-                    </div>
+                    {post?.comments?.length > 0 ? (
+                        post.comments.map((comment) => (
+                            <div key={comment.id} className="comment-item">
+                                <div className="comment-header">
+                                    <div className="comment-profile-image">
+                                        <ProfilePicture src={comment.author?.profile_image} />
+                                    </div>
+                                    <div className="comment-author-info">
+                                        <span className="comment-username">@{comment.author?.username}</span>
+                                        <span className="comment-time">{formatDateTime(comment.created_at, true)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="comment-text">
+                                    <RenderText text={comment.text} />
+                                </div>
+
+                                {/* Interaction Row */}
+                                <div className="comment-actions-row">
+                                    <button className="comment-action-btn"><FaHeart /> Like</button>
+                                    <button className="comment-action-btn"><FaReply /> Reply</button>
+                                    <button className="comment-action-btn"><FaArrowUp /> Upvote</button>
+                                    <button className="comment-action-btn"><FaArrowDown /> Downvote</button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="no-comments">No comments yet. Be the first to reply!</div>
+                    )}
                 </div>
-
-                <div className="comment-text">
-                    <RenderText text={comment.text} />
-                </div>
-
-                {/* Interaction Row */}
-                <div className="comment-actions-row">
-                    <button className="comment-action-btn"><FaHeart /> Like</button>
-                    <button className="comment-action-btn"><FaReply /> Reply</button>
-                    <button className="comment-action-btn"><FaArrowUp /> Upvote</button>
-                    <button className="comment-action-btn"><FaArrowDown /> Downvote</button>
-                </div>
-            </div>
-        ))
-    ) : (
-        <div className="no-comments">No comments yet. Be the first to reply!</div>
-    )}
-</div>
-
-
             </div>
         </div>
     ) : (

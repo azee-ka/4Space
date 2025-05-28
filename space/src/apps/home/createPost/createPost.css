@@ -15,7 +15,7 @@
 .create-post-card {
     min-width: 48%;
     max-width: 70%;
-    height: 740px;
+    max-height: 90vh;
     background-color: rgba(0, 0, 0, 0);
     display: flex;
     flex-direction: column;
@@ -62,7 +62,7 @@
 
 .create-post-card-content {
     background-color: rgba(255, 0, 0, 0);
-    overflow-y: auto;
+    /* overflow-y: auto; */
     width: 100%;
     flex-grow: 1;
     display: flex;
@@ -80,6 +80,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    gap: 10px;
 }
 
 .create-post-card-content section {
@@ -105,55 +106,95 @@
     background-color: rgba(255, 0, 0, 0);
 }
 
+
+
+
+
+
+
+
+
+
+
 .create-post-type-select-group {
     width: 100%;
-    height: 80px;
-    background-color: rgba(0, 128, 0, 0);
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 4px;
+    gap: 13px;
+    padding: 0 1.2em;
     box-sizing: border-box;
+    align-items: flex-end;
+    background: none;
+    margin-top: 5px;
+    border-bottom: 1px solid rgba(82, 255, 244, 0.12);
 }
 
 .create-post-type-select-btn {
-    height: 100%;
+    height: 42px;
+    min-width: 110px;
     flex: 1;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
     align-items: center;
-    gap: 8px;
-    border-radius: 8px;
-    background-color: rgba(0, 0, 0, 0.096);
-    color: white;
-    font-size: 0.9em;
+    gap: 9px;
+    border-radius: 11px 11px 0 0;
+    background: rgba(17,21,23,0.10);
+    color: #d2d7d7;
+    font-size: 0.99em;
+    font-weight: 500;
     cursor: pointer;
-    border: 1px solid rgba(140, 140, 140, 0.6);
-    border-radius: 6px;
-    transition: all 0.3s ease-in-out;
-    /* backdrop-filter: blur(10px); */
+    border: none;
+    transition: 
+      background 0.3s cubic-bezier(.4,1,.5,1),
+      color 0.18s, 
+      box-shadow 0.19s,
+      border 0.19s;
+    justify-content: center;
+    position: relative;
+    top: 1.5px;
+    outline: none;
+        border-bottom: 2.5px solid #16fbff00;
 }
 .create-post-type-select-btn .icon-style {
-    font-size: 1.3em;
-    color: rgba(255, 255, 255, 0.829);
+    font-size: 1.16em;
+    color: #c4d2d4;
+    transition: color 0.16s, text-shadow 0.14s;
 }
-.create-post-type-select-btn:hover {
-    border: 1px solid rgba(25, 211, 232, 0.8);
-    box-shadow: 0 0 6px rgba(25, 211, 232, 0.4),
-                inset 0 0 9px rgba(25, 211, 232, 0.5);
-    transform: scale(1.05);
-    cursor: pointer;
-}
+
 .create-post-type-select-btn.active {
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(12, 124, 204, 0.4));
-    border: 1px solid rgba(45, 237, 255, 0.738);
-    color: #fff;
-    box-shadow: 0 0 6px 0px rgba(0, 255, 255, 0.2);
-    transform: scale(1.05);
+    /* background: linear-gradient(92deg, rgba(0, 148, 126,0.16) 35%, rgba(10,29,36,0.18) 100%); */
+    color: #00e3e9;
+    box-shadow: 0 1.5px 12px 0 rgba(2, 255, 250, 0.09), 0 2px 9px rgba(12,255,255,0.06) inset;
+    border-bottom: 2.5px solid #00e3e9;
+    z-index: 2;
 }
+.create-post-type-select-btn.active .icon-style {
+    color: #00e3e9;
+    text-shadow: 0 1.5px 7px #00ffe788;
+}
+
+.create-post-type-select-btn:hover:not(.active),
+.create-post-type-select-btn:focus-visible:not(.active) {
+    background: linear-gradient(92deg, rgba(0, 225, 233, 0.206) 50%, rgba(35, 49, 53, 0.256) 100%);
+    color: #4ef5fa;
+    border-bottom: 2.5px solid #61fcff59;
+    z-index: 2;
+}
+.create-post-type-select-btn:hover:not(.active) .icon-style,
+.create-post-type-select-btn:focus-visible:not(.active) .icon-style {
+    color: #00e3e9;
+    text-shadow: 0 1.5px 6px #00ffe799;
+}
+
+.create-post-type-select-btn:active {
+    background: rgba(0, 217, 225, 0.13);
+    color: #00e3e9;
+    border-bottom: 2.5px solid #00e1e9d0;
+}
+
+
+
+
 
 
 
@@ -170,7 +211,7 @@
 
 .create-post-content-editor {
     width: 100%;
-    min-height: 200px;
+    min-height: 150px;
     max-height: 400px;
     background-color: rgba(0, 128, 0, 0);
     position: relative;
@@ -269,10 +310,14 @@
 
 .post-settings {
     width: 100%;
+    height: 300px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
+    overflow-y: auto;
+    padding-top: 1em !important;
+    box-sizing: border-box;
 }
 
 .post-settings div {
