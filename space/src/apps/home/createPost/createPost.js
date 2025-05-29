@@ -12,9 +12,11 @@ import MediaPreview from './visual/mediaPreview';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import useApi from '../../../utils/useApi';
 import { useAuth } from '../../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 
 const CreatePost = () => {
+    const navigate = useNavigate();
     const { authState } = useAuth();
     const { callApi } = useApi();
     const imageUploadRef = useRef(null);
@@ -205,6 +207,7 @@ const CreatePost = () => {
             const response = await callApi('posts/post/', 'POST', formData, "multipart/form-data");
             console.log('Post created successfully:', response.data);
             onClose(); // Close the overlay after successful post creation
+            navigate(`/posts/p/${response.data.id}`);
         } catch (error) {
             console.error('Error creating post:', error);
         }

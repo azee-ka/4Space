@@ -14,11 +14,56 @@ from .serializers import (
     CommentSerializer,
     PostRetrieveSerializer,
 )
-
-
-
-
 from rest_framework.pagination import LimitOffsetPagination
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def repost_post(request, post_id):
+    original = get_object_or_404(ThreadPost, id=post_id)
+    user = request.user
+
+    # Prevent multiple reposts by same user if you want
+    if ThreadPost.objects.filter(author=user, parent_post=original, quote_comment__isnull=True).exists():
+        return Response({"error": "Already reposted."}, status=status.HTTP_400_BAD_REQUEST)
+
+    repost = ThreadPost.objects.create(
+        author=user,
+        content="",  # No content for raw repost
+        parent_post=original,
+        visibility=original.visibility,
+        restriction=original.restriction,
+        comments_setting=original.comments_setting,
+    )
+    serializer = ThreadPostSerializer(repost, context={'request': request})
+    return Response(serializer.data, status=201)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def quote_post(request, post_id):
+    original = get_object_or_404(ThreadPost, id=post_id)
+    user = request.user
+    quote_comment = request.data.get("quote_comment", "")
+
+    if not quote_comment.strip():
+        return Response({"error": "Quote comment required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    quote = ThreadPost.objects.create(
+        author=user,
+        content="",  # Optionally store the comment here, or use quote_comment field
+        parent_post=original,
+        quote_comment=quote_comment,
+        visibility=original.visibility,
+        restriction=original.restriction,
+        comments_setting=original.comments_setting,
+    )
+    serializer = ThreadPostSerializer(quote, context={'request': request})
+    return Response(serializer.data, status=201)
+
+
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

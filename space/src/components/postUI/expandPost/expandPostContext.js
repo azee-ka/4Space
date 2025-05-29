@@ -3,6 +3,7 @@ import useApi from '../../../utils/useApi';
 import VideoPlayer from '../../videoPlayer/videoPlayer';
 import { useAuth } from '../../../hooks/useAuth';
 import { usePaginatedList } from '../../../hooks/usePaginatedList';
+import RenderText from '../../../utils/autoCompleteInput/renderText';
 
 const ExpandPostContext = createContext();
 
@@ -28,6 +29,32 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
 
 
+const [showQuoteModal, setShowQuoteModal] = useState(false);
+const [quoteText, setQuoteText] = useState('');
+
+    const repostPost = async () => {
+    if (!post?.id) return;
+    try {
+        await callApi(`posts/post/${post.id}/repost/`, 'POST');
+        // Optionally update stats/UI/notifications
+    } catch (e) {
+        alert("Already reposted, or error");
+    }
+};
+
+const submitQuote = async () => {
+    if (!post?.id || !quoteText.trim()) return;
+    try {
+        await callApi(`posts/post/${post.id}/quote/`, 'POST', { quote_comment: quoteText });
+        setShowQuoteModal(false);
+        setQuoteText('');
+        // Optionally update stats/UI
+    } catch (e) {
+        alert("Failed to quote");
+    }
+};
+
+
     const fetchCommentsPage = async ({ page, pageSize }) => {
         if (!postId) return { results: [], next: null, count: 0 };
         const offset = page * pageSize;
@@ -45,6 +72,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
         totalCount: commentsTotalCount,
         reset: resetComments,
         setItems: setComments,
+        setTotalCount,           // Add this!
     } = usePaginatedList(fetchCommentsPage, { pageSize: 20, immediate: true, resetDeps: [postId] });
 
 
@@ -114,9 +142,9 @@ export const ExpandPostProvider = ({ children, postId }) => {
         }
     };
 
-    // Add a comment
+    // Add comment function:
     const addComment = async () => {
-        if (!commentText.trim()) return; // Prevent empty comments
+        if (!commentText.trim()) return;
         try {
             const formData = new FormData();
             formData.append('text', commentText);
@@ -126,23 +154,21 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
             setCommentText('');
 
-            // Update the post's comment count, but don't touch comments array!
-            setPost((prev) => ({
+            setComments(prev => [response.data, ...prev]);
+            setTotalCount(c => c + 1);   // <----- THIS LINE IS CRITICAL!
+
+            // Optionally, update the post stats (for post.stats.comments_count):
+            setPost(prev => ({
                 ...prev,
                 stats: {
-                    ...prev?.stats,
-                    comments_count: (prev?.stats?.comments_count || 0) + 1,
+                    ...prev.stats,
+                    comments_count: (prev.stats?.comments_count || 0) + 1,
                 },
             }));
-
-            // Refresh the paginated comments so new comment appears at the top
-            resetComments();
-
         } catch (error) {
             console.error('Error adding comment:', error);
         }
     };
-
 
 
 
@@ -302,9 +328,40 @@ export const ExpandPostProvider = ({ children, postId }) => {
         commentsLoading,
         commentsTotalCount,
         resetComments,
+
+        showQuoteModal,
+        setShowQuoteModal,
+        repostPost,
     };
 
-    return <ExpandPostContext.Provider value={value}>{children}</ExpandPostContext.Provider>;
+    return <ExpandPostContext.Provider value={value}>{children}
+    {showQuoteModal && (
+  <div className="quote-modal-overlay">
+    <div className="quote-modal">
+      <h3>Quote Post</h3>
+      <div className="quote-modal-original">
+        <RenderText text={post?.post?.content || ""} />
+      </div>
+      <textarea
+        className="quote-modal-textarea"
+        value={quoteText}
+        onChange={e => setQuoteText(e.target.value)}
+        placeholder="Add your comment..."
+        maxLength={400}
+        autoFocus
+      />
+      <div className="quote-modal-actions">
+        <button className="quote-modal-submit-btn" onClick={submitQuote} disabled={!quoteText.trim()}>
+          Post Quote
+        </button>
+        <button className="quote-modal-cancel-btn" onClick={() => setShowQuoteModal(false)}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+    </ExpandPostContext.Provider>;
 };
 
 // Hook to use PostContext in components
