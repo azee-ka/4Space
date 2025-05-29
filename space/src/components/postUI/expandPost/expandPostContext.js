@@ -198,6 +198,32 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
 
 
+    
+
+    const votePost = async (vote_type) => {
+    try {
+        const response = await callApi(`posts/post/${postId}/vote/`, 'POST', { vote_type });
+        const { net_votes_count, vote_status } = response.data;
+
+        setPost(prev => ({
+            ...prev,
+            stats: {
+                ...prev.stats,
+                net_votes_count,
+            },
+            status: {
+                ...prev.status,
+                vote_status,
+            },
+        }));
+    } catch (error) {
+        console.error('Error voting post:', error);
+    }
+};
+
+
+
+
     // Navigate media
     const navigateMedia = (direction) => {
         if (!post?.post?.media_files) return;
@@ -245,6 +271,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
         toggleBookmark,
         addComment,
         deletePost,
+        votePost,
         voteComment,
         replyToComment,
         toggleCommentLike,

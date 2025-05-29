@@ -106,12 +106,16 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
     color: rgb(208, 208, 208);
 }
 
 .vote-btn:hover {
     background: rgba(255, 255, 255, 0.2);
+}
+.vote-btn.active {
+    background: rgba(0, 225, 225, 0.379);
+    color: white;
 }
 
 .vote-count {

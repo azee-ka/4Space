@@ -28,6 +28,8 @@ urlpatterns = [
     path('post/type/<str:post_type>/', views.get_posts_by_type, name='get_posts_by_type'),
     
     
+    path('post/<uuid:post_id>/vote/', views.vote_post, name='vote_post'),
+    
     # ==== COMMENTS ====
     path('post/comment/<uuid:post_id>/create/', views.create_comment, name='create_comment'),  # Comment on post
     path('post/comment/<uuid:comment_id>/reply/', views.create_reply, name='create_reply'),  # Reply to comment
