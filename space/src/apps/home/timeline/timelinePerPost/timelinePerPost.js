@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DOMPurify from 'dompurify';
 import './timelinePerPost.css';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
@@ -18,12 +18,17 @@ import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import DropdownButton from '../../../../utils/popperButton/DropdownButton';
 import { formatDateTime } from '../../../../utils/formatDateTime';
 import { formatCount } from '../../../../utils/formatCount';
+import EmojiButton from '../../../../utils/editor/EmojiButton';
+import CustomTextarea from '../../../../pages/messages/chatContainer/customTextarea';
 
 const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
     const { handleExpandPostOpen } = usePostContext();
 
     const {
         post,
+        replyToComment,
+        setCommentReplyText,
+        commentReplyText,
         postBookmarked,
         commentText,
         showLikesOverlay,
@@ -43,6 +48,8 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
         deletePost,
     } = useExpandPostContext();
 
+        const [showReplyField, setShowReplyField] = useState(false);
+const commentTextareaRef = useRef(null);
 
     const handlePostClick = (index, post_type) => {
         let filteredPosts = posts;
@@ -83,7 +90,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                         <span>Dislikes</span>
                     </div>
                     <div className="stat-item" onClick={() => handlePostClick(index, post.post_type)}>
-                        <strong>{post?.stats?.comment_count || 0}</strong>
+                        <strong>{post?.stats?.comments_count || 0}</strong>
                         <span>Comments</span>
                     </div>
                 </div>
@@ -158,7 +165,11 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                     </div>
 
                     <div className="thread-actions-row">
-                        <button className="thread-action-btn"><FaReply className="icon-style" /> Reply</button>
+                        <button
+                            className="thread-action-btn"
+                            onClick={() => setShowReplyField(v => !v)}
+                        >
+                            <FaReply className="icon-style" /> Reply</button>
                         <button className="thread-action-btn"><FaRetweet className="icon-style" /> Repost</button>
                         <button onClick={() => handlePostClick(index, post.post_type)} className="thread-action-btn">
                             <FaExpandAlt className="icon-style" />
@@ -201,6 +212,32 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                             </div>
                         </DropdownButton>
                     </div>
+                    {/* Inline Reply Field */}
+                    {showReplyField && (
+                        <div className="thread-post-reply-container">
+                    <div className="thread-post-reply">
+                        <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
+                        <CustomTextarea
+                            ref={commentTextareaRef}
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            placeholder="Comment here..."
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (commentText.trim()) {
+                                        addComment();
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
+                    {(commentText !== '' || commentText === "<p><br></p>") &&
+                        <button onClick={addComment}>Reply</button>
+                    }
+                </div>
+                    )}
+
                 </div>
             )}
 
