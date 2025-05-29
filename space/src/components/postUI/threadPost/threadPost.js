@@ -11,6 +11,7 @@ import EmojiButton from '../../../utils/editor/EmojiButton';
 import CustomTextarea from '../../../pages/messages/chatContainer/customTextarea';
 import { formatCount } from '../../../utils/formatCount';
 import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
+import { Link } from 'react-router-dom';
 
 const ThreadPost = () => {
     const {
@@ -65,11 +66,15 @@ const ThreadPost = () => {
             <div className="thread-post-container">
                 {/* Author Info */}
                 <div className="thread-post-author">
-                    <div className="author-profile-image">
-                        <ProfilePicture src={post?.author?.profile_image} />
-                    </div>
+                    <Link to={`/profile/${post?.author?.username}`}>
+                        <div className="author-profile-image">
+                            <ProfilePicture src={post?.author?.profile_image} />
+                        </div>
+                    </Link>
                     <div className="author-info">
-                        <h3>@{post?.author?.username}</h3>
+                        <Link to={`/profile/${post?.author?.username}`}>
+                            <h3>@{post?.author?.username}</h3>
+                        </Link>
                         <p className="post-date">
                             {formatDateTime(post?.meta?.created_at, true)}
                         </p>
@@ -78,20 +83,20 @@ const ThreadPost = () => {
 
                 {/* Post Content */}
                 <div className="thread-post-content">
-{post.parent_post && (
-  <div className={`referenced-post-card ${post.quote_comment ? 'is-quote' : 'is-repost'}`}>
-    <div className="referenced-post-author">
-      <ProfilePicture src={post.parent_post?.author?.profile_image} />
-      <span>@{post.parent_post?.author?.username}</span>
-    </div>
-    <div className="referenced-post-content">
-      <RenderText text={post.parent_post?.content} />
-    </div>
-  </div>
-)}
-{post.quote_comment && (
-  <div className="quoted-user-comment">{post.quote_comment}</div>
-)}
+                    {post.parent_post && (
+                        <div className={`referenced-post-card ${post.quote_comment ? 'is-quote' : 'is-repost'}`}>
+                            <div className="referenced-post-author">
+                                <ProfilePicture src={post.parent_post?.author?.profile_image} />
+                                <span>@{post.parent_post?.author?.username}</span>
+                            </div>
+                            <div className="referenced-post-content">
+                                <RenderText text={post.parent_post?.content} />
+                            </div>
+                        </div>
+                    )}
+                    {post.quote_comment && (
+                        <div className="quoted-user-comment">{post.quote_comment}</div>
+                    )}
 
                     <RenderText text={post?.post?.content} />
                 </div>
@@ -205,11 +210,15 @@ const ThreadPost = () => {
                                     {/* Comment Content/Meta */}
                                     <div className="comment-main-content">
                                         <div className="comment-header">
-                                            <div className="comment-profile-image">
-                                                <ProfilePicture src={comment.author?.profile_image} />
-                                            </div>
+                                            <Link to={`/profile/${comment.author?.username}`}>
+                                                <div className="comment-profile-image">
+                                                    <ProfilePicture src={comment.author?.profile_image} />
+                                                </div>
+                                            </Link>
                                             <div className="comment-author-info">
-                                                <span className="comment-username">@{comment.author?.username}</span>
+                                                <Link to={`/profile/${comment.author?.username}`}>
+                                                    <span className="comment-username">@{comment.author?.username}</span>
+                                                </Link>
                                                 <span className="comment-time">{formatDateTime(comment.created_at, true)}</span>
                                             </div>
                                         </div>

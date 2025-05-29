@@ -122,80 +122,82 @@ const ExpandedPostOverlay = () => {
                             </div>
                         </div>
                     }
-{comments.length > 0 ? (
-        comments.map((commentData, index) => (
-            <div
-                key={`${commentData.id}-${commentData.created_at}`}
-                className='expanded-post-per-comment'
-                ref={index === comments.length - 1 ? endOfCommentsRef : null}
-            >
-                                <div className='expanded-post-comments-info'>
-                                    <div className='expanded-post-commenting-user-info'>
-                                        <div className='expanded-post-commenting-user-profile-picture'>
-                                            <div className='expanded-post-commenting-user-profile-picture-inner'>
-                                                <ProfilePicture src={commentData?.author?.profile_image} />
-                                            </div>
-                                        </div>
-                                        <div className='expanded-post-commenting-user-username'>
-                                            <Link to={`/profile/${commentData?.author?.username}`} onClick={closeOverlayOnClick}>
-                                                {commentData?.author?.username}
-                                            </Link>
-                                        </div>
-                                    </div>
-                                    <div className='expanded-post-comment-info'>
-                                        <p>Posted {timeAgo(commentData?.created_at)}</p>
-                                    </div>
-                                </div>
-                                <div className='expanded-post-comments-text'>
-                                    <div className='expanded-post-comments-text-inner'>
-                                        <RenderText text={commentData?.text} />
-                                    </div>
-                                </div>
-                                <div className='expanded-post-comment-interaction'>
-                                    <div>
+                    {comments.length > 0 ? (
+                        comments.map((commentData, index) => (
+                            <div
+                                key={`${commentData.id}-${commentData.created_at}`}
+                                className='expanded-post-per-comment'
+                                ref={index === comments.length - 1 ? endOfCommentsRef : null}
+                            >
+                                <div className="expanded-post-per-comment-row">
+                                    {/* VOTE STACK LEFT */}
+                                    <div className="comment-vote-stack">
                                         <button
-                                            onClick={() => toggleCommentLike(commentData.id)}
-                                            className={`expanded-post-comment-interaction-btn ${commentData?.like_status === 'liked' ? 'liked' : ''}`}
-                                        >
-                                            <FaHeart />
-                                        </button>
-                                        <p>{formatCount(commentData.likes_count)}</p>
-                                    </div>
-                                    <div>
-                                        <button
-                                            onClick={() => voteComment(commentData.id, 'upvote')}
-                                            className={`expanded-post-comment-interaction-btn ${commentData?.vote_status === 'upvoted' ? 'voted' : ''}`}
+                                            className={`comment-vote-btn ${commentData?.vote_status === "upvoted" ? "active" : ""}`}
+                                            onClick={() => voteComment(commentData.id, "upvote")}
                                         >
                                             <FaArrowUp />
                                         </button>
-                                        <p>{formatCount(commentData.upvotes_count)}</p>
-                                    </div>
-                                    <div>
+                                        <div className="comment-vote-count">
+                                            {formatCount(commentData.net_votes_count)}
+                                        </div>
                                         <button
-                                            onClick={() => voteComment(commentData.id, 'downvote')}
-                                            className={`expanded-post-comment-interaction-btn ${commentData?.vote_status === 'downvoted' ? 'voted' : ''}`}
+                                            className={`comment-vote-btn ${commentData?.vote_status === "downvoted" ? "active" : ""}`}
+                                            onClick={() => voteComment(commentData.id, "downvote")}
                                         >
                                             <FaArrowDown />
                                         </button>
-                                        <p>{formatCount(commentData.downvotes_count)}</p>
                                     </div>
-                                    <div>
-                                        <button className='expanded-post-comment-interaction-btn'>
-                                            <FaReply />
-                                        </button>
-                                        <p>0</p>
+                                    {/* MAIN COMMENT RIGHT */}
+                                    <div className="expanded-post-per-comment-main">
+                                        <div className='expanded-post-comments-info'>
+                                            <div className='expanded-post-commenting-user-info'>
+                                                <div className='expanded-post-commenting-user-profile-picture'>
+                                                    <div className='expanded-post-commenting-user-profile-picture-inner'>
+                                                        <ProfilePicture src={commentData?.author?.profile_image} />
+                                                    </div>
+                                                </div>
+                                                <div className='expanded-post-commenting-user-username'>
+                                                    <Link to={`/profile/${commentData?.author?.username}`} onClick={closeOverlayOnClick}>
+                                                        {commentData?.author?.username}
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                            <div className='expanded-post-comment-info'>
+                                                <p>Posted {timeAgo(commentData?.created_at)}</p>
+                                            </div>
+                                        </div>
+                                        <div className='expanded-post-comments-text'>
+                                            <div className='expanded-post-comments-text-inner'>
+                                                <RenderText text={commentData?.text} />
+                                            </div>
+                                        </div>
+                                        <div className="expanded-post-comment-interaction-row">
+                                            <button
+                                                onClick={() => toggleCommentLike(commentData.id)}
+                                                className={`expanded-post-comment-interaction-btn ${commentData?.like_status === "liked" ? "liked" : ""}`}
+                                            >
+                                                <FaHeart />
+                                                <span>{formatCount(commentData.likes_count)}</span>
+                                            </button>
+                                            <button className="expanded-post-comment-interaction-btn">
+                                                <FaReply />
+                                                <span>Reply</span>
+                                            </button>
+                                            {/* ...other actions */}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         ))
-    ) : (
-        <div className='expanded-post-no-comments'>No Comments</div>
-    )}
-    {commentsLoading && <div className='expanded-post-loading-comments'>Loading...</div>}
-    {!commentsHasMore && comments.length > 0 && (
-        <div className='expanded-post-no-more-comments'>All comments loaded.</div>
-    )}
-</div>
+                    ) : (
+                        <div className='expanded-post-no-comments'>No Comments</div>
+                    )}
+                    {commentsLoading && <div className='expanded-post-loading-comments'>Loading...</div>}
+                    {!commentsHasMore && comments.length > 0 && (
+                        <div className='expanded-post-no-more-comments'>All comments loaded.</div>
+                    )}
+                </div>
                 <div className='expanded-post-comment-post-container'>
                     <div className='expanded-post-comment-post-container-inner'>
                         <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
