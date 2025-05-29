@@ -4,7 +4,7 @@ import useApi from '../../../utils/useApi';
 import { useExpandPostContext } from '../expandPost/expandPostContext';
 import RenderText from '../../../utils/autoCompleteInput/renderText';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
-import { FaHeart, FaCommentDots, FaRetweet, FaBookmark, FaShareAlt, FaArrowUp, FaArrowDown, FaReply } from 'react-icons/fa';
+import { FaHeart, FaCommentDots, FaRetweet, FaBookmark, FaShareAlt, FaArrowUp, FaArrowDown, FaReply, FaFlag, FaQuoteRight, FaBell, FaLanguage, FaRobot, FaPencilRuler, FaEyeSlash, FaLink, FaChevronUp, FaSmile } from 'react-icons/fa';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import CustomEditor from '../../../utils/editor/editor';
 import EmojiButton from '../../../utils/editor/EmojiButton';
@@ -94,11 +94,8 @@ const ThreadPost = () => {
                     {/* Right side: Actions + Reply */}
                     <div className="action-and-reply-box">
                         <div className="thread-post-actions">
-                            <button className="action-btn">
+                            <button className={`action-btn ${post?.status?.like_status === 'liked' ? 'active' : ''}`} onClick={() => toggleLikeDislike('like')}>
                                 <FaHeart className="icon-style" /> Like
-                            </button>
-                            <button className="action-btn">
-                                <FaCommentDots className="icon-style" /> Comment
                             </button>
                             <button className="action-btn">
                                 <FaRetweet className="icon-style" /> Repost
@@ -109,37 +106,47 @@ const ThreadPost = () => {
                             <button className="action-btn">
                                 <FaShareAlt className="icon-style" /> Share
                             </button>
+
+
+                            <button className="action-btn"><FaEyeSlash /> Hide</button>
+                            <button className="action-btn"><FaFlag /> Report</button>
+                            <button className="action-btn"><FaBookmark /> Bookmark</button>
+                            <button className="action-btn"><FaQuoteRight /> Quote</button>
+                            <button className="action-btn"><FaBell /> Notify</button>
+                            <button className="action-btn"><FaLanguage /> Translate</button>
+                            <button className="action-btn"><FaRobot /> Summarize</button>
+                            <button className="action-btn"><FaPencilRuler /> Remix</button>
+
                         </div>
 
-                        {/* Reply field */}
-                        <div className="thread-post-reply-container">
-                            <div className="thread-post-reply">
-                                <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
-                                <CustomTextarea
-                                    ref={commentTextareaRef}
-                                    value={commentText}
-                                    onChange={(e) => setCommentText(e.target.value)}
-                                    placeholder="Comment here..."
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" && !e.shiftKey) {
-                                            e.preventDefault();
-                                            if (commentText.trim()) {
-                                                addComment();
-                                            }
-                                        }
-                                    }}
-                                />
-                            </div>
 
-
-                            {(commentText !== '' || commentText === "<p><br></p>") &&
-                                <button onClick={addComment}>Reply</button>
-                            }
-                        </div>
                     </div>
                 </div>
 
-                {/* Comments List */}
+                {/* Reply field */}
+                <div className="thread-post-reply-container">
+                    <div className="thread-post-reply">
+                        <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
+                        <CustomTextarea
+                            ref={commentTextareaRef}
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            placeholder="Comment here..."
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (commentText.trim()) {
+                                        addComment();
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
+                    {(commentText !== '' || commentText === "<p><br></p>") &&
+                        <button onClick={addComment}>Reply</button>
+                    }
+                </div>
+
                 {/* Comments List */}
                 <div className="thread-post-comments">
                     <p className="comments-heading">Comments</p>
@@ -147,27 +154,58 @@ const ThreadPost = () => {
                     {post?.comments?.length > 0 ? (
                         post.comments.map((comment) => (
                             <div key={comment.id} className="comment-item">
-                                <div className="comment-header">
-                                    <div className="comment-profile-image">
-                                        <ProfilePicture src={comment.author?.profile_image} />
+                                <div className="comment-main-row">
+                                    {/* VOTE BOX - VERTICAL */}
+                                    <div className="comment-vote-box">
+                                        <button
+                                            className={`comment-vote-btn ${comment.vote_status === "upvoted" ? 'active' : ''}`}
+                                            onClick={() => voteComment(comment.id, 'upvote')}
+                                        >
+                                            <FaArrowUp className="icon-style" />
+                                        </button>
+                                        <div className="comment-vote-count">
+                                            {comment.net_votes_count ?? 0}
+                                        </div>
+                                        <button
+                                            className={`comment-vote-btn ${comment.vote_status === "downvoted" ? 'active' : ''}`}
+                                            onClick={() => voteComment(comment.id, 'downvote')}
+                                        >
+                                            <FaArrowDown className="icon-style" />
+                                        </button>
                                     </div>
-                                    <div className="comment-author-info">
-                                        <span className="comment-username">@{comment.author?.username}</span>
-                                        <span className="comment-time">{formatDateTime(comment.created_at, true)}</span>
+                                    {/* Comment Content/Meta */}
+                                    <div className="comment-main-content">
+                                        <div className="comment-header">
+                                            <div className="comment-profile-image">
+                                                <ProfilePicture src={comment.author?.profile_image} />
+                                            </div>
+                                            <div className="comment-author-info">
+                                                <span className="comment-username">@{comment.author?.username}</span>
+                                                <span className="comment-time">{formatDateTime(comment.created_at, true)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="comment-text">
+                                            <RenderText text={comment.text} />
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div className="comment-text">
-                                    <RenderText text={comment.text} />
-                                </div>
-
-                                {/* Interaction Row */}
-                                <div className="comment-actions-row">
-                                    <button className="comment-action-btn"><FaHeart /> Like</button>
-                                    <button className="comment-action-btn"><FaReply /> Reply</button>
-                                    <button className="comment-action-btn"><FaArrowUp /> Upvote</button>
-                                    <button className="comment-action-btn"><FaArrowDown /> Downvote</button>
-                                </div>
+                                {/* Actions row without upvote/downvote */}
+                                        <div className="comment-actions-row">
+                                            <button
+                                                className={`comment-action-btn ${comment.like_status === 'liked' ? 'liked' : ''}`}
+                                                onClick={() => toggleCommentLike(comment.id)}>
+                                                <FaHeart className='icon-style' />
+                                                Like
+                                                {comment.likes_count > 0 && (
+                                                    <span className="comment-like-count">{comment.likes_count}</span>
+                                                )}
+                                            </button>
+                                            <button className="comment-action-btn"><FaReply /> Reply</button>
+                                            <button className="comment-action-btn"><FaFlag /> Report</button>
+                                            <button className="comment-action-btn"><FaQuoteRight /> Quote</button>
+                                            <button className="comment-action-btn"><FaLanguage /> Translate</button>
+                                            <button className="comment-action-btn"><FaSmile /> React</button>
+                                        </div>
                             </div>
                         ))
                     ) : (

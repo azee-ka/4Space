@@ -19,8 +19,7 @@ class VoteSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
-    upvotes_count = serializers.SerializerMethodField()
-    downvotes_count = serializers.SerializerMethodField()
+    net_votes_count = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
     vote_status = serializers.SerializerMethodField()
     like_status = serializers.SerializerMethodField()
@@ -29,7 +28,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = [
             'id', 'author', 'text', 'created_at', 'parent_comment', 'likes_count',
-            'upvotes_count', 'downvotes_count', 'replies', 'vote_status', 'like_status'
+            'net_votes_count', 'replies', 'vote_status', 'like_status'
         ]
 
     def create(self, validated_data):
@@ -47,11 +46,11 @@ class CommentSerializer(serializers.ModelSerializer):
         comment.save()
         return comment
 
-    def get_upvotes_count(self, obj):
-        return Vote.upvotes(obj).count()
+    def get_net_votes_count(self, obj):
+        upvotes = Vote.upvotes(obj).count()
+        downvotes = Vote.downvotes(obj).count()
+        return upvotes - downvotes
 
-    def get_downvotes_count(self, obj):
-        return Vote.downvotes(obj).count()
 
     def get_replies(self, obj):
         return CommentSerializer(obj.replies.all(), many=True).data
@@ -179,7 +178,7 @@ class PostRetrieveSerializer(serializers.Serializer):
         return {
             'likes_count': obj.likes_count,
             'dislikes_count': obj.dislikes_count,
-            'comments_count': obj.comments_count,
+            'comments_count': obj.comments.filter(parent_comment__isnull=True).count(),  # <--- FIX HERE
             'net_votes_count': upvotes - downvotes
         }
 
@@ -241,7 +240,7 @@ class PostRetrieveSerializer(serializers.Serializer):
 class BasePostSerializer(serializers.ModelSerializer):
     author = EssentialUserSerializer(read_only=True)
     post_type = serializers.SerializerMethodField()
-    comments_count = serializers.IntegerField(read_only=True)
+    comments_count = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     dislikes_count = serializers.IntegerField(read_only=True)
     comments = serializers.SerializerMethodField()
@@ -296,6 +295,9 @@ class BasePostSerializer(serializers.ModelSerializer):
                 return 'disliked'
             return 'not_disliked'
         return 'none'
+    
+    def get_comments_count(self, obj):
+        return obj.comments.filter(parent_comment__isnull=True).count()
 
 
 # ThreadPost
