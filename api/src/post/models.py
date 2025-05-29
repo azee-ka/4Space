@@ -239,6 +239,12 @@ class BasePost(models.Model):
     @property
     def is_quote(self):
         return bool(self.parent_post and self.quote_comment)
+    
+    @property
+    def reposts_count(self):
+        # Children reposts: direct reposts that are not quotes
+        return self.__class__.objects.filter(parent_post=self, quote_comment__isnull=True, quote_text__isnull=True).count()
+
 
 
 

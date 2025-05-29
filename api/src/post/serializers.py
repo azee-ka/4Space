@@ -133,6 +133,8 @@ class PostRetrieveSerializer(serializers.Serializer):
     quote_text = serializers.CharField(required=False, allow_blank=True)
     quote_comment = serializers.CharField(required=False, allow_blank=True)
     
+    is_repost = serializers.SerializerMethodField()
+    
     views_count = serializers.IntegerField(read_only=True)
 
     def get_post_type(self, obj):
@@ -172,6 +174,9 @@ class PostRetrieveSerializer(serializers.Serializer):
         if isinstance(parent, (ThreadPost, VisualPost)):
             return PostRetrieveSerializer(parent, context=self.context).data
         return None
+    
+    def get_is_repost(self, obj):
+        return bool(getattr(obj, 'parent_post', None)) and not getattr(obj, 'quote_text', None)
 
     def get_quote_text(self, obj):
         return getattr(obj, 'quote_text', None) or ""
@@ -197,6 +202,7 @@ class PostRetrieveSerializer(serializers.Serializer):
             'comments_count': obj.comments.filter(parent_comment__isnull=True).count(),  # <--- FIX HERE
             'net_votes_count': upvotes - downvotes,
             'views_count': obj.views_count,
+            'reposts_count': getattr(obj, 'reposts_count', 0),
         }
 
     def get_status(self, obj):
@@ -521,7 +527,7 @@ class MinimalThreadPostSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField()
     id = serializers.UUIDField()
     content = serializers.CharField()
-
+    
     class Meta:
         model = ThreadPost
         fields = ['id', 'post_type', 'sub_type', 'content', 'media_preview', 'stats', 'status', 'created_at']
@@ -556,7 +562,9 @@ class MinimalThreadPostSerializer(serializers.ModelSerializer):
             'likes_count': obj.likes_count,
             'dislikes_count': obj.dislikes_count,
             'comments_count': obj.comments.filter(parent_comment__isnull=True).count(),  # <--- FIX HERE
-            'net_votes_count': upvotes - downvotes
+            'net_votes_count': upvotes - downvotes,
+            'views_count': obj.views_count,
+            'reposts_count': getattr(obj, 'reposts_count', 0),
         }
 
     def get_status(self, obj):

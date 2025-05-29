@@ -78,26 +78,57 @@ def track_post_view(request, post_id):
 
 
 
+
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def repost_post(request, post_id):
-    original = get_object_or_404(ThreadPost, id=post_id)
     user = request.user
 
-    # Prevent multiple reposts by same user if you want
-    if ThreadPost.objects.filter(author=user, parent_post=original, quote_comment__isnull=True).exists():
+    # Try to find the post to repost (ThreadPost or VisualPost)
+    original = None
+    for Model in (ThreadPost, VisualPost):
+        try:
+            original = Model.objects.get(id=post_id)
+            break
+        except Model.DoesNotExist:
+            continue
+    if not original:
+        return Response({"error": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # Prevent reposting the same post multiple times by the same user
+    Model = type(original)
+    if Model.objects.filter(author=user, parent_post=original, quote_comment__isnull=True, quote_text__isnull=True).exists():
         return Response({"error": "Already reposted."}, status=status.HTTP_400_BAD_REQUEST)
 
-    repost = ThreadPost.objects.create(
-        author=user,
-        content="",  # No content for raw repost
-        parent_post=original,
-        visibility=original.visibility,
-        restriction=original.restriction,
-        comments_setting=original.comments_setting,
-    )
-    serializer = ThreadPostSerializer(repost, context={'request': request})
+    # Actually create the repost
+    if isinstance(original, ThreadPost):
+        repost = ThreadPost.objects.create(
+            author=user,
+            content="",  # or whatever logic you want for content
+            parent_post=original,
+            visibility=original.visibility,
+            restriction=original.restriction,
+            comments_setting=original.comments_setting,
+        )
+    elif isinstance(original, VisualPost):
+        repost = VisualPost.objects.create(
+            author=user,
+            caption="",  # or whatever logic you want for caption
+            parent_post=original,
+            visibility=original.visibility,
+            restriction=original.restriction,
+            comments_setting=original.comments_setting,
+        )
+    else:
+        return Response({"error": "Unknown post type."}, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer_class = ThreadPostSerializer if isinstance(repost, ThreadPost) else VisualPostSerializer
+    serializer = serializer_class(repost, context={'request': request})
     return Response(serializer.data, status=201)
+
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

@@ -6,6 +6,11 @@ import { usePaginatedList } from '../../../hooks/usePaginatedList';
 import RenderText from '../../../utils/autoCompleteInput/renderText';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { useNavigate } from 'react-router-dom';
+import { FaRetweet } from 'react-icons/fa';
+import './repostModal/repostModal.css';
+import QuoteModal from './quoteModal/quoteModal';
+import RepostModal from './repostModal/repostModal';
+
 
 const ExpandPostContext = createContext();
 
@@ -40,6 +45,28 @@ export const ExpandPostProvider = ({ children, postId }) => {
     const [selectedText, setSelectedText] = useState('');
     const [btnPos, setBtnPos] = useState(null); // {top, left}
     const [quoteSourceRef, setQuoteSourceRef] = useState(null); // To track which contentRef to listen to
+
+    const [showRepostModal, setShowRepostModal] = useState(false);
+    const [repostLoading, setRepostLoading] = useState(false);
+    const [repostError, setRepostError] = useState('');
+    const [repostSuccessId, setRepostSuccessId] = useState(null); // Stores the ID of the new repost
+
+    const repostPostConfirmed = async () => {
+        setRepostLoading(true);
+        setRepostError('');
+        setRepostSuccessId(null);
+        try {
+            const res = await callApi(`posts/post/${post.id}/repost/`, 'POST');
+            console.log(res.data)
+            setRepostSuccessId(res.data.id); // Store new repost ID for "Go to repost"
+            // Optionally, update local repost counters here
+        } catch (e) {
+            console.error('Error reposting', e);
+            setRepostError(e?.response?.data?.error || "Already reposted, or error.");
+        }
+        setRepostLoading(false);
+    };
+
 
     const handleSelection = (contentRef) => (e) => {
         const selection = window.getSelection();
@@ -80,12 +107,17 @@ export const ExpandPostProvider = ({ children, postId }) => {
     const repostPost = async () => {
         if (!post?.id) return;
         try {
-            await callApi(`posts/post/${post.id}/repost/`, 'POST');
-            // Optionally update stats/UI/notifications
+            const res = await callApi(`posts/post/${post.id}/repost/`, 'POST');
+            // increment reposts counter or navigate to new repost
+
+            console.log(res.data);
+            navigate(`/posts/p/${res.data.id}`); // If you want to go to new repost page
+            // Or show a success toast/snackbar
         } catch (e) {
-            alert("Already reposted, or error");
+            console.error("Error reposting", e);
         }
     };
+
 
     const submitQuote = async () => {
         if (!post?.id || !quoteComment.trim()) return;
@@ -385,7 +417,6 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
         showQuoteModal,
         setShowQuoteModal,
-        repostPost,
         quoteText,
         setQuoteText,
         handleSelection,
@@ -395,56 +426,49 @@ export const ExpandPostProvider = ({ children, postId }) => {
         setBtnPos,
         selectedText,
         setSelectedText,
+
+        setShowRepostModal,
     };
 
-    return <ExpandPostContext.Provider value={value}>{children}
-        {showQuoteModal && (
-            <div
-                className="quote-modal-overlay"
-                onClick={() => {
-                    setShowQuoteModal(false);
-                    setQuoteComment('');
-                    setQuoteText('');
-                }}
-            >
-                <div className="quote-modal" onClick={(e) => e.stopPropagation()}>
-                    <h3>Quote Post</h3>
-                    <div className="quote-modal-header">
-                        <div className="quote-modal-user">
-                            <ProfilePicture src={post?.author?.profile_image} />
-                            <span className="quote-modal-username">@{post?.author?.username}</span>
-                        </div>
-                    </div>
-                    <div className="quote-modal-quote">
-                        <RenderText text={quoteText || ""} />
-                    </div>
-                    <textarea
-                        className="quote-modal-textarea"
-                        value={quoteComment}
-                        onChange={e => setQuoteComment(e.target.value)}
-                        placeholder="Add your comment..."
-                        maxLength={400}
-                        autoFocus
-                    />
-                    <div className="quote-modal-actions">
-                        <button className="quote-modal-submit-btn" onClick={submitQuote} disabled={!quoteComment.trim()}>
-                            Post Quote
-                        </button>
-                        <button
-                            className="quote-modal-cancel-btn"
-                            onClick={() => {
-                                setShowQuoteModal(false);
-                                setQuoteComment('');
-                                setQuoteText('');
-                            }}
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
-    </ExpandPostContext.Provider>;
+    return (
+        <ExpandPostContext.Provider value={value}>
+            {children}
+            {showQuoteModal && (
+                <QuoteModal
+                    post={post}
+                    quoteText={quoteText}
+                    quoteComment={quoteComment}
+                    setQuoteComment={setQuoteComment}
+                    onSubmit={submitQuote}
+                    onClose={() => {
+                        setShowQuoteModal(false);
+                        setQuoteComment('');
+                        setQuoteText('');
+                    }}
+                />
+            )}
+            {showRepostModal && (
+                <RepostModal
+                    post={post}
+                    repostError={repostError}
+                    repostLoading={repostLoading}
+                    repostSuccessId={repostSuccessId}
+                    onGoToRepost={() => {
+                        setShowRepostModal(false);
+                        setRepostError('');
+                        setRepostSuccessId(null);
+                        navigate(`/posts/p/${repostSuccessId}`);
+                    }}
+                    onClose={() => {
+                        setShowRepostModal(false);
+                        setRepostError('');
+                        setRepostSuccessId(null);
+                    }}
+                    onConfirm={repostPostConfirmed}
+                />
+            )}
+        </ExpandPostContext.Provider>
+    )
 };
 
 // Hook to use PostContext in components
