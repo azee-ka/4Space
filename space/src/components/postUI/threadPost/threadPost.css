@@ -175,6 +175,9 @@
     padding: 2px;
     flex-grow: 1;
     background-color: rgba(255, 0, 0, 0);
+      visibility: visible;
+      opacity: 1;
+      height: 100%;
 }
 
 .thread-post-reply {
