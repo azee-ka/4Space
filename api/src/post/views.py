@@ -293,7 +293,6 @@ def create_reply(request, comment_id):
 
 
     
-    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote_comment(request, comment_id):
@@ -322,12 +321,17 @@ def vote_comment(request, comment_id):
         message = f"{vote_type}d successfully."
         vote_status = f"{vote_type}d"
 
+    # Only net_votes_count in response
+    upvotes = Vote.upvotes(comment).count()
+    downvotes = Vote.downvotes(comment).count()
+    net_votes_count = upvotes - downvotes
+
     return Response({
         'message': message,
-        'upvotes_count': Vote.upvotes(comment).count(),
-        'downvotes_count': Vote.downvotes(comment).count(),
+        'net_votes_count': net_votes_count,
         'vote_status': vote_status,
     }, status=status.HTTP_200_OK)
+
 
 
 

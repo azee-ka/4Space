@@ -26,7 +26,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
     useEffect(() => {
         setIsSelfPost(post?.author?.username === authState?.user?.username);
-    } , [post, authState]);
+    }, [post, authState]);
 
     // Fetch and set initial post data
     useEffect(() => {
@@ -89,15 +89,26 @@ export const ExpandPostProvider = ({ children, postId }) => {
             formData.append('post_id', postId);
 
             const response = await callApi(`posts/post/comment/${postId}/create/`, 'POST', formData);
+
+            // Optimistically update post state
             setCommentText('');
-            setPost((prev) => ({
-                ...prev,
-                comments: [...prev.comments, response.data],
-            }));
+            setPost((prev) => {
+                // Compute new comments count
+                const newCommentsCount = (prev.stats?.comments_count || 0) + 1;
+                return {
+                    ...prev,
+                    comments: [...prev.comments, response.data],
+                    stats: {
+                        ...prev.stats,
+                        comments_count: newCommentsCount,
+                    },
+                };
+            });
         } catch (error) {
             console.error('Error adding comment:', error);
         }
     };
+
 
     // Delete the post
     const deletePost = async () => {
@@ -149,38 +160,76 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
 
     const voteComment = async (comment_id, vote_type) => {
-        try {
-            // Make the API request to upvote/downvote the comment
-            const response = await callApi(`posts/post/comment/${comment_id}/vote/`, 'POST', { vote_type: vote_type });
-
-            // Assuming response.data contains the updated vote status, upvotes count, and downvotes count
-            const updatedVoteStatus = response.data.vote_status;
-            const updatedUpvotesCount = response.data.upvotes_count;
-            const updatedDownvotesCount = response.data.downvotes_count;
-
-            // Manually update the post state to reflect the updated vote status and counts
-            setPost((prevPost) => {
-                const updatedComments = prevPost.comments.map((comment) => {
-                    if (comment.id === comment_id) {
-                        // Return updated comment data with updated vote status and counts
-                        return {
-                            ...comment,
-                            vote_status: updatedVoteStatus,
-                            upvotes_count: updatedUpvotesCount,
-                            downvotes_count: updatedDownvotesCount
-                        };
+        // 1. Optimistically update comment UI immediately
+        setPost((prevPost) => {
+            const updatedComments = prevPost.comments.map((comment) => {
+                if (comment.id === comment_id) {
+                    // Calculate the new net_votes_count optimistically
+                    let netVotes = comment.net_votes_count || 0;
+                    let previousStatus = comment.vote_status;
+                    let newStatus = previousStatus;
+                    // Simulate the netVotes change based on the previous and new action
+                    if (vote_type === 'upvote') {
+                        if (previousStatus === 'upvoted') {
+                            // Undo upvote
+                            netVotes -= 1;
+                            newStatus = 'none';
+                        } else if (previousStatus === 'downvoted') {
+                            // Downvote to upvote (+2)
+                            netVotes += 2;
+                            newStatus = 'upvoted';
+                        } else {
+                            // New upvote
+                            netVotes += 1;
+                            newStatus = 'upvoted';
+                        }
+                    } else if (vote_type === 'downvote') {
+                        if (previousStatus === 'downvoted') {
+                            // Undo downvote
+                            netVotes += 1;
+                            newStatus = 'none';
+                        } else if (previousStatus === 'upvoted') {
+                            // Upvote to downvote (-2)
+                            netVotes -= 2;
+                            newStatus = 'downvoted';
+                        } else {
+                            // New downvote
+                            netVotes -= 1;
+                            newStatus = 'downvoted';
+                        }
                     }
-                    return comment;
-                });
-
-                return {
-                    ...prevPost,
-                    comments: updatedComments
-                };
+                    return {
+                        ...comment,
+                        net_votes_count: netVotes,
+                        vote_status: newStatus
+                    };
+                }
+                return comment;
             });
 
-            // console.log(response.data);
+            return {
+                ...prevPost,
+                comments: updatedComments
+            };
+        });
+
+        // 2. Then send the request to backend and update to real values on response
+        try {
+            const response = await callApi(`posts/post/comment/${comment_id}/vote/`, 'POST', { vote_type });
+            // Backend should return net_votes_count and vote_status
+            const { vote_status, net_votes_count } = response.data;
+
+            setPost((prevPost) => {
+                const updatedComments = prevPost.comments.map((comment) =>
+                    comment.id === comment_id
+                        ? { ...comment, net_votes_count, vote_status }
+                        : comment
+                );
+                return { ...prevPost, comments: updatedComments };
+            });
         } catch (error) {
+            // Optionally: rollback optimistic update or show error
+            // (For now, you might just log)
             console.error('Error voting comment:', error);
         }
     };
@@ -198,28 +247,28 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
 
 
-    
+
 
     const votePost = async (vote_type) => {
-    try {
-        const response = await callApi(`posts/post/${postId}/vote/`, 'POST', { vote_type });
-        const { net_votes_count, vote_status } = response.data;
+        try {
+            const response = await callApi(`posts/post/${postId}/vote/`, 'POST', { vote_type });
+            const { net_votes_count, vote_status } = response.data;
 
-        setPost(prev => ({
-            ...prev,
-            stats: {
-                ...prev.stats,
-                net_votes_count,
-            },
-            status: {
-                ...prev.status,
-                vote_status,
-            },
-        }));
-    } catch (error) {
-        console.error('Error voting post:', error);
-    }
-};
+            setPost(prev => ({
+                ...prev,
+                stats: {
+                    ...prev.stats,
+                    net_votes_count,
+                },
+                status: {
+                    ...prev.status,
+                    vote_status,
+                },
+            }));
+        } catch (error) {
+            console.error('Error voting post:', error);
+        }
+    };
 
 
 
