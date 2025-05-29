@@ -33,7 +33,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
         const offset = page * pageSize;
         const url = `posts/post/${postId}/comments/?limit=${pageSize}&offset=${offset}`;
         const resp = await callApi(url, 'GET');
-        console.log(resp);
+        // console.log(resp);
         return resp.data; // DRF paginated format: { results, next, count }
     };
 
@@ -84,8 +84,16 @@ export const ExpandPostProvider = ({ children, postId }) => {
             // Update the post with the new like/dislike counts and user statuses
             setPost((prevPost) => ({
                 ...prevPost,
-                stats: { likes_count, dislikes_count },
-                status: { like_status, dislike_status },
+                stats: {
+                    ...prevPost.stats,
+                    likes_count,
+                    dislikes_count,
+                },
+                status: {
+                    ...prevPost.status,
+                    like_status,
+                    dislike_status,
+                },
             }));
 
         } catch (error) {
@@ -108,32 +116,32 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
     // Add a comment
     const addComment = async () => {
-    if (!commentText.trim()) return; // Prevent empty comments
-    try {
-        const formData = new FormData();
-        formData.append('text', commentText);
-        formData.append('post_id', postId);
+        if (!commentText.trim()) return; // Prevent empty comments
+        try {
+            const formData = new FormData();
+            formData.append('text', commentText);
+            formData.append('post_id', postId);
 
-        const response = await callApi(`posts/post/comment/${postId}/create/`, 'POST', formData);
+            const response = await callApi(`posts/post/comment/${postId}/create/`, 'POST', formData);
 
-        setCommentText('');
+            setCommentText('');
 
-        // Update the post's comment count, but don't touch comments array!
-        setPost((prev) => ({
-            ...prev,
-            stats: {
-                ...prev?.stats,
-                comments_count: (prev?.stats?.comments_count || 0) + 1,
-            },
-        }));
+            // Update the post's comment count, but don't touch comments array!
+            setPost((prev) => ({
+                ...prev,
+                stats: {
+                    ...prev?.stats,
+                    comments_count: (prev?.stats?.comments_count || 0) + 1,
+                },
+            }));
 
-        // Refresh the paginated comments so new comment appears at the top
-        resetComments();
+            // Refresh the paginated comments so new comment appears at the top
+            resetComments();
 
-    } catch (error) {
-        console.error('Error adding comment:', error);
-    }
-};
+        } catch (error) {
+            console.error('Error adding comment:', error);
+        }
+    };
 
 
 
@@ -205,8 +213,6 @@ export const ExpandPostProvider = ({ children, postId }) => {
             console.error('Error voting comment:', error);
         }
     };
-
-
 
 
 
