@@ -213,8 +213,8 @@ const commentTextareaRef = useRef(null);
                         </DropdownButton>
                     </div>
                     {/* Inline Reply Field */}
-                    {showReplyField && (
-                        <div className="thread-post-reply-container">
+                    { (
+                        <div className={`thread-post-reply-container ${showReplyField ? '' : 'hide'}`}>
                     <div className="thread-post-reply">
                         <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
                         <CustomTextarea

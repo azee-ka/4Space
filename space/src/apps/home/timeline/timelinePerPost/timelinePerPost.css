@@ -5,6 +5,7 @@
   position: relative;
   padding: 0px 10px 0 0px;
   width: 620px;
+  transition: all 0.3s ease;
 }
 
 /* Floating Like/Dislike Actions */
@@ -52,6 +53,7 @@
   padding: 10px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
 }
 
 /* User Info */
@@ -426,4 +428,16 @@
 .more-options-card-btn:hover {
   background-color: rgba(119, 119, 119, 0.5);
   cursor: pointer;
+}
+
+
+
+.thread-post-reply-container.hide {
+  transition: all 0.3s ease-out;
+  height: 0px;
+  visibility: hidden;
+  opacity: 0;
+}
+.thread-post-reply-container {
+  transition: all 0.3s ease-in;
 }

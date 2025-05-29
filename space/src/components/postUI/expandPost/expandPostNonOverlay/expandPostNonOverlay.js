@@ -19,6 +19,7 @@ import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import { usePostContext } from '../../../../context/PostContext';
 import CustomTextarea from '../../../../pages/messages/chatContainer/customTextarea';
 import { formatCount } from '../../../../utils/formatCount';
+import { useInfiniteScrollTrigger } from '../../../../hooks/useInfiniteScrollTrigger';
 
 const ExpandedPostNonOverlay = () => {
     const {
@@ -42,6 +43,11 @@ const ExpandedPostNonOverlay = () => {
         navigateMedia,
         renderMediaContent,
         handleCloseLikesOverlay,
+
+                comments,
+        loadMoreComments,
+        commentsHasMore,
+        commentsLoading,
     } = useExpandPostContext();
 
     const commentTextareaRef = useRef(null);
@@ -49,6 +55,8 @@ const ExpandedPostNonOverlay = () => {
     const { setShowPostMoreMenuOverlay } = usePostContext();
     const { authState } = useAuth();
 
+        const endOfCommentsRef = useInfiniteScrollTrigger(loadMoreComments, commentsHasMore, commentsLoading);
+    
     return post ? (
         <div className="expanded-post-container">
             <div className='expanded-post-user-info-comments-container'>
@@ -94,9 +102,13 @@ const ExpandedPostNonOverlay = () => {
                             </div>
                         </div>
                     }
-                    {post?.comments?.length !== 0 ?
-                        (post.comments.map((commentData, index) => (
-                            <div key={`${index}-${commentData.created_at}`} className='expanded-post-per-comment'>
+{comments.length > 0 ? (
+        comments.map((commentData, index) => (
+            <div
+                key={`${commentData.id}-${commentData.created_at}`}
+                className='expanded-post-per-comment'
+                ref={index === comments.length - 1 ? endOfCommentsRef : null}
+            >
                                 <div className='expanded-post-comments-info'>
                                     <div className='expanded-post-commenting-user-info'>
                                         <div className='expanded-post-commenting-user-profile-picture'>
@@ -157,13 +169,15 @@ const ExpandedPostNonOverlay = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))) : (
-                            <div className='expanded-post-no-comments'>
-                                No Comments
-                            </div>
-                        )
-                    }
-                </div>
+                        ))
+    ) : (
+        <div className='expanded-post-no-comments'>No Comments</div>
+    )}
+    {commentsLoading && <div className='expanded-post-loading-comments'>Loading...</div>}
+    {!commentsHasMore && comments.length > 0 && (
+        <div className='expanded-post-no-more-comments'>All comments loaded.</div>
+    )}
+</div>
                 <div className='expanded-post-comment-post-container'>
                     <div className='expanded-post-comment-post-container-inner'>
                         <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
@@ -200,7 +214,7 @@ const ExpandedPostNonOverlay = () => {
                             <p>Posted {timeAgo(post?.meta?.created_at)}</p>
                         </div>
                         <div className='expanded-post-info-likes-unlikes-comments-count'>
-                            <p>{formatCount(post.comments.length)} {post.comments.length === 1 ? 'comment' : 'comments'}</p>
+                            <p>{formatCount(post?.stats?.comments_count)} {post?.stats?.comments_count === 1 ? 'comment' : 'comments'}</p>
                             <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{formatCount(post?.stats?.likes_count)} {post?.stats?.likes_count === 1 ? 'like' : 'likes'}</p>
                             <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{formatCount(post?.stats?.dislikes_count)} {post?.stats?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
                         </div>
