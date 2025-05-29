@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import DOMPurify from 'dompurify';
 import './timelinePerPost.css';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
@@ -13,19 +14,21 @@ import { Link } from 'react-router';
 import { timeAgo } from '../../../../utils/convertDateTIme';
 import { usePostContext } from '../../../../context/PostContext';
 import { useExpandPostContext } from '../../../../components/postUI/expandPost/expandPostContext';
-import { FaArrowDown, FaArrowUp, FaBan, FaBellSlash, FaBookmark, FaChevronLeft, FaChevronRight, FaCommentDots, FaEdit, FaEllipsisH, FaEllipsisV, FaExpandAlt, FaExpandArrowsAlt, FaFlag, FaHeart, FaMagic, FaPaperPlane, FaReply, FaRetweet, FaShareAlt, FaTrashAlt, FaVolumeMute } from 'react-icons/fa';
+import { FaArrowDown, FaArrowUp, FaBan, FaBellSlash, FaBookmark, FaChevronLeft, FaChevronRight, FaCommentDots, FaEdit, FaEllipsisH, FaEllipsisV, FaExpandAlt, FaExpandArrowsAlt, FaFlag, FaHeart, FaMagic, FaPaperPlane, FaQuoteRight, FaReply, FaRetweet, FaShareAlt, FaTrashAlt, FaVolumeMute } from 'react-icons/fa';
 import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import DropdownButton from '../../../../utils/popperButton/DropdownButton';
 import { formatDateTime } from '../../../../utils/formatDateTime';
 import { formatCount } from '../../../../utils/formatCount';
 import EmojiButton from '../../../../utils/editor/EmojiButton';
 import CustomTextarea from '../../../../pages/messages/chatContainer/customTextarea';
+import { useTrackPostView } from '../../../../hooks/useTrackPostView';
 
 const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
     const { handleExpandPostOpen } = usePostContext();
 
     const {
         post,
+        setPost,
         replyToComment,
         setCommentReplyText,
         commentReplyText,
@@ -46,10 +49,38 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
         handleCloseLikesOverlay,
         isSelfPost,
         deletePost,
+
+        handleSelection,
+        showQuoteBtn,
+        setShowQuoteBtn,
+        btnPos,
+        setBtnPos,
+        selectedText,
+        setSelectedText,
+        showQuoteModal,
+        setShowQuoteModal,
+        setQuoteText
     } = useExpandPostContext();
 
-        const [showReplyField, setShowReplyField] = useState(false);
-const commentTextareaRef = useRef(null);
+        useTrackPostView(post?.id, !!post, setPost);
+    
+
+    const [showReplyField, setShowReplyField] = useState(false);
+    const commentTextareaRef = useRef(null);
+
+    const contentRef = useRef(null);
+
+    useEffect(() => {
+        const handler = handleSelection(contentRef);
+        document.addEventListener('mouseup', handler);
+        document.addEventListener('keyup', handler);
+        return () => {
+            document.removeEventListener('mouseup', handler);
+            document.removeEventListener('keyup', handler);
+            document.querySelectorAll('[data-quote-anchor="true"]').forEach(el => el.remove());
+        };
+    }, [handleSelection]);
+
 
     const handlePostClick = (index, post_type) => {
         let filteredPosts = posts;
@@ -145,10 +176,46 @@ const commentTextareaRef = useRef(null);
             {post?.post_type === 'Thread' && (activeFilter === 'Thread' || activeFilter === 'All') && (
                 <div className="timeline-thread-post">
                     <div className="thread-post-body">
-                        <div className="thread-content">
+                        <div className="thread-content" ref={contentRef}>
+                            {post?.parent_post && post?.quote_text && (
+                                <>
+                                    <div className="quote-block-banner">Quote</div>
+                                    <div className="quote-block">
+                                        <div className="quote-meta">
+                                            <ProfilePicture src={post.parent_post.author.profile_image} small />
+                                            <span className="quote-username">@{post.parent_post.author.username}</span>
+                                            <span className="quote-date">{formatDateTime(post?.parent_post?.meta?.created_at, true)}</span>
+                                        </div>
+                                        <blockquote className="quote-text">{post.quote_text}</blockquote>
+                                    </div>
+                                </>
+                            )}
+                            {post.quote_comment && (
+                                <div className="quoted-user-comment">{post.quote_comment}</div>
+                            )}
                             <RenderText text={post?.post?.content} />
+                            {showQuoteBtn && btnPos && ReactDOM.createPortal(
+                                <button
+                                    className="floating-quote-btn"
+                                    style={{
+                                        position: 'absolute',
+                                        top: btnPos.top,
+                                        left: btnPos.left,
+                                        transform: 'translate(-50%, 150%)',
+                                        zIndex: 100,
+                                    }}
+                                    onClick={() => {
+                                        setShowQuoteModal(true);
+                                        setQuoteText(selectedText);
+                                        setShowQuoteBtn(false);
+                                        document.querySelectorAll('[data-quote-anchor="true"]').forEach(el => el.remove());
+                                    }}
+                                >
+                                    <FaQuoteRight style={{ marginRight: 4, fontSize: '1.1em' }} /> Quote
+                                </button>,
+                                document.body
+                            )}
                         </div>
-
                         <div className="thread-vote-buttons">
                             <div className="thread-vote-buttons">
                                 <button className={`vote-btn ${post?.status?.vote_status === "upvoted" ? 'active' : ''}`} onClick={() => votePost('upvote')}>
@@ -163,7 +230,10 @@ const commentTextareaRef = useRef(null);
                             </div>
                         </div>
                     </div>
-
+ <div className="thread-post-stats timeline">
+                    <div><span>{formatCount(post?.stats?.reposts_count) ?? 0}</span> Repost{post?.stats?.reposts_count > 1 ? 's' : ''}</div>
+                    <div><span>{formatCount(post?.stats?.views_count) ?? 0}</span> View{post?.stats?.views_count > 1 ? 's' : ''}</div>
+                </div>
                     <div className="thread-actions-row">
                         <button
                             className="thread-action-btn"
@@ -213,29 +283,29 @@ const commentTextareaRef = useRef(null);
                         </DropdownButton>
                     </div>
                     {/* Inline Reply Field */}
-                    { (
+                    {(
                         <div className={`thread-post-reply-container ${showReplyField ? '' : 'hide'}`}>
-                    <div className="thread-post-reply">
-                        <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
-                        <CustomTextarea
-                            ref={commentTextareaRef}
-                            value={commentText}
-                            onChange={(e) => setCommentText(e.target.value)}
-                            placeholder="Comment here..."
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                    e.preventDefault();
-                                    if (commentText.trim()) {
-                                        addComment();
-                                    }
-                                }
-                            }}
-                        />
-                    </div>
-                    {(commentText !== '' || commentText === "<p><br></p>") &&
-                        <button onClick={addComment}>Reply</button>
-                    }
-                </div>
+                            <div className="thread-post-reply">
+                                <EmojiButton inputRef={commentTextareaRef} value={commentText} onChange={setCommentText} />
+                                <CustomTextarea
+                                    ref={commentTextareaRef}
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    placeholder="Comment here..."
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                            e.preventDefault();
+                                            if (commentText.trim()) {
+                                                addComment();
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                            {(commentText !== '' || commentText === "<p><br></p>") &&
+                                <button onClick={addComment}>Reply</button>
+                            }
+                        </div>
                     )}
 
                 </div>

@@ -129,42 +129,55 @@ class PostRetrieveSerializer(serializers.Serializer):
     likes = serializers.SerializerMethodField()
     dislikes = serializers.SerializerMethodField()
     
+    parent_post = serializers.SerializerMethodField()
+    quote_text = serializers.CharField(required=False, allow_blank=True)
+    quote_comment = serializers.CharField(required=False, allow_blank=True)
+    
+    views_count = serializers.IntegerField(read_only=True)
 
     def get_post_type(self, obj):
         return obj.__class__.__name__.replace('Post', '')
 
     def get_post(self, obj):
         post_data = {}
-
         if isinstance(obj, ThreadPost):
             post_data['sub_type'] = self.get_thread_sub_type(obj)
             post_data['content'] = obj.content
-
             media = obj.media_files.all()
             if media.exists():
                 post_data['media_files'] = MediaFileSerializer(media, many=True, context=self.context).data
-
             if obj.poll_question:
                 post_data['poll'] = {
                     'question': obj.poll_question,
                     'options': obj.poll_options,
                     'expiration_date': obj.poll_expiration_date,
                 }
-
             if obj.event_title:
                 post_data['event'] = {
                     'title': obj.event_title,
                     'date': obj.event_date,
                 }
-
         elif isinstance(obj, VisualPost):
             post_data['caption'] = obj.caption
-
             media = obj.media_files.all()
             if media.exists():
                 post_data['media_files'] = MediaFileSerializer(media, many=True, context=self.context).data
-
         return post_data
+
+    def get_parent_post(self, obj):
+        parent = getattr(obj, 'parent_post', None)
+        if not parent:
+            return None
+        # Return full context if ThreadPost or VisualPost
+        if isinstance(parent, (ThreadPost, VisualPost)):
+            return PostRetrieveSerializer(parent, context=self.context).data
+        return None
+
+    def get_quote_text(self, obj):
+        return getattr(obj, 'quote_text', None) or ""
+
+    def get_quote_comment(self, obj):
+        return getattr(obj, 'quote_comment', None) or ""
 
     def get_thread_sub_type(self, obj):
         if obj.poll_question:
@@ -182,7 +195,8 @@ class PostRetrieveSerializer(serializers.Serializer):
             'likes_count': obj.likes_count,
             'dislikes_count': obj.dislikes_count,
             'comments_count': obj.comments.filter(parent_comment__isnull=True).count(),  # <--- FIX HERE
-            'net_votes_count': upvotes - downvotes
+            'net_votes_count': upvotes - downvotes,
+            'views_count': obj.views_count,
         }
 
     def get_status(self, obj):
@@ -309,7 +323,6 @@ class ThreadPostSerializer(BasePostSerializer):
     event_date = serializers.DateTimeField(required=False, allow_null=True)
 
     parent_post = serializers.SerializerMethodField()
-    quote_comment = serializers.CharField(required=False, allow_blank=True)
     
     class Meta(BasePostSerializer.Meta):
         model = ThreadPost
@@ -317,7 +330,7 @@ class ThreadPostSerializer(BasePostSerializer):
             'content', 'media_files',
             'poll_question', 'poll_options', 'poll_expiration_date',
             'event_title', 'event_date',
-            'parent_post', 'quote_comment',
+            'parent_post',
         ]
 
     def get_media_files(self, obj):

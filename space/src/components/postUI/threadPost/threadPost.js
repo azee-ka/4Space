@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import './threadPost.css';
 import useApi from '../../../utils/useApi';
 import { useExpandPostContext } from '../expandPost/expandPostContext';
@@ -12,10 +13,13 @@ import CustomTextarea from '../../../pages/messages/chatContainer/customTextarea
 import { formatCount } from '../../../utils/formatCount';
 import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
 import { Link } from 'react-router-dom';
+import DropdownButton from '../../../utils/popperButton/DropdownButton';
+import { useTrackPostView } from '../../../hooks/useTrackPostView';
 
 const ThreadPost = () => {
     const {
         post,
+        setPost,
         postBookmarked,
         commentText,
         commentReplyText,
@@ -45,14 +49,35 @@ const ThreadPost = () => {
         repostPost,
         showQuoteModal,
         setShowQuoteModal,
+        quoteText,
+        setQuoteText,
+        handleSelection,
+        showQuoteBtn,
+        setShowQuoteBtn,
+        btnPos,
+        setBtnPos,
+        selectedText,
+        setSelectedText,
     } = useExpandPostContext();
 
     const endOfCommentsRef = useInfiniteScrollTrigger(loadMoreComments, commentsHasMore, commentsLoading);
 
-    const [replyText, setReplyText] = useState('');
-
+    useTrackPostView(post?.id, !!post, setPost);
 
     const commentTextareaRef = useRef(null);
+
+    const contentRef = useRef(null);
+
+    useEffect(() => {
+        const handler = handleSelection(contentRef);
+        document.addEventListener('mouseup', handler);
+        document.addEventListener('keyup', handler);
+        return () => {
+            document.removeEventListener('mouseup', handler);
+            document.removeEventListener('keyup', handler);
+            document.querySelectorAll('[data-quote-anchor="true"]').forEach(el => el.remove());
+        };
+    }, [handleSelection]);
 
 
     useEffect(() => {
@@ -82,31 +107,55 @@ const ThreadPost = () => {
                 </div>
 
                 {/* Post Content */}
-                <div className="thread-post-content">
-                    {post.parent_post && (
-                        <div className={`referenced-post-card ${post.quote_comment ? 'is-quote' : 'is-repost'}`}>
-                            <div className="referenced-post-author">
-                                <ProfilePicture src={post.parent_post?.author?.profile_image} />
-                                <span>@{post.parent_post?.author?.username}</span>
+                <div className="thread-post-content" ref={contentRef}>
+                    {post?.parent_post && post?.quote_text && (
+                        <>
+                            <div className="quote-block-banner">Quote</div>
+                            <div className="quote-block">
+                                <div className="quote-meta">
+                                    <ProfilePicture src={post.parent_post.author.profile_image} small />
+                                    <span className="quote-username">@{post.parent_post.author.username}</span>
+                                    <span className="quote-date">{formatDateTime(post?.parent_post?.meta?.created_at, true)}</span>
+                                </div>
+                                <blockquote className="quote-text">{post.quote_text}</blockquote>
                             </div>
-                            <div className="referenced-post-content">
-                                <RenderText text={post.parent_post?.content} />
-                            </div>
-                        </div>
+                        </>
                     )}
                     {post.quote_comment && (
                         <div className="quoted-user-comment">{post.quote_comment}</div>
                     )}
 
+
                     <RenderText text={post?.post?.content} />
+                    {showQuoteBtn && btnPos && ReactDOM.createPortal(
+                        <button
+                            className="floating-quote-btn"
+                            style={{
+                                position: 'absolute',
+                                top: btnPos.top,
+                                left: btnPos.left,
+                                transform: 'translate(-50%, 150%)',
+                                zIndex: 100,
+                            }}
+                            onClick={() => {
+                                setShowQuoteModal(true);
+                                setQuoteText(selectedText);
+                                setShowQuoteBtn(false);
+                                document.querySelectorAll('[data-quote-anchor="true"]').forEach(el => el.remove());
+                            }}
+                        >
+                            <FaQuoteRight style={{ marginRight: 4, fontSize: '1.1em' }} /> Quote
+                        </button>,
+                        document.body
+                    )}
                 </div>
 
                 {/* Stats */}
                 <div className="thread-post-stats">
-                    <div><span>{formatCount(post?.stats?.likes_count) ?? 0}</span> Likes</div>
-                    <div><span>{formatCount(post?.stats?.comments_count) ?? 0}</span> Comments</div>
-                    <div><span>{formatCount(post?.stats?.reposts_count) ?? 0}</span> Reposts</div>
-                    <div><span>{formatCount(post?.stats?.views_count) ?? 0}</span> Views</div>
+                    <div><span>{formatCount(post?.stats?.likes_count) ?? 0}</span> Like{post?.stats?.likes_count > 1 ? 's' : ''}</div>
+                    <div><span>{formatCount(post?.stats?.comments_count) ?? 0}</span> Comment{post?.stats?.comments_count > 1 ? 's' : ''}</div>
+                    <div><span>{formatCount(post?.stats?.reposts_count) ?? 0}</span> Repost{post?.stats?.reposts_count > 1 ? 's' : ''}</div>
+                    <div><span>{formatCount(post?.stats?.views_count) ?? 0}</span> View{post?.stats?.views_count > 1 ? 's' : ''}</div>
                 </div>
 
                 {/* Voting + Content Box */}
@@ -133,10 +182,6 @@ const ThreadPost = () => {
                             <button className="action-btn" onClick={repostPost}>
                                 <FaRetweet className="icon-style" /> Repost
                             </button>
-                            <button className="action-btn" onClick={() => setShowQuoteModal(true)}>
-                                <FaQuoteRight className="icon-style" /> Quote
-                            </button>
-
                             <button className="action-btn">
                                 <FaBookmark className="icon-style" /> Save
                             </button>
