@@ -33,6 +33,9 @@ urlpatterns = [
     path('post/<uuid:post_id>/repost/', views.repost_post, name='repost_post'),
     path('post/<uuid:post_id>/quote/', views.quote_post, name='quote_post'),
 
+
+    path('post/<uuid:post_id>/track-view/', views.track_post_view, name='track_post_view'),
+
     
     # ==== COMMENTS ====
     path('post/<uuid:post_id>/comments/', views.get_post_comments, name='get_post_comments'),

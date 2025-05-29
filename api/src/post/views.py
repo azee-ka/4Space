@@ -1,11 +1,11 @@
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
-from .models import ThreadPost, VisualPost, Vote, Comment
+from .models import ThreadPost, VisualPost, Vote, Comment, PostView
 from .serializers import (
     PostCreateSerializer,
     ThreadPostSerializer,
@@ -15,6 +15,66 @@ from .serializers import (
     PostRetrieveSerializer,
 )
 from rest_framework.pagination import LimitOffsetPagination
+from django.db.models import F
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Views can be counted even for anon users
+def track_post_view(request, post_id):
+    # Supports ThreadPost & VisualPost
+    post = None
+    for Model in (ThreadPost, VisualPost):
+        try:
+            post = Model.objects.get(id=post_id)
+            break
+        except Model.DoesNotExist:
+            continue
+    if not post:
+        return Response({'error': 'Post not found'}, status=404)
+
+    ct = ContentType.objects.get_for_model(post)
+    user = request.user if request.user.is_authenticated else None
+    session_id = request.COOKIES.get('sessionid', None)
+    ip_address = request.META.get('REMOTE_ADDR')
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    # Robust: Only count unique (user OR session OR ip) in a time window (e.g., 8 hours)
+    unique_kwargs = {}
+    if user:
+        unique_kwargs['user'] = user
+    elif session_id:
+        unique_kwargs['session_id'] = session_id
+    else:
+        unique_kwargs['ip_address'] = ip_address
+
+    existing = PostView.objects.filter(
+        content_type=ct,
+        object_id=post.id,
+        **unique_kwargs
+    ).order_by('-timestamp').first()
+
+    should_count = True
+    from datetime import timedelta
+    from django.utils import timezone
+    if existing:
+        if (timezone.now() - existing.timestamp) < timedelta(hours=8):  # 8h window, Twitter's is ~1h
+            should_count = False
+
+    if should_count:
+        PostView.objects.create(
+            content_type=ct,
+            object_id=post.id,
+            user=user,
+            session_id=session_id,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        type(post).objects.filter(pk=post.pk).update(views_count=F('views_count') + 1)
+        post.refresh_from_db(fields=['views_count'])
+
+    return Response({'views_count': post.views_count}, status=status.HTTP_200_OK)
 
 
 
@@ -42,17 +102,19 @@ def repost_post(request, post_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def quote_post(request, post_id):
-    original = get_object_or_404(ThreadPost, id=post_id)
+    original = get_object_or_404(ThreadPost, id=post_id)  # Or VisualPost if supporting both!
     user = request.user
+    quote_text = request.data.get("quote_text", "")
     quote_comment = request.data.get("quote_comment", "")
 
-    if not quote_comment.strip():
-        return Response({"error": "Quote comment required."}, status=status.HTTP_400_BAD_REQUEST)
+    if not quote_text.strip():
+        return Response({"error": "Quote text required."}, status=status.HTTP_400_BAD_REQUEST)
 
     quote = ThreadPost.objects.create(
         author=user,
-        content="",  # Optionally store the comment here, or use quote_comment field
+        content="",  # blank or use for the user's own comment (if not using quote_comment)
         parent_post=original,
+        quote_text=quote_text,
         quote_comment=quote_comment,
         visibility=original.visibility,
         restriction=original.restriction,
@@ -60,6 +122,7 @@ def quote_post(request, post_id):
     )
     serializer = ThreadPostSerializer(quote, context={'request': request})
     return Response(serializer.data, status=201)
+
 
 
 

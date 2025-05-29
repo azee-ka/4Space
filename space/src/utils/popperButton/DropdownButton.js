@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import usePopperDropdown from './usePopperDropdown';
-// import './dropdownButton.css'; // Import your CSS file for styling
 
 const DropdownButton = ({
-    children,            // The dropdown content, can be anything
-    toggleContent,     // The button or trigger content
+    children,
+    toggleContent,
     placement = 'bottom-start',
     boundaryRef,
+    anchorEl, // <-- Optional DOM node or ref for custom anchor
 }) => {
-    const { buttonRef, dropdownRef, showDropdown, toggleDropdown, setShowDropdown } = usePopperDropdown(false, placement, boundaryRef);
+    // Pass anchorEl into hook
+    const { buttonRef, dropdownRef, showDropdown, toggleDropdown, setShowDropdown } = usePopperDropdown(false, placement, boundaryRef, anchorEl);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -19,7 +20,7 @@ const DropdownButton = ({
                 buttonRef.current &&
                 !buttonRef.current.contains(event.target)
             ) {
-                setShowDropdown(false); // Explicitly close the dropdown
+                setShowDropdown(false);
             }
         };
 
@@ -29,36 +30,30 @@ const DropdownButton = ({
         };
     }, [dropdownRef, buttonRef, setShowDropdown]);
 
-
-    const clonedToggleContent = React.cloneElement(toggleContent, {
-        ref: buttonRef,
-        onClick: (e) => {
-            e.stopPropagation();
-            toggleDropdown();
-        },
-        className: `${toggleContent.props.className || ''} ${showDropdown ? 'active' : ''}`.trim(),
-    });
-    
+    // If using anchorEl (for example, a span inside the text), do not render the toggleContent
+    // (It's only for those uses that want a button trigger)
+    // So: only clone the button if anchorEl is not set (fallback)
+    const renderToggle =
+        !anchorEl ? React.cloneElement(toggleContent, {
+            ref: buttonRef,
+            onClick: (e) => {
+                e.stopPropagation();
+                toggleDropdown();
+            },
+            className: `${toggleContent.props.className || ''} ${showDropdown ? 'active' : ''}`.trim(),
+        }) : null;
 
     return (
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            {clonedToggleContent}
-            {/* <div ref={buttonRef}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDropdown();
-                }}>
-                {toggleContent}}
-            </div> */}
+            {renderToggle}
             {showDropdown &&
                 ReactDOM.createPortal(
                     <div 
                         ref={dropdownRef}
-                        style={{
-                            zIndex: 60,
-                        }}
+                        style={{ zIndex: 60 }}
+                        // Optionally: you could animate, style, etc.
                     >
-                        {children} {/* The dropdown content */}
+                        {children}
                     </div>,
                     document.body
                 )

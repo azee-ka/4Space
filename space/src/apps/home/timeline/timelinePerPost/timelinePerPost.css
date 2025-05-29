@@ -283,8 +283,9 @@
   color: rgba(230, 230, 230, 0.95);
   text-align: left;
   word-break: break-word;
-  background: rgba(255, 255, 255, 0.05);
+  /* background: rgba(255, 255, 255, 0.05); */
   padding: 0px 15px;
+  padding-bottom: 10px;
   border-radius: 12px;
   align-self: center;
   min-height: 90px;
@@ -440,4 +441,121 @@
 }
 .thread-post-reply-container {
   transition: all 0.3s ease-in;
+}
+
+
+
+
+
+
+
+
+.timeline-thread-post .quote-block-banner {
+  position: relative;
+  display: inline-block;
+  align-self: flex-start;
+  top: 0px;
+  margin-bottom: 0px;
+  padding: 2px 14px 2px 11px;
+  font-size: 0.93em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #19c4e8;
+  background: rgba(34, 44, 52, 0);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 0 1.5px 8px 0 rgba(29,210,230,0.07);
+  border-left: 3.5px solid #36e3f8;
+  text-shadow: 0 1px 4px #101c2236;
+  user-select: none;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.quote-block {
+  position: relative;
+  /* background: rgba(22, 22, 22, 0) !important; */
+  border-radius: 13px;
+  box-shadow: 0 2px 20px 0 rgba(22,32,44,0.09);
+  padding: 10px 10px 10px 10px;
+  margin: 8px 0 13px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  /* backdrop-filter: blur(0px) !important; */
+}
+
+.quote-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1px;
+  font-size: 0.97em;
+  color: #b1c7db;
+}
+.quote-meta .quote-username {
+  color: #c8c8c8;
+  font-weight: 500;
+  font-size: 1.02em;
+  margin-right: 5px;
+}
+.quote-meta .quote-date {
+  color: #898989;
+  font-size: 0.85em;
+  margin-left: 4px;
+  font-style: italic;
+}
+.quote-meta .profile-picture-small,
+.quote-meta img {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #252d3800;
+  border: 1px solid rgba(100, 220, 240, 0.09);
+}
+
+.quote-text {
+  position: relative;
+  background: rgba(38, 47, 60, 0);
+  color: #dcdcdc;
+  font-size: 1.09em;
+  font-style: italic;
+  padding: 11px 13px 11px 18px;
+  border-radius: 8px;
+  margin-top: 2px;
+  margin-bottom: 3px;
+  box-shadow: 0 1px 6px 0 rgba(45,51,61,0.06);
+  word-break: break-word;
+  overflow: hidden;
+}
+.quote-text::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #38e2f3 0%, #11b5ca 100%);
+  opacity: 0.88;
+  box-shadow: 0 0 5px 0 #1de0fc2c;
+}
+
+.quoted-user-comment {
+  margin-top: 7px;
+  font-style: italic;
+  color: #d8d8d8;
+  padding-left: 12px;
+}
+
+
+
+
+.thread-post-stats.timeline {
+  border-bottom: 0;
+  padding-bottom: 5px;
+  padding-left: 15px;
+  padding-right: 15px;
+  box-sizing: border-box;
 }

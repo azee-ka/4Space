@@ -65,6 +65,7 @@
     line-height: 1.5;
     color: rgba(220, 220, 220, 0.95);
     word-break: break-word;
+    position: relative;
 }
 
 .thread-post-stats {
@@ -462,69 +463,218 @@
 .quoted-user-comment {
   margin-top: 7px;
   font-style: italic;
-  color: #8ff0ff;
+  color: #d8d8d8;
   padding-left: 12px;
 }
 
+.quote-block-banner {
+  position: relative;
+  display: inline-block;
+  align-self: flex-start;
+  top: 6px;
+  margin-bottom: 0px;
+  padding: 2px 15px 2px 11px;
+  font-size: 0.94em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #19c4e8;
+  background: rgba(34, 44, 52, 0);
+  border-radius: 0 10px 10px 0;
+  border-left: 3.5px solid #36e3f8;
+  text-shadow: 0 1px 4px #101c2236;
+  user-select: none;
+  z-index: 2;
+  pointer-events: none; /* purely decorative */
+}
+
+@media (max-width: 520px) {
+  .quote-block-banner { font-size: 0.88em; padding: 2px 9px 2px 8px; }
+}
+
+
+
+
+
+
+
+
+
+/* Highlight selected text in the post content */
+.thread-post-content ::selection {
+  background: #11e7fbad;
+  color: #181c22;
+}
+
+/* Floating quote button for quoting selection */
+.floating-quote-btn {
+  position: absolute;
+  z-index: 100;
+  background: #00919e;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 19px;
+  padding: 7px 18px;
+  font-size: 0.98em;
+  font-weight: 600;
+  box-shadow: 0 2px 16px 0 rgba(0, 255, 255, 0.14);
+  cursor: pointer;
+  transition: background 0.18s, color 0.15s, box-shadow 0.18s;
+  opacity: 0.96;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.floating-quote-btn:hover {
+  background: #12a0b9;
+  color: #fff;
+  box-shadow: 0 2px 16px 0 rgba(29,210,230,0.17);
+}
+
+
+
+
+
+
+
+
+
+
+
+/* === QUOTE MODAL (Minimal Cyan, Neutral Glass) === */
 .quote-modal-overlay {
   position: fixed;
-  z-index: 1100;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(17, 17, 17, 0.528);
-  backdrop-filter: blur(10px);
+  z-index: 1200;
+  inset: 0;
+  background: rgba(24, 25, 30, 0.36);
+  backdrop-filter: blur(15px) brightness(0.96);
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: modal-fade-in 0.18s;
 }
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .quote-modal {
-  background: rgba(15, 15, 15, 0.624);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 32px 32px 24px 32px;
-  min-width: 340px;
-  height: 80vh;
-  max-width: 420px;
-  border: 1px solid rgba(128, 128, 128, 0.165);
-  /* box-shadow: 0 8px 32px 0 rgba(4,255,255,0.16); */
+  background: rgba(32, 32, 32, 0.228);
+  backdrop-filter: blur(20px);
+  border-radius: 17px;
+  padding: 28px 28px 20px 28px;
+  min-width: 320px;
+  max-width: 430px;
+  width: 100%;
+  box-shadow: 0 6px 36px 0 rgba(0,0,0,0.23);
+  border: 1.3px solid rgba(200, 205, 215, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   overflow-y: auto;
+  color: #f4f7fa;
+  font-size: 1em;
 }
+
 .quote-modal h3 {
-  color: #00e3e9;
-  margin: 0 0 6px 0;
+  color: #ededed;
+  margin: 0 0 12px 0;
+  font-size: 1.14em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
-.quote-modal-original {
-  background: rgba(22, 30, 40, 0.15);
-  padding: 12px;
-  border-radius: 8px;
-  color: #c6f4fd;
-  font-size: 0.99em;
-  margin-bottom: 10px;
+
+.quote-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+
+.quote-modal-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(42, 48, 56, 0.16);
+  border-radius: 9px;
+  padding: 3px 10px 3px 3px;
+}
+.quote-modal-user img {
+    width: 40px;
+}
+
+.quote-modal-profile {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(200,220,220,0.13);
+  background: #232c31;
+}
+
+.quote-modal-username {
+  color: #e6ecef;
+  font-weight: 500;
+  font-size: 1.01em;
+}
+
+.quote-modal-quote {
+  position: relative;
+  background: rgba(36, 42, 52, 0.29);
+  color: #eaf6fa;
+  font-size: 1.10em;
+  font-style: italic;
+  padding: 13px 15px 13px 20px;
+  border-radius: 10px;
+  margin: 8px 0 13px 0;
+  box-shadow: 0 1.5px 8px 0 rgba(45,51,61,0.04);
+  word-break: break-word;
+  overflow: hidden; /* prevent pseudo from leaking outside */
+}
+
+.quote-modal-quote::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  left: 7px;
+  width: 3.5px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #3df4fd 0%, #14d3ec 100%);
+  opacity: 0.92;
+  box-shadow: 0 0 6px 0 #24e4fc3a;
+}
+
+
 .quote-modal-textarea {
   width: 100%;
-  min-height: 66px;
-  padding: 12px;
-  border-radius: 9px;
-  border: 1.5px solid #00e3e9a8;
-  background: #151b26;
-  color: #fff;
+  min-height: 60px;
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1.3px solid rgba(170, 185, 210, 0.17);
+  background: rgba(33, 32, 32, 0.317);
+  color: #f2f6fa;
   font-size: 1.04em;
   resize: vertical;
   margin-bottom: 8px;
   outline: none;
-  transition: border 0.2s;
+  transition: border 0.2s, background 0.17s;
+  box-shadow: 0 0.5px 2px 0 rgba(60,70,90,0.07);
+  box-sizing: border-box;
 }
+
 .quote-modal-textarea:focus {
-  border: 1.5px solid #18e0f7;
+  border: 1.4px solid #33d5e1;
+  background: rgba(40, 46, 56, 0.89);
 }
+
 .quote-modal-actions {
   display: flex;
-  gap: 12px;
+  gap: 13px;
   justify-content: flex-end;
+  margin-top: 6px;
 }
+
 .quote-modal-submit-btn, .quote-modal-cancel-btn {
   border: none;
   border-radius: 20px;
@@ -532,23 +682,120 @@
   font-weight: 600;
   font-size: 1em;
   cursor: pointer;
-  background: #18e0f7;
-  color: #191f26;
-  transition: background 0.2s, color 0.18s;
+  background: rgba(39,43,52,0.87);
+  color: #e7eaf1;
+  transition: background 0.14s, color 0.13s, box-shadow 0.13s;
+  box-shadow: 0 1px 7px 0 rgba(26,31,44,0.04);
+}
+
+.quote-modal-submit-btn {
+  background: rgba(38, 228, 245, 0.13); /* very subtle cyan */
+  color: #30dbe8;
+  border: 1.1px solid #38e2f3;
 }
 .quote-modal-submit-btn:disabled {
-  background: #4fc6df80;
-  color: #abc;
+  background: rgba(60,70,90,0.11);
+  color: #a0b2bd;
+  border: 1.1px solid #3bbcc7;
   cursor: not-allowed;
-}
-.quote-modal-cancel-btn {
-  background: #333;
-  color: #fff;
-}
-.quote-modal-cancel-btn:hover {
-  background: #1a2230;
+  opacity: 0.63;
 }
 .quote-modal-submit-btn:hover:enabled {
-  background: #08c6e6;
+  background: rgba(38, 228, 245, 0.19);
+  color: #1be4f7;
+  border: 1.1px solid #21d1e5;
+}
+
+.quote-modal-cancel-btn {
+  background: rgba(38, 44, 55, 0.60);
+  color: #b6b8be;
+  border: 1px solid transparent;
+}
+.quote-modal-cancel-btn:hover {
+  background: rgba(32, 35, 44, 0.89);
   color: #fff;
+}
+
+@media (max-width: 520px) {
+  .quote-modal { min-width: 0; max-width: 97vw; padding: 19px 6vw; }
+}
+
+
+
+
+
+
+
+/* === QUOTE BLOCK IN THREAD POST === */
+.quote-block {
+  position: relative;
+  background: rgba(59, 61, 65, 0.119);
+  border-radius: 13px;
+  box-shadow: 0 2px 20px 0 rgba(22,32,44,0.09);
+  /* padding: 15px 20px 13px 19px; */
+  margin: 12px 0 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.quote-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1px;
+  font-size: 0.97em;
+  color: #b1c7db;
+}
+
+.quote-meta .quote-username {
+  color: #c8c8c8;
+  font-weight: 500;
+  font-size: 1.02em;
+  margin-right: 5px;
+}
+.quote-meta .quote-date {
+  color: #898989;
+  font-size: 0.85em;
+  margin-left: 4px;
+  font-style: italic;
+}
+
+.quote-meta .profile-picture-small,
+.quote-meta img {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #252d38;
+  border: 1px solid rgba(100, 220, 240, 0.09);
+}
+
+.quote-text {
+  position: relative;
+  background: rgba(38, 47, 60, 0.24);
+  color: #dcdcdc;
+  font-size: 1.09em;
+  font-style: italic;
+  padding: 11px 13px 11px 18px;
+  border-radius: 8px;
+  margin-top: 2px;
+  margin-bottom: 3px;
+  box-shadow: 0 1px 6px 0 rgba(45,51,61,0.06);
+  word-break: break-word;
+  overflow: hidden;
+}
+.quote-text::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #38e2f3 0%, #11b5ca 100%);
+  opacity: 0.88;
+  box-shadow: 0 0 5px 0 #1de0fc2c;
 }

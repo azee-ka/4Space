@@ -162,6 +162,7 @@ class MediaFile(models.Model):
     
 
 
+
 class BasePost(models.Model):
     VISIBILITY_CHOICES = [
         ('Private', 'Private'), ('Public', 'Public'), ('Friends', 'Friends Only'),
@@ -200,6 +201,9 @@ class BasePost(models.Model):
         'self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children_reposts'
     )
     quote_comment = models.TextField(blank=True, null=True)
+    quote_text = models.TextField(blank=True, null=True)
+
+    views_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         abstract = True
@@ -237,6 +241,28 @@ class BasePost(models.Model):
         return bool(self.parent_post and self.quote_comment)
 
 
+
+
+class PostView(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()  # UUID because your posts use UUIDs
+    post = GenericForeignKey('content_type', 'object_id')
+
+    user = models.ForeignKey('user.BaseUser', on_delete=models.CASCADE, null=True, blank=True)
+    session_id = models.CharField(max_length=64, blank=True, null=True)
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.CharField(max_length=256)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['content_type', 'object_id', 'user']),
+            models.Index(fields=['content_type', 'object_id', 'session_id']),
+        ]
+        
+        
+        
+        
 class ThreadPost(BasePost):
     content = models.TextField(default="", blank=False, null=False)
     media_files = models.ManyToManyField('post.MediaFile', blank=True)
