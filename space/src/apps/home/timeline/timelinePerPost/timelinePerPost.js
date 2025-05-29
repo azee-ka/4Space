@@ -17,6 +17,7 @@ import { FaArrowDown, FaArrowUp, FaBan, FaBellSlash, FaBookmark, FaChevronLeft, 
 import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import DropdownButton from '../../../../utils/popperButton/DropdownButton';
 import { formatDateTime } from '../../../../utils/formatDateTime';
+import { formatCount } from '../../../../utils/formatCount';
 
 const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
     const { handleExpandPostOpen } = usePostContext();
@@ -32,6 +33,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
         setShowLikesOverlay,
         setShowDislikesOverlay,
         toggleLikeDislike,
+        votePost,
         toggleBookmark,
         addComment,
         navigateMedia,
@@ -81,7 +83,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                         <span>Dislikes</span>
                     </div>
                     <div className="stat-item" onClick={() => handlePostClick(index, post.post_type)}>
-                        <strong>{post?.comments?.length || 0}</strong>
+                        <strong>{post?.stats?.comment_count || 0}</strong>
                         <span>Comments</span>
                     </div>
                 </div>
@@ -141,11 +143,17 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                         </div>
 
                         <div className="thread-vote-buttons">
-                            <button className="vote-btn"><FaArrowUp /></button>
-                            <div className="vote-count">
-                            {post?.stats?.votes_count || 0}
-                        </div>
-                            <button className="vote-btn"><FaArrowDown /></button>
+                            <div className="thread-vote-buttons">
+                                <button className={`vote-btn ${post?.status?.vote_status === "upvoted" ? 'active' : ''}`} onClick={() => votePost('upvote')}>
+                                    <FaArrowUp className="icon-style" />
+                                </button>
+                                <div className="vote-count">
+                                    {formatCount(post?.stats?.net_votes_count) || 0}
+                                </div>
+                                <button className={`vote-btn ${post?.status?.vote_status === "downvoted" ? 'active' : ''}`} onClick={() => votePost('downvote')}>
+                                    <FaArrowDown className="icon-style" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -165,9 +173,9 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                             <div className="timeline-post-more-options-card">
                                 <ul>
                                     {isSelfPost && (
-                                    <li>
-                                        <button className="more-options-card-btn"><FaEdit /> Edit Post</button>
-                                    </li>
+                                        <li>
+                                            <button className="more-options-card-btn"><FaEdit /> Edit Post</button>
+                                        </li>
                                     )}
                                     {isSelfPost && (
                                         <li>
@@ -175,19 +183,19 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                                         </li>
                                     )}
                                     {!isSelfPost && (
-                                    <li>
-                                        <button className="more-options-card-btn"><FaFlag /> Report</button>
-                                    </li>
+                                        <li>
+                                            <button className="more-options-card-btn"><FaFlag /> Report</button>
+                                        </li>
                                     )}
-                                     {!isSelfPost && (
-                                    <li>
-                                        <button className="more-options-card-btn"><FaBellSlash /> Mute Author</button>
-                                    </li>
+                                    {!isSelfPost && (
+                                        <li>
+                                            <button className="more-options-card-btn"><FaBellSlash /> Mute Author</button>
+                                        </li>
                                     )}
-                                     {!isSelfPost && (
-                                    <li>
-                                        <button className="more-options-card-btn"><FaBan /> Block Author</button>
-                                    </li>
+                                    {!isSelfPost && (
+                                        <li>
+                                            <button className="more-options-card-btn"><FaBan /> Block Author</button>
+                                        </li>
                                     )}
                                 </ul>
                             </div>

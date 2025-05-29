@@ -196,6 +196,11 @@ class BasePost(models.Model):
     comments_count = models.PositiveIntegerField(default=0)
 
 
+    parent_post = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children_reposts'
+    )
+    quote_comment = models.TextField(blank=True, null=True)
+
     class Meta:
         abstract = True
 
@@ -222,6 +227,14 @@ class BasePost(models.Model):
         """ Updates the likes count based on the number of likes """
         self.likes_count = self.likes.count()
         self.save()
+        
+    @property
+    def is_repost(self):
+        return bool(self.parent_post and not self.quote_comment)
+
+    @property
+    def is_quote(self):
+        return bool(self.parent_post and self.quote_comment)
 
 
 class ThreadPost(BasePost):

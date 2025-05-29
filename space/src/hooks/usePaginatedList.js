@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export function usePaginatedList(fetchPageFn, { pageSize = 20, immediate = true, resetDeps = [] } = {}) {
   const [items, setItems] = useState([]);
@@ -6,7 +6,7 @@ export function usePaginatedList(fetchPageFn, { pageSize = 20, immediate = true,
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const countRef = useRef(0);
+  const [totalCount, setTotalCount] = useState(0); // Change: state instead of ref
 
   // RESET when dependencies change (e.g., new postId)
   useEffect(() => {
@@ -15,7 +15,7 @@ export function usePaginatedList(fetchPageFn, { pageSize = 20, immediate = true,
     setHasMore(true);
     setLoading(false);
     setError(null);
-    countRef.current = 0;
+    setTotalCount(0);
     if (immediate) loadMore();
     // eslint-disable-next-line
   }, resetDeps);
@@ -41,7 +41,7 @@ export function usePaginatedList(fetchPageFn, { pageSize = 20, immediate = true,
       });
       setHasMore(Boolean(resp.next) && (resp.results?.length > 0));
       setPage(prev => prev + 1);
-      countRef.current = resp.count ?? countRef.current;
+      setTotalCount(resp.count ?? 0); // Change: update state
     } catch (e) {
       setError(e);
       setHasMore(false);
@@ -55,7 +55,7 @@ export function usePaginatedList(fetchPageFn, { pageSize = 20, immediate = true,
     setPage(0);
     setHasMore(true);
     setError(null);
-    countRef.current = 0;
+    setTotalCount(0); // Change: reset state
     if (immediate) loadMore();
   };
 
@@ -65,8 +65,9 @@ export function usePaginatedList(fetchPageFn, { pageSize = 20, immediate = true,
     hasMore,
     loading,
     error,
-    totalCount: countRef.current,
+    totalCount,
     reset,
     setItems,
+    setTotalCount, 
   };
 }

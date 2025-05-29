@@ -308,9 +308,8 @@ class ThreadPostSerializer(BasePostSerializer):
     event_title = serializers.CharField(required=False, allow_blank=True)
     event_date = serializers.DateTimeField(required=False, allow_null=True)
 
-    upvotes_count = serializers.SerializerMethodField()
-    downvotes_count = serializers.SerializerMethodField()
-    vote_status = serializers.SerializerMethodField()
+    parent_post = serializers.SerializerMethodField()
+    quote_comment = serializers.CharField(required=False, allow_blank=True)
     
     class Meta(BasePostSerializer.Meta):
         model = ThreadPost
@@ -318,6 +317,7 @@ class ThreadPostSerializer(BasePostSerializer):
             'content', 'media_files',
             'poll_question', 'poll_options', 'poll_expiration_date',
             'event_title', 'event_date',
+            'parent_post', 'quote_comment',
         ]
 
     def get_media_files(self, obj):
@@ -339,6 +339,22 @@ class ThreadPostSerializer(BasePostSerializer):
         if not v:
             return 'none'
         return 'upvoted' if v.vote_type == 'upvote' else 'downvoted'
+    
+    
+    def get_parent_post(self, obj):
+        if not obj.parent_post:
+            return None
+        # Minimal serialization to avoid infinite loops!
+        return {
+            'id': str(obj.parent_post.id),
+            'author': {
+                'username': obj.parent_post.author.username,
+                'profile_image': obj.parent_post.author.profile_image.url if obj.parent_post.author.profile_image else None,
+            },
+            'content': obj.parent_post.content,
+            'created_at': obj.parent_post.created_at,
+        }
+
 
 # VisualPost
 class VisualPostSerializer(BasePostSerializer):
@@ -488,13 +504,14 @@ class MinimalThreadPostSerializer(serializers.ModelSerializer):
     sub_type = serializers.SerializerMethodField()
     media_preview = serializers.SerializerMethodField()
     stats = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField()
     id = serializers.UUIDField()
     content = serializers.CharField()
 
     class Meta:
         model = ThreadPost
-        fields = ['id', 'post_type', 'sub_type', 'content', 'media_preview', 'stats', 'created_at']
+        fields = ['id', 'post_type', 'sub_type', 'content', 'media_preview', 'stats', 'status', 'created_at']
 
     def get_post_type(self, obj):
         return 'Thread'
@@ -519,7 +536,31 @@ class MinimalThreadPostSerializer(serializers.ModelSerializer):
         }
 
     def get_stats(self, obj):
+        ct = ContentType.objects.get_for_model(obj)
+        upvotes = Vote.objects.filter(content_type=ct, object_id=obj.id, vote_type='upvote').count()
+        downvotes = Vote.objects.filter(content_type=ct, object_id=obj.id, vote_type='downvote').count()
         return {
             'likes_count': obj.likes_count,
-            'comments_count': obj.comments_count,
+            'dislikes_count': obj.dislikes_count,
+            'comments_count': obj.comments.filter(parent_comment__isnull=True).count(),  # <--- FIX HERE
+            'net_votes_count': upvotes - downvotes
+        }
+
+    def get_status(self, obj):
+        request = self.context.get('request')
+        user = request.user if request else None
+        like_status = 'none'
+        dislike_status = 'none'
+        vote_status = 'none'
+        if user:
+            like_status = 'liked' if user in obj.likes.all() else 'not_liked'
+            dislike_status = 'disliked' if user in obj.dislikes.all() else 'not_disliked'
+            ct = ContentType.objects.get_for_model(obj)
+            v = Vote.objects.filter(user=user, content_type=ct, object_id=obj.id).first()
+            if v:
+                vote_status = f'{v.vote_type}d'
+        return {
+            'like_status': like_status,
+            'dislike_status': dislike_status,
+            'vote_status': vote_status,
         }

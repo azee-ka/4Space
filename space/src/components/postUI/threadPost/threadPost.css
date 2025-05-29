@@ -409,3 +409,143 @@
     flex-direction: column;
     gap: 3px;
 }
+
+
+
+
+
+
+
+
+
+
+.referenced-post-card {
+  border-left: 3px solid #18e0f7;
+  background: rgba(50, 70, 90, 0.14);
+  padding: 14px 18px;
+  border-radius: 11px;
+  margin-bottom: 8px;
+  margin-top: 2px;
+  transition: box-shadow 0.18s;
+  box-shadow: 0 2px 16px 0 rgba(0,255,255,0.09);
+}
+.referenced-post-card.is-repost {
+  border-left-color: #7fff00;
+}
+.referenced-post-card.is-quote {
+  border-left-color: #1ccaff;
+}
+.referenced-post-author {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  font-size: 0.98em;
+  color: #12eeff;
+  margin-bottom: 3px;
+}
+.referenced-post-author img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.referenced-post-content {
+  color: #defbff;
+  font-size: 1em;
+  margin-left: 2px;
+}
+
+.quoted-user-comment {
+  margin-top: 7px;
+  font-style: italic;
+  color: #8ff0ff;
+  padding-left: 12px;
+}
+
+.quote-modal-overlay {
+  position: fixed;
+  z-index: 1100;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(17, 17, 17, 0.528);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.quote-modal {
+  background: rgba(15, 15, 15, 0.624);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 32px 32px 24px 32px;
+  min-width: 340px;
+  height: 80vh;
+  max-width: 420px;
+  border: 1px solid rgba(128, 128, 128, 0.165);
+  /* box-shadow: 0 8px 32px 0 rgba(4,255,255,0.16); */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+.quote-modal h3 {
+  color: #00e3e9;
+  margin: 0 0 6px 0;
+}
+.quote-modal-original {
+  background: rgba(22, 30, 40, 0.15);
+  padding: 12px;
+  border-radius: 8px;
+  color: #c6f4fd;
+  font-size: 0.99em;
+  margin-bottom: 10px;
+}
+.quote-modal-textarea {
+  width: 100%;
+  min-height: 66px;
+  padding: 12px;
+  border-radius: 9px;
+  border: 1.5px solid #00e3e9a8;
+  background: #151b26;
+  color: #fff;
+  font-size: 1.04em;
+  resize: vertical;
+  margin-bottom: 8px;
+  outline: none;
+  transition: border 0.2s;
+}
+.quote-modal-textarea:focus {
+  border: 1.5px solid #18e0f7;
+}
+.quote-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+.quote-modal-submit-btn, .quote-modal-cancel-btn {
+  border: none;
+  border-radius: 20px;
+  padding: 9px 22px;
+  font-weight: 600;
+  font-size: 1em;
+  cursor: pointer;
+  background: #18e0f7;
+  color: #191f26;
+  transition: background 0.2s, color 0.18s;
+}
+.quote-modal-submit-btn:disabled {
+  background: #4fc6df80;
+  color: #abc;
+  cursor: not-allowed;
+}
+.quote-modal-cancel-btn {
+  background: #333;
+  color: #fff;
+}
+.quote-modal-cancel-btn:hover {
+  background: #1a2230;
+}
+.quote-modal-submit-btn:hover:enabled {
+  background: #08c6e6;
+  color: #fff;
+}

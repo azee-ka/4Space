@@ -30,6 +30,10 @@ urlpatterns = [
     
     path('post/<uuid:post_id>/vote/', views.vote_post, name='vote_post'),
     
+    path('post/<uuid:post_id>/repost/', views.repost_post, name='repost_post'),
+    path('post/<uuid:post_id>/quote/', views.quote_post, name='quote_post'),
+
+    
     # ==== COMMENTS ====
     path('post/<uuid:post_id>/comments/', views.get_post_comments, name='get_post_comments'),
 

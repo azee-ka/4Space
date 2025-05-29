@@ -40,6 +40,10 @@ const ThreadPost = () => {
         commentsHasMore,
         commentsLoading,
         commentsTotalCount,
+
+        repostPost,
+        showQuoteModal,
+        setShowQuoteModal,
     } = useExpandPostContext();
 
     const endOfCommentsRef = useInfiniteScrollTrigger(loadMoreComments, commentsHasMore, commentsLoading);
@@ -74,6 +78,21 @@ const ThreadPost = () => {
 
                 {/* Post Content */}
                 <div className="thread-post-content">
+{post.parent_post && (
+  <div className={`referenced-post-card ${post.quote_comment ? 'is-quote' : 'is-repost'}`}>
+    <div className="referenced-post-author">
+      <ProfilePicture src={post.parent_post?.author?.profile_image} />
+      <span>@{post.parent_post?.author?.username}</span>
+    </div>
+    <div className="referenced-post-content">
+      <RenderText text={post.parent_post?.content} />
+    </div>
+  </div>
+)}
+{post.quote_comment && (
+  <div className="quoted-user-comment">{post.quote_comment}</div>
+)}
+
                     <RenderText text={post?.post?.content} />
                 </div>
 
@@ -106,9 +125,13 @@ const ThreadPost = () => {
                             <button className={`action-btn ${post?.status?.like_status === 'liked' ? 'active' : ''}`} onClick={() => toggleLikeDislike('like')}>
                                 <FaHeart className="icon-style" /> Like
                             </button>
-                            <button className="action-btn">
+                            <button className="action-btn" onClick={repostPost}>
                                 <FaRetweet className="icon-style" /> Repost
                             </button>
+                            <button className="action-btn" onClick={() => setShowQuoteModal(true)}>
+                                <FaQuoteRight className="icon-style" /> Quote
+                            </button>
+
                             <button className="action-btn">
                                 <FaBookmark className="icon-style" /> Save
                             </button>
@@ -118,7 +141,6 @@ const ThreadPost = () => {
                             <button className="action-btn"><FaEyeSlash /> Hide</button>
                             <button className="action-btn"><FaFlag /> Report</button>
                             <button className="action-btn"><FaBookmark /> Bookmark</button>
-                            <button className="action-btn"><FaQuoteRight /> Quote</button>
                             <button className="action-btn"><FaBell /> Notify</button>
                             <button className="action-btn"><FaLanguage /> Translate</button>
                             <button className="action-btn"><FaRobot /> Summarize</button>
