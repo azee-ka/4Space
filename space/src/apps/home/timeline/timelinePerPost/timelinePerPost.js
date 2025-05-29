@@ -209,7 +209,12 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                         <div className="thread-post-body">
                             <div className="thread-content" ref={contentRef}>
                                 {post?.parent_post && post?.quote_text && (
-                                    <div className="quote-block">
+                                    <div className="quote-block"
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            navigate(`/posts/p/${post?.parent_post?.id}`);
+                                        }}
+                                    >
                                         <div className="quote-meta">
                                             <ProfilePicture src={post.parent_post.author.profile_image} small />
                                             <span className="quote-username">@{post.parent_post.author.username}</span>
@@ -267,7 +272,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                                 className="thread-action-btn"
                                 onClick={() => setShowReplyField(v => !v)}
                             >
-                                <FaReply className="icon-style" /> 
+                                <FaReply className="icon-style" />
                                 Reply
                             </button>
                             <button className="thread-action-btn">
