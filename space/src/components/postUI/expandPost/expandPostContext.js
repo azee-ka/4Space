@@ -235,6 +235,7 @@ const submitQuote = async () => {
             const response = await callApi(`posts/post/comment/${comment_id}/reply/`, 'POST', { data: commentReplyText });
             // setPost(response.data);
             // console.log(response.data);
+            setCommentReplyText('');
         } catch (error) {
             console.error('Error voting comment:', error);
         }
