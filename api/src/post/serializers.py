@@ -126,7 +126,6 @@ class PostRetrieveSerializer(serializers.Serializer):
     status = serializers.SerializerMethodField()
     settings = serializers.SerializerMethodField()
     meta = serializers.SerializerMethodField()
-    comments = serializers.SerializerMethodField()
     likes = serializers.SerializerMethodField()
     dislikes = serializers.SerializerMethodField()
     
@@ -218,11 +217,6 @@ class PostRetrieveSerializer(serializers.Serializer):
             'updated_at': obj.updated_at,
         }
     
-    def get_comments(self, obj):
-        request = self.context.get('request')
-        top_level_comments = obj.comments.filter(parent_comment__isnull=True).order_by('-created_at')
-        return CommentSerializer(top_level_comments, many=True, context={'request': request}).data
-
     def get_likes(self, obj):
         request = self.context.get('request')
         liked_users = obj.likes.all()

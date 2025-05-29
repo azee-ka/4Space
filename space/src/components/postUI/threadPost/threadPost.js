@@ -10,7 +10,7 @@ import CustomEditor from '../../../utils/editor/editor';
 import EmojiButton from '../../../utils/editor/EmojiButton';
 import CustomTextarea from '../../../pages/messages/chatContainer/customTextarea';
 import { formatCount } from '../../../utils/formatCount';
-import { useInfiniteScrollTrigger } from '../../../utils/useInfiniteScrollTrigger';
+import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
 
 const ThreadPost = () => {
     const {

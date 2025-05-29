@@ -31,12 +31,10 @@ export const ExpandPostProvider = ({ children, postId }) => {
     const fetchCommentsPage = async ({ page, pageSize }) => {
         if (!postId) return { results: [], next: null, count: 0 };
         const offset = page * pageSize;
-        // match the backend API
         const url = `posts/post/${postId}/comments/?limit=${pageSize}&offset=${offset}`;
         const resp = await callApi(url, 'GET');
         return resp.data; // DRF paginated format: { results, next, count }
     };
-
 
     const {
         items: comments,
@@ -44,7 +42,8 @@ export const ExpandPostProvider = ({ children, postId }) => {
         hasMore: commentsHasMore,
         loading: commentsLoading,
         totalCount: commentsTotalCount,
-        reset: resetComments
+        reset: resetComments,
+        setItems: setComments,
     } = usePaginatedList(fetchCommentsPage, { pageSize: 20, immediate: true, resetDeps: [postId] });
 
 
@@ -179,7 +178,11 @@ export const ExpandPostProvider = ({ children, postId }) => {
                 };
             });
 
-            resetComments();
+            setComments(prevComments => prevComments.map(comment =>
+                comment.id === comment_id
+                    ? { ...comment, like_status: updatedLikeStatus, likes_count: updatedLikesCount }
+                    : comment
+            ));
             // console.log(response.data);
         } catch (error) {
             console.error('Error liking/unliking comment:', error);
@@ -256,7 +259,11 @@ export const ExpandPostProvider = ({ children, postId }) => {
                 );
                 return { ...prevPost, comments: updatedComments };
             });
-            resetComments();
+            setComments(prevComments => prevComments.map(comment =>
+                comment.id === comment_id
+                    ? { ...comment, net_votes_count, vote_status }
+                    : comment
+            ));
         } catch (error) {
             // Optionally: rollback optimistic update or show error
             // (For now, you might just log)
