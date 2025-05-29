@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from .models import ThreadPost, VisualPost, Vote, Comment
 from .serializers import (
@@ -13,6 +14,49 @@ from .serializers import (
     CommentSerializer,
     PostRetrieveSerializer,
 )
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def vote_post(request, post_id):
+    post = get_object_or_404(ThreadPost, id=post_id)
+    user = request.user
+    vote_type = request.data.get('vote_type')
+    if vote_type not in ['upvote', 'downvote']:
+        return Response({'error': 'Invalid vote type'}, status=status.HTTP_400_BAD_REQUEST)
+
+    ct = ContentType.objects.get_for_model(post)
+    existing_vote = Vote.objects.filter(user=user, content_type=ct, object_id=post.id).first()
+
+    if existing_vote:
+        if existing_vote.vote_type == vote_type:
+            existing_vote.delete()
+            message = f"{vote_type} removed."
+            vote_status = "none"
+        else:
+            existing_vote.vote_type = vote_type
+            existing_vote.save()
+            message = f"Changed to {vote_type}."
+            vote_status = f"{vote_type}d"
+    else:
+        Vote.objects.create(user=user, content_type=ct, object_id=post.id, vote_type=vote_type)
+        message = f"{vote_type}d successfully."
+        vote_status = f"{vote_type}d"
+
+    # ONLY RETURN NET VOTES!
+    upvotes = Vote.upvotes(post).count()
+    downvotes = Vote.downvotes(post).count()
+    net_votes_count = upvotes - downvotes
+
+    return Response({
+        'message': message,
+        'net_votes_count': net_votes_count,
+        'vote_status': vote_status,
+    }, status=status.HTTP_200_OK)
+
+
+
 
 # POST creation view
 @api_view(['POST'])
@@ -247,6 +291,9 @@ def create_reply(request, comment_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+    
+    
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote_comment(request, comment_id):
@@ -257,7 +304,8 @@ def vote_comment(request, comment_id):
     if vote_type not in ['upvote', 'downvote']:
         return Response({'error': 'Invalid vote type'}, status=status.HTTP_400_BAD_REQUEST)
 
-    existing_vote = Vote.objects.filter(user=user, comment=comment).first()
+    ct = ContentType.objects.get_for_model(comment)
+    existing_vote = Vote.objects.filter(user=user, content_type=ct, object_id=comment.id).first()
 
     if existing_vote:
         if existing_vote.vote_type == vote_type:
@@ -265,12 +313,12 @@ def vote_comment(request, comment_id):
             message = f"{vote_type} removed."
             vote_status = "none"
         else:
-            existing_vote.delete()
-            Vote.objects.create(user=user, comment=comment, vote_type=vote_type)
+            existing_vote.vote_type = vote_type
+            existing_vote.save()
             message = f"Changed to {vote_type}."
             vote_status = f"{vote_type}d"
     else:
-        Vote.objects.create(user=user, comment=comment, vote_type=vote_type)
+        Vote.objects.create(user=user, content_type=ct, object_id=comment.id, vote_type=vote_type)
         message = f"{vote_type}d successfully."
         vote_status = f"{vote_type}d"
 
@@ -280,6 +328,8 @@ def vote_comment(request, comment_id):
         'downvotes_count': Vote.downvotes(comment).count(),
         'vote_status': vote_status,
     }, status=status.HTTP_200_OK)
+
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

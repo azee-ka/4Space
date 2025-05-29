@@ -126,6 +126,7 @@ class PostRetrieveSerializer(serializers.Serializer):
     comments = serializers.SerializerMethodField()
     likes = serializers.SerializerMethodField()
     dislikes = serializers.SerializerMethodField()
+    
 
     def get_post_type(self, obj):
         return obj.__class__.__name__.replace('Post', '')
@@ -172,26 +173,33 @@ class PostRetrieveSerializer(serializers.Serializer):
             return 'Thread'
 
     def get_stats(self, obj):
+        ct = ContentType.objects.get_for_model(obj)
+        upvotes = Vote.objects.filter(content_type=ct, object_id=obj.id, vote_type='upvote').count()
+        downvotes = Vote.objects.filter(content_type=ct, object_id=obj.id, vote_type='downvote').count()
         return {
             'likes_count': obj.likes_count,
             'dislikes_count': obj.dislikes_count,
             'comments_count': obj.comments_count,
+            'net_votes_count': upvotes - downvotes
         }
 
     def get_status(self, obj):
         request = self.context.get('request')
         user = request.user if request else None
-
+        like_status = 'none'
+        dislike_status = 'none'
+        vote_status = 'none'
         if user:
             like_status = 'liked' if user in obj.likes.all() else 'not_liked'
             dislike_status = 'disliked' if user in obj.dislikes.all() else 'not_disliked'
-        else:
-            like_status = 'none'
-            dislike_status = 'none'
-
+            ct = ContentType.objects.get_for_model(obj)
+            v = Vote.objects.filter(user=user, content_type=ct, object_id=obj.id).first()
+            if v:
+                vote_status = f'{v.vote_type}d'
         return {
             'like_status': like_status,
             'dislike_status': dislike_status,
+            'vote_status': vote_status,
         }
 
     def get_settings(self, obj):
@@ -300,6 +308,10 @@ class ThreadPostSerializer(BasePostSerializer):
     event_title = serializers.CharField(required=False, allow_blank=True)
     event_date = serializers.DateTimeField(required=False, allow_null=True)
 
+    upvotes_count = serializers.SerializerMethodField()
+    downvotes_count = serializers.SerializerMethodField()
+    vote_status = serializers.SerializerMethodField()
+    
     class Meta(BasePostSerializer.Meta):
         model = ThreadPost
         fields = BasePostSerializer.Meta.fields + [
@@ -312,6 +324,21 @@ class ThreadPostSerializer(BasePostSerializer):
         request = self.context.get('request')
         return MediaFileSerializer(obj.media_files.all(), many=True, context={'request': request}).data
 
+    def get_upvotes_count(self, obj):
+        return Vote.upvotes(obj).count()
+
+    def get_downvotes_count(self, obj):
+        return Vote.downvotes(obj).count()
+
+    def get_vote_status(self, obj):
+        user = self.context['request'].user if self.context.get('request') else None
+        if not user:
+            return 'none'
+        ct = ContentType.objects.get_for_model(obj)
+        v = Vote.objects.filter(user=user, content_type=ct, object_id=obj.id).first()
+        if not v:
+            return 'none'
+        return 'upvoted' if v.vote_type == 'upvote' else 'downvoted'
 
 # VisualPost
 class VisualPostSerializer(BasePostSerializer):

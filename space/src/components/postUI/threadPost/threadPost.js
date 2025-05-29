@@ -28,6 +28,7 @@ const ThreadPost = () => {
         voteComment,
         toggleCommentLike,
         replyToComment,
+        votePost,
         navigateMedia,
         renderMediaContent,
         handleCloseLikesOverlay,
@@ -74,21 +75,21 @@ const ThreadPost = () => {
                     <div><span>{post?.stats?.views_count || 0}</span> Views</div>
                 </div>
 
-
                 {/* Voting + Content Box */}
                 <div className="thread-post-main-interactions">
                     {/* Left side: Votes */}
                     <div className="vote-box">
-                        <button className="vote-btn">
+                        <button className={`vote-btn ${post?.status?.vote_status === "upvoted" ? 'active' : ''}`} onClick={() => votePost('upvote')}>
                             <FaArrowUp className="icon-style" />
                         </button>
                         <div className="vote-count">
-                            {post?.stats?.votes_count || 0}
+                            {post?.stats?.net_votes_count || 0}
                         </div>
-                        <button className="vote-btn">
+                        <button className={`vote-btn ${post?.status?.vote_status === "downvoted" ? 'active' : ''}`} onClick={() => votePost('downvote')}>
                             <FaArrowDown className="icon-style" />
                         </button>
                     </div>
+
 
                     {/* Right side: Actions + Reply */}
                     <div className="action-and-reply-box">

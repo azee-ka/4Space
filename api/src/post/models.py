@@ -17,21 +17,31 @@ from ..utils.parser import TextFieldMixin
 from django.contrib.contenttypes.fields import GenericRelation
 
 
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
 class Vote(models.Model):
     user = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
-    comment = models.ForeignKey('Comment', on_delete=models.CASCADE)
     vote_type = models.CharField(max_length=10, choices=[('upvote', 'Upvote'), ('downvote', 'Downvote')])
 
+    # Generalized foreign key (post OR comment)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
     class Meta:
-        unique_together = ('user', 'comment')  # Enforces that each user can only vote once on a specific comment
+        unique_together = ('user', 'content_type', 'object_id')  # User votes only once per object
 
     @classmethod
-    def upvotes(cls, comment):
-        return cls.objects.filter(comment=comment, vote_type='upvote')
+    def upvotes(cls, obj):
+        ct = ContentType.objects.get_for_model(obj)
+        return cls.objects.filter(content_type=ct, object_id=obj.id, vote_type='upvote')
 
     @classmethod
-    def downvotes(cls, comment):
-        return cls.objects.filter(comment=comment, vote_type='downvote')
+    def downvotes(cls, obj):
+        ct = ContentType.objects.get_for_model(obj)
+        return cls.objects.filter(content_type=ct, object_id=obj.id, vote_type='downvote')
+
 
 
 
@@ -46,9 +56,8 @@ class Comment(models.Model, TextFieldMixin):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Use a single ManyToMany field for votes
-    votes = models.ManyToManyField(BaseUser, through='Vote', related_name='voted_comments')
-
+    votes = GenericRelation('post.Vote', related_query_name='comment')
+    
     likes = models.ManyToManyField(BaseUser, related_name='liked_comments', blank=True)
     # Field to count likes
     likes_count = models.PositiveIntegerField(default=0)
@@ -218,7 +227,8 @@ class BasePost(models.Model):
 class ThreadPost(BasePost):
     content = models.TextField(default="", blank=False, null=False)
     media_files = models.ManyToManyField('post.MediaFile', blank=True)
-    
+    votes = GenericRelation(Vote, related_query_name='threadpost')
+
     # Poll-specific
     poll_question = models.CharField(max_length=255, blank=True, null=True)
     poll_options = models.JSONField(default=list, blank=True)
@@ -227,6 +237,20 @@ class ThreadPost(BasePost):
     # Event-specific
     event_title = models.CharField(max_length=255, blank=True, null=True)
     event_date = models.DateTimeField(blank=True, null=True)
+
+    def add_upvote(self, user):
+        ct = ContentType.objects.get_for_model(self)
+        if not Vote.objects.filter(user=user, content_type=ct, object_id=self.id).exists():
+            Vote.objects.create(user=user, content_type=ct, object_id=self.id, vote_type='upvote')
+        else:
+            raise ValueError("User has already upvoted this post.")
+
+    def add_downvote(self, user):
+        ct = ContentType.objects.get_for_model(self)
+        if not Vote.objects.filter(user=user, content_type=ct, object_id=self.id).exists():
+            Vote.objects.create(user=user, content_type=ct, object_id=self.id, vote_type='downvote')
+        else:
+            raise ValueError("User has already downvoted this post.")
 
 
     def __str__(self):
