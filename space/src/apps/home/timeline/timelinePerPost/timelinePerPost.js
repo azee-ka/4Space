@@ -102,16 +102,16 @@ const commentTextareaRef = useRef(null);
                     <div className="media-container">
                         {renderMediaContent(post?.post?.media_files[currentMediaIndex])}
                         <div className="media-nav-buttons">
-                            {currentMediaIndex < (post?.post?.media_files?.length || 0) - 1 && (
+                            {(currentMediaIndex < (post?.post?.media_files?.length || 0) - 1) && !(currentMediaIndex > 0) && (
                                 <div></div>
                             )}
                             {currentMediaIndex > 0 && (
                                 <button onClick={() => navigateMedia('prev')}><FaChevronLeft /></button>
                             )}
-                            {currentMediaIndex < (post?.post?.media_files?.length || 0) - 1 && (
+                            {(currentMediaIndex < (post?.post?.media_files?.length || 0) - 1) && (
                                 <button onClick={() => navigateMedia('next')}><FaChevronRight /></button>
                             )}
-                            {currentMediaIndex > 0 && (
+                            {(currentMediaIndex > 0) && !(currentMediaIndex < (post?.post?.media_files?.length || 0) - 1) && (
                                 <div></div>
                             )}
 
@@ -240,8 +240,6 @@ const commentTextareaRef = useRef(null);
 
                 </div>
             )}
-
-
         </div>
 
         {/* Floating Buttons Separate */}
