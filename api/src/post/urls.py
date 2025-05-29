@@ -31,6 +31,8 @@ urlpatterns = [
     path('post/<uuid:post_id>/vote/', views.vote_post, name='vote_post'),
     
     # ==== COMMENTS ====
+    path('post/<uuid:post_id>/comments/', views.get_post_comments, name='get_post_comments'),
+
     path('post/comment/<uuid:post_id>/create/', views.create_comment, name='create_comment'),  # Comment on post
     path('post/comment/<uuid:comment_id>/reply/', views.create_reply, name='create_reply'),  # Reply to comment
 

@@ -17,6 +17,38 @@ from .serializers import (
 
 
 
+
+from rest_framework.pagination import LimitOffsetPagination
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_post_comments(request, post_id):
+    post = None
+    for model_class in [ThreadPost, VisualPost]:
+        try:
+            post = model_class.objects.get(id=post_id)
+            break
+        except model_class.DoesNotExist:
+            continue
+
+    if not post:
+        return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    comments_qs = post.comments.filter(parent_comment__isnull=True).order_by('-created_at')
+    paginator = LimitOffsetPagination()
+    paginated_comments = paginator.paginate_queryset(comments_qs, request)
+    serializer = CommentSerializer(paginated_comments, many=True, context={'request': request})
+
+    return paginator.get_paginated_response(serializer.data)
+
+
+
+
+
+
+
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote_post(request, post_id):
