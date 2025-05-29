@@ -40,7 +40,6 @@ const ThreadPost = () => {
         commentsHasMore,
         commentsLoading,
         commentsTotalCount,
-        resetComments,
     } = useExpandPostContext();
 
     const endOfCommentsRef = useInfiniteScrollTrigger(loadMoreComments, commentsHasMore, commentsLoading);

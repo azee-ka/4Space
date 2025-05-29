@@ -33,6 +33,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
         const offset = page * pageSize;
         const url = `posts/post/${postId}/comments/?limit=${pageSize}&offset=${offset}`;
         const resp = await callApi(url, 'GET');
+        console.log(resp);
         return resp.data; // DRF paginated format: { results, next, count }
     };
 
@@ -107,33 +108,33 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
     // Add a comment
     const addComment = async () => {
-        if (!commentText.trim()) return; // Prevent empty comments
-        try {
-            const formData = new FormData();
-            formData.append('text', commentText);
-            formData.append('post_id', postId);
+    if (!commentText.trim()) return; // Prevent empty comments
+    try {
+        const formData = new FormData();
+        formData.append('text', commentText);
+        formData.append('post_id', postId);
 
-            const response = await callApi(`posts/post/comment/${postId}/create/`, 'POST', formData);
+        const response = await callApi(`posts/post/comment/${postId}/create/`, 'POST', formData);
 
-            // Optimistically update post state
-            setCommentText('');
-            setPost((prev) => {
-                // Compute new comments count
-                const newCommentsCount = (prev.stats?.comments_count || 0) + 1;
-                return {
-                    ...prev,
-                    comments: [...prev.comments, response.data],
-                    stats: {
-                        ...prev.stats,
-                        comments_count: newCommentsCount,
-                    },
-                };
-            });
-            resetComments(); // Reload comments, will fetch first page again
-        } catch (error) {
-            console.error('Error adding comment:', error);
-        }
-    };
+        setCommentText('');
+
+        // Update the post's comment count, but don't touch comments array!
+        setPost((prev) => ({
+            ...prev,
+            stats: {
+                ...prev?.stats,
+                comments_count: (prev?.stats?.comments_count || 0) + 1,
+            },
+        }));
+
+        // Refresh the paginated comments so new comment appears at the top
+        resetComments();
+
+    } catch (error) {
+        console.error('Error adding comment:', error);
+    }
+};
+
 
 
 
@@ -158,31 +159,13 @@ export const ExpandPostProvider = ({ children, postId }) => {
             const updatedLikeStatus = response.data.like_status;
             const updatedLikesCount = response.data.likes_count;
 
-            // Manually update the post state to reflect the updated like status and count
-            setPost((prevPost) => {
-                const updatedComments = prevPost.comments.map((comment) => {
-                    if (comment.id === comment_id) {
-                        // Return updated comment data with updated like status and likes count
-                        return {
-                            ...comment,
-                            like_status: updatedLikeStatus,
-                            likes_count: updatedLikesCount
-                        };
-                    }
-                    return comment;
-                });
-
-                return {
-                    ...prevPost,
-                    comments: updatedComments
-                };
-            });
-
-            setComments(prevComments => prevComments.map(comment =>
-                comment.id === comment_id
-                    ? { ...comment, like_status: updatedLikeStatus, likes_count: updatedLikesCount }
-                    : comment
-            ));
+            setComments(prevComments =>
+                prevComments.map(comment =>
+                    comment.id === comment_id
+                        ? { ...comment, like_status: updatedLikeStatus, likes_count: updatedLikesCount }
+                        : comment
+                )
+            );
             // console.log(response.data);
         } catch (error) {
             console.error('Error liking/unliking comment:', error);
@@ -192,78 +175,19 @@ export const ExpandPostProvider = ({ children, postId }) => {
 
 
     const voteComment = async (comment_id, vote_type) => {
-        // 1. Optimistically update comment UI immediately
-        setPost((prevPost) => {
-            const updatedComments = prevPost.comments.map((comment) => {
-                if (comment.id === comment_id) {
-                    // Calculate the new net_votes_count optimistically
-                    let netVotes = comment.net_votes_count || 0;
-                    let previousStatus = comment.vote_status;
-                    let newStatus = previousStatus;
-                    // Simulate the netVotes change based on the previous and new action
-                    if (vote_type === 'upvote') {
-                        if (previousStatus === 'upvoted') {
-                            // Undo upvote
-                            netVotes -= 1;
-                            newStatus = 'none';
-                        } else if (previousStatus === 'downvoted') {
-                            // Downvote to upvote (+2)
-                            netVotes += 2;
-                            newStatus = 'upvoted';
-                        } else {
-                            // New upvote
-                            netVotes += 1;
-                            newStatus = 'upvoted';
-                        }
-                    } else if (vote_type === 'downvote') {
-                        if (previousStatus === 'downvoted') {
-                            // Undo downvote
-                            netVotes += 1;
-                            newStatus = 'none';
-                        } else if (previousStatus === 'upvoted') {
-                            // Upvote to downvote (-2)
-                            netVotes -= 2;
-                            newStatus = 'downvoted';
-                        } else {
-                            // New downvote
-                            netVotes -= 1;
-                            newStatus = 'downvoted';
-                        }
-                    }
-                    return {
-                        ...comment,
-                        net_votes_count: netVotes,
-                        vote_status: newStatus
-                    };
-                }
-                return comment;
-            });
-
-            return {
-                ...prevPost,
-                comments: updatedComments
-            };
-        });
-
-        // 2. Then send the request to backend and update to real values on response
+        // 1. Send the request to backend and update to real values on response
         try {
             const response = await callApi(`posts/post/comment/${comment_id}/vote/`, 'POST', { vote_type });
             // Backend should return net_votes_count and vote_status
             const { vote_status, net_votes_count } = response.data;
 
-            setPost((prevPost) => {
-                const updatedComments = prevPost.comments.map((comment) =>
+            setComments(prevComments =>
+                prevComments.map(comment =>
                     comment.id === comment_id
                         ? { ...comment, net_votes_count, vote_status }
                         : comment
-                );
-                return { ...prevPost, comments: updatedComments };
-            });
-            setComments(prevComments => prevComments.map(comment =>
-                comment.id === comment_id
-                    ? { ...comment, net_votes_count, vote_status }
-                    : comment
-            ));
+                )
+            );
         } catch (error) {
             // Optionally: rollback optimistic update or show error
             // (For now, you might just log)
