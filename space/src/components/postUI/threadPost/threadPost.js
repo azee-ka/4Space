@@ -5,7 +5,7 @@ import useApi from '../../../utils/useApi';
 import { useExpandPostContext } from '../expandPost/expandPostContext';
 import RenderText from '../../../utils/autoCompleteInput/renderText';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
-import { FaHeart, FaCommentDots, FaRetweet, FaBookmark, FaShareAlt, FaArrowUp, FaArrowDown, FaReply, FaFlag, FaQuoteRight, FaBell, FaLanguage, FaRobot, FaPencilRuler, FaEyeSlash, FaLink, FaChevronUp, FaSmile } from 'react-icons/fa';
+import { FaHeart, FaCommentDots, FaRetweet, FaBookmark, FaShareAlt, FaArrowUp, FaArrowDown, FaReply, FaFlag, FaQuoteRight, FaBell, FaLanguage, FaRobot, FaPencilRuler, FaEyeSlash, FaLink, FaChevronUp, FaSmile, FaQuoteLeft } from 'react-icons/fa';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import CustomEditor from '../../../utils/editor/editor';
 import EmojiButton from '../../../utils/editor/EmojiButton';
@@ -112,6 +112,16 @@ const ThreadPost = () => {
                         <span>Repost</span>
                     </div>
                 )}
+                {post?.parent_post && post?.quote_text && (
+                                    <div className="repost-quote-block-banner" onClick={e => {
+                                        e.stopPropagation();
+                                        navigate(`/posts/p/${post?.parent_post?.id}`);
+                                    }}
+                                    >
+                                        <FaQuoteLeft />
+                                        <span>Quote</span>
+                                    </div>
+                    )}
 
                 {/* Author Info */}
                 <div className="thread-post-author">
@@ -134,8 +144,11 @@ const ThreadPost = () => {
                 <div className="thread-post-content" ref={contentRef}>
                     {post?.parent_post && post?.quote_text && (
                         <>
-                            <div className="quote-block-banner">Quote</div>
-                            <div className="quote-block">
+                            <div className="quote-block" onClick={e => {
+                                        e.stopPropagation();
+                                        navigate(`/posts/p/${post?.parent_post?.id}`);
+                                    }}
+                                    >
                                 <div className="quote-meta">
                                     <ProfilePicture src={post.parent_post.author.profile_image} small />
                                     <span className="quote-username">@{post.parent_post.author.username}</span>
