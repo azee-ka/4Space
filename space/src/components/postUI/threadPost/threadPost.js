@@ -12,7 +12,7 @@ import EmojiButton from '../../../utils/editor/EmojiButton';
 import CustomTextarea from '../../../pages/messages/chatContainer/customTextarea';
 import { formatCount } from '../../../utils/formatCount';
 import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { useTrackPostView } from '../../../hooks/useTrackPostView';
 
@@ -46,7 +46,6 @@ const ThreadPost = () => {
         commentsLoading,
         commentsTotalCount,
 
-        repostPost,
         showQuoteModal,
         setShowQuoteModal,
         quoteText,
@@ -58,7 +57,11 @@ const ThreadPost = () => {
         setBtnPos,
         selectedText,
         setSelectedText,
+
+        setShowRepostModal,
     } = useExpandPostContext();
+
+    const navigate = useNavigate();
 
     const endOfCommentsRef = useInfiniteScrollTrigger(loadMoreComments, commentsHasMore, commentsLoading);
 
@@ -86,19 +89,40 @@ const ThreadPost = () => {
         }
     }, [post]);
 
+
+    if (!post || (!post.post && !(post.is_repost && post.parent_post && post.parent_post.post))) {
+        return <div className="loading-thread-post">Loading...</div>;
+    }
+
+    const isRepost = post.is_repost && post.parent_post;
+    const effectiveContent = isRepost ? post.parent_post.post : post.post;
+    const effectiveAuthor = isRepost ? post.parent_post.author : post.author;
+
+
     return post ? (
         <div className="thread-post-page">
             <div className="thread-post-container">
+                {post?.is_repost && post?.parent_post && (
+                    <div className="repost-quote-block-banner" onClick={e => {
+                        e.stopPropagation();
+                        navigate(`/posts/p/${post?.parent_post?.id}`);
+                    }}
+                    >
+                        <FaRetweet />
+                        <span>Repost</span>
+                    </div>
+                )}
+
                 {/* Author Info */}
                 <div className="thread-post-author">
-                    <Link to={`/profile/${post?.author?.username}`}>
+                    <Link to={`/profile/${effectiveAuthor?.username}`}>
                         <div className="author-profile-image">
-                            <ProfilePicture src={post?.author?.profile_image} />
+                            <ProfilePicture src={effectiveAuthor?.profile_image} />
                         </div>
                     </Link>
                     <div className="author-info">
-                        <Link to={`/profile/${post?.author?.username}`}>
-                            <h3>@{post?.author?.username}</h3>
+                        <Link to={`/profile/${effectiveAuthor?.username}`}>
+                            <h3>@{effectiveAuthor?.username}</h3>
                         </Link>
                         <p className="post-date">
                             {formatDateTime(post?.meta?.created_at, true)}
@@ -126,7 +150,7 @@ const ThreadPost = () => {
                     )}
 
 
-                    <RenderText text={post?.post?.content} />
+                    <RenderText text={effectiveContent?.content || effectiveContent?.caption || ""} />
                     {showQuoteBtn && btnPos && ReactDOM.createPortal(
                         <button
                             className="floating-quote-btn"
@@ -179,9 +203,10 @@ const ThreadPost = () => {
                             <button className={`action-btn ${post?.status?.like_status === 'liked' ? 'active' : ''}`} onClick={() => toggleLikeDislike('like')}>
                                 <FaHeart className="icon-style" /> Like
                             </button>
-                            <button className="action-btn" onClick={repostPost}>
+                            <button className="action-btn" onClick={() => setShowRepostModal(true)}>
                                 <FaRetweet className="icon-style" /> Repost
                             </button>
+
                             <button className="action-btn">
                                 <FaBookmark className="icon-style" /> Save
                             </button>
