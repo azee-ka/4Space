@@ -19,6 +19,7 @@ import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import { usePostContext } from '../../../../context/PostContext';
 import CustomTextarea from '../../../../pages/messages/chatContainer/customTextarea';
 import { formatDateTime } from '../../../../utils/formatDateTime';
+import { formatCount } from '../../../../utils/formatCount';
 
 const ExpandedPostOverlay = () => {
     const {
@@ -147,7 +148,7 @@ const ExpandedPostOverlay = () => {
                                         >
                                             <FaHeart />
                                         </button>
-                                        <p>{commentData.likes_count}</p>
+                                        <p>{formatCount(commentData.likes_count)}</p>
                                     </div>
                                     <div>
                                         <button
@@ -156,7 +157,7 @@ const ExpandedPostOverlay = () => {
                                         >
                                             <FaArrowUp />
                                         </button>
-                                        <p>{commentData.upvotes_count}</p>
+                                        <p>{formatCount(commentData.upvotes_count)}</p>
                                     </div>
                                     <div>
                                         <button
@@ -165,7 +166,7 @@ const ExpandedPostOverlay = () => {
                                         >
                                             <FaArrowDown />
                                         </button>
-                                        <p>{commentData.downvotes_count}</p>
+                                        <p>{formatCount(commentData.downvotes_count)}</p>
                                     </div>
                                     <div>
                                         <button className='expanded-post-comment-interaction-btn'>
@@ -218,9 +219,9 @@ const ExpandedPostOverlay = () => {
                             <p>Posted {timeAgo(post?.meta?.created_at)}</p>
                         </div>
                         <div className='expanded-post-info-likes-unlikes-comments-count overlay'>
-                            <p>{post?.comments?.length} {post?.comments?.length === 1 ? 'comment' : 'comments'}</p>
-                            <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{post?.stats?.likes_count} {post?.stats?.likes_count === 1 ? 'like' : 'likes'}</p>
-                            <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{post?.stats?.dislikes_count} {post.stats?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
+                            <p>{formatCount(post?.comments?.length)} {post?.comments?.length === 1 ? 'comment' : 'comments'}</p>
+                            <p onClick={() => setShowLikesOverlay(!showLikesOverlay)}>{formatCount(post?.stats?.likes_count)} {post?.stats?.likes_count === 1 ? 'like' : 'likes'}</p>
+                            <p onClick={() => setShowDislikesOverlay(!showDislikesOverlay)}>{formatCount(post?.stats?.dislikes_count)} {post.stats?.dislikes_count === 1 ? 'dislike' : 'dislikes'}</p>
                         </div>
                     </div>
                 </div>

@@ -9,6 +9,8 @@ import { formatDateTime } from '../../../utils/formatDateTime';
 import CustomEditor from '../../../utils/editor/editor';
 import EmojiButton from '../../../utils/editor/EmojiButton';
 import CustomTextarea from '../../../pages/messages/chatContainer/customTextarea';
+import { formatCount } from '../../../utils/formatCount';
+import { useInfiniteScrollTrigger } from '../../../utils/useInfiniteScrollTrigger';
 
 const ThreadPost = () => {
     const {
@@ -32,7 +34,16 @@ const ThreadPost = () => {
         navigateMedia,
         renderMediaContent,
         handleCloseLikesOverlay,
+
+        comments,
+        loadMoreComments,
+        commentsHasMore,
+        commentsLoading,
+        commentsTotalCount,
+        resetComments,
     } = useExpandPostContext();
+
+    const endOfCommentsRef = useInfiniteScrollTrigger(loadMoreComments, commentsHasMore, commentsLoading);
 
     const [replyText, setReplyText] = useState('');
 
@@ -69,10 +80,10 @@ const ThreadPost = () => {
 
                 {/* Stats */}
                 <div className="thread-post-stats">
-                    <div><span>{post?.stats?.likes_count || 0}</span> Likes</div>
-                    <div><span>{post?.stats?.comments_count || 0}</span> Comments</div>
-                    <div><span>{post?.stats?.reposts_count || 0}</span> Reposts</div>
-                    <div><span>{post?.stats?.views_count || 0}</span> Views</div>
+                    <div><span>{formatCount(post?.stats?.likes_count) ?? 0}</span> Likes</div>
+                    <div><span>{formatCount(post?.stats?.comments_count) ?? 0}</span> Comments</div>
+                    <div><span>{formatCount(post?.stats?.reposts_count) ?? 0}</span> Reposts</div>
+                    <div><span>{formatCount(post?.stats?.views_count) ?? 0}</span> Views</div>
                 </div>
 
                 {/* Voting + Content Box */}
@@ -83,13 +94,12 @@ const ThreadPost = () => {
                             <FaArrowUp className="icon-style" />
                         </button>
                         <div className="vote-count">
-                            {post?.stats?.net_votes_count || 0}
+                            {formatCount(post?.stats?.net_votes_count) || 0}
                         </div>
                         <button className={`vote-btn ${post?.status?.vote_status === "downvoted" ? 'active' : ''}`} onClick={() => votePost('downvote')}>
                             <FaArrowDown className="icon-style" />
                         </button>
                     </div>
-
 
                     {/* Right side: Actions + Reply */}
                     <div className="action-and-reply-box">
@@ -106,8 +116,6 @@ const ThreadPost = () => {
                             <button className="action-btn">
                                 <FaShareAlt className="icon-style" /> Share
                             </button>
-
-
                             <button className="action-btn"><FaEyeSlash /> Hide</button>
                             <button className="action-btn"><FaFlag /> Report</button>
                             <button className="action-btn"><FaBookmark /> Bookmark</button>
@@ -116,10 +124,7 @@ const ThreadPost = () => {
                             <button className="action-btn"><FaLanguage /> Translate</button>
                             <button className="action-btn"><FaRobot /> Summarize</button>
                             <button className="action-btn"><FaPencilRuler /> Remix</button>
-
                         </div>
-
-
                     </div>
                 </div>
 
@@ -149,26 +154,29 @@ const ThreadPost = () => {
 
                 {/* Comments List */}
                 <div className="thread-post-comments">
-                    <p className="comments-heading">Comments</p>
-
-                    {post?.comments?.length > 0 ? (
-                        post.comments.map((comment) => (
-                            <div key={comment.id} className="comment-item">
+                    <p className="comments-heading">Comments {commentsTotalCount ? <span>({formatCount(commentsTotalCount)})</span> : ""}</p>
+                    {comments.length > 0 ? (
+                        comments.map((comment, idx) => (
+                            <div
+                                key={comment.id}
+                                className="comment-item"
+                                ref={idx === comments.length - 1 ? endOfCommentsRef : null}
+                            >
                                 <div className="comment-main-row">
                                     {/* VOTE BOX - VERTICAL */}
                                     <div className="comment-vote-box">
                                         <button
-                                            className={`comment-vote-btn ${comment.vote_status === "upvoted" ? 'active' : ''}`}
-                                            onClick={() => voteComment(comment.id, 'upvote')}
+                                            className={`comment-vote-btn ${comment?.vote_status === "upvoted" ? 'active' : ''}`}
+                                            onClick={() => voteComment(comment?.id, 'upvote')}
                                         >
                                             <FaArrowUp className="icon-style" />
                                         </button>
                                         <div className="comment-vote-count">
-                                            {comment.net_votes_count ?? 0}
+                                            {formatCount(comment.net_votes_count) ?? 0}
                                         </div>
                                         <button
-                                            className={`comment-vote-btn ${comment.vote_status === "downvoted" ? 'active' : ''}`}
-                                            onClick={() => voteComment(comment.id, 'downvote')}
+                                            className={`comment-vote-btn ${comment?.vote_status === "downvoted" ? 'active' : ''}`}
+                                            onClick={() => voteComment(comment?.id, 'downvote')}
                                         >
                                             <FaArrowDown className="icon-style" />
                                         </button>
@@ -190,26 +198,30 @@ const ThreadPost = () => {
                                     </div>
                                 </div>
                                 {/* Actions row without upvote/downvote */}
-                                        <div className="comment-actions-row">
-                                            <button
-                                                className={`comment-action-btn ${comment.like_status === 'liked' ? 'liked' : ''}`}
-                                                onClick={() => toggleCommentLike(comment.id)}>
-                                                <FaHeart className='icon-style' />
-                                                Like
-                                                {comment.likes_count > 0 && (
-                                                    <span className="comment-like-count">{comment.likes_count}</span>
-                                                )}
-                                            </button>
-                                            <button className="comment-action-btn"><FaReply /> Reply</button>
-                                            <button className="comment-action-btn"><FaFlag /> Report</button>
-                                            <button className="comment-action-btn"><FaQuoteRight /> Quote</button>
-                                            <button className="comment-action-btn"><FaLanguage /> Translate</button>
-                                            <button className="comment-action-btn"><FaSmile /> React</button>
-                                        </div>
+                                <div className="comment-actions-row">
+                                    <button
+                                        className={`comment-action-btn ${comment.like_status === 'liked' ? 'liked' : ''}`}
+                                        onClick={() => toggleCommentLike(comment.id)}>
+                                        <FaHeart className='icon-style' />
+                                        Like
+                                        {comment.likes_count > 0 && (
+                                            <span className="comment-like-count">{formatCount(comment.likes_count)}</span>
+                                        )}
+                                    </button>
+                                    <button className="comment-action-btn"><FaReply /> Reply</button>
+                                    <button className="comment-action-btn"><FaFlag /> Report</button>
+                                    <button className="comment-action-btn"><FaQuoteRight /> Quote</button>
+                                    <button className="comment-action-btn"><FaLanguage /> Translate</button>
+                                    <button className="comment-action-btn"><FaSmile /> React</button>
+                                </div>
                             </div>
                         ))
                     ) : (
                         <div className="no-comments">No comments yet. Be the first to reply!</div>
+                    )}
+                    {commentsLoading && <div className="loading-comments">Loading...</div>}
+                    {!commentsHasMore && comments.length > 0 && (
+                        <div className="no-more-comments">All comments loaded.</div>
                     )}
                 </div>
             </div>

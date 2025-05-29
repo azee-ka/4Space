@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import useApi from '../../../utils/useApi';
 import VideoPlayer from '../../videoPlayer/videoPlayer';
 import { useAuth } from '../../../hooks/useAuth';
+import { usePaginatedList } from '../../../hooks/usePaginatedList';
 
 const ExpandPostContext = createContext();
 
@@ -23,6 +24,31 @@ export const ExpandPostProvider = ({ children, postId }) => {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0); // Media navigation index
 
     const [isSelfPost, setIsSelfPost] = useState(false);
+
+
+
+
+    const fetchCommentsPage = async ({ page, pageSize }) => {
+        if (!postId) return { results: [], next: null, count: 0 };
+        const offset = page * pageSize;
+        // match the backend API
+        const url = `posts/post/${postId}/comments/?limit=${pageSize}&offset=${offset}`;
+        const resp = await callApi(url, 'GET');
+        return resp.data; // DRF paginated format: { results, next, count }
+    };
+
+
+    const {
+        items: comments,
+        loadMore: loadMoreComments,
+        hasMore: commentsHasMore,
+        loading: commentsLoading,
+        totalCount: commentsTotalCount,
+        reset: resetComments
+    } = usePaginatedList(fetchCommentsPage, { pageSize: 20, immediate: true, resetDeps: [postId] });
+
+
+
 
     useEffect(() => {
         setIsSelfPost(post?.author?.username === authState?.user?.username);
@@ -104,10 +130,12 @@ export const ExpandPostProvider = ({ children, postId }) => {
                     },
                 };
             });
+            resetComments(); // Reload comments, will fetch first page again
         } catch (error) {
             console.error('Error adding comment:', error);
         }
     };
+
 
 
     // Delete the post
@@ -151,6 +179,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
                 };
             });
 
+            resetComments();
             // console.log(response.data);
         } catch (error) {
             console.error('Error liking/unliking comment:', error);
@@ -227,6 +256,7 @@ export const ExpandPostProvider = ({ children, postId }) => {
                 );
                 return { ...prevPost, comments: updatedComments };
             });
+            resetComments();
         } catch (error) {
             // Optionally: rollback optimistic update or show error
             // (For now, you might just log)
@@ -328,6 +358,13 @@ export const ExpandPostProvider = ({ children, postId }) => {
         renderMediaContent,
         handleCloseLikesOverlay,
         isSelfPost,
+
+        comments,
+        loadMoreComments,
+        commentsHasMore,
+        commentsLoading,
+        commentsTotalCount,
+        resetComments,
     };
 
     return <ExpandPostContext.Provider value={value}>{children}</ExpandPostContext.Provider>;

@@ -53,7 +53,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
     def get_replies(self, obj):
-        return CommentSerializer(obj.replies.all(), many=True).data
+        return CommentSerializer(
+            obj.replies.all(), many=True, context=self.context
+        ).data
 
     def get_author(self, obj):
         author = obj.author
@@ -63,11 +65,13 @@ class CommentSerializer(serializers.ModelSerializer):
         }
 
     def get_vote_status(self, obj):
-        if self.context.get('request'):
-            user = self.context.get('request').user
-            if Vote.objects.filter(user=user, comment=obj, vote_type='upvote').exists():
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            ct = ContentType.objects.get_for_model(obj)
+            if Vote.objects.filter(user=user, content_type=ct, object_id=obj.id, vote_type='upvote').exists():
                 return 'upvoted'
-            elif Vote.objects.filter(user=user, comment=obj, vote_type='downvote').exists():
+            elif Vote.objects.filter(user=user, content_type=ct, object_id=obj.id, vote_type='downvote').exists():
                 return 'downvoted'
         return 'none'
 
