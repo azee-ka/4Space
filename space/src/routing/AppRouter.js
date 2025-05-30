@@ -27,7 +27,6 @@ import Dashboard from '../apps/home/dashboard/dashboard';
 import Explore from '../apps/home/explore/explore';
 
 import CommunitiesTimeline from '../apps/communities/timeline/timline';
-import Community from '../apps/communities/community/community';
 import CommunitiesDashboard from '../apps/communities/dashboard/dashboard';
 import { ModeProvider } from '../context/modeContext';
 import ExpandPost from '../components/postUI/expandPost/expandPost';
@@ -50,6 +49,7 @@ import SpaceLibrary from '../apps/space/library/library';
 import { CreateCommunityProvider } from '../context/CreateCommunityContext';
 import SpaceRepositories from '../apps/space/repositories/repositories';
 import RepositoryView from '../apps/space/repositories/repository/repositoryView';
+import CommunityPage from '../apps/communities/community/community';
 
 
 const AppRouter = () => {
@@ -68,7 +68,7 @@ const AppRouter = () => {
         { name: 'Community Dasboard', path: '/communities', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
         { name: 'Community Dasboard', path: '/communities/dashboard', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
         { name: 'Communities Timeline', path: '/communities/timeline', component: <CommunitiesTimeline />, key: 'Communities Timline' },
-        { name: 'Community', path: '/communities/c/:communityId', component: <Community />, key: 'Community' },
+        { name: 'Community', path: '/communities/c/:communityId', component: <CommunityPage />, key: 'Community' },
         { name: 'Community Exchange', path: '/communities/e/:exchangeId', component: <ExchangeDetail />, key: 'ExchangeDetail' },
         { name: 'Create Community', path: '/communities/create', component: <CreateCommunity />, key: 'CreateCommunity' },
         { name: 'Community Publication Detail', path: '/communities/research/:publicationId', component: <PublicationDetail />, key: 'PublicationDetailPage' },

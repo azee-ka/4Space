@@ -12,44 +12,57 @@ const Timeline = () => {
     const { callApi } = useApi();
     const [posts, setPosts] = useState([]);
 
-    const [activeFilter, setActiveFilter] = useState('All');
-
+    // Two independent filters for each feed
+    const [leftFilter, setLeftFilter] = useState('All');
+    const [rightFilter, setRightFilter] = useState('Visual');
     const [secondTimelineAdd, setSecondTimelineAdd] = useState(true);
 
     useEffect(() => {
         const fetchTimelinePosts = async () => {
             try {
                 const response = await callApi(`posts/timeline/get-posts/`);
-                console.log(response.data.posts);
                 setPosts(response.data.posts);
             } catch (err) {
                 console.error('Error fetching timeline page posts:', err);
             }
-        }
+        };
         fetchTimelinePosts();
     }, []);
 
     const filters = ['All', 'Thread', 'Visual'];
 
-    // 🔥 Filtering the posts based on activeFilter
-    const filteredPosts = posts.filter(post => {
-        if (activeFilter === 'All') return true;
-        return post.post_type === activeFilter;
+    const leftFilteredPosts = posts.filter(post => {
+        if (leftFilter === 'All') return true;
+        return post.post_type === leftFilter;
     });
 
+    const rightFilteredPosts = posts.filter(post => {
+        if (rightFilter === 'All') return true;
+        return post.post_type === rightFilter;
+    });
 
     return posts ? (
         <div className="timeline-page">
-            <div className='timeline-header'>
+            {/* Header (Title & Toggle) */}
+            <div className="timeline-header">
                 <h2>Timeline</h2>
-                <div className="timeline-header-right">
-                    <button onClick={() => setSecondTimelineAdd(!secondTimelineAdd)} className={`timeline-add-btn ${secondTimelineAdd ? 'active' : ''}`}>
-                        Toggle Timeline
-                    </button>
+                <button
+                    onClick={() => setSecondTimelineAdd(!secondTimelineAdd)}
+                    className={`timeline-add-btn ${secondTimelineAdd ? 'active' : ''}`}>
+                    Toggle Timeline
+                </button>
+            </div>
+
+            {/* Filter Row */}
+            <div
+                className={`timeline-filter-row ${secondTimelineAdd ? 'second-timeline' : ''}`}
+            >
+                {/* Left Filter */}
+                {/* <div> */}
                     <DropdownButton
                         toggleContent={
                             <button className="filter-toggle">
-                                <span>Filter by: {activeFilter}</span>
+                                <span>Filter by: {leftFilter}</span>
                                 <FontAwesomeIcon icon={faChevronDown} />
                             </button>
                         }
@@ -58,49 +71,85 @@ const Timeline = () => {
                             {filters.map((filter) => (
                                 <button
                                     key={filter}
-                                    className={`filter-btn ${activeFilter === filter ? 'active' : ''}`}
-                                    onClick={() => setActiveFilter(filter)}
+                                    className={`filter-btn ${leftFilter === filter ? 'active' : ''}`}
+                                    onClick={() => setLeftFilter(filter)}
                                 >
                                     {filter}
                                 </button>
                             ))}
                         </div>
                     </DropdownButton>
-                </div>
-            </div>
-            {posts.length > 0 ?
-                (
-                    <div className='timeline-content'>
-                        <div className="timeline-left-side-container">
-                            {filteredPosts.map((post, index) => (
-                                <ExpandPostProvider key={index} postId={post.id}>
-                                    <TimelinePerPost postId={post.id} posts={filteredPosts} index={index} activeFilter={activeFilter} />
-                                </ExpandPostProvider>
-                            ))
+                {/* </div> */}
+                {/* Right Filter */}
+                {secondTimelineAdd &&
+                    // <div>
+                        <DropdownButton
+                            toggleContent={
+                                <button className="filter-toggle">
+                                    <span>Filter by: {rightFilter}</span>
+                                    <FontAwesomeIcon icon={faChevronDown} />
+                                </button>
                             }
-                        </div>
-                        {secondTimelineAdd &&
-                            <div className="timeline-right-side-container">
-                                {filteredPosts.map((post, index) => (
-                                    <ExpandPostProvider key={index} postId={post.id}>
-                                        <TimelinePerPost postId={post.id} posts={filteredPosts} index={index} activeFilter={activeFilter} />
-                                    </ExpandPostProvider>
+                        >
+                            <div className="timeline-filters">
+                                {filters.map((filter) => (
+                                    <button
+                                        key={filter}
+                                        className={`filter-btn ${rightFilter === filter ? 'active' : ''}`}
+                                        onClick={() => setRightFilter(filter)}
+                                    >
+                                        {filter}
+                                    </button>
                                 ))}
                             </div>
-                        }
+                        </DropdownButton>
+                    // </div>
+                }
+            </div>
+
+            {/* Feeds */}
+            {posts.length > 0 ? (
+                <div className='timeline-content'>
+                    {/* Left Feed */}
+                    <div className="timeline-left-side-container">
+                        {leftFilteredPosts.map((post, index) => (
+                            <ExpandPostProvider key={post.id} postId={post.id}>
+                                <TimelinePerPost
+                                    postId={post.id}
+                                    posts={leftFilteredPosts}
+                                    index={index}
+                                    activeFilter={leftFilter}
+                                />
+                            </ExpandPostProvider>
+                        ))}
                     </div>
-                ) : (
-                    <div className="timeline-no-posts">
-                        <FaImages className="icon-style" />
-                        <h3>No More Posts</h3>
-                        <h3>You're caught up!</h3>
-                    </div>
-                )
-            }
+                    {/* Right Feed */}
+                    {secondTimelineAdd &&
+                        <div className="timeline-right-side-container">
+                            {rightFilteredPosts.map((post, index) => (
+                                <ExpandPostProvider key={post.id} postId={post.id}>
+                                    <TimelinePerPost
+                                        postId={post.id}
+                                        posts={rightFilteredPosts}
+                                        index={index}
+                                        activeFilter={rightFilter}
+                                    />
+                                </ExpandPostProvider>
+                            ))}
+                        </div>
+                    }
+                </div>
+            ) : (
+                <div className="timeline-no-posts">
+                    <FaImages className="icon-style" />
+                    <h3>No More Posts</h3>
+                    <h3>You're caught up!</h3>
+                </div>
+            )}
         </div>
     ) : (
         <div>Loading...</div>
-    )
+    );
 };
 
 export default Timeline;

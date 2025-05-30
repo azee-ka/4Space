@@ -138,7 +138,7 @@ const ExchangeDetail = ({ postId: propPostId, embedded = false, onClose }) => {
                         </div>
                     </div>
 
-                    <div className="community-card comments-section">
+                    <div className="comments-section">
                         <h3>Comments</h3>
                         <div className="comment-thread-root">
                             {dummyComments.map(comment => (
