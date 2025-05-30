@@ -144,7 +144,7 @@ const Timeline = () => {
                         <div ref={infiniteScrollRef}></div>
                     </div>
                     {/* Right Feed */}
-                    {secondTimelineAdd &&
+                    {secondTimelineAdd && rightFilteredPosts &&
                         <div className="timeline-right-side-container">
                             {rightFilteredPosts.map((post, index) => (
                                 <ExpandPostProvider key={post.id} postId={post.id}>
