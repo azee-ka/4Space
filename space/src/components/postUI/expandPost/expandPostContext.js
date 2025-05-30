@@ -14,13 +14,13 @@ import RepostModal from './repostModal/repostModal';
 
 const ExpandPostContext = createContext();
 
-export const ExpandPostProvider = ({ children, postId }) => {
+export const ExpandPostProvider = ({ children, postId, postData }) => {
     const navigate = useNavigate();
     const { callApi } = useApi();
     const { authState } = useAuth();
 
-    // States managed by the PostProvider
-    const [post, setPost] = useState(null); // Complete post data
+    // Use pre-fetched postData if available
+    const [post, setPost] = useState(postData || null);
 
     const [postBookmarked, setPostBookmarked] = useState(false);
 
@@ -171,16 +171,16 @@ export const ExpandPostProvider = ({ children, postId }) => {
             try {
                 const response = await callApi(`posts/post/${postId}/`);
                 setPost(response.data);
-                // console.log('Post data:', response.data);
+                console.log('Post data:', response.data);
             } catch (error) {
                 console.error('Error fetching post data:', error);
             }
         };
 
-        if (postId) {
+        if (!post && postId) {
             fetchPostData();
         }
-    }, [postId]);
+    }, [postId, post]);
 
 
 
