@@ -1,7 +1,9 @@
 import React from "react";
 import "./threadPosts.css";
 
-const ThreadPostCard = ({ post, onClick }) => (
+const ThreadPostCard = ({ post, onClick }) => {
+  console.log(post);
+  return (
   <div
     className="thread-post-card"
     onClick={onClick}
@@ -20,5 +22,6 @@ const ThreadPostCard = ({ post, onClick }) => (
     <div className="thread-post-content">{post.content}</div>
   </div>
 );
+}
 
 export default ThreadPostCard;
