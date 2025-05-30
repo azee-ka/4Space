@@ -4,15 +4,18 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    /* overflow-y: auto; */
 }
 
 .explore-page-inner {
     background-color: rgba(255, 0, 0, 0);
-    width: 99%;
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding-bottom: 20px;
+    box-sizing: border-box;
 }
 
 .explore-header {
@@ -22,6 +25,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0px 25px 0px 0px;
+    box-sizing: border-box;
 }
 
 .explore-page h2 {
@@ -98,6 +103,9 @@
     justify-content: center;
     gap: 10px;
     background-color: rgba(255, 0, 0, 0);
+
+        padding: 0px 25px 0px 0px;
+    box-sizing: border-box;
 }
 
 /* 
