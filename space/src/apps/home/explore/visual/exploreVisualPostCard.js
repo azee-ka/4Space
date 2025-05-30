@@ -1,6 +1,6 @@
 import React from "react";
 import ImageWrapper from '../../../../utils/imageWrapper/imageWrapper';
-import "./visualPostsGrid.css";
+import "./exploreVisualPostCard.css";
 
 const VisualGridTile = ({ post, onClick }) => (
   <div
