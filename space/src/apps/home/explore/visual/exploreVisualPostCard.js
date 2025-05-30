@@ -1,6 +1,8 @@
 import React from "react";
 import ImageWrapper from '../../../../utils/imageWrapper/imageWrapper';
 import "./exploreVisualPostCard.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLayerGroup } from "@fortawesome/free-solid-svg-icons";
 
 const VisualGridTile = ({ post, onClick }) => (
   <div
@@ -10,12 +12,17 @@ const VisualGridTile = ({ post, onClick }) => (
     role="button"
     style={{ cursor: "pointer" }}
   >
-    <ImageWrapper
-      src={post?.thumbnail?.file}
-      alt="Visual post"
-      className="visual-masonry-img"
-      loading="lazy"
-    />
+      <ImageWrapper
+        src={post?.thumbnail?.file}
+        alt="Visual post"
+        className="visual-masonry-img"
+        loading="lazy"
+      />
+    {post.media_files_count > 1 && (
+      <span className="visual-multi-stack-icon">
+        <FontAwesomeIcon icon={faLayerGroup} className="icon-style" />
+      </span>
+    )}
   </div>
 );
 

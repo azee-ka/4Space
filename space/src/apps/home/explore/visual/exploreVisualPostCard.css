@@ -5,16 +5,46 @@
   position: relative;
   padding: 0;
   background: #17191d;
-  box-shadow: 0 1px 8px rgba(20,22,25,0.07);
+  box-shadow: 0 1px 8px rgba(20, 22, 25, 0.07);
+  position: relative;
+  margin-bottom: 10px;
+  transition: all .2s ease;
+  cursor: pointer;
 }
-/* 
+
+.visual-grid-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity .22s;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.visual-grid-tile:hover::after {
+  opacity: 0.5;
+}
+
+.visual-multi-stack-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+
+
 .visual-masonry-img {
   width: 100%;
+  height: auto;
   display: block;
-  object-fit: cover;
-  border-radius: 10px;
-  max-height: 340px;  
-  min-height: 140px;  
-  aspect-ratio: 4/3;   
+  object-fit: unset;
+  min-height: unset;
+  max-height: unset;
+  aspect-ratio: unset;
   background: #212227;
-} */
+  border-radius: 8px;
+}
