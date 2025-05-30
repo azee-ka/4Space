@@ -1,19 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Masonry from 'react-masonry-css';
-import './explore.css'; // You can extend this later based on looks
+import './explore.css';
 import useApi from '../../../utils/useApi';
-import DropdownButton from '../../../utils/popperButton/DropdownButton';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
-
-import ThreadPosts from './thread/threadPosts';
-import VisualPostsGrid from './visual/visualPostsGrid';
 import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
 import { usePaginatedList } from '../../../hooks/usePaginatedList';
 
+import VisualGridTile from './visual/visualPostsGrid';
+import ThreadPostCard from './thread/threadPosts';
+import { usePostContext } from '../../../context/PostContext';
+
+const tabOptions = [
+    { key: 'Visual', label: 'Visual' },
+    { key: 'Thread', label: 'Thread' },
+];
+
 const Explore = () => {
-const { callApi } = useApi();
-    const [activeFilter, setActiveFilter] = useState('All');
+    const { callApi } = useApi();
+    const [activeTab, setActiveTab] = useState('Visual');
+    const { handleExpandPostOpen } = usePostContext();
+
+    // Post click handler (expand logic, etc)
+    const handlePostClick = (post, index) => {
+        handleExpandPostOpen(post.id, posts, window.location.pathname + window.location.hash, index, post.post_type);
+    };
 
     // Paginated fetch function
     const fetchPageFn = async ({ page, pageSize }) => {
@@ -33,79 +42,79 @@ const { callApi } = useApi();
         items: posts,
         loadMore,
         hasMore,
-        loading,
-        error,
-        totalCount,
-        reset
+        loading
     } = usePaginatedList(fetchPageFn, { pageSize: 20 });
 
     // Infinite scroll trigger
     const infiniteScrollRef = useInfiniteScrollTrigger(loadMore, hasMore, loading);
 
-    const filters = ['All', 'Thread', 'Visual'];
+    // Only show posts for selected tab
+    const filteredPosts = posts.filter(post => post.post_type === activeTab);
 
-    const filteredPosts = activeFilter === 'All'
-        ? posts
-        : posts.filter(post => post.post_type === activeFilter);
-
-         // Masonry breakpoint columns (responsive)
-  const masonryBreakpoints = {
-    default: 3,
-    1200: 3,
-    900: 2,
-    600: 1
-  };
+    const masonryBreakpoints = {
+        default: 4,
+        1200: 3,
+        900: 2,
+        600: 2,
+    };
 
     return (
         <div className="explore-page">
             <div className="explore-page-inner">
-            <div className="explore-header">
-                <h2>Explore</h2>
-                <DropdownButton
-                    toggleContent={
-                        <button className="filter-toggle">
-                            <span>Filter by: {activeFilter}</span>
-                            <FontAwesomeIcon icon={faChevronDown} />
-                        </button>
-                    }
-                >
-                    <div className="explore-filters">
-                        {filters.map((filter) => (
+                <div className="explore-header-row">
+                    <h2 className="explore-header-title">Explore</h2>
+                    <div className="explore-tabs-inline">
+                        {tabOptions.map(tab => (
                             <button
-                                key={filter}
-                                className={`filter-btn ${activeFilter === filter ? 'active' : ''}`}
-                                onClick={() => setActiveFilter(filter)}
+                                key={tab.key}
+                                className={`explore-tab-btn ${activeTab === tab.key ? 'active' : ''}`}
+                                onClick={() => setActiveTab(tab.key)}
                             >
-                                {filter}
+                                {tab.label}
                             </button>
                         ))}
                     </div>
-                </DropdownButton>
+                    <div className="explore-header-filler"></div>
+                </div>
 
-            </div>
-
-            {loading ? (
-                <div className="loading">Loading posts...</div>
-            ) : (
-                <div className={`posts-container`}>
-                    {loading ? (
+                {loading && posts.length === 0 ? (
                     <div className="loading">Loading posts...</div>
-                ) : filteredPosts.length === 0 ? (
-                    <div className="no-posts">No posts available.</div>
                 ) : (
-                    <>
-                        {activeFilter === 'Thread' && <ThreadPosts posts={filteredPosts} />}
-                        {activeFilter === 'Visual' && <VisualPostsGrid posts={filteredPosts} />}
-                        {activeFilter === 'All' && (
+                    <div className="posts-container">
+                        {filteredPosts.length === 0 ? (
+                            <div className="no-posts">No posts available.</div>
+                        ) : (
                             <>
-                                <ThreadPosts posts={filteredPosts.filter(post => post.post_type === 'Thread')} />
-                                <VisualPostsGrid posts={filteredPosts.filter(post => post.post_type === 'Visual')} />
+                                {activeTab === 'Visual' ? (
+                                    <Masonry
+                                        breakpointCols={masonryBreakpoints}
+                                        className="explore-masonry-grid"
+                                        columnClassName="explore-masonry-column"
+                                    >
+                                        {filteredPosts.map((post, idx) => (
+                                            <VisualGridTile
+                                                key={post.id}
+                                                post={post}
+                                                onClick={() => handlePostClick(post, idx)}
+                                            />
+                                        ))}
+                                    </Masonry>
+                                ) : (
+                                    <div className="thread-posts-list">
+                                        {filteredPosts.map((post, idx) => (
+                                            <ThreadPostCard
+                                                key={post.id}
+                                                post={post}
+                                                onClick={() => handlePostClick(post, idx)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                                <div ref={infiniteScrollRef}></div>
                             </>
                         )}
-                    </>
+                    </div>
                 )}
-                </div>
-            )}
             </div>
         </div>
     );

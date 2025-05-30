@@ -74,7 +74,7 @@ const ExpandedPostOverlay = () => {
     };
 
 
-    console.log('ExpandedPostOverlay post:', post);
+    // console.log('ExpandedPostOverlay post:', post);
 
     return post ? (
         <div className="expanded-post-container">
@@ -290,10 +290,10 @@ const ExpandedPostOverlay = () => {
                 }
             </div>
             {showLikesOverlay && (
-                <UserListOverlay userList={post.likes} onClose={handleCloseLikesOverlay} title={'Likes'} username={authState.user.username} />
+                <UserListOverlay userList={post.likes} onClose={handleCloseLikesOverlay} title={'Likes'} username={authState?.current?.user?.username} />
             )}
             {showDislikesOverlay && (
-                <UserListOverlay userList={post.dislikes} onClose={handleCloseLikesOverlay} title={'Dislikes'} username={authState.user.username} />
+                <UserListOverlay userList={post.dislikes} onClose={handleCloseLikesOverlay} title={'Dislikes'} username={authState?.current?.user?.username} />
             )}
             <div className='expand-previous-next-post-button-container overlay'>
                 {showPreviousPostButton ? (

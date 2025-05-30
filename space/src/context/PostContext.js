@@ -20,16 +20,16 @@ export const PostProvider = ({ children }) => {
     
     const handleExpandPostOpen = (postIdToExpand, posts, originalPreviousUrl, index, post_type) => {
         if(post_type === "Thread") {
-            console.log("Thread Post ID to expand:", postIdToExpand);
+            // console.log("Thread Post ID to expand:", postIdToExpand);
             navigate(`/posts/p/${postIdToExpand}`);
         } else {
-            console.log("Post ID to expand:", postIdToExpand);
+            // console.log("Post ID to expand:", postIdToExpand);
             setExpandPostIdReciever(postIdToExpand);
             setShowPreviousPostButton(index > 0);
             setShowNextPostButton(index < posts.length - 1);
             setCurrentExpandPostIndex(index);
             setPostsList(posts);
-            console.log("expandede d e Posts List:", posts);
+            // console.log("expandede d e Posts List:", posts);
             setExpandPostOnCloseUrl(originalPreviousUrl);
             window.history.replaceState(null, null, `/posts/p/${postIdToExpand}`);
         }
