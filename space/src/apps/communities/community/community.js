@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './community.css';
-import useApi from '../../../utils/useApi';
 import { useParams } from 'react-router-dom';
 
+import { CommunityProvider, useCommunity } from '../../../context/CommunityContext';
 import { TAB_COMPONENTS_FLAT } from './tabs/tabComponents';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,86 +10,45 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddTabOverlay from './addTabOverlay/addTabOverlay';
 import InviteOverlay from './inviteOverlay/inviteOverlay';
 
-const Community = () => {
+const CommunityPage = () => {
   const { communityId } = useParams();
-  const { callApi } = useApi();
-  const [community, setCommunity] = useState(null);
-  const [selectedTab, setSelectedTab] = useState(null);
+  return (
+    <CommunityProvider communityId={communityId}>
+      <Community />
+    </CommunityProvider>
+  );
+};
+
+const Community = () => {
+  const {
+    community,
+    setCommunity,
+    selectedTab,
+    setSelectedTab,
+    fetchCommunityData,
+    handleJoinLeave,
+    addTabs
+  } = useCommunity();
+
   const [addTabOverlayIsOpen, setAddTabOverlayIsOpen] = useState(false);
-
   const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
-
-
-  const fetchCommunityData = async () => {
-    try {
-      const response = await callApi(`community/c/${communityId}/`);
-      console.log('Community data retrieved successfully:', response.data);
-      setCommunity(response.data);
-      setSelectedTab(response.data?.tabs[0]);
-    } catch (error) {
-      console.error('Error retrieving community data:', error);
-    }
-  };
 
   useEffect(() => {
     fetchCommunityData();
-  }, [communityId]);
-
+  }, []);
 
   useEffect(() => {
     if (community?.tabs?.length > 0) {
       const rawHash = window.location.hash.replace('#', '');
       const tabPrefix = rawHash.split('-')[0];
       const matchingTab = community.tabs.find(tab => tab.key === tabPrefix);
-
-
-      const initialTab = matchingTab || community.tabs[0];
-      setSelectedTab(initialTab);
+      setSelectedTab(matchingTab || community.tabs[0]);
     }
-  }, [community]);
-
-
-
-
-  const handleJoinLeave = async () => {
-    if (!community) return;
-
-    const wasMember = community.is_member;
-    const newMemberStatus = !wasMember;
-    const newMemberCount = wasMember
-      ? Math.max(0, (community.members_count || 1) - 1)
-      : (community.members_count || 0) + 1;
-
-    // Optimistic update
-    setCommunity({
-      ...community,
-      is_member: newMemberStatus,
-      members_count: newMemberCount
-    });
-
-    try {
-      if (wasMember) {
-        const response = await callApi(`community/${communityId}/leave/`, 'DELETE');
-        console.log(response.data)
-      } else {
-        const response = await callApi(`community/${communityId}/join/`, 'POST');
-        console.log(response.data)
-      }
-    } catch (error) {
-      console.error('Error updating membership:', error);
-      // Revert optimistic change on error
-      setCommunity({
-        ...community,
-        is_member: wasMember,
-        members_count: community.members_count
-      });
-    }
-  };
-
+  }, [community, setSelectedTab]);
 
   return community ? (
     <div className="community-wrapper">
-      {/* Fixed Sidebar */}
+      {/* Sidebar */}
       <div className="community-sidebar">
         {/* Header Card */}
         <div className={`community-card community-header-bar ${selectedTab.key === 'home' ? 'hidden' : ''}`}>
@@ -124,11 +83,9 @@ const Community = () => {
           </div>
         </div>
 
-
         {/* Tabs Card */}
-        <div
-          className={`community-card community-tabs-card ${selectedTab.key === 'home' ? 'shift-up' : ''}`}
-        >          <div className="community-tabs-header">
+        <div className={`community-card community-tabs-card ${selectedTab.key === 'home' ? 'shift-up' : ''}`}>
+          <div className="community-tabs-header">
             <h3 className="community-tabs-title">Menu</h3>
             {community?.permissions?.can_add_tabs && (
               <button
@@ -156,7 +113,7 @@ const Community = () => {
         </div>
       </div>
 
-      {/* Main Content Area (scrolls with page) */}
+      {/* Main Content Area */}
       <div className='community-card-wrapper'>
         <div className="community-content-card">
           {selectedTab.key && TAB_COMPONENTS_FLAT[selectedTab.key] ? (
@@ -176,16 +133,21 @@ const Community = () => {
 
       {/* Overlays */}
       {addTabOverlayIsOpen && (
-        <AddTabOverlay onClose={() => setAddTabOverlayIsOpen(false)} communityId={communityId} setCommunity={setCommunity} />
+        <AddTabOverlay
+          onClose={() => setAddTabOverlayIsOpen(false)}
+          communityId={community.id}
+          setCommunity={setCommunity}
+          community={community}
+          addTabs={addTabs} // inject from context for consistent updates
+        />
       )}
       {inviteOverlayOpen && (
-        <InviteOverlay communityId={communityId} onClose={() => setInviteOverlayOpen(false)} />
+        <InviteOverlay communityId={community.id} onClose={() => setInviteOverlayOpen(false)} />
       )}
     </div>
   ) : (
     <div className="community-loading">Loading...</div>
   );
-
 };
 
-export default Community;
+export default CommunityPage;

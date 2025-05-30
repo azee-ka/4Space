@@ -48,7 +48,7 @@
   width: 32px;
   color: #7be5ec;
     transform: translateZ(0);
-
+  cursor: pointer;
 }
 
 .discussion-content {
@@ -172,9 +172,10 @@
   right: 32px;
   width: 56px;
   height: 56px;
-  background: linear-gradient(145deg, rgba(0, 128, 255, 0.2), rgba(0, 225, 255, 0.3));
+  /* background: linear-gradient(145deg, rgba(0, 128, 255, 0.2), rgba(0, 225, 255, 0.3)); */
   border: 1px solid rgba(75, 74, 74, 0.926);
   backdrop-filter: blur(10px);
+  background-color: rgba(54, 54, 54, 0.571);
   border-radius: 50%;
   color: white;
   font-size: 1.5rem;
@@ -185,7 +186,7 @@
   z-index: 50;
 }
 .floating-discussion-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 12px rgba(0, 225, 255, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(79, 79, 79, 0.4);
   cursor: pointer;
 }

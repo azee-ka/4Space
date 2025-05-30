@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './addTabOverlay.css';
 import { IoClose, IoSearch, IoCheckmark, IoCloseCircle } from 'react-icons/io5';
 import { TAB_COMPONENT_CATEGORIES } from '../tabs/tabComponents';
-import useApi from '../../../../utils/useApi';
+import { useCommunity } from '../../../../context/CommunityContext';
 
-const AddTabOverlay = ({ onClose, communityId, setCommunity }) => {
-    const { callApi } = useApi();
+const AddTabOverlay = ({ onClose }) => {
+    const { community, addTabs } = useCommunity();
 
     const categoryKeys = Object.keys(TAB_COMPONENT_CATEGORIES);
     const [search, setSearch] = useState('');
@@ -13,8 +13,13 @@ const AddTabOverlay = ({ onClose, communityId, setCommunity }) => {
     const [editingTab, setEditingTab] = useState(null);
     const [activeCategory, setActiveCategory] = useState(categoryKeys[0]);
 
+    const existingTabKeys = useMemo(
+        () => new Set((community?.tabs || []).map(tab => tab.key)),
+        [community]
+    );
+
     const handleSelect = (key, tab) => {
-        if (!selectedTabs[key]) {
+        if (!selectedTabs[key] && !existingTabKeys.has(key)) {
             setSelectedTabs(prev => ({
                 ...prev,
                 [key]: { ...tab, customLabel: tab.label || key }
@@ -40,48 +45,34 @@ const AddTabOverlay = ({ onClose, communityId, setCommunity }) => {
         ([key]) => key.toLowerCase().includes(search.toLowerCase())
     );
 
-
     const handleSubmitNewTabs = async () => {
-        const newTabs = Object.values(selectedTabs).map(tab => ({
-        key: tab.key,
-        label: tab.customLabel || tab.label || tab.key,
-    }));
+        // Only tabs not already present
+        const newTabs = Object.values(selectedTabs).filter(tab => !existingTabKeys.has(tab.key)).map(tab => ({
+            key: tab.key,
+            label: tab.customLabel || tab.label || tab.key,
+        }));
 
-    // Optimistically update community.tabs
-    setCommunity(prev => ({
-        ...prev,
-        tabs: [...(prev.tabs || []), ...newTabs]
-    }));
-
-        try {
-            const response = await callApi(`community/c/${communityId}/tabs/`, 'POST', {
-                tabs: Object.values(selectedTabs).map(tab => ({
-                    key: tab.key,
-                    label: tab.customLabel || tab.label || tab.key,
-                }))
-            });
-
-            console.log('Submit tabs response:', response.data);
+        if (newTabs.length === 0) {
             onClose();
-        } catch (error) {
-            console.error('Error submitting new tabs:', error);
+            return;
         }
+
+        await addTabs(newTabs);
+        onClose();
     };
 
-
-
     return (
-        <div className="add-tab-overlay" onClick={onClose}>
-            <div className="add-tab-modal" onClick={(e) => e.stopPropagation()}>
-                <button className="overlay-close-btn" onClick={onClose}><IoClose /></button>
-                <h2>Add Tabs</h2>
+        <div className="addtab-overlay" onClick={onClose}>
+            <div className="addtab-modal" onClick={e => e.stopPropagation()}>
+                <button className="addtab-overlay-close-btn" onClick={onClose}><IoClose /></button>
+                <h2 className="addtab-title">Add Tabs</h2>
 
-                <div className="tab-selector-layout">
-                    <div className="tab-sidebar">
+                <div className="addtab-selector-layout">
+                    <div className="addtab-sidebar">
                         {categoryKeys.map(category => (
                             <div
                                 key={category}
-                                className={`tab-sidebar-item ${activeCategory === category ? 'active' : ''}`}
+                                className={`addtab-sidebar-item ${activeCategory === category ? 'active' : ''}`}
                                 onClick={() => setActiveCategory(category)}
                             >
                                 {category.toUpperCase()}
@@ -89,62 +80,70 @@ const AddTabOverlay = ({ onClose, communityId, setCommunity }) => {
                         ))}
                     </div>
 
-                    <div className="tab-content-area">
-                        <div className="tab-search-input">
-                            <IoSearch className="search-icon" />
+                    <div className="addtab-content-area">
+                        <div className="addtab-search-input">
+                            <IoSearch className="addtab-search-icon" />
                             <input
                                 type="text"
                                 placeholder="Search tabs..."
                                 value={search}
-                                onChange={(e) => setSearch(e.target.value)}
+                                onChange={e => setSearch(e.target.value)}
                             />
                         </div>
 
-                        <div className="tab-list">
-                            {activeTabs.map(([key, tab]) => (
-                                <div
-                                    key={key}
-                                    className={`tab-item ${selectedTabs[key] ? 'selected' : ''}`}
-                                    onClick={() => handleSelect(key, tab)}
-                                >
-                                    <span className="tab-icon">{tab.icon}</span>
-                                    <span className="tab-name">{tab.label || key}</span>
-                                    {selectedTabs[key] && <IoCheckmark className="checkmark" />}
-                                </div>
-                            ))}
+                        <div className="addtab-list">
+                            {activeTabs.map(([key, tab]) => {
+                                const alreadyAdded = existingTabKeys.has(key);
+                                const isSelected = !!selectedTabs[key];
+                                return (
+                                    <div
+                                        key={key}
+                                        className={`addtab-tab-item ${isSelected ? 'selected' : ''} ${alreadyAdded ? 'addtab-tab-disabled' : ''}`}
+                                        onClick={() => {
+                                            if (!alreadyAdded) handleSelect(key, tab);
+                                        }}
+                                        title={alreadyAdded ? "This tab is already added to the community." : ""}
+                                        style={alreadyAdded ? { opacity: 0.6, pointerEvents: 'none' } : {}}
+                                    >
+                                        <span className="addtab-tab-icon">{tab.icon}</span>
+                                        <span className="addtab-tab-name">{tab.label || key}</span>
+                                        {isSelected && <IoCheckmark className="addtab-checkmark" />}
+                                        {alreadyAdded && <span style={{ color: '#00e5ff', marginLeft: 10, fontSize: '0.85em' }}>(Added)</span>}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
 
                 {Object.keys(selectedTabs).length > 0 && (
-                    <div className="selected-tabs-bar">
+                    <div className="addtab-selected-tabs-bar">
                         {Object.entries(selectedTabs).map(([key, tab]) => {
                             const isEdited = tab.customLabel !== (tab.label || key);
                             const isEditing = editingTab === key;
 
                             return (
-                                <div className={`selected-pill-row ${isEdited ? 'modified' : ''}`} key={key}>
-                                    <span className="pill-icon">{tab.icon}</span>
-
+                                <div className={`addtab-selected-pill-row ${isEdited ? 'modified' : ''}`} key={key}>
+                                    <span className="addtab-pill-icon">{tab.icon}</span>
                                     {isEditing ? (
-                                        <div className="pill-edit-container">
+                                        <div className="addtab-pill-edit-container">
                                             <input
-                                                className="pill-label-input"
+                                                className="addtab-pill-label-input"
                                                 value={tab.customLabel}
-                                                onChange={(e) => handleLabelChange(key, e.target.value)}
+                                                onChange={e => handleLabelChange(key, e.target.value)}
                                                 onBlur={() => setEditingTab(null)}
                                                 autoFocus
                                             />
-                                            {isEdited && <div className="pill-original-static">{tab.label || key}</div>}
+                                            {isEdited && <div className="addtab-pill-original-static">{tab.label || key}</div>}
                                         </div>
                                     ) : (
-                                        <div className="pill-display" onClick={() => setEditingTab(key)}>
-                                            <span className="pill-custom-label">{tab.customLabel}</span>
-                                            {isEdited && <span className="pill-original-static">{tab.label || key}</span>}
+                                        <div className="addtab-pill-display" onClick={() => setEditingTab(key)}>
+                                            <span className="addtab-pill-custom-label">{tab.customLabel}</span>
+                                            {isEdited && <span className="addtab-pill-original-static">{tab.label || key}</span>}
                                         </div>
                                     )}
 
-                                    <IoCloseCircle className="pill-remove" onClick={() => handleRemove(key)} />
+                                    <IoCloseCircle className="addtab-pill-remove" onClick={() => handleRemove(key)} />
                                 </div>
                             );
                         })}
@@ -152,9 +151,9 @@ const AddTabOverlay = ({ onClose, communityId, setCommunity }) => {
                 )}
 
                 <button
-                    className="confirm-add-btn"
+                    className="addtab-confirm-add-btn"
                     disabled={Object.keys(selectedTabs).length === 0}
-                    onClick={() => handleSubmitNewTabs()}
+                    onClick={handleSubmitNewTabs}
                 >
                     Add Selected Tabs
                 </button>

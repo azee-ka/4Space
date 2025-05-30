@@ -1,70 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './inviteOverlay.css';
-import useApi from '../../../../utils/useApi';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
+import { useCommunity } from '../../../../context/CommunityContext';
 
+const InviteOverlay = ({ onClose }) => {
+  const { searchUsers, inviteUser } = useCommunity();
 
-let debounceTimeout;
-
-const InviteOverlay = ({ communityId, onClose }) => {
-  const { callApi } = useApi();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [invitedUserId, setInvitedUserId] = useState(null);
   const [inviteStatus, setInviteStatus] = useState('');
+  const debounceRef = useRef(null);
 
-  // Debounced live search
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
+      setLoading(false);
       return;
     }
 
     setLoading(true);
-    clearTimeout(debounceTimeout);
+    clearTimeout(debounceRef.current);
 
-    debounceTimeout = setTimeout(async () => {
+    debounceRef.current = setTimeout(async () => {
       try {
-        const response = await callApi(`search/user-search/?query=${query}`);
-        setResults(response.data);
-        console.log(response.data);
+        const users = await searchUsers(query);
+        setResults(users);
       } catch (err) {
-        console.error('Search failed:', err);
+        setResults([]);
       }
       setLoading(false);
     }, 300);
 
-    return () => clearTimeout(debounceTimeout);
-  }, [query]);
+    return () => clearTimeout(debounceRef.current);
+  }, [query, searchUsers]);
 
-  const sendInvite = async (userId) => {
+  const handleInvite = async (userId) => {
     try {
-      await callApi(`community/${communityId}/invite/`, 'POST', { user_id: userId });
+      await inviteUser(userId);
       setInviteStatus(`Invited ${userId} successfully!`);
       setInvitedUserId(userId);
     } catch (err) {
-      console.error('Invite failed:', err);
       setInviteStatus('Failed to send invite.');
     }
   };
 
   return (
     <div className="invite-overlay" onClick={onClose}>
-      <div className="invite-card" onClick={(e) => e.stopPropagation()}>
+      <div className="invite-card" onClick={e => e.stopPropagation()}>
         <button className="invite-close-btn" onClick={onClose}>×</button>
         <h2 className="invite-title">Invite Members</h2>
-
         <div className="invite-search-bar">
           <input
             className="invite-search-input"
             type="text"
             placeholder="Search by username..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={e => setQuery(e.target.value)}
           />
         </div>
-
         <div className="invite-results">
           {loading && <p className="invite-status">Searching...</p>}
           {!loading && results.length === 0 && query && (
@@ -82,14 +77,13 @@ const InviteOverlay = ({ communityId, onClose }) => {
               <button
                 className="invite-action-btn"
                 disabled={invitedUserId === user.id}
-                onClick={() => sendInvite(user.id)}
+                onClick={() => handleInvite(user.id)}
               >
                 {invitedUserId === user.id ? 'Invited' : 'Invite'}
               </button>
             </div>
           ))}
         </div>
-
         {inviteStatus && <p className="invite-status final">{inviteStatus}</p>}
       </div>
     </div>

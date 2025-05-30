@@ -67,6 +67,7 @@ const CreateCommunity = () => {
       });
       setSuccess(true);
       navigate(`/communities/c/${response.data.community_id}/`);
+      onClose();
     } catch (err) {
       setError(err?.message || 'An error occurred.');
     }
