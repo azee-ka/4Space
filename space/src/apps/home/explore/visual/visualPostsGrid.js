@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
-import './visualPostsGrid.css';
-import PostsGrid from '../../../../components/postUI/postGrid/postGrid';
-import { usePostContext } from '../../../../context/PostContext';
+import React from "react";
+import ImageWrapper from '../../../../utils/imageWrapper/imageWrapper';
+import "./visualPostsGrid.css";
 
-const VisualPostsGrid = ({ posts }) => {
-  const { handleExpandPostOpen } = usePostContext();
+const VisualGridTile = ({ post, onClick }) => (
+  <div
+    className="visual-grid-tile"
+    onClick={onClick}
+    tabIndex={0}
+    role="button"
+    style={{ cursor: "pointer" }}
+  >
+    <ImageWrapper
+      src={post?.thumbnail?.file}
+      alt="Visual post"
+      className="visual-masonry-img"
+      loading="lazy"
+    />
+  </div>
+);
 
-  return (
-    <div className="visual-posts-grid">
-      <PostsGrid classname={'explore'} postsData={posts} handleExpandPostOpen={handleExpandPostOpen} />
-    </div>
-  );
-};
-
-export default VisualPostsGrid;
+export default VisualGridTile;

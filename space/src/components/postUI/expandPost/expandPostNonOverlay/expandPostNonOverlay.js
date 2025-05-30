@@ -268,10 +268,10 @@ const ExpandedPostNonOverlay = () => {
                 }
             </div>
             {showLikesOverlay && (
-                <UserListOverlay userList={post.likes} onClose={handleCloseLikesOverlay} title={'Likes'} username={authState.user.username} />
+                <UserListOverlay userList={post.likes} onClose={handleCloseLikesOverlay} title={'Likes'} username={authState?.current?.user?.username} />
             )}
             {showDislikesOverlay && (
-                <UserListOverlay userList={post.dislikes} onClose={handleCloseLikesOverlay} title={'Dislikes'} username={authState.user.username} />
+                <UserListOverlay userList={post.dislikes} onClose={handleCloseLikesOverlay} title={'Dislikes'} username={authState?.current?.user?.username} />
             )}
         </div>
     ) : (
