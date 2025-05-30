@@ -7,27 +7,46 @@ import { ExpandPostProvider } from '../../../components/postUI/expandPost/expand
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { usePaginatedList } from '../../../hooks/usePaginatedList';
+import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
 
 const Timeline = () => {
     const { callApi } = useApi();
-    const [posts, setPosts] = useState([]);
+
+
+    const fetchPageFn = async ({ page, pageSize }) => {
+        const offset = page * pageSize;
+        const resp = await callApi(
+            `posts/timeline/get-posts/?limit=${pageSize}&offset=${offset}`
+        );
+        return {
+            results: resp.data.results,
+            next: resp.data.next,
+            count: resp.data.count
+        };
+    };
+
+    // Use paginated list hook
+    const {
+        items: posts,
+        loadMore,
+        hasMore,
+        loading,
+        error,
+        totalCount,
+        reset
+    } = usePaginatedList(fetchPageFn, { pageSize: 20 });
+
+    // Your other state: filters, etc...
+
+    // Infinite scroll trigger: use your useInfiniteScrollTrigger hook at the end of each feed
+    const infiniteScrollRef = useInfiniteScrollTrigger(loadMore, hasMore, loading);
 
     // Two independent filters for each feed
     const [leftFilter, setLeftFilter] = useState('All');
     const [rightFilter, setRightFilter] = useState('Visual');
     const [secondTimelineAdd, setSecondTimelineAdd] = useState(true);
 
-    useEffect(() => {
-        const fetchTimelinePosts = async () => {
-            try {
-                const response = await callApi(`posts/timeline/get-posts/`);
-                setPosts(response.data.posts);
-            } catch (err) {
-                console.error('Error fetching timeline page posts:', err);
-            }
-        };
-        fetchTimelinePosts();
-    }, []);
 
     const filters = ['All', 'Thread', 'Visual'];
 
@@ -122,6 +141,7 @@ const Timeline = () => {
                                 />
                             </ExpandPostProvider>
                         ))}
+                        <div ref={infiniteScrollRef}></div>
                     </div>
                     {/* Right Feed */}
                     {secondTimelineAdd &&
@@ -136,6 +156,7 @@ const Timeline = () => {
                                     />
                                 </ExpandPostProvider>
                             ))}
+                            <div ref={infiniteScrollRef}></div>
                         </div>
                     }
                 </div>

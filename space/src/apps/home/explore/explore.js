@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Masonry from 'react-masonry-css';
 import './explore.css'; // You can extend this later based on looks
 import useApi from '../../../utils/useApi';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
@@ -7,35 +8,53 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 import ThreadPosts from './thread/threadPosts';
 import VisualPostsGrid from './visual/visualPostsGrid';
+import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
+import { usePaginatedList } from '../../../hooks/usePaginatedList';
 
 const Explore = () => {
-    const { callApi } = useApi();
-    const [posts, setPosts] = useState([]);
+const { callApi } = useApi();
     const [activeFilter, setActiveFilter] = useState('All');
-    const [loading, setLoading] = useState(true);
 
-    const fetchExplorePosts = async () => {
-        try {
-            const response = await callApi('posts/explore/get-posts/');
-            console.log('Explore posts:', response.data);
-            setPosts(response.data.posts || []);
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-        } finally {
-            setLoading(false);
-        }
+    // Paginated fetch function
+    const fetchPageFn = async ({ page, pageSize }) => {
+        const offset = page * pageSize;
+        const resp = await callApi(
+            `posts/explore/get-posts/?limit=${pageSize}&offset=${offset}`
+        );
+        return {
+            results: resp.data.results,
+            next: resp.data.next,
+            count: resp.data.count
+        };
     };
 
-    useEffect(() => {
-        fetchExplorePosts();
-    }, []);
+    // Use paginated list
+    const {
+        items: posts,
+        loadMore,
+        hasMore,
+        loading,
+        error,
+        totalCount,
+        reset
+    } = usePaginatedList(fetchPageFn, { pageSize: 20 });
+
+    // Infinite scroll trigger
+    const infiniteScrollRef = useInfiniteScrollTrigger(loadMore, hasMore, loading);
 
     const filters = ['All', 'Thread', 'Visual'];
 
     const filteredPosts = activeFilter === 'All'
-    ? posts
-    : posts.filter(post => post.post_type === activeFilter);
+        ? posts
+        : posts.filter(post => post.post_type === activeFilter);
 
+         // Masonry breakpoint columns (responsive)
+  const masonryBreakpoints = {
+    default: 3,
+    1200: 3,
+    900: 2,
+    600: 1
+  };
 
     return (
         <div className="explore-page">

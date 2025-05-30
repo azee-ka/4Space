@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from ..models import ThreadPost, VisualPost
 from ..serializers import MinimalThreadPostSerializer, MinimalVisualPostSerializer
 
+from rest_framework.pagination import LimitOffsetPagination
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def timeline_posts(request):
@@ -14,19 +16,25 @@ def timeline_posts(request):
 
     following_users = user.following.all()  # Get all users the current user follows
 
-    # Get posts authored by those users
+    # Get posts authored by those users, ordered by newest
     thread_posts = ThreadPost.objects.filter(author__in=following_users)
     visual_posts = VisualPost.objects.filter(author__in=following_users)
 
     posts = list(thread_posts) + list(visual_posts)
     posts.sort(key=lambda x: x.created_at, reverse=True)  # Newest first
 
+    # Paginate posts (as a list)
+    paginator = LimitOffsetPagination()
+    paginated_posts = paginator.paginate_queryset(posts, request)
+
+    # Serialize paginated posts
     serialized_posts = []
-    for post in posts:
+    for post in paginated_posts:
         if isinstance(post, ThreadPost):
             serializer = MinimalThreadPostSerializer(post, context={'request': request})
         elif isinstance(post, VisualPost):
             serializer = MinimalVisualPostSerializer(post, context={'request': request})
         serialized_posts.append(serializer.data)
 
-    return Response({'posts': serialized_posts})
+    # Return paginated response (includes next/previous links and count)
+    return paginator.get_paginated_response(serialized_posts)
