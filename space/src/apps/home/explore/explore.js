@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Masonry from 'react-masonry-css';
 import './explore.css';
 import useApi from '../../../utils/useApi';
@@ -18,70 +18,79 @@ const tabOptions = [
 const Explore = () => {
     const { callApi } = useApi();
     const { handleExpandPostOpen } = usePostContext();
-
-    const getInitialTab = () => {
+    const [activeTab, setActiveTab] = useState(() => {
         const hash = window.location.hash.replace('#', '');
-        if (tabOptions.some(t => t.key === hash)) {
-            return hash;
-        }
+        if (tabOptions.some(t => t.key === hash)) return hash;
         return 'visual';
-    };
+    });
 
-    const [activeTab, setActiveTab] = useState(getInitialTab);
-
-    // Sync tab to hash on change
-    useEffect(() => {
-        if (window.location.hash.replace('#', '') !== activeTab) {
-            window.location.hash = activeTab;
-        }
-    }, [activeTab]);
-
-    // On hashchange (e.g. browser navigation), update tab
-    useEffect(() => {
-        const onHashChange = () => {
-            const hash = window.location.hash.replace('#', '');
-            if (tabOptions.some(t => t.key === hash)) {
-                setActiveTab(hash);
-            }
-        };
-        window.addEventListener('hashchange', onHashChange);
-        return () => window.removeEventListener('hashchange', onHashChange);
-    }, []);
-
-    // Paginated fetch function
-    const fetchPageFn = async ({ page, pageSize }) => {
+    const visualFetchPageFn = useCallback(async ({ page, pageSize }) => {
         const offset = page * pageSize;
         const resp = await callApi(
-            `posts/explore/get-posts/?limit=${pageSize}&offset=${offset}`
+            `posts/explore/get-posts/?post_type=Visual&limit=${pageSize}&offset=${offset}`
         );
+        console.log(resp.data)
+
         return {
             results: resp.data.results,
             next: resp.data.next,
             count: resp.data.count
         };
-    };
+    }, [callApi]);
 
-    // Use paginated list
-    const {
-        items: posts,
-        loadMore,
-        hasMore,
-        loading
-    } = usePaginatedList(fetchPageFn, { pageSize: 20 });
+    const threadFetchPageFn = useCallback(async ({ page, pageSize }) => {
+        const offset = page * pageSize;
+        const resp = await callApi(
+            `posts/explore/get-posts/?post_type=Thread&limit=${pageSize}&offset=${offset}`
+        );
+        console.log(resp.data)
+        return {
+            results: resp.data.results,
+            next: resp.data.next,
+            count: resp.data.count
+        };
+    }, [callApi]);
 
-    // Infinite scroll trigger
+    const visualPaginated = usePaginatedList(visualFetchPageFn, {
+        pageSize: 20,
+        immediate: activeTab === 'visual', // Only fetch if active
+        resetDeps: [activeTab]
+    });
+    const threadPaginated = usePaginatedList(threadFetchPageFn, {
+        pageSize: 20,
+        immediate: activeTab === 'thread', // Only fetch if active
+        resetDeps: [activeTab]
+    });
+
+    const paginated = activeTab === 'visual' ? visualPaginated : threadPaginated;
+    const { items: posts, loadMore, hasMore, loading } = paginated;
+
+
+    // Scroll trigger
     const infiniteScrollRef = useInfiniteScrollTrigger(loadMore, hasMore, loading);
 
-    // Only show posts for selected tab
-    const filteredPosts = posts.filter(post => 
-        post.post_type.toLowerCase() === activeTab
-    );
+    // Scroll to top on tab switch
+    React.useEffect(() => {
+        window.scrollTo({ top: 0 });
+        window.location.hash = activeTab;
+    }, [activeTab]);
+
+    // Hash sync (optional, robust)
+    React.useEffect(() => {
+        const onHashChange = () => {
+            const hash = window.location.hash.replace('#', '');
+            if (tabOptions.some(t => t.key === hash)) setActiveTab(hash);
+        };
+        window.addEventListener('hashchange', onHashChange);
+        return () => window.removeEventListener('hashchange', onHashChange);
+    }, []);
 
 
     // Post click handler (expand logic, etc)
     const handlePostClick = (post, index) => {
-        handleExpandPostOpen(post.id, filteredPosts, window.location.pathname + window.location.hash, index, post.post_type);
+        handleExpandPostOpen(post.id, posts, window.location.pathname + window.location.hash, index, post.post_type);
     };
+
 
 
     const masonryBreakpoints = {
@@ -91,9 +100,11 @@ const Explore = () => {
         600: 2,
     };
 
+
     return (
         <div className="explore-page">
             <div className="explore-page-inner">
+                {/* tab header */}
                 <div className="explore-header-row">
                     <h2 className="explore-header-title">Explore</h2>
                     <div className="explore-tabs-inline">
@@ -109,42 +120,42 @@ const Explore = () => {
                     </div>
                     <div className="explore-header-filler"></div>
                 </div>
-
+                {/* posts */}
                 {loading && posts.length === 0 ? (
                     <div className="loading">Loading posts...</div>
                 ) : (
                     <div className="posts-container">
-                        {filteredPosts.length === 0 ? (
+                        {posts.length === 0 ? (
                             <div className="no-posts">No posts available.</div>
                         ) : (
                             <>
                                 {activeTab === 'visual' ? (
-                                    <Masonry
-                                        breakpointCols={masonryBreakpoints}
-                                        className="explore-masonry-grid"
-                                        columnClassName="explore-masonry-column"
-                                    >
-                                        {filteredPosts.map((post, idx) => (
-                                            <VisualGridTile
-                                                key={post.id}
-                                                post={post}
-                                                onClick={() => handlePostClick(post, idx)}
-                                            />
-                                        ))}
-                                    </Masonry>
+                                    <>
+                                        <Masonry
+                                            breakpointCols={masonryBreakpoints}
+                                            className="explore-masonry-grid"
+                                            columnClassName="explore-masonry-column"
+                                        >
+                                            {posts.map((post, idx) => (
+                                                <VisualGridTile
+                                                    key={post.id}
+                                                    post={post}
+                                                    onClick={() => handlePostClick(post, idx)}
+                                                />
+                                            ))}
+                                        </Masonry>
+                                        <div ref={infiniteScrollRef}></div>
+                                    </>
                                 ) : (
                                     <div className="thread-posts-list">
-                                        {filteredPosts.map((post, idx) => (
-                                            <ExpandPostProvider key={post.id} postId={post.id}>
-                                                <ThreadPostCard
-                                                    postId={post.id}
-                                                    index={idx}
-                                                />
+                                        {posts.map((post, idx) => (
+                                            <ExpandPostProvider key={post.id} postId={post.id} postData={post}>
+                                                <ThreadPostCard postId={post.id} index={idx} />
                                             </ExpandPostProvider>
                                         ))}
+                                        <div ref={infiniteScrollRef}></div>
                                     </div>
                                 )}
-                                <div ref={infiniteScrollRef}></div>
                             </>
                         )}
                     </div>
