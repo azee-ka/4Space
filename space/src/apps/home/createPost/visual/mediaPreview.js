@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './mediaPreview.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight, faArrowLeft, faTrashAlt, faDownload, faPlus, faUpload, faSave, faDiagramNext, faArrowsDownToLine } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faArrowLeft, faTrashAlt, faDownload, faUpload, faSave  } from '@fortawesome/free-solid-svg-icons';
 import VideoPlayer from '../../../../components/videoPlayer/videoPlayer';
 import API_BASE_URL from '../../../../utils/apiUrl';
 import { formatDateTime } from '../../../../utils/formatDateTime';

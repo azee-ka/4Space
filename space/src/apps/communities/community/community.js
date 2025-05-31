@@ -34,6 +34,7 @@ const Community = () => {
   const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line
     fetchCommunityData();
   }, []);
 

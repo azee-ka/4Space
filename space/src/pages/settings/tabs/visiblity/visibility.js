@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import './visibility.css';
 import useApi from "../../../../utils/useApi";
 import ToggleSlider from "../../../../utils/toggleSlider/toggleSlider";
@@ -19,6 +19,7 @@ const Visiblity = () => {
         };
 
         fetchProfileVisiblityStatus();
+        // eslint-disable-next-line
     }, []);
 
 

@@ -13,8 +13,7 @@ import appLogoComplete from '../../assets/logo-comp.png';
 import useNotifications from '../../hooks/useNotifications';
 import { useCreatePostContext } from '../../context/CreatePostContext';
 import { useModeContext } from '../../context/modeContext';
-import { AdjustmentsVerticalIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
-import DisplayMenu from './displayMenu/displayMenu';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 
 const Navbar = ({
     handleProfileMenuToggle,
