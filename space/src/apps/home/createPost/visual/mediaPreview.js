@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './mediaPreview.css';
+import './mediaPreview.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight, faArrowLeft, faTrashAlt, faDownload, faUpload, faSave  } from '@fortawesome/free-solid-svg-icons';
 import VideoPlayer from '../../../../components/videoPlayer/videoPlayer';

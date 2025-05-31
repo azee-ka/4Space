@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./repositories.css";
+import "./repositories.scss";
 import { useNavigate } from "react-router-dom";
 import useApi from "../../../utils/useApi";
 

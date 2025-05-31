@@ -1,6 +1,6 @@
 // CommunitySettings.js
 import React, { useEffect, useState, useMemo } from 'react';
-import './communitySettings.css';
+import './communitySettings.scss';
 import { useCommunity } from '../../../../context/CommunityContext';
 
 const TABS = [

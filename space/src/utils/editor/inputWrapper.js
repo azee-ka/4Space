@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './inputWrapper.css';
+import './inputWrapper.scss';
 import { parseContent } from './parser';
 import CustomEditor from './editor';
 import useApi from '../useApi';

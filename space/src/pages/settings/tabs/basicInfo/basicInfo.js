@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './basicInfo.css';
+import './basicInfo.scss';
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import useApi from "../../../../utils/useApi";
 import API_BASE_URL from "../../../../utils/apiUrl";

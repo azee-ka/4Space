@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import './expandPost.css';
+import './expandPost.scss';
 import ExpandedPostOverlay from './expandPostOverlay/expandPostOverlay';
 import ExpandedPostNonOverlay from './expandPostNonOverlay/expandPostNonOverlay';
 import { ExpandPostProvider } from './expandPostContext';

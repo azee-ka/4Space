@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './settings.css';
+import './settings.scss';
 import Visiblity from "./tabs/visiblity/visibility";
 import Profile from "../profile/profile";
 import ProfileAppearance from "./tabs/profileAppearance/profileAppearance";

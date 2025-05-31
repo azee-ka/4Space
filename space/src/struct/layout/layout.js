@@ -1,6 +1,6 @@
 // Layout.js
 import React, { useState, useEffect, useRef } from 'react';
-import './layout.css';
+import './layout.scss';
 import { useAuth } from '../../hooks/useAuth';
 import Navbar from '../navbar/navbar';
 import Sidebar from '../sidebar/Sidebar';
@@ -14,6 +14,7 @@ import { usePostContext } from '../../context/PostContext';
 import Post from '../../apps/home/post/post';
 import { useLocation } from 'react-router-dom';
 import DisplayMenu from '../navbar/displayMenu/displayMenu';
+import { useDevice } from '../../context/DeviceContext';
 
 function Layout({ children }) {
     const { isAuthenticated } = useAuth();
@@ -34,7 +35,7 @@ function Layout({ children }) {
 
     // for small screen
     const [smallSidebarOpen, setSmallSidebarOpen] = useState(false);
-    const isMobile = window.innerWidth <= 600;
+    const { isM, isT, isD } = useDevice();
 
     const location = useLocation();
 
@@ -117,6 +118,7 @@ function Layout({ children }) {
         );
     }
 
+    if(isD || isT) {
     return (
         <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
             <div className='layout-navbar'>
@@ -170,7 +172,71 @@ function Layout({ children }) {
             {expandPostIdReciever && <Post />}
             {displayMenuVisible && <DisplayMenu onClose={() => setDisplayMenuVisible(false)} />}
         </div>
-    );
+    ) 
+    }
+
+
+
+
+
+
+    if(isM) {
+        return (
+        <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
+            <div className='layout-navbar'>
+                <Navbar
+                    handleProfileMenuToggle={handleProfileMenuToggle}
+                    handleAppMenuToggle={handleAppMenuToggle}
+                    handleNotificationsMenuToggle={handleNotificationsMenuToggle}
+                    handleDisplayMenuToggle={handleDisplayMenuToggle}
+                    sidebarOpen={sidebarOpen}
+                    setSidebarOpen={setSidebarOpen}
+                    profileData={profileData}
+                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+                />
+            </div>
+
+            <div className='layout-page'>
+                <div className={`layout-page-content ${isAuthenticated ? 'sidebar' : ''}`}>
+                    {children}
+                </div>
+                {isAuthenticated &&
+
+                    <div className='layout-small-sidebar'>
+                        <SmallSidebar
+                            searchSidebarOpen={searchSidebarOpen}
+                            setSearchSidebarOpen={setSearchSidebarOpen}
+                        // setCreateSpaceOpen={setCreateSpaceOpen}
+                        />
+                    </div>
+                }
+            </div>
+            {isAuthenticated &&
+                <Sidebar
+                    isOpen={sidebarOpen}
+                    onClose={handleSidebarClose}
+                />
+            }
+            {isAuthenticated &&
+                <NotificationSidebar
+                    notificationSidebarOpen={notificationSidebarOpen}
+                    notificationIdForSidebar={notificationIdForSidebar}
+                    setNotificationIdForSidebar={setNotificationIdForSidebar}
+                    handleNotificationSidebarClose={handleNotificationSidebarClose}
+                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+                />
+            }
+            {menuOpen && <ProfileMenu profileData={profileData} onClose={handleCloseOverlays} />}
+            {appMenuOpen && <AppMenu />}
+            {notificationsMenuOpen &&
+                <NotificationsMenu
+                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+                />}
+            {expandPostIdReciever && <Post />}
+            {displayMenuVisible && <DisplayMenu onClose={() => setDisplayMenuVisible(false)} />}
+        </div>
+    )  
+    }
 }
 
 export default Layout;

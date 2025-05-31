@@ -1,5 +1,5 @@
 import React from "react";
-import "./spaceDashboard.css";
+import "./spaceDashboard.scss";
 
 const SpaceDashboard = () => {
   const statsByCategory = [

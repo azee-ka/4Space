@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './community.css';
+import './community.scss';
 import { useParams } from 'react-router-dom';
 
 import { CommunityProvider, useCommunity } from '../../../context/CommunityContext';

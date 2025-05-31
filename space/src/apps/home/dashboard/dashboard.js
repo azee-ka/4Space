@@ -1,5 +1,5 @@
 import React from 'react';
-import './dashboard.css';
+import './dashboard.scss';
 
 const Dashboard = () => {
   const postsPerDay = [40, 55, 70, 85, 50, 65, 95];

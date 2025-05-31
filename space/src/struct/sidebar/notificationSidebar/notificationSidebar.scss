@@ -422,3 +422,104 @@
     justify-content: center;
     align-items: center;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media (max-width: 600px) {
+  .notification-sidebar {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: 0 6px 28px 6px rgba(0,0,0,0.34) !important;
+    padding: 0 !important;
+    z-index: 100 !important;
+    background: rgba(32, 32, 32, 0.99) !important;
+    backdrop-filter: blur(20px);
+    transform: translateX(0) !important;
+    overflow-y: auto !important;
+    /* Disable close slide-out to right for mobile: */
+    &.close {
+      transform: translateX(100vh) !important;
+    }
+  }
+
+  .notification-sidebar-top-panel {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.5em !important;
+    padding: 0.6em 1em 0.3em 0.7em !important;
+    border-radius: 0 !important;
+    background: none !important;
+    h2 {
+      font-size: 1.08em !important;
+      padding: 0.18em 0 0.09em 0 !important;
+      margin: 0 !important;
+    }
+    button {
+      padding: 0.34em !important;
+      margin: 0 0.7em 0 0 !important;
+      font-size: 1.16em !important;
+    }
+    .notification-sidebar-description {
+      display: none !important;
+    }
+  }
+
+  .notification-sidebar-main-panel,
+  .notification-sidebar-main-panel-inner {
+    padding: 0.2em 0.3em !important;
+    gap: 2px !important;
+  }
+
+  .notification-sidebar-item,
+  .notification-sidebar-individual-notification {
+    padding: 0.28em 0.18em !important;
+    font-size: 1em !important;
+    border-radius: 0 !important;
+  }
+
+  .notification-sidebar-item-profile-image,
+  .notification-sidebar-individual-notification-item-profile-image {
+    height: 34px !important;
+    width: 34px !important;
+    padding: 0 !important;
+  }
+
+  .notification-sidebar-item-message-container p,
+  .notification-sidebar-individual-notification-item-message-container p {
+    font-size: 0.97em !important;
+    padding: 0 !important;
+  }
+
+  .notification-sidebar-item-actions-container button,
+  .notification-sidebar-item-actions-container a,
+  .notification-sidebar-individual-notification-item-actions-container button,
+  .notification-sidebar-individual-notification-item-actions-container a {
+    font-size: 0.92em !important;
+    height: 28px !important;
+    min-width: 50px !important;
+    padding: 0.2em !important;
+    border-radius: 4px !important;
+  }
+
+  .notifications-sidebar-no-notifications {
+    font-size: 1.13em !important;
+    padding: 0.7em 0 !important;
+  }
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { simpleTools } from './simpleTools';
-import './createSpaceTulip.css';
+import './createSpaceTulip.scss';
 import useApi from '../../../utils/useApi';
 
 const CreateSpaceTulip = () => {

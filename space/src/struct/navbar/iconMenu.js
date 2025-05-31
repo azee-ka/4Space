@@ -1,5 +1,5 @@
 import React from "react";
-import './iconMenu.css';
+import './iconMenu.scss';
 
 const SidebarMenuIcon = ({ sidebarOpen, handleHighOrderSidebarToggle}) => {
     return (

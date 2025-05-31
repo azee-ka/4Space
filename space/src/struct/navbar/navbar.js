@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Link, useLocation } from 'react-router-dom';
-import './navbar.css';
+import './navbar.scss';
 import { useAuth } from '../../hooks/useAuth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faSearch, faSliders } from '@fortawesome/free-solid-svg-icons';
@@ -14,6 +14,7 @@ import useNotifications from '../../hooks/useNotifications';
 import { useCreatePostContext } from '../../context/CreatePostContext';
 import { useModeContext } from '../../context/modeContext';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
+import { useDevice } from '../../context/DeviceContext';
 
 const Navbar = ({
     handleProfileMenuToggle,
@@ -23,7 +24,9 @@ const Navbar = ({
     sidebarOpen,
     setSidebarOpen,
     profileData,
+    handleNotificationSidebarOpen = null,
 }) => {
+    const { isM, isT } = useDevice();
     const { isAuthenticated } = useAuth();
     const { mode } = useModeContext();
 
@@ -131,7 +134,7 @@ const Navbar = ({
                     </div>
                 </div>
             </div>
-            {isAuthenticated &&
+            {isAuthenticated && !isM && !isT &&
                 <div className='navbar-center'>
                     <div className='navbar-search-container'>
                         <span className='navbar-search-icon'>
@@ -152,7 +155,7 @@ const Navbar = ({
                 {!isAuthenticated &&
                     <div className='navbar-pages'>
                         <ul>
-                            {pagesNavbar?.map((item, index) => (
+                            {publicPagesNavbar?.map((item, index) => (
                                 <li
                                     key={index}
                                     className={location.pathname === item.path ? 'active' : ''}
@@ -170,40 +173,58 @@ const Navbar = ({
                 <div className='navbar-items'>
                     {isAuthenticated && (
                         <ul>
-                            <li className='messages-page-link'>
-                                <Link to={`/messages/inbox`}>
-                                    <ChatBubbleLeftRightIcon className='chat-icon' />
-                                </Link>
-                            </li>
+                            {!isM &&
+                                <li className='messages-page-link'>
+                                    <Link to={`/messages/inbox`}>
+                                        <ChatBubbleLeftRightIcon className='chat-icon' />
+                                    </Link>
+                                </li>
+                            }
                             {/* Notifications Menu */}
                             <li
                                 className={`notifications-menu ${notificationsMenuVisible ? 'active' : ''}`}
-                                ref={notificationsMenuRef}
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <button onClick={handleNotificationsMenuToggle} className="notification-button">
-                                    <FontAwesomeIcon icon={faBell} /> {/* Replace text with the bell icon */}
-                                    {notificationsCount > 0 && (
-                                        <span className="notification-count">
-                                            {notificationsCount > 9 ? '9+' : notificationsCount}
-                                        </span>
-                                    )}
-                                </button>
+                                {!isM ? (
+                                    <button onClick={handleNotificationsMenuToggle} className="notification-button">
+                                        <FontAwesomeIcon icon={faBell} /> {/* Replace text with the bell icon */}
+                                        {notificationsCount > 0 && (
+                                            <span className="notification-count">
+                                                {notificationsCount > 9 ? '9+' : notificationsCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <button onClick={handleNotificationSidebarOpen} className="notification-button">
+                                        <FontAwesomeIcon icon={faBell} /> {/* Replace text with the bell icon */}
+                                        {notificationsCount > 0 && (
+                                            <span className="notification-count">
+                                                {notificationsCount > 9 ? '9+' : notificationsCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                )
+
+                                }
                             </li>
 
                             {/* App Menu */}
-                            <li className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
-                                <button onClick={handleAppMenuToggle}>
-                                    <NineDotIcon style={{ color: 'white', background: 'transparent', fontSize: '24px' }} />
-                                </button>
-                            </li>
+                            {!isM &&
+                                <li className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
+                                    <button onClick={handleAppMenuToggle}>
+                                        <NineDotIcon style={{ color: 'white', background: 'transparent', fontSize: '24px' }} />
+                                    </button>
+                                </li>
+                            }
 
                             {/* Display Settings Menu */}
-                            <li className="display-settings-menu" ref={displayMenuRef} onClick={(e) => e.stopPropagation()}>
-                                <button onClick={handleDisplayMenuToggle}>
-                                    <FontAwesomeIcon icon={faSliders} className="display-settings-icon" />
-                                </button>
-                            </li>
+                            {!isM &&
+                                <li className="display-settings-menu" ref={displayMenuRef} onClick={(e) => e.stopPropagation()}>
+                                    <button onClick={handleDisplayMenuToggle}>
+                                        <FontAwesomeIcon icon={faSliders} className="display-settings-icon" />
+                                    </button>
+                                </li>
+                            }
 
                             {/* Profile Menu */}
                             <li

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './home.css';
+import './home.scss';
 import ProfilePicture from '../../../../../utils/profilePicture/getProfilePicture';
 import { formatDateTime } from '../../../../../utils/formatDateTime';
 import { FiSettings } from 'react-icons/fi';

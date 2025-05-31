@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './reportOverlay.css';
+import './reportOverlay.scss';
 import { useReportOverlayContext } from '../../context/ReportOverlayContext';
 import useApi from '../../utils/useApi';
 import { FaTimes } from 'react-icons/fa';

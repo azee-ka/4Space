@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import './partialProfile.css';
+import './partialProfile.scss';
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate } from "react-router-dom";
 import useApi from "../../../../utils/useApi";

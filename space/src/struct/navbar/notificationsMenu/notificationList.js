@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import './notificationsMenu.css'
+import './notificationsMenu.scss'
 import NotificationItem from './notificationItem';
 import useNotifications from '../../../hooks/useNotifications';
 

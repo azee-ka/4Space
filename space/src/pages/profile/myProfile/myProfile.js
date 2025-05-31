@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import './myProfile.css';
+import './myProfile.scss';
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";

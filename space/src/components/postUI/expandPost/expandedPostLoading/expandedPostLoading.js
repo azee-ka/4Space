@@ -1,4 +1,4 @@
-import './expandedPostLoading.css';
+import './expandedPostLoading.scss';
 
 import React from 'react';
 

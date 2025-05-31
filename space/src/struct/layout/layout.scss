@@ -1,0 +1,150 @@
+// ---- layout.scss ----
+
+// Variables (customize as needed)
+$color-white: #fff;
+$color-blue: rgba(0, 0, 255, 0);
+$color-red: rgba(255, 0, 0, 0);
+$color-black: rgba(0, 0, 0, 0);
+$color-sidebar-bg: rgba(15, 17, 22, 0.96);
+$sidebar-border: #222;
+$breakpoint-mobile: 600px;
+
+// Parent layout
+.parent-layout {
+  color: $color-white;
+  height: 100%;
+  background-color: $color-blue;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+// Navbar
+.layout-navbar {
+  background-color: $color-red;
+  height: 70px;
+  width: 100%;
+  box-sizing: border-box;
+  position: fixed;
+  z-index: 60;
+}
+
+// Main page
+.layout-page {
+  background-color: rgba(255, 255, 255, 0);
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  position: relative;
+  margin-top: 80px;
+}
+
+// Small sidebar
+.layout-small-sidebar {
+  position: fixed;
+  /* width: 80px; */
+  height: calc(100% - 60px);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-left: 15px;
+  left: 0;
+  bottom: 0;
+  top: 60px;
+  z-index: 48;
+  background-color: $color-red;
+  padding: 2px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+// Main page content
+.layout-page-content {
+  background-color: rgba(255, 255, 255, 0);
+  flex-grow: 1 !important;
+  height: 100%;
+  width: calc(100% - 90px);
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  background-color: $color-red;
+
+  &.sidebar {
+    /* margin-left: 80px; */
+    padding: 10px 0px 10px 20px;
+    padding-bottom: 0px;
+    margin-left: 90px;
+  }
+
+  h2 {
+    padding: 0;
+    margin: 0;
+    font-size: 1.5em;
+  }
+}
+
+// Isolated editor layout
+.editor-isolated-layout {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: $color-black;
+}
+
+// ----- Responsive: mobile changes -----
+@media (max-width: $breakpoint-mobile) {
+  .parent-layout {
+    // height: 100vh;
+    // width: 100%;
+    // overflow-y: hidden !important;
+    // background-color: red;
+
+  }
+
+  .layout-page {
+    height: calc(100svh - 90px);
+  }
+
+  .layout-navbar {
+    height: 70px;
+    width: 100%;
+    box-sizing: border-box;
+    position: fixed;
+  }
+
+  .layout-small-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    height: 50px;
+    width: 100vw;
+    background: $color-sidebar-bg;
+    border-right: 1px solid $sidebar-border;
+    box-shadow: 3px 0 16px rgba(0, 0, 0, 0.13);
+    padding: 0;
+    transition: all 0.25s cubic-bezier(.25, .8, .25, 1);
+  }
+
+  .layout-page-content.sidebar {
+    margin-left: 0;
+    padding-left: 0;
+    overflow: hidden !important;
+  }
+}

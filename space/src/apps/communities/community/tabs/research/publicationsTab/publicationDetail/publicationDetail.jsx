@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import useApi from "../../../../../../../utils/useApi";
-import "./publicationDetail.css";
+import "./publicationDetail.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FiExternalLink } from "react-icons/fi";

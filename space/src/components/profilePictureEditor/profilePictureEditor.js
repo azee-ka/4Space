@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
-import './profilePictureEditor.css';
+import './profilePictureEditor.scss';
 import { v4 as uuidv4 } from 'uuid';
 import API_BASE_URL from '../../../../config';
 import default_profile_picture from '../../../../assets/default_profile_picture.png';

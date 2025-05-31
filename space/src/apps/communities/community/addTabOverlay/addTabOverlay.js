@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import './addTabOverlay.css';
+import './addTabOverlay.scss';
 import { IoClose, IoSearch, IoCheckmark, IoCloseCircle } from 'react-icons/io5';
 import { TAB_COMPONENT_CATEGORIES } from '../tabs/tabComponents';
 import { useCommunity } from '../../../../context/CommunityContext';

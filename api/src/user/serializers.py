@@ -68,7 +68,7 @@ class EntriesCountMixin:
 class PartialProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseUser
-        fields = [ 'username', 'profile_image', 'about_me',
+        fields = [ 'id', 'username', 'profile_image', 'about_me',
                   'is_private_profile',
                   ]
         

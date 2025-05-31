@@ -4,7 +4,7 @@ import {
   oneDark,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
-import "./fileExplorer.css";
+import "./fileExplorer.scss";
 
 const EXTENSION_TO_LANGUAGE = {
   js: "javascript",

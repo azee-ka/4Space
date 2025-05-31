@@ -1,5 +1,5 @@
 import React from "react";
-import "./frontPage.css";
+import "./frontPage.scss";
 import { Link } from "react-router-dom";
 
 const FrontPage = () => {
