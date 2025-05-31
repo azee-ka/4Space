@@ -26,7 +26,12 @@ SECRET_KEY = DJANGO_SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "10.0.0.6",
+    "10.0.0.85",
+]
 
 
 # Application definition
@@ -197,7 +202,12 @@ CORS_ALLOW_HEADERS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://10.0.0.85:3000",
+    "http://10.0.0.6:8000",
+    "http://10.0.0.6:3000",
 ]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+
 
 import pymysql
 
