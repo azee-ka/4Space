@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Link, useLocation } from 'react-router-dom';
 import './navbar.css';
@@ -24,7 +24,7 @@ const Navbar = ({
     setSidebarOpen,
     profileData,
 }) => {
-    const { authState, isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
     const { mode } = useModeContext();
 
     const { count: notificationsCount } = useNotifications();

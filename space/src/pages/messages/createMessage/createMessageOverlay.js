@@ -7,7 +7,6 @@ import "./createMessageOverlay.css";
 import { useAuth } from "../../../hooks/useAuth";
 
 const CreateMessageOverlay = ({ onClose }) => {
-    const { authState } = useAuth();
   const { callApi } = useApi();
   const navigate = useNavigate();
 

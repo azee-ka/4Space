@@ -221,3 +221,75 @@
 .timeline-no-posts .icon-style {
     font-size: 2em;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+/* ----- MOBILE (max-width: 600px) ----- */
+@media (max-width: 600px) {
+  .timeline-page {
+    padding: 0 2px;
+    gap: 0;
+  }
+
+  .timeline-header {
+    height: 34px;
+    padding-right: 8px;
+  }
+
+  .timeline-page h2 {
+    font-size: 1.15em;
+    height: 32px;
+  }
+
+  .timeline-header .timeline-add-btn {
+    padding: 3px 7px;
+    font-size: 0.95em;
+  }
+
+  .timeline-filter-row {
+    gap: 12px;
+    grid-template-columns: 1fr !important;
+    padding: 0 4px;
+  }
+  .timeline-filter-row.second-timeline {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .timeline-filter-row > * {
+    padding-right: 4px;
+    min-width: 0;
+  }
+
+  .timeline-content {
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 6px;
+    padding-bottom: 8px;
+  }
+
+  .timeline-left-side-container,
+  .timeline-right-side-container {
+    gap: 18px;
+    padding-bottom: 4px;
+  }
+
+  .timeline-no-posts {
+    width: 98vw;
+    min-width: 0;
+    max-width: 99vw;
+    height: auto;
+    font-size: 1em;
+    padding: 14px 0;
+  }
+  .timeline-no-posts h3 {
+    font-size: 1em !important;
+  }
+}

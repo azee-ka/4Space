@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, forwardRef } from "react";
+import { useEffect, useRef, forwardRef } from "react";
 
 const CustomTextarea = forwardRef(({
   value,
@@ -21,7 +21,7 @@ const CustomTextarea = forwardRef(({
     const scrollHeight = el.scrollHeight;
     const finalHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
     el.style.height = `${finalHeight}px`;
-  }, [value, maxHeight, minHeight]);
+  }, [value, maxHeight, minHeight, textareaRef]);
 
   return (
     <textarea
