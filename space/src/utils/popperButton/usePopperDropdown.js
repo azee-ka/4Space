@@ -25,11 +25,13 @@ const usePopperDropdown = (
                 threshold: 0.1,
             }
         );
-
+// eslint-disable-next-line
         if (buttonRef.current) {
+            // eslint-disable-next-line
             observer.observe(buttonRef.current);
         }
         return () => {
+            // eslint-disable-next-line
             if (buttonRef.current) observer.unobserve(buttonRef.current);
         };
     }, [boundaryRef]);

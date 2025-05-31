@@ -54,7 +54,8 @@
 
 /* ==== Chat Body ==== */
 .chat-body {
-     flex-grow: 1;
+    flex-grow: 1;
+    min-height: 0;       /* <--- ADD THIS LINE */
     overflow-y: auto;
     padding: 24px;
     display: flex;
@@ -540,6 +541,3 @@
   box-shadow: 0 0 6px rgba(255, 0, 128, 0.2);
   color: #ff94b0;
 }
-
-
-

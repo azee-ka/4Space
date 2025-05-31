@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faCalendar, faFolder, faCog, faStream, faLayerGroup, faSearch, faDashboard, faDatabase, faChartBar, faGear, faUser, faListAlt, faThList, faGauge, faChartLine, faUsers, faPeopleGroup, faUserGroup, faPlusCircle, faPenToSquare, faTools, faBook, faBoxesStacked, faArchive, faCodeBranch, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faStream, faLayerGroup, faSearch, faChartBar, faGear, faUser, faChartLine, faUserGroup, faPenToSquare, faTools, faBook, faCodeBranch, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import SearchSidebar from '../searchSidebar/searchSidebar';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
@@ -13,7 +13,7 @@ import CreateSpaceTulip from '../../../apps/space/createSpaceTulip/createSpaceTu
 import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
 
 const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
-    const { mode, setMode } = useModeContext();
+    const { mode } = useModeContext();
     const { openCreatePostOverlay } = useCreatePostContext();
     const { openCreateCommunityOverlay } = useCreateCommunityContext();
 

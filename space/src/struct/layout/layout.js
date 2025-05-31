@@ -9,17 +9,14 @@ import ProfileMenu from '../navbar/profileMenu/profileMenu';
 import AppMenu from '../navbar/appMenu/appMenu';
 import useProfile from '../../hooks/useProfile';
 import NotificationSidebar from '../sidebar/notificationSidebar/notificationSidebar';
-import SearchSidebar from '../sidebar/searchSidebar/searchSidebar';
 import SmallSidebar from '../sidebar/smallSidebar/smallSidebar';
 import { usePostContext } from '../../context/PostContext';
-import ExpandPost from '../../components/postUI/expandPost/expandPost';
 import Post from '../../apps/home/post/post';
 import { useLocation } from 'react-router-dom';
-import CreateSpaceTulip from '../../apps/space/createSpaceTulip/createSpaceTulip';
 import DisplayMenu from '../navbar/displayMenu/displayMenu';
 
-function Layout({ children, pageName }) {
-    const { authState, isAuthenticated } = useAuth();
+function Layout({ children }) {
+    const { isAuthenticated } = useAuth();
 
     const { expandPostIdReciever } = usePostContext();
 
@@ -152,11 +149,6 @@ function Layout({ children, pageName }) {
                     onClose={handleSidebarClose}
                 />
             }
-            {/* {isAuthenticated &&
-                <SearchSidebar
-                    isOpen={searchSidebarOpen}
-                />
-            } */}
             {isAuthenticated &&
                 <NotificationSidebar
                     notificationSidebarOpen={notificationSidebarOpen}

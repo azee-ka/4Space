@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth'; // assuming your auth hook exists
 import Layout from '../struct/layout/layout';
-import { useMemo } from 'react';
 
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -29,7 +28,6 @@ import Explore from '../apps/home/explore/explore';
 import CommunitiesTimeline from '../apps/communities/timeline/timline';
 import CommunitiesDashboard from '../apps/communities/dashboard/dashboard';
 import { ModeProvider } from '../context/modeContext';
-import ExpandPost from '../components/postUI/expandPost/expandPost';
 import CreateCommunity from '../apps/communities/createCommunity/createCommunity';
 import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
@@ -53,7 +51,7 @@ import CommunityPage from '../apps/communities/community/community';
 
 
 const AppRouter = () => {
-    const { authState, isLoading, isAuthenticated, isAddingAccount } = useAuth();
+    const { isLoading, isAuthenticated, isAddingAccount } = useAuth();
 
     const privateRoutes = [
         // Home

@@ -22,6 +22,22 @@ import DropdownButton from "../../../utils/popperButton/DropdownButton";
 import { usePaginatedList } from "../../../hooks/usePaginatedList";
 import { useInfiniteScrollTrigger } from "../../../hooks/useInfiniteScrollTrigger";
 
+
+function isEmojiOnlyMessage(text) {
+    // Remove whitespace and zero-width joiners
+    const cleaned = text.replace(/[\s\u200B]/g, "");
+    if (!cleaned) return false;
+
+    // Regex that matches a single emoji codepoint (modern)
+    const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
+
+    // Split by Unicode codepoints
+    // If every codepoint matches emojiRegex, it's emoji-only
+    // [...cleaned] splits by Unicode codepoint (including surrogate pairs)
+    return [...cleaned].every(char => emojiRegex.test(char));
+}
+
+
 const TIME_GAP_THRESHOLD = 15 * 60 * 1000;
 
 const ChatMessage = React.memo(({ message, previous, next, isOwn, centerPanelRef
@@ -30,7 +46,7 @@ const ChatMessage = React.memo(({ message, previous, next, isOwn, centerPanelRef
     const first = isFirstGroupedMessage(message, previous);
     const last = isLastGroupedMessage(message, next);
     const plainText = message?.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
-    const isEmojiOnly = /^[\p{Emoji}\u200B\s]+$/u.test(plainText);
+    const isEmojiOnly = isEmojiOnlyMessage(plainText);
     const timeGap =
         !grouped ||
         new Date(message.sent_at) - new Date(previous?.sent_at || 0) > TIME_GAP_THRESHOLD;
@@ -130,7 +146,7 @@ const ChatContainer = ({ conversationId }) => {
                 count: resp.data.count
             };
         },
-        { pageSize: 10, immediate: true, resetDeps: [conversationId] }
+        { pageSize: 30, immediate: true, resetDeps: [conversationId] }
     );
 
 
@@ -150,49 +166,75 @@ const ChatContainer = ({ conversationId }) => {
     }, [conversationId]);
 
 
+    const [justSent, setJustSent] = useState(false);
+
 
     const scrollRef = useRef();
 
 
-    const [hasScrolled, setHasScrolled] = useState(false);
+    const [userScrolledUp, setUserScrolledUp] = useState(false);
+
+
+
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        // Detect user scroll direction (for auto-scroll unlock)
+        const onScrollUser = () => {
+            const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 10;
+            setUserScrolledUp(!atBottom);
+        };
+
+        // Detect scroll near top (for pagination)
+        const onScrollPagination = () => {
+            if (loading || !hasMore) return;
+            if (el.scrollTop < SCROLL_TRIGGER_PX) {
+                const prevScrollHeight = el.scrollHeight;
+                loadMore().then(() => {
+                    requestAnimationFrame(() => {
+                        const newScrollHeight = el.scrollHeight;
+                        el.scrollTop = newScrollHeight - prevScrollHeight + el.scrollTop;
+                    });
+                });
+            }
+        };
+
+        const onScroll = (e) => {
+            onScrollUser();
+            onScrollPagination();
+        };
+
+        el.addEventListener("scroll", onScroll);
+
+        return () => el.removeEventListener("scroll", onScroll);
+    }, [loading, hasMore, loadMore]);
+
+
+    // useEffect(() => {
+    //     const el = scrollRef.current;
+    //     if (!el) return;
+    //     if (!userScrolledUp) {
+    //         el.scrollTop = el.scrollHeight;
+    //     }
+    // }, [messages, userScrolledUp]);
+
+
 
 useEffect(() => {
   const el = scrollRef.current;
-  if (!el || hasScrolled) return;
-  if (messages.length && el.scrollHeight > el.clientHeight) {
-    el.scrollTop = el.scrollHeight;
-    setHasScrolled(true);
-  }
-}, [messages, hasScrolled]);
-
-const handleScroll = useCallback(() => {
-  const el = scrollRef.current;
-  if (!el || loading || !hasMore) return;
-  if (el.scrollTop < SCROLL_TRIGGER_PX) {
-    const prevScrollHeight = el.scrollHeight;
-    loadMore().then(() => {
-      requestAnimationFrame(() => {
-        const newScrollHeight = el.scrollHeight;
-        el.scrollTop = newScrollHeight - prevScrollHeight + el.scrollTop;
-      });
+  if (!el) return;
+  if (!userScrolledUp || justSent) {
+    requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+      setJustSent(false);
     });
   }
-}, [loading, hasMore, loadMore]);
-
-  // 2. Attach the scroll handler
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.addEventListener("scroll", handleScroll);
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
+}, [messages, userScrolledUp, justSent]);
 
 
 
-    // 4. Scroll to bottom on new messages
-    useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, []);
+
 
     // 5. WebSocket for incoming messages (append at end, dedupe by uuid)
     const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
@@ -204,19 +246,6 @@ const handleScroll = useCallback(() => {
         }
     });
 
-    const handleLoadMore = useCallback(() => {
-        if (!centerPanelRef.current) return;
-        const node = centerPanelRef.current;
-        const prevScrollHeight = node.scrollHeight;
-        const prevScrollTop = node.scrollTop;
-        loadMore().then(() => {
-            // After loading, wait a frame then fix scroll position
-            requestAnimationFrame(() => {
-                const newScrollHeight = node.scrollHeight;
-                node.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop;
-            });
-        });
-    }, [loadMore]);
 
 
     const handleSend = () => {
@@ -228,6 +257,7 @@ const handleScroll = useCallback(() => {
             sender_username: authState?.current?.user?.username,
         });
         setInput("");
+        setJustSent(true);
     };
 
     const handleAcceptRequest = async () => {
@@ -392,25 +422,25 @@ const handleScroll = useCallback(() => {
                 )}
             </div>
             <div
-        className="chat-body"
-        ref={scrollRef}
-      >
-        {messages.map((msg, i) => (
-          <div
-            key={msg.uuid}
-            className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}
-          >
-            <ChatMessage
-              message={msg}
-              previous={messages[i - 1]}
-              next={messages[i + 1]}
-              isOwn={isOwn(msg)}
-              centerPanelRef={scrollRef}
-            />
-          </div>
-        ))}
-        <div ref={endRef} />
-      </div>
+                className="chat-body"
+                ref={scrollRef}
+            >
+                {messages.map((msg, i) => (
+                    <div
+                        key={msg.uuid}
+                        className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}
+                    >
+                        <ChatMessage
+                            message={msg}
+                            previous={messages[i - 1]}
+                            next={messages[i + 1]}
+                            isOwn={isOwn(msg)}
+                            centerPanelRef={scrollRef}
+                        />
+                    </div>
+                ))}
+                <div ref={endRef} />
+            </div>
             <div className="chat-container-bottom-panel">
                 {renderFooter()}
             </div>
