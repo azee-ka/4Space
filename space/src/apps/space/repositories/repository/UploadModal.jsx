@@ -1,7 +1,7 @@
 // src/components/UploadModal.js
 import React from "react";
 import useFolderStructure from "../../../../hooks/useFolderStructure";
-import "./repositoryView.css"; // or your scoped modal styles
+import "./repositoryView.scss"; // or your scoped modal styles
 
 import {
   FaJsSquare,

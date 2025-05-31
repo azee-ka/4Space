@@ -1,6 +1,6 @@
 import React from 'react';
 import DOMPurify from 'dompurify'; // Import DOMPurify for sanitizing HTML
-import './renderText.css';
+import './renderText.scss';
 
 // Helper function to convert mentions, hashtags, and exchange references to links
 const convertTextToLinks = (text) => {

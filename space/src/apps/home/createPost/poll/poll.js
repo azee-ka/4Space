@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './poll.css';
+import './poll.scss';
 import { useDrag, useDrop } from 'react-dnd';
 import { FaGripLines } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

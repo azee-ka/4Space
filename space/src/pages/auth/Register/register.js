@@ -4,7 +4,7 @@ import axios from 'axios'; // Import Axios
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import API_BASE_URL from '../../../utils/apiUrl';
-import './register.css';
+import './register.scss';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import OrganizationalRegister from './organization/organization';
 

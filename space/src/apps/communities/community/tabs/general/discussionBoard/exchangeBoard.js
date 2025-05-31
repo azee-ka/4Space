@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './exchangeBoard.css';
+import './exchangeBoard.scss';
 import { FiMessageCircle, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';

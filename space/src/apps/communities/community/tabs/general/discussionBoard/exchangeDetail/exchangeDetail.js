@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import useApi from '../../../../../../../utils/useApi';
-import './exchangeDetail.css';
+import './exchangeDetail.scss';
 import {
     FiArrowUp,
     FiArrowDown,

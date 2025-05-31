@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './inviteOverlay.css';
+import './inviteOverlay.scss';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import { useCommunity } from '../../../../context/CommunityContext';
 

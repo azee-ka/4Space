@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../../hooks/useAuth';
-import './profileMenu.css';
+import './profileMenu.scss';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { useNavigate } from 'react-router-dom';
 

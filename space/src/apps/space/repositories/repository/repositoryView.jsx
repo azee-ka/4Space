@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useApi from "../../../../utils/useApi";
-import "./repositoryView.css";
+import "./repositoryView.scss";
 import { formatDateTime } from "../../../../utils/formatDateTime";
 import UploadModal from "./UploadModal";
 import FileExplorer from "./FileExplorer";

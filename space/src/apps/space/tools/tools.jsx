@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiEdit3, FiCode, FiFileText, FiTerminal, FiLayers, FiShare2, FiUser, FiBriefcase, FiEdit, FiCheckSquare } from "react-icons/fi";
-import "./tools.css";
+import "./tools.scss";
 import useApi from "../../../utils/useApi";
 
 const tools = [

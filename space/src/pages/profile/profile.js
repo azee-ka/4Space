@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import "./profile.css";
+import "./profile.scss";
 import { useNavigate, useParams } from "react-router-dom";
 import OtherProfile from "./otherProfile/otherProfile";
 import { useAuth } from "../../hooks/useAuth";

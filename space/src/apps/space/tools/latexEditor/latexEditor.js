@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import "./latexEditor.css";
+import "./latexEditor.scss";
 import useApi from "../../../../utils/useApi";
 import CodeMirror from "@uiw/react-codemirror";
 import { EditorView } from "@codemirror/view";
@@ -17,7 +17,7 @@ import fullCommands from './complete-latex-commands.json';
 import { keymap } from "@codemirror/view";
 import { insertText } from "@codemirror/commands";
 import katex from "katex";
-import "katex/dist/katex.min.css";
+import "katex/dist/katex.min.scss";
 
 
 const extractUserMacros = (text) => {

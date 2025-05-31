@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import './fullProfile.css';
+import './fullProfile.scss';
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate } from "react-router-dom";
 import useApi from "../../../../utils/useApi";

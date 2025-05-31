@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_BASE_URL from '../../../utils/apiUrl';
 import { useAuth } from '../../../hooks/useAuth';
-import './notificationsMenu.css';
+import './notificationsMenu.scss';
 import { timeAgo } from '../../../utils/convertDateTIme';
 import NotificationList from './notificationList';
 import { FaChevronRight } from 'react-icons/fa';

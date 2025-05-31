@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Quill from 'quill'; // Import Quill library
-import 'quill/dist/quill.snow.css'; // Import Quill styles
-import './autoCompleteInput.css';
+import 'quill/dist/quill.snow.scss'; // Import Quill styles
+import './autoCompleteInput.scss';
 
 const AutoCompleteInput = ({ onChange, placeholder, type = 'textarea' }) => {
     const [suggestions, setSuggestions] = useState([]);

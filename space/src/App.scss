@@ -1,0 +1,77 @@
+// html, body {
+//   margin: 0 !important;
+//   padding: 0 !important;
+//   width: 100% !important;
+//   height: 100svh !important;
+//   min-height: 100% !important;
+//   box-sizing: border-box;
+//   overflow-x: hidden;  /* Prevent horizontal scroll */
+//   // background-color: rgb(0, 0, 0);
+//   // background-color: ;
+// }
+
+
+.App {
+  width: 100%;
+  // height: 100vh;  
+  background-color: rgb(0, 0, 0) !important;
+  background: radial-gradient(circle at top, rgba(153, 102, 255, 0.133), rgba(153, 102, 255, 0));
+  /* background: radial-gradient(circle at top, rgba(83, 135, 190, 0.157), rgba(14, 14, 14, 0)); */
+}
+
+a {
+  color: white;
+  text-decoration: none;
+}
+
+* {
+  user-select: none;
+}
+
+p, span, div {
+  user-select: text;
+}
+
+
+
+
+.loading {
+  width: 80px;
+  aspect-ratio: 1 / 1;
+  background-color: rgba(255, 0, 0, 0);
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.loading img {
+  height: 100%;
+  width: auto;
+}
+
+
+
+
+
+// @media (max-height: 690px) {
+// .App {
+//   height: calc(100vh - 135px);
+// }
+// }
+// @media (min-height: 640px) {
+// .App {
+//   height: calc(100vh - 100px);
+// }
+// }
+
+ @media (min-height: 600px) {
+  .App {
+    // background-color: rgb(119, 12, 12) !important;
+    height: 100svh; // "Small viewport height" is the visible area on mobile
+    width: 100svw;
+  }
+ }
+
+
+
+

@@ -1,6 +1,6 @@
 import React from "react";
 import ImageWrapper from '../../../../utils/imageWrapper/imageWrapper';
-import "./exploreVisualPostCard.css";
+import "./exploreVisualPostCard.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLayerGroup } from "@fortawesome/free-solid-svg-icons";
 

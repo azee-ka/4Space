@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './publicationsTab.css';
+import './publicationsTab.scss';
 import useApi from '../../../../../../utils/useApi';
 import PublicationDetail from './publicationDetail/publicationDetail';
 

@@ -7,7 +7,7 @@ import RenderText from '../../../utils/autoCompleteInput/renderText';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { useNavigate } from 'react-router-dom';
 import { FaRetweet } from 'react-icons/fa';
-import './repostModal/repostModal.css';
+import './repostModal/repostModal.scss';
 import QuoteModal from './quoteModal/quoteModal';
 import RepostModal from './repostModal/repostModal';
 

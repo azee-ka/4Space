@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './notificationSidebar.css';
+import './notificationSidebar.scss';
 import { Link, useNavigate } from "react-router-dom";
 import useNotifications from "../../../hooks/useNotifications";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";

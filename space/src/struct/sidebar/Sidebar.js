@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Sidebar.css';
+import './Sidebar.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faCog, faStream, faLayerGroup, faSearch, faVestPatches, faNetworkWired, faShareNodes, faCircleNodes } from '@fortawesome/free-solid-svg-icons';
 

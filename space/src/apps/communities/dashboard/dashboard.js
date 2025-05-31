@@ -1,5 +1,5 @@
 import React from 'react';
-import './dashboard.css';
+import './dashboard.scss';
 
 const CommunitiesDashboard = () => {
   const mockChartData = [75, 60, 80, 50, 90, 65, 85];

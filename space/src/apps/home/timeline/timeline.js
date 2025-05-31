@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './timeline.css';
+import './timeline.scss';
 import useApi from '../../../utils/useApi';
 import TimelinePerPost from './timelinePerPost/timelinePerPost';
 import { FaImages } from "react-icons/fa";
@@ -9,10 +9,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { usePaginatedList } from '../../../hooks/usePaginatedList';
 import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
+import { useDevice } from '../../../context/DeviceContext';
 
 const Timeline = () => {
     const { callApi } = useApi();
 
+const { isM, isT } = useDevice();
 
     const fetchPageFn = async ({ page, pageSize }) => {
         const offset = page * pageSize;
@@ -65,20 +67,7 @@ const Timeline = () => {
             {/* Header (Title & Toggle) */}
             <div className="timeline-header">
                 <h2>Timeline</h2>
-                <button
-                    onClick={() => setSecondTimelineAdd(!secondTimelineAdd)}
-                    className={`timeline-add-btn ${secondTimelineAdd ? 'active' : ''}`}>
-                    Toggle Timeline
-                </button>
-            </div>
-
-            {/* Filter Row */}
-            <div
-                className={`timeline-filter-row ${secondTimelineAdd ? 'second-timeline' : ''}`}
-            >
-                {/* Left Filter */}
-                {/* <div> */}
-                    <DropdownButton
+                {!isM && !isT && <DropdownButton
                         toggleContent={
                             <button className="filter-toggle">
                                 <span>Filter by: {leftFilter}</span>
@@ -97,10 +86,45 @@ const Timeline = () => {
                                 </button>
                             ))}
                         </div>
-                    </DropdownButton>
+                    </DropdownButton>}
+                {!isM && !isT &&
+                    <button
+                    onClick={() => setSecondTimelineAdd(!secondTimelineAdd)}
+                    className={`timeline-add-btn ${secondTimelineAdd ? 'active' : ''}`}>
+                    Toggle Timeline
+                </button>
+                }
+            </div>
+
+            {/* Filter Row */}
+            <div
+                className={`timeline-filter-row ${secondTimelineAdd ? 'second-timeline' : ''}`}
+            >
+                {/* Left Filter */}
+                {/* <div> */}
+                    {!isM && !isT && <DropdownButton
+                        toggleContent={
+                            <button className="filter-toggle">
+                                <span>Filter by: {leftFilter}</span>
+                                <FontAwesomeIcon icon={faChevronDown} />
+                            </button>
+                        }
+                    >
+                        <div className="timeline-filters">
+                            {filters.map((filter) => (
+                                <button
+                                    key={filter}
+                                    className={`filter-btn ${leftFilter === filter ? 'active' : ''}`}
+                                    onClick={() => setLeftFilter(filter)}
+                                >
+                                    {filter}
+                                </button>
+                            ))}
+                        </div>
+                    </DropdownButton>}
                 {/* </div> */}
                 {/* Right Filter */}
-                {secondTimelineAdd &&
+                {secondTimelineAdd && !isM && !isT &&
                     // <div>
                         <DropdownButton
                             toggleContent={
@@ -144,7 +168,7 @@ const Timeline = () => {
                         <div ref={infiniteScrollRef}></div>
                     </div>
                     {/* Right Feed */}
-                    {secondTimelineAdd && rightFilteredPosts &&
+                    {secondTimelineAdd && rightFilteredPosts && !isM && !isT &&
                         <div className="timeline-right-side-container">
                             {rightFilteredPosts.map((post, index) => (
                                 <ExpandPostProvider key={post.id} postId={post.id}>

@@ -3,7 +3,7 @@ import useApi from "../../../../utils/useApi";
 import MonacoEditor from "./monacoEditor";
 import FileExplorer from "./fileExplorer";
 import FileTabs from "./fileTabs";
-import "./ide.css";
+import "./ide.scss";
 import { useParams } from "react-router-dom";
 
 const CodeIDE = ({ projectId: projectIdProp }) => {

@@ -1,7 +1,7 @@
 // followListOverlay.js
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom'; // Import Link
-import './userListOverlay.css'; // Import the CSS file
+import './userListOverlay.scss'; // Import the CSS file
 import ProfilePicture from '../../utils/profilePicture/getProfilePicture';
 import { FaTimes } from 'react-icons/fa';
 

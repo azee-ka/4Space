@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import './editProfileImageOverlay.css';
+import './editProfileImageOverlay.scss';
 import API_BASE_URL from "../../../../../utils/apiUrl";
 import default_profile_picture from '../../../../../assets/default_profile_picture.png';
 import ReactCrop from 'react-easy-crop';
