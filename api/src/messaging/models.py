@@ -26,7 +26,7 @@ class Message(models.Model):
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
     text = models.TextField()
-    sent_at = models.DateTimeField(default=now)
+    sent_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
     deleted_for = models.ManyToManyField(BaseUser, related_name='deleted_messages', blank=True)
 

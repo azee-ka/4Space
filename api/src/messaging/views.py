@@ -10,6 +10,7 @@ from django.db.models import Q
 from ..user.models import BaseUser
 from .models import Conversation, Message, MessageSettings, Participant
 from .serializers import ConversationSerializer, MessageSerializer, ConversationListSerializer
+from rest_framework.pagination import LimitOffsetPagination
 
 
 
@@ -170,20 +171,21 @@ def get_conversation_details(request, conversation_id):
 
 
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_messages(request, conversation_id):
-    """
-    Get all messages from a specific conversation.
-    """
     conversation = get_object_or_404(
         Conversation,
         uuid=conversation_id,
-        participant_records__user=request.user  # Correct related name for Participant
+        participant_records__user=request.user
     )
-    messages = conversation.messages.all()
-    serializer = MessageSerializer(messages, many=True)
-    return Response(serializer.data)
+    qs = conversation.messages.order_by('sent_at')  # Oldest → newest
+    paginator = LimitOffsetPagination()
+    paginated = paginator.paginate_queryset(qs, request)
+    serializer = MessageSerializer(paginated, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
 
 
 

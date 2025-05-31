@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../../../utils/useApi";
 import DOMPurify from "dompurify";
+import { Virtuoso } from 'react-virtuoso';
 import "./chatContainer.css";
 import { FaEllipsisV, FaPaperPlane, FaRegSmile } from "react-icons/fa";
 import { useAuth } from "../../../hooks/useAuth";
@@ -18,6 +19,8 @@ import EmojiButton from "../../../utils/editor/EmojiButton";
 import CustomEditor from "../../../utils/editor/editor";
 import { useNavigate } from "react-router-dom";
 import DropdownButton from "../../../utils/popperButton/DropdownButton";
+import { usePaginatedList } from "../../../hooks/usePaginatedList";
+import { useInfiniteScrollTrigger } from "../../../hooks/useInfiniteScrollTrigger";
 
 const TIME_GAP_THRESHOLD = 15 * 60 * 1000;
 
@@ -91,45 +94,130 @@ const ChatMessage = React.memo(({ message, previous, next, isOwn, centerPanelRef
     );
 });
 
+
+
+
+const SCROLL_TRIGGER_PX = 150;
+
 const ChatContainer = ({ conversationId }) => {
     const { callApi } = useApi();
     const { authState } = useAuth();
     const navigate = useNavigate();
 
     const [conversation, setConversation] = useState(null);
-    const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const endRef = useRef();
-
     const textareaRef = useRef();
-
     const centerPanelRef = useRef(null);
 
+    // 1. Paginated Messages Hook
+    const {
+        items: messages,
+        loadMore,
+        hasMore,
+        loading,
+        setItems,
+    } = usePaginatedList(
+        async ({ page, pageSize }) => {
+            const offset = page * pageSize;
+            const resp = await callApi(
+                `messages/get_messages/${conversationId}/?limit=${pageSize}&offset=${offset}`
+            );
+            console.log(resp);
+            return {
+                results: resp.data.results,
+                next: resp.data.next,
+                count: resp.data.count
+            };
+        },
+        { pageSize: 10, immediate: true, resetDeps: [conversationId] }
+    );
+
+
+
+    // 3. Fetch conversation details (not messages)
+    useEffect(() => {
+        const fetchConvoDetails = async () => {
+            try {
+                const res = await callApi(`messages/get_conversation_details/${conversationId}`);
+                // console.log(res.data);
+                setConversation(res.data);
+            } catch (err) {
+                console.error('Error fetching convo details', err);
+            }
+        }
+        fetchConvoDetails();
+    }, [conversationId]);
+
+
+
+    const scrollRef = useRef();
+
+
+    const [hasScrolled, setHasScrolled] = useState(false);
+
+useEffect(() => {
+  const el = scrollRef.current;
+  if (!el || hasScrolled) return;
+  if (messages.length && el.scrollHeight > el.clientHeight) {
+    el.scrollTop = el.scrollHeight;
+    setHasScrolled(true);
+  }
+}, [messages, hasScrolled]);
+
+const handleScroll = useCallback(() => {
+  const el = scrollRef.current;
+  if (!el || loading || !hasMore) return;
+  if (el.scrollTop < SCROLL_TRIGGER_PX) {
+    const prevScrollHeight = el.scrollHeight;
+    loadMore().then(() => {
+      requestAnimationFrame(() => {
+        const newScrollHeight = el.scrollHeight;
+        el.scrollTop = newScrollHeight - prevScrollHeight + el.scrollTop;
+      });
+    });
+  }
+}, [loading, hasMore, loadMore]);
+
+  // 2. Attach the scroll handler
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+
+
+    // 4. Scroll to bottom on new messages
+    useEffect(() => {
+        endRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, []);
+
+    // 5. WebSocket for incoming messages (append at end, dedupe by uuid)
     const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
         onMessage: (data) => {
-            console.log("WebSocket message received:", data);
-            setMessages((prev) => {
-                const exists = prev.some((m) => m.uuid === data.uuid);
-                return exists ? prev : [...prev, data];
+            setItems(prev => {
+                if (prev.some((m) => m.uuid === data.uuid)) return prev;
+                return [...prev, data]; // append at end, so after reverse it's at the bottom
             });
         }
     });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const [convRes, msgRes] = await Promise.all([
-                callApi(`messages/get_conversation_details/${conversationId}`),
-                callApi(`messages/get_messages/${conversationId}/`),
-            ]);
-            setConversation(convRes.data);
-            setMessages(msgRes.data);
-        };
-        fetchData();
-    }, [conversationId]);
+    const handleLoadMore = useCallback(() => {
+        if (!centerPanelRef.current) return;
+        const node = centerPanelRef.current;
+        const prevScrollHeight = node.scrollHeight;
+        const prevScrollTop = node.scrollTop;
+        loadMore().then(() => {
+            // After loading, wait a frame then fix scroll position
+            requestAnimationFrame(() => {
+                const newScrollHeight = node.scrollHeight;
+                node.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop;
+            });
+        });
+    }, [loadMore]);
 
-    useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
 
     const handleSend = () => {
         const trimmed = input.trim();
@@ -250,11 +338,11 @@ const ChatContainer = ({ conversationId }) => {
         if (isRequestView) {
             return (
                 <div className="message-request-actions">
-  <button className="request-btn primary" onClick={handleAcceptRequest}>Accept</button>
-  <button className="request-btn subtle" onClick={handleRejectRequest}>Reject</button>
-  <button className="request-btn danger" onClick={handleBlockRequest}>Block</button>
-  <button className="request-btn danger-outline" onClick={handleBlockRequest}>Report & Block</button>
-</div>
+                    <button className="request-btn primary" onClick={handleAcceptRequest}>Accept</button>
+                    <button className="request-btn subtle" onClick={handleRejectRequest}>Reject</button>
+                    <button className="request-btn danger" onClick={handleBlockRequest}>Block</button>
+                    <button className="request-btn danger-outline" onClick={handleBlockRequest}>Report & Block</button>
+                </div>
 
             );
         }
@@ -303,21 +391,26 @@ const ChatContainer = ({ conversationId }) => {
                     </>
                 )}
             </div>
-
-            <div className="chat-body" ref={centerPanelRef}>
-                {messages.map((msg, i) => (
-                    <ChatMessage
-                        key={msg?.uuid}
-                        message={msg}
-                        previous={messages[i - 1]}
-                        next={messages[i + 1]}
-                        isOwn={isOwn(msg)}
-                        centerPanelRef={centerPanelRef}
-                    />
-                ))}
-                <div ref={endRef} />
-            </div>
-
+            <div
+        className="chat-body"
+        ref={scrollRef}
+      >
+        {messages.map((msg, i) => (
+          <div
+            key={msg.uuid}
+            className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}
+          >
+            <ChatMessage
+              message={msg}
+              previous={messages[i - 1]}
+              next={messages[i + 1]}
+              isOwn={isOwn(msg)}
+              centerPanelRef={scrollRef}
+            />
+          </div>
+        ))}
+        <div ref={endRef} />
+      </div>
             <div className="chat-container-bottom-panel">
                 {renderFooter()}
             </div>

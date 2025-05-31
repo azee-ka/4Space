@@ -1,11 +1,15 @@
 import { useRef, useEffect } from "react";
 
-export function useInfiniteScrollTrigger(loadMore, hasMore, loading) {
+// Pass { upward: true } to trigger at top
+export function useInfiniteScrollTrigger(loadMore, hasMore, loading, opts = {}) {
   const ref = useRef();
   useEffect(() => {
     if (loading || !ref.current) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting && hasMore) loadMore(); },
+      ([entry]) => {
+        // Optionally: Only load if at top and NOT at bottom!
+        if (entry.isIntersecting && hasMore && (!opts.upward || ref.current.scrollTop === 0)) loadMore();
+      },
       { threshold: 0.8 }
     );
     const node = ref.current;
@@ -14,3 +18,4 @@ export function useInfiniteScrollTrigger(loadMore, hasMore, loading) {
   }, [loadMore, hasMore, loading]);
   return ref;
 }
+
