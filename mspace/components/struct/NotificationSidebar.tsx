@@ -90,7 +90,7 @@ export default function NotificationSidebar({ visible, onClose, notifications })
 const styles = StyleSheet.create({
   overlay: {
     position: 'absolute', right: 0, top: 0, width: '100%', height: '100%',
-    flexDirection: 'row', zIndex: 99,
+    flexDirection: 'row', zIndex: 101,
   },
   overlayBG: {
     flex: 1,
