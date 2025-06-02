@@ -451,67 +451,93 @@ class PostCreateSerializer(serializers.Serializer):
     #     request = self.context.get('request')  # ⚡ get the request from context
     #     return MediaFileSerializer(obj.media_files.all(), many=True, context={'request': request}).data
 
+
+
 class MinimalVisualPostSerializer(VisualPostSerializer):
     thumbnail = serializers.SerializerMethodField()
     media_files_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = VisualPost
-        fields = ['thumbnail', 'created_at', 'id', 'media_files_count', 'post_type']
-        post_type = 'Visual'
-        
+        fields = [
+            "thumbnail",
+            "created_at",
+            "id",
+            "media_files_count",
+            "post_type",
+        ]
+        post_type = "Visual"
+
     def get_media_files_count(self, obj):
-        """ Return the count of media files associated with this Flare object. """
-        return obj.media_files.count() 
+        return obj.media_files.count()
 
     def get_thumbnail(self, obj):
-        # Assuming 'media_files' is a related manager on the Flare model
-        thumbnail_media_file = obj.media_files.first()
+        """
+        Pick the very first media file on this VisualPost. If it’s an image,
+        return its absolute URL. If it’s a video, try to generate a (PNG) thumbnail,
+        save it to default_storage, and return its absolute URL.
+        """
+        # 1) Grab the first related MediaFile (if any)
+        thumbnail_media_file = obj.media_files.order_by("id").first()
         if not thumbnail_media_file:
             return None
 
-        if thumbnail_media_file.media_type == 'image':
+        request = self.context.get("request", None)
+
+        # 2) If it’s an image, just return the .url (made absolute if possible)
+        if thumbnail_media_file.media_type == "image":
+            raw_url = thumbnail_media_file.file.url  # e.g. "/media/post_media/abc.jpg"
+            if request:
+                full_url = request.build_absolute_uri(raw_url)
+            else:
+                full_url = raw_url
             return {
-                'file': thumbnail_media_file.file.url,
-                'media_type': thumbnail_media_file.media_type,
+                "file": full_url,
+                "media_type": thumbnail_media_file.media_type,
             }
-            
-        if thumbnail_media_file.media_type == 'video':
+
+        # 3) If it’s a video, generate a frame thumbnail
+        if thumbnail_media_file.media_type == "video":
             try:
-                thumbnail_image = self.generate_video_thumbnail(thumbnail_media_file.file)
-                if thumbnail_image:
-                    temp_thumbnail_name = f"thumbnail_{obj.id}.jpg"
-                    thumbnail_path = os.path.join('thumbnails', temp_thumbnail_name)
-                    saved_thumbnail = default_storage.save(thumbnail_path, ContentFile(thumbnail_image))
+                img_bytes = self.generate_video_thumbnail(thumbnail_media_file.file)
+                if img_bytes:
+                    # pick a path inside MEDIA_ROOT/thumbnails/
+                    temp_name = f"thumbnails/thumbnail_{obj.id}.png"
+                    saved_path = default_storage.save(temp_name, ContentFile(img_bytes))
+
+                    # default_storage.url(...) might return "/media/thumbnails/thumbnail_123.png"
+                    raw_url = default_storage.url(saved_path)
+
+                    if request:
+                        full_url = request.build_absolute_uri(raw_url)
+                    else:
+                        full_url = raw_url
+
                     return {
-                        'file': default_storage.url(saved_thumbnail),
-                        'media_type': 'video',
+                        "file": full_url,
+                        "media_type": "video",
                     }
             except Exception as e:
-                print(f"Error generating thumbnail for video: {e}")
+                # If thumbnail generation fails, just log and return None
+                print(f"[MinimalVisualPostSerializer] video thumbnail error: {e}")
 
         return None
 
-    def generate_video_thumbnail(self, video_file):
+    def generate_video_thumbnail(self, video_file_field):
+        """
+        Open the video (a Django FileField), grab frame 0, convert to PNG bytes.
+        """
         try:
-            # Load the video file
-            video_clip = VideoFileClip(video_file.path)
-            
-            # Extract the first frame from the video
-            frame = video_clip.get_frame(0)
-            
-            # Convert the frame to a PIL image
-            image = Image.fromarray(frame)
-            
-            # Save the image to a BytesIO stream in PNG format for lossless quality
-            byte_io = BytesIO()
-            image.save(byte_io, format='PNG')  # PNG format to maintain quality
-            byte_io.seek(0)
-            
-            # Return the image bytes
-            return byte_io.read()
+            # moviepy needs a filesystem path, so video_file_field.path must be valid
+            clip = VideoFileClip(video_file_field.path)
+            frame = clip.get_frame(0)  # numpy array (HxWx3)
+            img = Image.fromarray(frame)
+            buf = BytesIO()
+            img.save(buf, format="PNG")
+            buf.seek(0)
+            return buf.read()
         except Exception as e:
-            print(f"Error processing video file: {e}")
+            print(f"[MinimalVisualPostSerializer] generate_video_thumbnail failed: {e}")
             return None
 
 

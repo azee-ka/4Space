@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ..models import ThreadPost, VisualPost
-from ..serializers import MinimalThreadPostSerializer, MinimalVisualPostSerializer
+from ..serializers import PostRetrieveSerializer, MinimalThreadPostSerializer, MinimalVisualPostSerializer
 
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -31,9 +31,9 @@ def timeline_posts(request):
     serialized_posts = []
     for post in paginated_posts:
         if isinstance(post, ThreadPost):
-            serializer = MinimalThreadPostSerializer(post, context={'request': request})
+            serializer = PostRetrieveSerializer(post, context={'request': request})
         elif isinstance(post, VisualPost):
-            serializer = MinimalVisualPostSerializer(post, context={'request': request})
+            serializer = PostRetrieveSerializer(post, context={'request': request})
         serialized_posts.append(serializer.data)
 
     # Return paginated response (includes next/previous links and count)
