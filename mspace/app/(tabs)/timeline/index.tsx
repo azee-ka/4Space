@@ -202,7 +202,7 @@ function TimelinePostCard({ onPressDetails }) {
           <Text style={styles.statText}>{post.stats?.comments_count || 0}</Text>
         </TouchableOpacity>
         <View style={styles.spacer} />
-        <TouchableOpacity style={styles.stat}>
+        <TouchableOpacity style={styles.share}>
           <Icon name="share-2" size={20} color="#888" />
         </TouchableOpacity>
       </View>
@@ -508,6 +508,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginRight: 18,
+  },
+  share: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   statText: {
     color: "#ccc",
