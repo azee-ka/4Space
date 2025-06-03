@@ -16,7 +16,8 @@ import MasonryList from "@react-native-seoul/masonry-list";
 import { useRouter } from "expo-router";
 import useApi from "../../../hooks/useApi";
 import ExploreVisualPostCard from "../../../components/ExploreVisualPostCard";
-import ThreadPostCard from "../../../components/ExploreThreadPostCard";
+import ExploreThreadPostCard from "../../../components/ExploreThreadPostCard";
+import { ExpandPostProvider } from "../../../context/expandPostContext";
 
 const { width } = Dimensions.get("window");
 const NUM_COLUMNS = 2;
@@ -242,11 +243,10 @@ export default function Explore() {
           data={threadPosts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <ThreadPostCard
-              post={item}
-              onPress={() => handleThreadPress(item)}
-            />
-          )}
+    <ExpandPostProvider postId={item.id} postData={item}>
+      <ExploreThreadPostCard onPress={() => handleThreadPress(item)} />
+    </ExpandPostProvider>
+  )}
           onEndReached={loadMoreThread}
           onEndReachedThreshold={0.5}
           contentContainerStyle={styles.listContent}

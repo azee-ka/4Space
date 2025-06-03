@@ -29,8 +29,11 @@ import {
 } from "../../../context/expandPostContext";
 
 const { width } = Dimensions.get("window");
-
 const INPUT_BAR_HEIGHT = 56;
+
+// We define these two constants so that the FlatList container and getItemLayout match exactly.
+const IMAGE_CONTAINER_WIDTH = width * 0.96;
+const IMAGE_CONTAINER_HEIGHT = width * 0.7;
 
 function PostHeader({ origin }: { origin?: string }) {
   const router = useRouter();
@@ -47,6 +50,9 @@ function PostHeader({ origin }: { origin?: string }) {
   // ── Double‐tap logic for main post ─────────────────────────────────────────
   const lastTap = useRef<number | null>(null);
   const [heartAnim] = useState(new Animated.Value(0));
+
+  // Create a single, stable ref for the FlatList (so it does not recreate on every render)
+  const flatListRef = useRef<FlatList<any> | null>(null);
 
   const handleDoubleTapPost = () => {
     const now = Date.now();
@@ -119,12 +125,14 @@ function PostHeader({ origin }: { origin?: string }) {
     : post.media_files || post.post?.media_files || [];
 
   const mediaIndex = currentMediaIndex ?? 0;
-  const handleScroll = (e: any) => {
-    const idx = Math.round(e.nativeEvent.contentOffset.x / width);
+
+  // When scrolling stops, update the index
+  const onMomentumScrollEnd = (e: any) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / IMAGE_CONTAINER_WIDTH);
     setCurrentMediaIndex?.(idx);
   };
 
-    const { width: contentWidth } = useWindowDimensions();
+  const { width: contentWidth } = useWindowDimensions();
 
   return (
     <View style={styles.headerWrap}>
@@ -210,28 +218,44 @@ function PostHeader({ origin }: { origin?: string }) {
       {!isThread && media.length > 0 && (
         <View style={styles.media}>
           <TouchableWithoutFeedback onPress={handleDoubleTapPost}>
-            <View>
+            <View
+              style={{
+                width: IMAGE_CONTAINER_WIDTH,
+                height: IMAGE_CONTAINER_HEIGHT,
+              }}
+            >
               <FlatList
                 data={media}
                 horizontal
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(_, idx) => idx.toString()}
+                ref={flatListRef}
+                getItemLayout={(_, index) => ({
+                  length: IMAGE_CONTAINER_WIDTH,
+                  offset: IMAGE_CONTAINER_WIDTH * index,
+                  index,
+                })}
+                onMomentumScrollEnd={onMomentumScrollEnd}
+                initialScrollIndex={mediaIndex}
                 renderItem={({ item }) => (
                   <Image
                     source={{ uri: item.file || item.url || (item as any) }}
-                    style={styles.mediaImage}
+                    style={{
+                      width: IMAGE_CONTAINER_WIDTH,
+                      height: IMAGE_CONTAINER_HEIGHT,
+                      borderRadius: 14,
+                      backgroundColor: "#222",
+                    }}
                     resizeMode="cover"
                   />
                 )}
-                onMomentumScrollEnd={handleScroll}
-                getItemLayout={(_, index) => ({
-                  length: width * 0.96,
-                  offset: width * 0.96 * index,
-                  index,
-                })}
-                initialScrollIndex={mediaIndex}
-                ref={React.createRef<FlatList<any>>()}
+                style={{
+                  width: IMAGE_CONTAINER_WIDTH,
+                  height: IMAGE_CONTAINER_HEIGHT,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                }}
               />
 
               {/* Animated heart over the media */}
@@ -348,7 +372,9 @@ function PostHeader({ origin }: { origin?: string }) {
               <FA
                 name="heart"
                 size={20}
-                color={post.status?.like_status === "liked" ? "#ff4b5c" : "#aaa"}
+                color={
+                  post.status?.like_status === "liked" ? "#ff4b5c" : "#aaa"
+                }
               />
               <Text style={styles.actionCount}>
                 {post.stats?.likes_count || 0}
@@ -362,10 +388,7 @@ function PostHeader({ origin }: { origin?: string }) {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.action}
-              onPress={toggleBookmark}
-            >
+            <TouchableOpacity style={styles.action} onPress={toggleBookmark}>
               <Icon
                 name="bookmark"
                 size={20}
@@ -440,9 +463,9 @@ function PostDetailInner({ origin }: { origin?: string }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
     >
-      <SafeAreaView style={{ height: '100%', backgroundColor: "#111317" }}>
+      <SafeAreaView style={{ height: "100%", backgroundColor: "#111317" }}>
         {/* 1) FlatList for comments */}
-        <View style={{ flex: 1  }}>
+        <View style={{ flex: 1 }}>
           <FlatList
             ListHeaderComponent={<CombinedHeader />}
             data={comments}
@@ -481,7 +504,9 @@ function PostDetailInner({ origin }: { origin?: string }) {
                           name="arrow-down"
                           size={20}
                           color={
-                            item.vote_status === "downvoted" ? "#ff4b5c" : "#aaa"
+                            item.vote_status === "downvoted"
+                              ? "#ff4b5c"
+                              : "#aaa"
                           }
                         />
                       </TouchableOpacity>
@@ -596,10 +621,7 @@ function PostDetailInner({ origin }: { origin?: string }) {
           />
           <TouchableOpacity
             onPress={addComment}
-            style={[
-              styles.sendBtn,
-              !commentText.trim() && { opacity: 0.5 },
-            ]}
+            style={[styles.sendBtn, !commentText.trim() && { opacity: 0.5 }]}
             disabled={!commentText.trim()}
           >
             <Icon name="send" size={22} color="#19dee8" />
@@ -728,12 +750,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#181a21",
     overflow: "hidden",
     borderRadius: 14,
-    width: width * 0.96,
-    height: width * 0.7,
+    width: IMAGE_CONTAINER_WIDTH,
+    height: IMAGE_CONTAINER_HEIGHT,
   },
   mediaImage: {
-    width: width * 0.96,
-    height: width * 0.7,
+    width: IMAGE_CONTAINER_WIDTH,
+    height: IMAGE_CONTAINER_HEIGHT,
     borderRadius: 14,
     backgroundColor: "#222",
   },
@@ -765,27 +787,28 @@ const styles = StyleSheet.create({
   /* Animated heart overlay (main post) */
   animatedHeartMain: {
     position: "absolute",
-    top: "40%",
-    left: "40%",
+    top: IMAGE_CONTAINER_HEIGHT / 2 - 40,
+    left: IMAGE_CONTAINER_WIDTH / 2 - 40,
   },
 
   /* ACTIONS ROW */
   actionsRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginTop: 12,
     marginBottom: 4,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#242424",
-    paddingTop: 10,
+    gap: 20,
+    height: 90,
   },
 
   /* ── VOTE SECTION (VERTICAL) ───────────────────────────────────────────── */
   voteSection: {
+    height: "100%",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 16,
   },
   voteButton: {
     paddingVertical: 4,
@@ -799,13 +822,14 @@ const styles = StyleSheet.create({
 
   /* ── MAIN POST: TWO ROWS OF ACTIONS ───────────────────────────────────── */
   mainActionGrid: {
+    height: "100%",
     flex: 1,
     justifyContent: "space-between",
+    paddingVertical: 8,
   },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
   },
   action: {
     flexDirection: "row",
