@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import './thread.scss';
+import './thread.css';
 import { FaEllipsisV, FaUpload } from 'react-icons/fa';
 
 const Thread = React.forwardRef(({ showpostEditorToolbar, setShowpostEditorToolbar, handleButtonClick }, ref) => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import './organization.scss'; // optional
+import './organization.css'; // optional
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useApi from '../../../../utils/useApi';
 import { useAuth } from '../../../../hooks/useAuth';

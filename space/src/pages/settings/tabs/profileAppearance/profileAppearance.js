@@ -1,5 +1,5 @@
 import React from "react";
-import './profileAppearance.scss';
+import './profileAppearance.css';
 
 const ProfileAppearance = ({ handleStartCustomization }) => {
     return (

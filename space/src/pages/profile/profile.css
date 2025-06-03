@@ -1,0 +1,181 @@
+.profile-page {
+    display: flex;
+    gap: 20px;
+    /* background: radial-gradient(ellipse at center, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%); */
+    color: white;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: 0px 8px 0 0px;
+}
+
+.profile-top-panel {
+    width: 100%;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-top-panel h2 {
+    padding: 0;
+    margin: 0;
+    height: 40px;
+    font-size: 1.5em;
+    background-color: rgba(187, 187, 187, 0);
+    display: flex;
+    align-items: flex-end;
+    /* color: white; */
+}
+.profile-top-panel h2 a {
+    color: white;
+    text-decoration: none;
+}
+
+.profile-top-panel-date-joined {
+    font-size: 0.8em;
+    color: rgba(220, 220, 220, 0.7);
+    padding: 0;
+    margin: 0;
+    margin-right: 6px;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.profile-main-panel {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+
+.profile-page.loading {
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-left {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile-center {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile-card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+
+
+
+
+.profile-profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    background: rgba(255,255,255,0.1);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.profile-profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.display-name {
+    margin-top: 5px;
+    color: rgba(220, 220, 220, 0.8);
+    font-size: 1em;
+}
+
+.bio {
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: rgba(200, 200, 200, 0.7);
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+.profile-stats div {
+    text-align: center;
+    cursor: pointer;
+}
+
+.profile-stats div span {
+    display: block;
+    font-size: 0.75em;
+    color: rgba(200, 200, 200, 0.7);
+}
+
+
+
+
+
+.highlight-section {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.highlight-section h3 {
+    margin: 15px 4px;
+    font-size: 1.2em;
+    color: rgba(255,255,255,0.8);
+} 
+
+.highlights-grid {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.highlight-card {
+    flex: 1;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    font-size: 1.1em;
+}
+.highlight-card:hover {
+    background: rgba(255,255,255,0.12);
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+.highlight-card.active {
+    background: rgba(255, 255, 255, 0.158);
+    /* transform: scale(1.03); */
+    cursor: pointer;
+}

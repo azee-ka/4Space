@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useApi from "../../../utils/useApi";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
-import "./inbox.scss";
+import "./inbox.css";
 
 const MessageInbox = ({ setShowCreateMessageOverlay }) => {
   const navigate = useNavigate();
@@ -22,7 +22,6 @@ const MessageInbox = ({ setShowCreateMessageOverlay }) => {
       }
     };
     fetchChats();
-    // eslint-disable-next-line
   }, []);
 
   return (

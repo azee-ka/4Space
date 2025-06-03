@@ -1,0 +1,96 @@
+.post-more-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background: rgba(24, 24, 24, 0.626);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 60; 
+    color: white;
+}
+
+.post-more-menu-card {
+    width: 340px;
+    /* height: 400px; */
+    background-color: black;
+    /* padding: 2em 1em; */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+    border-radius: 8px;
+}
+
+.post-more-menu-close-button {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    color: rgb(169, 169, 169);
+    background-color: rgba(128, 128, 128, 0);
+    font-size: 1.4em;
+}
+.post-more-menu-close-button:hover {
+    color: white;
+    cursor: pointer;
+}
+
+.post-more-card-top {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    box-sizing: border-box;
+    background-color: rgba(255, 0, 0, 0);
+    width: 100%;
+    padding: 0em 1em;
+    position: relative;
+}
+.post-more-card-top h3 {
+    padding: 1em 0em;
+    margin: 0;
+}
+
+.post-more-card-bottom {
+    padding: 0em 1em 1em 1em;
+    width: 100%;
+    flex-grow: 1;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+    background-color: rgba(128, 128, 128, 0);
+}
+
+
+.post-more-card-bottom button {
+    width: 100%;
+    padding: 0.7em 1.5em;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    font-size: 1em;
+    background-color: rgba(128, 128, 128, 0);
+    border: 0;
+    color: white;
+    border-radius: 6px;
+}
+.post-more-card-bottom button:hover {
+    background-color: rgba(128, 128, 128, 0.383);
+    cursor: pointer;
+}
+
+
+.report-button {
+    color: red !important;
+}

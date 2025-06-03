@@ -1,6 +1,6 @@
 // LoginForm.js
 import React, { useState, useEffect } from 'react';
-import './alert.scss';
+import './alert.css';
 import { FaTimes } from 'react-icons/fa';
 
 const AlertModule = ({ message, setShowAlert }) => {

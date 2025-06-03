@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { FaTimes } from "react-icons/fa";
 import useApi from "../../../utils/useApi";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
-import "./createMessageOverlay.scss";
+import "./createMessageOverlay.css";
 import { useAuth } from "../../../hooks/useAuth";
 
 const CreateMessageOverlay = ({ onClose }) => {
+    const { authState } = useAuth();
   const { callApi } = useApi();
   const navigate = useNavigate();
 

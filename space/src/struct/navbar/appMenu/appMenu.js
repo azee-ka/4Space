@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './appMenu.scss';
+import './appMenu.css';
 import { FaCog, FaServer, FaUser, FaTasks, FaStream, FaImages, FaPlay, FaChartLine, FaDashcube, FaChartBar } from 'react-icons/fa'; // Example icons
 import { faStream } from '@fortawesome/free-solid-svg-icons';
 

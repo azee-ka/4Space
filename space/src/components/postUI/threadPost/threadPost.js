@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import './threadPost.scss';
+import './threadPost.css';
 import useApi from '../../../utils/useApi';
 import { useExpandPostContext } from '../expandPost/expandPostContext';
 import RenderText from '../../../utils/autoCompleteInput/renderText';

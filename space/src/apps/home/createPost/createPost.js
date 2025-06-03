@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './createPost.scss';
+import './createPost.css';
 import { FaEllipsisV, FaTimes } from 'react-icons/fa';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
 import { faAlignRight, faCalendarDay, faCameraRetro, faImage, faMicrophoneLines, faPoll } from '@fortawesome/free-solid-svg-icons';

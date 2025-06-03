@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import './searchSidebar.scss';
+import './searchSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
 import useApi from '../../../utils/useApi';

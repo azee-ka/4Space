@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 import useApi from "../../../../utils/useApi";
-import "./richEditor.scss";
+import "./richEditor.css";
 import { timeAgo } from "../../../../utils/convertDateTIme";
 
 const lowlight = createLowlight();

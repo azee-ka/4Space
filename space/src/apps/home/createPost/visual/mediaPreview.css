@@ -1,0 +1,287 @@
+/* === Container === */
+.media-preview-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 0em 0.5em;
+  box-sizing: border-box;
+  max-height: 100% !important;
+  max-width: 100% !important;
+}
+
+/* === Header === */
+.media-preview-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.media-preview-container .media-preview-back {
+  background: transparent;
+  border: none;
+  color: #cccccc;
+  font-size: 1.3em;
+  border-radius: 50%;
+  padding: 0.25em 0.4em;
+  transition: all 0.3s ease;
+}
+
+.media-preview-container .media-preview-back:hover {
+  color: white;
+  background-color: rgba(72, 72, 72, 0.5);
+  cursor: pointer;
+}
+
+.media-preview-container h3 {
+  margin: 0;
+  font-size: 1.2em;
+  color: #e8e8e8;
+}
+
+.media-preview-container .media-preview-count {
+  margin-left: auto;
+  font-size: 0.95em;
+  color: #aaa;
+}
+
+/* === Meta Section === */
+.media-preview-meta-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.media-preview-container .media-preview-meta-container {
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #ddd;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+}
+
+.media-preview-container .media-preview-meta-container:first-child {
+  width: 240px;
+}
+
+.media-preview-meta {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8rem;
+  justify-content: flex-start;
+}
+.meta-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.meta-label {
+  color: #aaa;
+  font-weight: 600;
+}
+.meta-value {
+  color: #fff;
+}
+
+
+/* === Buttons Section === */
+.media-preview-container .media-preview-btns-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+  flex-grow: 1;
+}
+
+/* Scoped buttons */
+.media-preview-container .media-preview-btns-container button,
+.media-preview-container .media-preview-btns-container label {
+  padding: 0.5em 0.9em;
+  font-size: 0.75em;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e2e2;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.media-preview-container .media-preview-btns-container label:hover,
+.media-preview-container .media-preview-btns-container button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Icon style */
+.media-preview-container .media-preview-btns-container .icon-style {
+  font-size: 1.2em;
+}
+
+/* Action-specific */
+.media-preview-container .save-btn {
+  color: #00eaff;
+}
+.media-preview-container .cancel-btn {
+  color: #bbbbbb;
+}
+.media-preview-container .delete-btn {
+  color: #ff7070;
+}
+.media-preview-container .download-btn {
+  color: #fff3b0;
+}
+.media-preview-container .upload-btn {
+  color: #a0ffd4;
+}
+
+/* === Content Section === */
+/* .media-preview-container .media-preview-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  position: relative;
+  width: 100%;
+  height: 100%;
+} */
+
+.media-preview-container .media-preview-content img,
+.media-preview-container .media-preview-content video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* === Navigation Arrows === */
+.media-preview-container .media-preview-nav-container {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.media-preview-container .media-preview-nav-container button {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  font-size: 1.2em;
+  padding: 0.3em 0.6em;
+  color: white;
+  transition: background 0.3s ease;
+}
+
+.media-preview-container .media-preview-nav-container button:hover {
+  background-color: rgba(100, 100, 100, 0.25);
+  cursor: pointer;
+}
+
+/* === No content fallback === */
+.media-preview-container .no-content {
+  width: 100%;
+  height: 100%;
+  color: #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3em;
+  background: transparent;
+}
+
+
+
+.media-preview-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  position: relative;
+  width: 100%;
+  flex: 1;
+  height: 600px;
+  overflow: hidden;
+  padding: 1em 0;
+  box-sizing: border-box;
+  /* min-height: 800px;
+  min-width: 900px; */
+}
+
+.media-preview-content img,
+.media-preview-content video {
+  max-width:50vh;
+  max-height: 40vh;
+  height: auto;
+  width: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+}
+
+
+
+
+
+
+ .media-preview-meta-container {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding: 10px 14px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+}
+
+.media-preview-meta {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.meta-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ddd !important;
+  font-size: 0.8em !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.meta-label {
+  font-weight: 600 !important;
+  color: #aaa !important;
+}
+
+.meta-value {
+  color: #fff !important;
+}

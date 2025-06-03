@@ -1,0 +1,137 @@
+.messages-layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(131, 131, 131, 0);          /* transparent dark neutral */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-family: 'Inter', sans-serif;
+  color: white;
+  padding: 20px;
+  padding-top: 6px;
+  box-sizing: border-box;
+}
+
+
+.messages-app-card {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: rgba(107, 107, 107, 0.069);           /* slightly richer than layout */
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+
+.messages-sidebar-mini.left {
+  width: 72px;
+  /* background: rgba(30, 30, 30, 0.5); */
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 0;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.messages-sidebar-item {
+  position: relative;
+}
+
+.messages-sidebar-mini.left button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  font-size: 1.2em;
+  border-radius: 10px;
+  color: #b8b8b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.messages-sidebar-mini.left button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: white;
+}
+
+.messages-sidebar-mini.left button.active {
+  background: rgba(0, 255, 255, 0.15);
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.25);
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  background: rgb(54, 54, 54);
+  color: white;
+  padding: 8px 12px;
+  font-size: 0.85em;
+  border-radius: 8px;
+  white-space: nowrap;
+  margin-left: 12px;
+  transition: opacity 0.2s ease;
+}
+
+.messages-sidebar-item:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.messages-main {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.inbox-pane {
+  width: 340px;
+  background: rgba(60, 60, 60, 0.172);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 12px;
+  box-sizing: border-box;
+  display: flex;
+    flex-shrink: 0;
+  flex-direction: column;
+}
+
+.messages-header-bar {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.messages-header-bar h2 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #eaeaea;
+}
+
+
+.chat-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-size: 0.95em;
+  font-style: italic;
+  height: 100%;
+  width: 100%;
+}

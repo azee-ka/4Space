@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Masonry from 'react-masonry-css';
-import './explore.scss';
+import './explore.css';
 import useApi from '../../../utils/useApi';
 import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
 import { usePaginatedList } from '../../../hooks/usePaginatedList';

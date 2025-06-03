@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./projects.scss";
+import "./projects.css";
 import {
   FiFileText,
   FiEdit3,

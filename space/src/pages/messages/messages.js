@@ -5,7 +5,7 @@ import CreateMessageOverlay from "./createMessage/createMessageOverlay";
 import MessageInbox from "./inbox/inbox";
 import MessageRequests from "./requests/requests";
 import ChatContainer from "./chatContainer/chatContainer";
-import "./messages.scss";
+import "./messages.css";
 
 const Messages = () => {
   const [showOverlay, setShowOverlay] = useState(false);

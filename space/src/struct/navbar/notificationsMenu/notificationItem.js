@@ -1,5 +1,5 @@
 import React from 'react';
-import './notificationsMenu.scss';
+import './notificationsMenu.css';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { markAsRead } from '../../../state/reducers/notificationsSlice';

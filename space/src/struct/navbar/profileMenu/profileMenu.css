@@ -1,0 +1,267 @@
+.profile-menu-container {
+    position: absolute;
+    top: 64px;
+    right: 20px;
+    width: 300px;
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    color: #eaeaea;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+}
+
+/* Section Headers */
+.profile-section-header {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ccc;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.profile-section-subheader {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #999;
+    margin-bottom: 6px;
+    padding-top: 4px;
+}
+
+/* CURRENT ACCOUNT */
+.profile-menu-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 8px;
+    border-radius: 12px;
+}
+
+.profile-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.profile-username {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin: 0;
+}
+
+/* OTHER ACCOUNTS */
+.profile-other-accounts {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 10px;
+}
+
+.account-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 160px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.account-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.account-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.account-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.account-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.account-meta {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+}
+
+.account-name {
+    font-weight: 500;
+    color: #ddd;
+    margin: 0;
+}
+
+.account-username {
+    font-size: 0.8rem;
+    color: #b6b6b6;
+    margin: 0;
+}
+
+/* ADD ACCOUNT */
+.profile-account-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.account-button {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #eee;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.account-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* SIGN OUT */
+.profile-signout {
+    display: flex;
+    justify-content: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profile-signout button {
+    background: rgba(255, 70, 70, 0.12);
+    border: 1px solid rgba(255, 70, 70, 0.2);
+    color: #f88;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 80%;
+    font-size: 0.9rem;
+}
+
+.profile-signout button:hover {
+    background: rgba(255, 93, 93, 0.2);
+}
+
+
+
+/* Clickable current account styling */
+.profile-clickable {
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+.profile-clickable:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+
+
+/* Manage account button */
+.profile-manage-account {
+    margin-left: 58px; /* aligns under text beside avatar */
+    margin-top: 6px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.profile-manage-account button {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.profile-manage-account button:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #eee;
+}
+
+
+
+
+
+
+.profile-action-pills {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 8px;
+    margin-bottom: -10px;
+    background-color: rgba(0, 128, 0, 0);
+    overflow-x: auto;
+    padding: 0px 0px 15px 0px;
+}
+
+.profile-action-pills button {
+    padding: 8px 15px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.profile-action-pills button:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #eee;
+}
