@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "hooks/useAuth.js", "hooks/useApi.js", "hooks/useWebSocket.js", "utils/apiCall.js"  ]
 }

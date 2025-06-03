@@ -5,7 +5,7 @@ import getConfig from './config';
 
 const apiCall = async (endpoint, method = 'GET', data = null, contentType, authState, customConfig = {}) => {
     const config = getConfig(authState?.current?.token, method, contentType);
-    console.log('inside api call', config, 'url called:', `${API_BASE_URL}api/${endpoint}`)
+    // console.log('inside api call', config, 'url called:', `${API_BASE_URL}api/${endpoint}`)
     try {
         const response = await axios({
             method,

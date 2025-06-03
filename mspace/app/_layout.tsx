@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import store from '../state/store';
 import { StatusBar } from 'expo-status-bar';
 import { Stack, useSegments } from 'expo-router';
-import { useAuth } from '../hooks/useAuth';
+import useAuth  from '../hooks/useAuth';
 import Navbar from '../components/struct/Navbar';
 import NotificationSidebar from '../components/struct/NotificationSidebar';
 import Sidebar from '../components/struct/Sidebar';
