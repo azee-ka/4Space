@@ -1,5 +1,5 @@
 import React from "react";
-import './toggleSlider.scss';
+import './toggleSlider.css';
 
 const ToggleSlider = ({ checked, onChange }) => {
     return (

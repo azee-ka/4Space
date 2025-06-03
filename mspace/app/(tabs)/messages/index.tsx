@@ -25,47 +25,34 @@ export default function MessagesIndex() {
   const { callApi } = useApi();
 
   const goToTab = useCallback(
-  (tab: "inbox" | "requests") => {
-    router.replace({ pathname: "/messages", params: { tab } });
-  },
-  [router]
-);
-
-  // Called when CreateMessageSheet’s “Start” is pressed:
-  const onStartConversation = useCallback(
-    async (recipients: { id: string }[]) => {
-      setOverlayVisible(false);
-      if (recipients.length > 0) {
-        // If your API returns a new conversation ID, navigate there:
-        const resp = await callApi("messages/create_conversation/", "POST", { users: recipients });
-        const newConvId = resp.data.uuid;
-        router.push({ pathname: `/messages/${newConvId}` });
-        
-        // For now, navigate to a placeholder:
-        // router.push({
-        //   pathname: `/messages/new`,
-        //   params: { user: recipients[0].id },
-        // });
-      }
+    (tab: "inbox" | "requests") => {
+      router.replace({ pathname: "/messages", params: { tab } });
     },
     [router]
   );
 
-  // Called whenever CreateMessageSheet’s input changes
-  const searchUsers = useCallback(
-    async (query: string) => {
+  // Called when CreateMessageSheet’s “Start” is pressed:
+  const onStartConversation = useCallback(
+    async (recipients: { id: string }[]) => {
       try {
-        const resp = await callApi(`users/search/?q=${query}`);
-        return resp.data.results as {
-          id: string;
-          username: string;
-          profile_image?: string;
-        }[];
-      } catch {
-        return [];
+        if (recipients.length > 0) {
+          console.log("Starting conversation with:", recipients);
+          const payload = recipients.map((u) => ({
+            id: u.user?.id ?? u.id,
+            username: u.user?.username ?? u.username,
+          }));
+
+          const res = await callApi("messages/create_conversation/", "POST", {
+            recipients: payload,
+          });
+          router.push({ pathname: `/messages/${res.data.conversation_uuid}` });
+          setOverlayVisible(false);
+        }
+      } catch (e) {
+        console.error("Error starting conversation", e);
       }
     },
-    [callApi]
+    [router]
   );
 
   return (
@@ -119,11 +106,7 @@ export default function MessagesIndex() {
 
       {/* ─── Content Area ─── */}
       <View style={styles.content}>
-        {currentTab === "requests" ? (
-          <RequestsScreen />
-        ) : (
-          <InboxScreen />
-        )}
+        {currentTab === "requests" ? <RequestsScreen /> : <InboxScreen />}
       </View>
 
       {/* ─── New Chat Sheet ─── */}
@@ -131,7 +114,6 @@ export default function MessagesIndex() {
         visible={overlayVisible}
         onClose={() => setOverlayVisible(false)}
         onStartConversation={onStartConversation}
-        searchUsers={searchUsers}
       />
     </SafeAreaView>
   );

@@ -58,34 +58,27 @@ useEffect(() => {
 
   // New Chat callbacks
   const onStartConversation = useCallback(
-    async (recipients: { id: string }[]) => {
-      setOverlayVisible(false);
-      if (recipients.length > 0) {
-        // e.g. navigate to newly created conversation
-        router.push({
-          pathname: `/messages/new`,
-          params: { user: recipients[0].id },
-        });
-      }
-    },
-    [router]
-  );
-
-  const searchUsers = useCallback(
-    async (query: string) => {
-      try {
-        const resp = await callApi(`users/search/?q=${query}`);
-        return resp.data.results as {
-          id: string;
-          username: string;
-          profile_image?: string;
-        }[];
-      } catch {
-        return [];
-      }
-    },
-    [callApi]
-  );
+      async (recipients: { id: string }[]) => {
+        try {
+          if (recipients.length > 0) {
+            console.log("Starting conversation with:", recipients);
+            const payload = recipients.map((u) => ({
+              id: u.user?.id ?? u.id,
+              username: u.user?.username ?? u.username,
+            }));
+  
+            const res = await callApi("messages/create_conversation/", "POST", {
+              recipients: payload,
+            });
+            router.push({ pathname: `/messages/${res.data.conversation_uuid}` });
+            setOverlayVisible(false);
+          }
+        } catch (e) {
+          console.error("Error starting conversation", e);
+        }
+      },
+      [router]
+    );
 
   const renderItem = ({ item }: { item: ChatType }) => {
     const user = item.other_participant.user;
@@ -136,7 +129,6 @@ useEffect(() => {
         visible={overlayVisible}
         onClose={() => setOverlayVisible(false)}
         onStartConversation={onStartConversation}
-        searchUsers={searchUsers}
       />
 
       {/* A button in the header opens this sheet; since the “header” is in index.tsx,

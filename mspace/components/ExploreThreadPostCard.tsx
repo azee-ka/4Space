@@ -1,6 +1,4 @@
-// /components/ExploreThreadPostCard.tsx
-
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -25,7 +23,7 @@ import useApi from "../hooks/useApi";
 const AVATAR_SIZE = 48;
 const CARD_HORIZONTAL_MARGIN = 8;
 
-export default function ExploreThreadPostCard({
+function ExploreThreadPostCardInner({
   onPress,
 }: {
   onPress: () => void;
@@ -64,7 +62,7 @@ export default function ExploreThreadPostCard({
   // Double‐tap heart animation
   const lastTap = useRef<number | null>(null);
   const [heartAnim] = useState(new Animated.Value(0));
-  const handleDoubleTap = () => {
+  const handleDoubleTap = useCallback(() => {
     const now = Date.now();
     if (lastTap.current && now - lastTap.current < 300) {
       if (post.status?.like_status !== "liked") {
@@ -74,8 +72,9 @@ export default function ExploreThreadPostCard({
     } else {
       lastTap.current = now;
     }
-  };
-  const animateHeart = () => {
+  }, [post.status, toggleLikeDislike]);
+
+  const animateHeart = useCallback(() => {
     heartAnim.setValue(0);
     Animated.sequence([
       Animated.spring(heartAnim, {
@@ -90,7 +89,8 @@ export default function ExploreThreadPostCard({
         useNativeDriver: true,
       }),
     ]).start();
-  };
+  }, [heartAnim]);
+
   const heartScale = heartAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0.5, 1.5],
@@ -101,13 +101,33 @@ export default function ExploreThreadPostCard({
   });
 
   // Thread content text
-  const textContent = effectivePostObject?.content || "";
+  const textContent = useMemo(
+    () => effectivePostObject?.content || "",
+    [effectivePostObject]
+  );
+
+  // Memoize the HTML source object
+  const renderedSource = useMemo(
+    () => ({ html: textContent || "<p></p>" }),
+    [textContent]
+  );
+
+  // Memoize the tagsStyles object so it does not recreate each render
+  const memoTagsStyles = useMemo(
+    () => ({
+      p: { marginBottom: 6 },
+      strong: { fontWeight: "bold" },
+      em: { fontStyle: "italic" },
+      a: { color: "#19dee8", textDecorationLine: "underline" },
+    }),
+    []
+  );
 
   // RenderHTML needs width
   const { width: contentWidth } = useWindowDimensions();
 
   // Report handler
-  const reportPost = async () => {
+  const reportPost = useCallback(async () => {
     try {
       await callApi(`posts/post/${post.id}/report/`, "POST", {});
       Alert.alert("Reported", "Thank you for your feedback.");
@@ -115,7 +135,7 @@ export default function ExploreThreadPostCard({
       console.error("Error reporting post", e);
       Alert.alert("Error", "Could not submit report.");
     }
-  };
+  }, [callApi, post.id]);
 
   return (
     <TouchableWithoutFeedback onPress={handleDoubleTap}>
@@ -208,17 +228,9 @@ export default function ExploreThreadPostCard({
           <View style={styles.postContent}>
             <RenderHTML
               contentWidth={contentWidth - CARD_HORIZONTAL_MARGIN * 2}
-              source={{ html: textContent || "<p></p>" }}
+              source={renderedSource}
               baseStyle={styles.postText}
-              tagsStyles={{
-                p: { marginBottom: 6 },
-                strong: { fontWeight: "bold" },
-                em: { fontStyle: "italic" },
-                a: {
-                  color: "#19dee8",
-                  textDecorationLine: "underline",
-                },
-              }}
+              tagsStyles={memoTagsStyles}
             />
           </View>
         )}
@@ -233,9 +245,9 @@ export default function ExploreThreadPostCard({
             >
               <FA
                 name="arrow-up"
-                size={18}
+                size={22}
                 color={
-                  post.status?.vote_status === "upvoted" ? "#ff4b5c" : "#888"
+                  post.status?.vote_status === "upvoted" ? "#19dee8" : "#888"
                 }
               />
             </TouchableOpacity>
@@ -248,7 +260,7 @@ export default function ExploreThreadPostCard({
             >
               <FA
                 name="arrow-down"
-                size={18}
+                size={22}
                 color={
                   post.status?.vote_status === "downvoted" ? "#ff4b5c" : "#888"
                 }
@@ -317,9 +329,7 @@ export default function ExploreThreadPostCard({
                 returnKeyType="send"
                 value={commentText}
                 onChangeText={setCommentText}
-                onSubmitEditing={() => {
-                  addComment();
-                }}
+                onSubmitEditing={addComment}
               />
               <TouchableOpacity
                 onPress={() => {
@@ -350,6 +360,8 @@ export default function ExploreThreadPostCard({
     </TouchableWithoutFeedback>
   );
 }
+
+export default React.memo(ExploreThreadPostCardInner);
 
 const CARD_WIDTH = Dimensions.get("window").width - CARD_HORIZONTAL_MARGIN * 2;
 const MEDIA_HEIGHT = Math.round(CARD_WIDTH * 0.75);
@@ -508,7 +520,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: "100%",
     flexDirection: "column",
-    gap: 2,
+    gap: 4,
     paddingTop: 14,
   },
   actionRow: {

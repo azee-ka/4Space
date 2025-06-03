@@ -201,7 +201,18 @@ def get_post_comments(request, post_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def vote_post(request, post_id):
-    post = get_object_or_404(ThreadPost, id=post_id)
+    # Try to find the post in either ThreadPost or VisualPost
+    post = None
+    for Model in (ThreadPost, VisualPost):
+        try:
+            post = Model.objects.get(id=post_id)
+            break
+        except Model.DoesNotExist:
+            continue
+
+    if not post:
+        return Response({'error': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
+
     user = request.user
     vote_type = request.data.get('vote_type')
     if vote_type not in ['upvote', 'downvote']:
@@ -225,7 +236,6 @@ def vote_post(request, post_id):
         message = f"{vote_type}d successfully."
         vote_status = f"{vote_type}d"
 
-    # ONLY RETURN NET VOTES!
     upvotes = Vote.upvotes(post).count()
     downvotes = Vote.downvotes(post).count()
     net_votes_count = upvotes - downvotes
@@ -235,6 +245,7 @@ def vote_post(request, post_id):
         'net_votes_count': net_votes_count,
         'vote_status': vote_status,
     }, status=status.HTTP_200_OK)
+
 
 
 

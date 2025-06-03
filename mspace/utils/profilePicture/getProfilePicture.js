@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './getProfilePicture.scss';
+import './getProfilePicture.css';
 import { imageCompile } from '../imageWrapper/imageComplie';
 import { ProfileImageCompile } from './profileImageCompile.';
 

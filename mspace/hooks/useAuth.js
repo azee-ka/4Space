@@ -39,7 +39,7 @@ export default function useAuth() {
         setIsLoading(false);
       }
     })();
-  }, [dispatch]);
+  }, []);
 
   const login = async (responseData, { switchTo = true } = {}) => {
     const { user, token } = responseData;

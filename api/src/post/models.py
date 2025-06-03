@@ -181,6 +181,8 @@ class BasePost(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     comments = GenericRelation(Comment, related_query_name='post')
+    
+    votes = GenericRelation(Vote, related_query_name='post')
 
     likes = models.ManyToManyField(
         BaseUser, 
@@ -272,7 +274,6 @@ class PostView(models.Model):
 class ThreadPost(BasePost):
     content = models.TextField(default="", blank=False, null=False)
     media_files = models.ManyToManyField('post.MediaFile', blank=True)
-    votes = GenericRelation(Vote, related_query_name='threadpost')
 
     # Poll-specific
     poll_question = models.CharField(max_length=255, blank=True, null=True)

@@ -1,71 +1,79 @@
-// /app/_layout.js   (or wherever your RootLayout resides)
+// /app/_layout.js
 
-import React, { useState } from 'react';
-import { Provider } from 'react-redux';
-import store from '../state/store';
-import { StatusBar } from 'expo-status-bar';
-import { Stack, useSegments } from 'expo-router';
-import useAuth  from '../hooks/useAuth';
-import Navbar from '../components/struct/Navbar';
-import NotificationSidebar from '../components/struct/NotificationSidebar';
-import Sidebar from '../components/struct/Sidebar';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { Provider } from "react-redux";
+import store from "../state/store";
+import { StatusBar } from "expo-status-bar";
+import { Stack, useSegments } from "expo-router";
+import useAuth from "../hooks/useAuth";
+import Navbar from "../components/struct/Navbar";
+import NotificationSidebar from "../components/struct/NotificationSidebar";
+import Sidebar from "../components/struct/Sidebar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, StyleSheet } from "react-native";
+
+export default function RootLayout() {
+  return (
+    <Provider store={store}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+        <AppStack />
+        <StatusBar style="auto" />
+      </SafeAreaView>
+    </Provider>
+  );
+}
 
 function AppStack() {
   const { isAuthenticated, isLoading, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
-  // 1. useSegments to detect current route segments
   const segments = useSegments();
-  // segments is an array, e.g. ["(tabs)", "timeline"] or ["(tabs)", "explore", "index"], etc.
+  const isOnConversation =
+    segments[1] === "messages" && segments.length === 3;
 
-  // 2. Map active segment to a human-readable title
-  let currentTitle = 'Home';
+  let currentTitle = "Home";
   if (segments.length > 1) {
-    const route = segments[1]; // e.g. "timeline" or "explore" or "messages", etc.
+    const route = segments[1];
     switch (route) {
-      case 'timeline':
-        currentTitle = 'Timeline';
+      case "timeline":
+        currentTitle = "Timeline";
         break;
-      case 'explore':
-        currentTitle = 'Explore';
+      case "explore":
+        currentTitle = "Explore";
         break;
-      case 'messages':
-        currentTitle = 'Messages';
+      case "messages":
+        currentTitle = "Messages";
         break;
-      case 'profile':
-        currentTitle = 'Profile';
+      case "profile":
+        currentTitle = "Profile";
         break;
       default:
-        currentTitle = 'Home';
+        currentTitle = "Home";
     }
   }
 
   if (isLoading) return null;
 
-  // Sample profile + notifications (replace with real)
   const profileData = {
-    username: 'gizmo',
-    profile_image: 'https://yourdomain.com/myprofileimg.png',
-    first_name: 'Gizmo',
-    last_name: 'Bot'
+    username: "gizmo",
+    profile_image: "https://yourdomain.com/myprofileimg.png",
+    first_name: "Gizmo",
+    last_name: "Bot",
   };
   const notifications = [
     {
       id: 1,
-      title: 'Welcome!',
-      message: 'Hello world',
-      sender: { profile_image: 'https://yourdomain.com/someimg.png' }
-    }
+      title: "Welcome!",
+      message: "Hello world",
+      sender: { profile_image: "https://yourdomain.com/someimg.png" },
+    },
   ];
 
   return (
     <View style={{ flex: 1 }}>
-      {isAuthenticated && (
+      {isAuthenticated && !isOnConversation && (
         <>
-          {/* Pass down currentTitle */}
           <Navbar
             title={currentTitle}
             sidebarOpen={sidebarOpen}
@@ -77,7 +85,6 @@ function AppStack() {
             onClose={() => setSidebarOpen(false)}
             onNavigate={(route) => {
               setSidebarOpen(false);
-              // optionally navigate with router.push(route) ...
             }}
             profileData={profileData}
             onSignOut={async () => {
@@ -105,20 +112,9 @@ function AppStack() {
   );
 }
 
-export default function RootLayout() {
-  return (
-    <Provider store={store}>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-        <AppStack />
-        <StatusBar style="auto" />
-      </SafeAreaView>
-    </Provider>
-  );
-}
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
 });

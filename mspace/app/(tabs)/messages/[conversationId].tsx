@@ -1,4 +1,4 @@
-// app/messages/[conversationId].tsx
+// /app/messages/[conversationId].tsx
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
@@ -6,28 +6,44 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  Pressable,
   StyleSheet,
   ActivityIndicator,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  TextInput,
+  ActionSheetIOS,
+  Alert,
+  Modal,
+  Animated,
+  Easing,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import useApi from "../../../hooks/useApi"; // Adjust this import if your hooks folder is in a different relative path
-import useWebSocket from "../../../hooks/useWebSocket"; // Likewise, point to your actual useWebSocket location
+import { BlurView } from "expo-blur";
+import useApi from "../../../hooks/useApi";
+import useWebSocket from "../../../hooks/useWebSocket";
 import ProfilePicture from "../../../utils/getProfilePicture";
-import CustomTextarea from "./utils/CustomTextarea";
 import {
   shouldGroupMessages,
   isFirstGroupedMessage,
   isLastGroupedMessage,
 } from "./utils/messageGrouping";
-import DOMPurify from "dompurify";
+import useAuth from "@/hooks/useAuth";
+
+//
+// Add this at the very top to hide the bottom Tabs when this screen is active:
+export const unstable_settings = {
+  tabBarStyle: { display: "none" },
+};
 
 type MessageType = {
   uuid: string;
   text: string;
   sender_username: string;
   sent_at: string;
+  _optimistic?: boolean;
 };
 
 type ConversationType = {
@@ -44,142 +60,130 @@ type ConversationType = {
   conversation_status: "blocked" | "invite" | "allowed" | string;
 };
 
+function isEmojiOnlyMessage(text: string) {
+  const cleaned = text.replace(/[\s\u200B]/g, "");
+  if (!cleaned) return false;
+  const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
+  return [...cleaned].every((char) => emojiRegex.test(char));
+}
+
 export default function ChatScreen() {
+  const { authState } = useAuth();
+  const currentUsername = authState?.current?.user?.username || "UNKNOWN";
   const { callApi } = useApi();
   const router = useRouter();
-  const params = useLocalSearchParams<{ conversationId: string }>();
-  const conversationId = params.conversationId!;
+  const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
 
-  const [conversation, setConversation] = useState<ConversationType | null>(
-    null
-  );
+  // ── State for conversation & messages ──
+  const [conversation, setConversation] = useState<ConversationType | null>(null);
   const [messages, setMessages] = useState<MessageType[]>([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
 
+  // ── State for input & scrolling ──
   const [input, setInput] = useState("");
   const [justSent, setJustSent] = useState(false);
   const [userScrolledUp, setUserScrolledUp] = useState(false);
+  const flatListRef = useRef<FlatList<MessageType>>(null);
 
-  // ─── 1) Fetch conversation details ───
+  // ── State for long-press popup ──
+  const [focusedMessage, setFocusedMessage] = useState<MessageType | null>(null);
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  // ── 1) Fetch conversation details ──
   useEffect(() => {
-    const fetchConversation = async () => {
+    async function fetchConversation() {
       try {
         const resp = await callApi(
           `messages/get_conversation_details/${conversationId}/`
         );
-        // console.log('fetchConversation', resp.data)
         setConversation(resp.data);
       } catch (err) {
         console.error("Error fetching conversation details:", err);
       }
-    };
+    }
     fetchConversation();
   }, [conversationId]);
 
-  // ─── 2) Paginated fetch of messages ───
+  // ── 2) Paginated fetch of messages ──
   const fetchMessages = useCallback(
     async (pageToLoad: number) => {
       try {
+        if (pageToLoad === 0) setLoading(true);
+        else setLoadingOlder(true);
+
         const resp = await callApi(
           `messages/get_messages/${conversationId}/?limit=30&offset=${
             pageToLoad * 30
           }`
         );
         const { results, next } = resp.data;
+
         if (pageToLoad === 0) {
           setMessages(results);
         } else {
-          setMessages((prev) => [...results, ...prev]);
+          setMessages((prev) => [...prev, ...results]);
         }
+
         setHasMore(!!next);
+        setPage(pageToLoad + 1);
       } catch (err) {
         console.error("Error fetching messages:", err);
       } finally {
-        setLoading(false);
+        if (pageToLoad === 0) setLoading(false);
+        else setLoadingOlder(false);
       }
     },
     [conversationId]
   );
 
+  // Initial messages load
   useEffect(() => {
-    setLoading(true);
     fetchMessages(0);
-    setPage(1);
-  }, [fetchMessages]);
+  }, []);
 
-  // ─── 3) WebSocket hook called at top level ───
-  //     always call hooks at top of component!
-  const { socketRef, sendMessage } = useWebSocket(
+  // ── 3) WebSocket for real‐time incoming ──
+  const { sendMessage } = useWebSocket(
     `messages/inbox/${conversationId}/`,
     {
-      onMessage: (data: MessageType) => {
+      onMessage: (data) => {
         setMessages((prev) => {
           if (prev.some((m) => m.uuid === data.uuid)) return prev;
-          return [...prev, data];
+          return [data, ...prev];
         });
       },
-      onOpen: () => {
-        console.log("WebSocket connected to conversation", conversationId);
-      },
-      onClose: () => {
-        console.log("WebSocket closed for conversation", conversationId);
-      },
-      onError: (err) => {
-        console.error("WebSocket error:", err);
-      },
-      // Re-run the hook whenever conversationId changes
-      dependencies: [conversationId],
     }
   );
 
-  // ─── 4) Clean up WebSocket on unmount or conversationId change ───
+  // ── 4) Auto‐scroll to bottom logic ──
   useEffect(() => {
-    return () => {
-      if (
-        socketRef.current &&
-        socketRef.current.readyState === WebSocket.OPEN
-      ) {
-        socketRef.current.close();
+    if (!loadingOlder && flatListRef.current) {
+      if (!justSent && !userScrolledUp && loading === false) {
+        flatListRef.current.scrollToEnd({ animated: false });
       }
-    };
-  }, [socketRef]);
-
-  // ─── 5) Auto‐scroll behavior ───
-  const chatListRef = useRef<FlatList<MessageType>>(null);
-  useEffect(() => {
-    if (chatListRef.current && (!userScrolledUp || justSent)) {
-      chatListRef.current.scrollToEnd({ animated: true });
-      setJustSent(false);
     }
-  }, [messages, userScrolledUp, justSent]);
+  }, [messages, userScrolledUp, justSent, loadingOlder, loading]);
 
-  // ─── 6) Handle sending a new message ───
-  const handleSend = async () => {
+  // ── 5) Handle sending a message ──
+  const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    const safeText = DOMPurify.sanitize(trimmed);
-
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      // Use the sendMessage callback returned by `useWebSocket`
-      sendMessage({
-        text: safeText,
-        sender_username: "CURRENT_USERNAME", // replace with your actual username from auth state
-      });
-      setInput("");
-      setJustSent(true);
-    } else {
-      console.warn("WebSocket not open; cannot send message.");
-    }
+    setInput("");
+    setJustSent(true);
+    sendMessage({
+      text: trimmed,
+      sender_username: currentUsername,
+    });
   };
 
-  // ─── 7) Accept / Reject / Block logic for “requests” ───
+  // ── 6) Accept / Reject / Block for request‐type convos ──
   const handleAcceptRequest = async () => {
     try {
       await callApi(`messages/request/${conversationId}/accept/`, "POST");
       const updated = await callApi(
-        `messages/get_conversation_details/${conversationId}`
+        `messages/get_conversation_details/${conversationId}/`
       );
       setConversation(updated.data);
     } catch (err) {
@@ -203,21 +207,18 @@ export default function ChatScreen() {
     }
   };
 
-  // ─── 8) Helper: is message from current user? ───
-  const isOwnMessage = (msg: MessageType) => {
-    return msg.sender_username === "CURRENT_USERNAME";
-  };
+  // ── 7) Helper: is this the current user’s message? ──
+  const isOwnMessage = (m: MessageType) => m.sender_username === currentUsername;
 
-  // ─── 9) Render Footer (either input box or Accept/Reject UI) ───
+  // ── 8) Footer (input or request UI) ──
   const renderFooter = () => {
     if (!conversation) return null;
     const { view_type, conversation_status } = conversation;
     const isBlocked = conversation_status === "blocked";
     const isInvite = conversation_status === "invite";
     const isInviteAccepted = conversation_status === "allowed";
-    const inviteWasSent = messages.length >= 1;
+    const inviteSentOnce = messages.length > 0;
 
-    // If blocked → show “You cannot send messages”
     if (isBlocked) {
       return (
         <View style={styles.requestWarningContainer}>
@@ -228,8 +229,7 @@ export default function ChatScreen() {
       );
     }
 
-    // If it’s an “invite” and a message was already sent → show “Invite Sent”
-    if (isInvite && inviteWasSent) {
+    if (isInvite && inviteSentOnce) {
       return (
         <View style={styles.requestWarningContainer}>
           <Text style={styles.requestWarningHeading}>Invite Sent</Text>
@@ -240,7 +240,6 @@ export default function ChatScreen() {
       );
     }
 
-    // If it’s an invite & no messages yet (view_type=inbox), OR it's accepted inbox
     if (
       (isInvite && messages.length === 0 && view_type === "inbox") ||
       (isInviteAccepted && view_type === "inbox")
@@ -260,28 +259,29 @@ export default function ChatScreen() {
           <View style={styles.writeMessageContainer}>
             <Icon
               name="smile"
-              size={24}
-              color="#ccc"
+              size={22}
+              color="#818CF8"
               style={{ marginRight: 8 }}
             />
-            <CustomTextarea
+            <TextInput
+              style={styles.chatTextarea}
+              placeholder="Type a message…"
+              placeholderTextColor="#6B7280"
               value={input}
               onChangeText={setInput}
-              placeholder="Type a message..."
-              style={styles.chatTextarea}
+              multiline
+              onSubmitEditing={() => {
+                if (input.trim()) handleSend();
+              }}
             />
-            <TouchableOpacity
-              onPress={handleSend}
-              style={styles.sendMessageBtn}
-            >
-              <Icon name="send" size={20} color="#00EAFF" />
+            <TouchableOpacity onPress={handleSend} style={styles.sendMessageBtn}>
+              <Icon name="send" size={18} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </>
       );
     }
 
-    // If it’s a “request” view (someone else’s request) → show Accept/Reject/Block
     if (view_type === "request") {
       return (
         <View style={styles.requestActions}>
@@ -310,53 +310,187 @@ export default function ChatScreen() {
     return null;
   };
 
-  // ─── 10) Show a loading spinner until conversation + first messages arrive ───
+  // ── 9) Show loader until we have conversation + first messages ──
   if (loading && !conversation) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="#19dee8" />
+        <ActivityIndicator size="small" color="#818CF8" />
       </View>
     );
   }
 
+  // ── 10) Date separator renderer ──
+  function renderDateSeparator(
+    msg: MessageType,
+    prev: MessageType | undefined
+  ) {
+    if (!prev) {
+      return (
+        <View style={styles.dateSeparatorWrapper}>
+          <Text style={styles.dateSeparatorText}>
+            {new Date(msg.sent_at).toLocaleString([], {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </View>
+      );
+    }
+    const curr = new Date(msg.sent_at).getTime();
+    const pr = new Date(prev.sent_at).getTime();
+    if (curr - pr > 15 * 60 * 1000) {
+      return (
+        <View style={styles.dateSeparatorWrapper}>
+          <Text style={styles.dateSeparatorText}>
+            {new Date(msg.sent_at).toLocaleString([], {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </View>
+      );
+    }
+    return null;
+  }
+
+  // ── 11) Fetch older when user scrolls to top ──
+  const onEndReached = () => {
+    if (hasMore && !loadingOlder) {
+      fetchMessages(page);
+    }
+  };
+
+  // ── 12) Track user scroll position ──
+  const onScroll = (e: any) => {
+    const offsetY = e.nativeEvent.contentOffset.y;
+    const contentHeight = e.nativeEvent.contentSize.height;
+    const layoutHeight = e.nativeEvent.layoutMeasurement.height;
+    const distanceFromBottom = contentHeight - offsetY - layoutHeight;
+    setUserScrolledUp(distanceFromBottom > 50);
+  };
+
+  // ── 13) Open & close popup ──
+  const openPopup = (message: MessageType) => {
+    setFocusedMessage(message);
+    scaleAnim.setValue(0);
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 200,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closePopup = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0,
+      duration: 150,
+      easing: Easing.in(Easing.quad),
+      useNativeDriver: true,
+    }).start(() => {
+      setFocusedMessage(null);
+    });
+  };
+
+  // ── 14) Show action menu inside popup ──
+  const showActionMenu = (message: MessageType) => {
+    const options = ["Unsend Message", "Report Message", "Cancel"];
+    const destructiveButtonIndex = 1;
+    const cancelButtonIndex = 2;
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options,
+          destructiveButtonIndex,
+          cancelButtonIndex,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 0) {
+            console.log("Unsend:", message.uuid);
+          } else if (buttonIndex === 1) {
+            console.log("Report:", message.uuid);
+          }
+          closePopup();
+        }
+      );
+    } else {
+      Alert.alert(
+        "",
+        "",
+        [
+          {
+            text: "Unsend Message",
+            onPress: () => {
+              console.log("Unsend:", message.uuid);
+              closePopup();
+            },
+          },
+          {
+            text: "Report Message",
+            style: "destructive",
+            onPress: () => {
+              console.log("Report:", message.uuid);
+              closePopup();
+            },
+          },
+          { text: "Cancel", style: "cancel", onPress: closePopup },
+        ],
+        { cancelable: true }
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* ─── Chat Header: avatars + names ─── */}
+      {/* ── Header ── */}
       <View style={styles.chatHeader}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Icon name="arrow-left" size={24} color="#F4F4F5" />
+        </TouchableOpacity>
+
         {conversation?.participants && (
           <>
             <View style={styles.avatarGroup}>
               {conversation.participants
-                .filter((p) => p.user.username !== "CURRENT_USERNAME")
+                .filter((p) => p.user.username !== currentUsername)
                 .slice(0, 3)
                 .map((p, idx) => (
-                  <ProfilePicture
+                  <View
                     key={p.user.id}
-                    src={p.user.profile_image}
                     style={[
-                      styles.stackedAvatar,
-                      { left: idx * 22, zIndex: 3 - idx },
+                      styles.avatarWrapper,
+                      { left: idx * 18, zIndex: 3 - idx },
                     ]}
-                  />
+                  >
+                    <ProfilePicture
+                      src={p.user.profile_image}
+                      style={styles.stackedAvatar}
+                    />
+                  </View>
                 ))}
               {conversation.participants.length > 4 && (
-                <View style={[styles.stackedAvatar, styles.stackedExtra]}>
-                  <Text style={{ color: "#FFF", fontSize: 12 }}>
+                <View style={[styles.avatarWrapper, styles.stackedExtra]}>
+                  <Text style={styles.extraCountText}>
                     +{conversation.participants.length - 3}
                   </Text>
                 </View>
               )}
             </View>
             <View style={styles.chatHeaderInfo}>
-              <Text style={styles.chatHeaderName}>
+              <Text style={styles.chatHeaderName} numberOfLines={1}>
                 {conversation.participants
-                  .filter((p) => p.user.username !== "CURRENT_USERNAME")
+                  .filter((p) => p.user.username !== currentUsername)
                   .map((p) => `${p.user.first_name} ${p.user.last_name}`)
                   .join(", ")}
               </Text>
-              <Text style={styles.chatHeaderUsername}>
+              <Text style={styles.chatHeaderUsername} numberOfLines={1}>
                 {conversation.participants
-                  .filter((p) => p.user.username !== "CURRENT_USERNAME")
+                  .filter((p) => p.user.username !== currentUsername)
                   .map((p) => `@${p.user.username}`)
                   .join(", ")}
               </Text>
@@ -365,43 +499,60 @@ export default function ChatScreen() {
         )}
       </View>
 
-      {/* ─── Chat Body: FlatList of message “bubbles” ─── */}
+      {/* ── Message List ── */}
       <FlatList
-        ref={chatListRef}
+        ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.uuid}
+        inverted
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={() =>
+          loadingOlder ? (
+            <ActivityIndicator
+              size="small"
+              color="#818CF8"
+              style={{ marginTop: 12 }}
+            />
+          ) : null
+        }
         renderItem={({ item, index }) => {
-          const previous = messages[index - 1];
-          const next = messages[index + 1];
-          const grouped = shouldGroupMessages(item, previous);
-          const first = isFirstGroupedMessage(item, previous);
+          const prev = messages[index + 1];
+          const next = messages[index - 1];
+          const grouped = shouldGroupMessages(item, prev);
+          const first = isFirstGroupedMessage(item, prev);
           const last = isLastGroupedMessage(item, next);
-          const emojiOnly =
-            /^[\p{Emoji_Presentation}\p{Emoji}\uFE0F\s]+$/u.test(
-              item.text.trim()
-            );
+          const plainText = item.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
+          const emojiOnly = isEmojiOnlyMessage(plainText);
           const own = isOwnMessage(item);
 
           return (
-            <React.Fragment>
-              {(!grouped ||
-                new Date(item.sent_at).getTime() -
-                  new Date(previous?.sent_at || 0).getTime() >
-                  15 * 60 * 1000) && (
-                <Text style={styles.chatTimestamp}>
-                  {new Date(item.sent_at).toLocaleString()}
-                </Text>
-              )}
+            <View key={item.uuid}>
+              {renderDateSeparator(item, prev)}
               <View
                 style={[
                   styles.chatBubbleRow,
                   own ? styles.chatBubbleRowOwn : styles.chatBubbleRowOther,
-                  grouped ? {} : { marginVertical: 4 },
+                  grouped ? { marginVertical: 4 } : { marginVertical: 8 },
                 ]}
               >
                 <View style={styles.bubbleWrapper}>
-                  <View
-                    style={[
+                  {!own && first && (
+                    <ProfilePicture
+                      src={
+                        conversation?.participants.find(
+                          (p) => p.user.username === item.sender_username
+                        )?.user.profile_image || null
+                      }
+                      style={styles.messageAvatar}
+                    />
+                  )}
+
+                  <Pressable
+                    onLongPress={() => openPopup(item)}
+                    style={({ pressed }) => [
                       styles.chatBubble,
                       own ? styles.chatBubbleOwn : styles.chatBubbleOther,
                       grouped && first && own && styles.chatBubbleFirstOwn,
@@ -409,42 +560,85 @@ export default function ChatScreen() {
                       grouped && first && !own && styles.chatBubbleFirstOther,
                       grouped && last && !own && styles.chatBubbleLastOther,
                       emojiOnly && styles.emojiOnlyBubble,
+                      item._optimistic && styles.optimisticBubble,
+                      pressed && { opacity: 0.6 },
                     ]}
                   >
                     <Text
-                      style={emojiOnly ? styles.emojiText : styles.bubbleText}
+                      style={
+                        emojiOnly
+                          ? styles.emojiText
+                          : own
+                          ? styles.bubbleTextOwn
+                          : styles.bubbleTextOther
+                      }
                     >
                       {item.text}
                     </Text>
-                  </View>
+                  </Pressable>
+{/* 
                   <TouchableOpacity style={styles.ellipsisBtn}>
-                    <Icon name="more-vertical" size={16} color="#AAA" />
-                  </TouchableOpacity>
+                    <Icon name="more-vertical" size={16} color="#6B7280" />
+                  </TouchableOpacity> */}
                 </View>
               </View>
-            </React.Fragment>
+            </View>
           );
         }}
-        contentContainerStyle={styles.chatBody}
-        onScroll={(e) => {
-          const offsetY = e.nativeEvent.contentOffset.y;
-          const atBottom =
-            e.nativeEvent.contentSize.height -
-              offsetY -
-              e.nativeEvent.layoutMeasurement.height <
-            10;
-          setUserScrolledUp(!atBottom);
-
-          if (offsetY < 100 && hasMore && !loading) {
-            fetchMessages(page);
-            setPage((prev) => prev + 1);
-          }
-        }}
-        scrollEventThrottle={16}
+        contentContainerStyle={[styles.chatBody, { paddingBottom: 16 }]}
       />
 
-      {/* ─── Chat Footer: either TextInput or “Accept/Reject” UI ─── */}
-      <View style={styles.chatFooter}>{renderFooter()}</View>
+      {/* ── Footer ── */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 95 : 0}
+      >
+        <View style={styles.chatFooter}>{renderFooter()}</View>
+      </KeyboardAvoidingView>
+
+      {/* ── 15) Popup Modal ── */}
+      {focusedMessage && (
+        <Modal transparent animationType="none">
+          <BlurView intensity={80} tint="dark" style={styles.blurContainer} />
+          <View style={styles.modalContainer}>
+            <Animated.View
+              style={[
+                styles.popupBubble,
+                {
+                  transform: [
+                    {
+                      scale: scaleAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.8, 1],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              <Text style={styles.popupText}>{focusedMessage.text}</Text>
+            </Animated.View>
+
+            <View style={styles.popupActions}>
+              <TouchableOpacity
+                onPress={() => showActionMenu(focusedMessage)}
+                style={styles.popupActionBtn}
+              >
+                <Text style={styles.popupActionText}>⋯</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={closePopup}
+                style={[styles.popupActionBtn, styles.popupCancelBtn]}
+              >
+                <Text style={styles.popupCancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Pressable style={styles.overlayTouchable} onPress={closePopup} />
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -452,21 +646,31 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+    backgroundColor: "#18181B",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#18181B",
   },
   chatHeader: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "rgba(63,69,79,0.13)",
-    borderBottomColor: "rgba(255,255,255,0.04)",
+    paddingVertical: 14,
+    backgroundColor: "#27272A",
     borderBottomWidth: 1,
+    borderBottomColor: "#3F3F46",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
   },
   avatarGroup: {
     flexDirection: "row",
@@ -475,46 +679,65 @@ const styles = StyleSheet.create({
     position: "relative",
     marginRight: 12,
   },
-  stackedAvatar: {
+  avatarWrapper: {
     position: "absolute",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     borderWidth: 2,
-    borderColor: "rgba(140,200,200,0.25)",
-    backgroundColor: "#2e2e2e",
+    borderColor: "#27272A",
+    backgroundColor: "#3F3F46",
+    overflow: "hidden",
+  },
+  stackedAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#3F3F46",
   },
   stackedExtra: {
-    left: 66,
+    left: 54,
     zIndex: 0,
-    backgroundColor: "#444",
+    backgroundColor: "#3F3F46",
     alignItems: "center",
     justifyContent: "center",
   },
+  extraCountText: {
+    color: "#E4E4E7",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   chatHeaderInfo: {
     flexDirection: "column",
+    flexShrink: 1,
   },
   chatHeaderName: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#EEF5F8",
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#F4F4F5",
   },
   chatHeaderUsername: {
-    fontSize: 13,
-    color: "#9FB5C2",
+    fontSize: 14,
+    color: "#A1A1AA",
+    marginTop: 2,
   },
   chatBody: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 14,
   },
-  chatTimestamp: {
-    textAlign: "center",
-    fontSize: 10,
-    color: "#BABABA",
-    marginVertical: 6,
+  dateSeparatorWrapper: {
+    alignSelf: "center",
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginVertical: 8,
+  },
+  dateSeparatorText: {
+    fontSize: 11,
+    color: "#D4D4D8",
   },
   chatBubbleRow: {
-    maxWidth: "70%",
+    maxWidth: "75%",
   },
   chatBubbleRowOwn: {
     alignSelf: "flex-end",
@@ -524,135 +747,159 @@ const styles = StyleSheet.create({
   },
   bubbleWrapper: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    alignItems: "flex-end",
+    gap: 6,
+  },
+  messageAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 6,
+    backgroundColor: "#3F3F46",
   },
   chatBubble: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 24,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
     shadowRadius: 2,
+    elevation: 1,
   },
   chatBubbleOwn: {
-    backgroundColor: "rgba(87,187,253,0.4)",
-    borderColor: "rgba(0,161,220,0.13)",
+    backgroundColor: "#6366F1",
+    borderColor: "#4F46E5",
   },
   chatBubbleOther: {
-    backgroundColor: "rgba(124,124,232,0.36)",
-    borderColor: "rgba(120,100,200,0.13)",
+    backgroundColor: "#27272A",
+    borderColor: "#3F3F46",
   },
   chatBubbleFirstOwn: {
-    borderTopRightRadius: 14,
-    borderTopLeftRadius: 14,
+    borderTopRightRadius: 24,
+    borderTopLeftRadius: 24,
   },
   chatBubbleLastOwn: {
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     marginBottom: 4,
   },
   chatBubbleFirstOther: {
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   chatBubbleLastOther: {
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     marginBottom: 4,
   },
   emojiOnlyBubble: {
     backgroundColor: "transparent",
     elevation: 0,
     shadowOpacity: 0,
-    padding: 4,
+    padding: 6,
   },
-  bubbleText: {
-    fontSize: 14,
-    color: "#E0F8FF",
+  optimisticBubble: {
+    opacity: 0.5,
+  },
+  bubbleTextOwn: {
+    fontSize: 15,
+    color: "#F9FAFB",
+    lineHeight: 20,
+  },
+  bubbleTextOther: {
+    fontSize: 15,
+    color: "#D4D4D8",
+    lineHeight: 20,
   },
   emojiText: {
-    fontSize: 28,
+    fontSize: 30,
+    lineHeight: 36,
   },
   ellipsisBtn: {
-    width: 26,
-    height: 26,
+    width: 28,
+    height: 28,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 13,
+    marginLeft: 6,
   },
   chatFooter: {
-    borderTopColor: "rgba(255,255,255,0.04)",
     borderTopWidth: 1,
-    paddingVertical: 8,
+    borderTopColor: "#3F3F46",
+    paddingVertical: 10,
     paddingHorizontal: 16,
+    backgroundColor: "#27272A",
   },
   requestWarningContainer: {
-    backgroundColor: "rgba(255,255,255,0.03)",
-    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "#3F3F46",
+    borderColor: "#52525B",
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
+    borderRadius: 12,
+    padding: 14,
+    marginVertical: 8,
   },
   requestWarningHeading: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-    color: "#00EAFF",
+    color: "#19dee8",
     marginBottom: 6,
   },
   requestWarningText: {
-    fontSize: 12,
-    color: "#D5D5D5",
-    lineHeight: 18,
+    fontSize: 13,
+    color: "#E4E4E7",
+    lineHeight: 20,
   },
   inviteInfoPanel: {
-    backgroundColor: "rgba(255,255,255,0.03)",
-    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "#3F3F46",
+    borderColor: "#52525B",
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
   },
   inviteHeading: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-    color: "#00EAFF",
-    marginBottom: 4,
+    color: "#19dee8",
+    marginBottom: 6,
   },
   inviteDescription: {
-    fontSize: 12,
-    color: "#C4C4C4",
-    lineHeight: 18,
+    fontSize: 13,
+    color: "#E4E4E7",
+    lineHeight: 20,
   },
   writeMessageContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 14,
+    backgroundColor: "#202023",
+    borderRadius: 30,
     paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingHorizontal: 14,
   },
   chatTextarea: {
     flex: 1,
-    fontSize: 14,
-    color: "#FFFFFF",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    fontSize: 18,
+    color: "#E4E4E7",
+    paddingHorizontal: 10,
+    paddingVertical: 10,
     maxHeight: 120,
-    minHeight: 40,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    marginRight: 8,
+    minHeight: 44,
+    borderRadius: 20,
+    backgroundColor: "#27272A",
+    marginRight: 10,
   },
   sendMessageBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(0,255,255,0.1)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#6366F1",
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   requestActions: {
     flexDirection: "row",
@@ -661,41 +908,100 @@ const styles = StyleSheet.create({
   },
   requestBtnPrimary: {
     flex: 1,
-    backgroundColor: "rgba(0,200,255,0.15)",
-    borderColor: "rgba(0,255,255,0.2)",
+    backgroundColor: "#6366F1",
+    borderColor: "#4F46E5",
     borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
+    borderRadius: 12,
+    paddingVertical: 12,
     alignItems: "center",
+    marginRight: 8,
   },
   requestBtnTextPrimary: {
-    color: "#00EAFF",
-    fontWeight: "500",
+    color: "#F9FAFB",
+    fontWeight: "600",
+    fontSize: 14,
   },
   requestBtnSubtle: {
     flex: 1,
-    backgroundColor: "rgba(180,180,180,0.1)",
-    borderColor: "rgba(200,200,200,0.12)",
+    backgroundColor: "#27272A",
+    borderColor: "#3F3F46",
     borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
+    borderRadius: 12,
+    paddingVertical: 12,
     alignItems: "center",
+    marginRight: 8,
   },
   requestBtnTextSubtle: {
-    color: "#CCCCCC",
-    fontWeight: "500",
+    color: "#A1A1AA",
+    fontWeight: "600",
+    fontSize: 14,
   },
   requestBtnDanger: {
     flex: 1,
-    backgroundColor: "rgba(255,80,80,0.12)",
-    borderColor: "rgba(255,0,0,0.2)",
+    backgroundColor: "#DC2626",
+    borderColor: "#B91C1C",
     borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
+    borderRadius: 12,
+    paddingVertical: 12,
     alignItems: "center",
   },
   requestBtnTextDanger: {
-    color: "#FF6B6B",
-    fontWeight: "500",
+    color: "#F9FAFB",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  blurContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  popupBubble: {
+    backgroundColor: "#27272A",
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    maxWidth: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
+    marginBottom: 16,
+  },
+  popupText: {
+    fontSize: 18,
+    color: "#F4F4F5",
+    lineHeight: 24,
+    textAlign: "center",
+  },
+  popupActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 40,
+  },
+  popupActionBtn: {
+    marginHorizontal: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  popupActionText: {
+    fontSize: 28,
+    color: "#E4E4E7",
+  },
+  popupCancelBtn: {
+    backgroundColor: "#3F3F46",
+    borderRadius: 12,
+  },
+  popupCancelText: {
+    color: "#D4D4D8",
+    fontSize: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  overlayTouchable: {
+    ...StyleSheet.absoluteFillObject,
   },
 });

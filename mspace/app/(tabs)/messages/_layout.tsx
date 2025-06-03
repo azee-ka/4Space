@@ -12,7 +12,14 @@ export default function MessagesLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="[conversationId]" />
+      <Stack.Screen
+        name="[conversationId]"
+        options={{
+          presentation: "modal",
+          gestureEnabled: true,
+          // animation: "slide_from_right",
+        }}
+      />
     </Stack>
   );
 }

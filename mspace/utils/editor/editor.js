@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import Quill from "quill";
-import "quill/dist/quill.snow.scss";
+import "quill/dist/quill.snow.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBold, faItalic, faUnderline, faStrikethrough, faListOl, faListUl,
@@ -8,7 +8,7 @@ import {
   faSubscript, faImage
 } from "@fortawesome/free-solid-svg-icons";
 import EmojiButton from "./EmojiButton";
-import "./editor.scss";
+import "./editor.css";
 
 const InlineBlot = Quill.import('blots/inline');
 

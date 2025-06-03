@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { imageCompile } from './imageComplie';
-// import './getProfilePicture.scss';
+// import './getProfilePicture.css';
 
 const ImageWrapper = ({ src, onClick, className }) => {
     const imageSource = imageCompile(src);

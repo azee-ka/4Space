@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import DOMPurify from 'dompurify';
-import './timelinePerPost.css';
+import './timelinePerPost.scss';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight, faChevronLeft, faShareAlt, faBookmark, faEllipsisV, faHeart, faReply, faArrowRight, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
@@ -22,8 +22,10 @@ import { formatCount } from '../../../../utils/formatCount';
 import EmojiButton from '../../../../utils/editor/EmojiButton';
 import CustomTextarea from '../../../../pages/messages/chatContainer/customTextarea';
 import { useTrackPostView } from '../../../../hooks/useTrackPostView';
+import { useDevice } from '../../../../context/DeviceContext';
 
-const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
+const TimelinePerPost = ({ postId, posts, index, activeFilter}) => {
+    const { isM } = useDevice();
     const { handleExpandPostOpen } = usePostContext();
 
     const {
@@ -143,6 +145,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                     </div>
 
                     {/* Post Stats Section */}
+                    {!isM && 
                     <div className="timeline-post-stats">
                         <div className="stat-item" onClick={() => setShowLikesOverlay(true)}>
                             <strong>{post?.stats?.likes_count || 0}</strong>
@@ -157,6 +160,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                             <span>Comments</span>
                         </div>
                     </div>
+                    }
                 </div>
 
                 {post?.post_type === 'Visual' && (activeFilter === 'Visual' || activeFilter === 'All') && (
@@ -200,6 +204,59 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                                     <FaPaperPlane />
                                 </button>
                             </div>
+
+                            {isM && 
+                            <div className='timeline-floating-actions'>
+                <div onClick={() => toggleLikeDislike('like')} className="thread-action-btn">
+                    <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
+                    <strong>{post?.stats?.likes_count || 0}</strong>
+                </div>
+                <div onClick={() => toggleLikeDislike('dislike')} className="thread-action-btn">
+                    <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
+                    <strong>{post?.stats?.dislikes_count || 0}</strong>
+                </div>
+                <div onClick={() => toggleBookmark()} className="float-btn">
+                    <FaBookmark className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`} />
+                </div>
+                <div className="float-btn">
+                    <FaShareAlt className={`icon-style`} />
+                </div>
+                <DropdownButton
+                                toggleContent={
+                                    <button className="float-btn"><FaEllipsisV /></button>
+                                }
+                            >
+                                <div className="timeline-post-more-options-card">
+                                    <ul>
+                                        {isSelfPost && (
+                                            <li>
+                                                <button className="more-options-card-btn"><FaEdit /> Edit Post</button>
+                                            </li>
+                                        )}
+                                        {isSelfPost && (
+                                            <li>
+                                                <button className="more-options-card-btn" onClick={() => deletePost(postId)}><FaTrashAlt /> Delete</button>
+                                            </li>
+                                        )}
+                                        {!isSelfPost && (
+                                            <li>
+                                                <button className="more-options-card-btn"><FaFlag /> Report</button>
+                                            </li>
+                                        )}
+                                        {!isSelfPost && (
+                                            <li>
+                                                <button className="more-options-card-btn"><FaBellSlash /> Mute Author</button>
+                                            </li>
+                                        )}
+                                        {!isSelfPost && (
+                                            <li>
+                                                <button className="more-options-card-btn"><FaBan /> Block Author</button>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                            </DropdownButton>
+                        </div>}
                         </div>
                     </div>
                 )}
@@ -268,25 +325,44 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                             <div><span>{formatCount(post?.stats?.views_count) ?? 0}</span> View{post?.stats?.views_count > 1 ? 's' : ''}</div>
                         </div>
                         <div className="thread-actions-row">
+                            {isM && 
+                            <>
+                <div onClick={() => toggleLikeDislike('like')} className="thread-action-btn">
+                    <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
+                    {isM && <strong>{post?.stats?.likes_count || 0}</strong>}
+                </div>
+                <div onClick={() => toggleLikeDislike('dislike')} className="thread-action-btn">
+                    <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
+                    {isM && <strong>{post?.stats?.likes_count || 0}</strong>}
+                </div>
+                <div onClick={() => toggleBookmark()} className="thread-action-btn">
+                    <FaBookmark className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`} />
+                </div>
+                <div className="thread-action-btn">
+                    <FaShareAlt className={`icon-style`} />
+                </div>
+                </>
+}
                             <button
-                                className="thread-action-btn"
+                                className={"thread-action-btn"}
                                 onClick={() => setShowReplyField(v => !v)}
                             >
                                 <FaReply className="icon-style" />
-                                Reply
+                                {!isM ? 'Reply' : ''}
+                                {isM && <strong>{post?.stats?.comments_count || 0}</strong>}
                             </button>
-                            <button className="thread-action-btn">
+                            <button className={"thread-action-btn"}>
                                 <FaRetweet className="icon-style" />
-                                Repost
+                                {!isM ? 'Repost' : ''}
                             </button>
-                            <button onClick={() => handlePostClick(index, post.post_type)} className="thread-action-btn">
+                            <button onClick={() => handlePostClick(index, post.post_type)} className={`thread-action-btn`}>
                                 <FaExpandAlt className="icon-style" />
-                                Expand
+                                {!isM ? 'Expand' : ''}
                             </button>
-                            <button className="thread-action-btn"><FaMagic className="icon-style" /> AI Insight</button>
+                            <button className={`thread-action-btn`}><FaMagic className="icon-style" /> {!isM ? 'AI Insight' : ''}</button>
                             <DropdownButton
                                 toggleContent={
-                                    <button className="thread-action-btn"><FaEllipsisV /></button>
+                                    <button className={`thread-action-btn`}><FaEllipsisV /></button>
                                 }
                             >
                                 <div className="timeline-post-more-options-card">
@@ -351,7 +427,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
             </div>
 
             {/* Floating Buttons Separate */}
-            <div className="timeline-floating-actions">
+           {!isM && <div className="timeline-floating-actions">
                 <div onClick={() => toggleLikeDislike('like')} className="float-btn">
                     <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
                 </div>
@@ -365,7 +441,7 @@ const TimelinePerPost = ({ postId, posts, index, activeFilter }) => {
                     <FaShareAlt className={`icon-style`} />
                 </div>
             </div>
-
+}
             {/* Overlays */}
             {showLikesOverlay && (
                 <UserListOverlay userList={post.likes} onClose={handleCloseLikesOverlay} title="Likes" />
