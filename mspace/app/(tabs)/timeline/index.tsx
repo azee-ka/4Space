@@ -1,11 +1,6 @@
 // /screens/Timeline.tsx
 
-import React, {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,6 +17,7 @@ import {
   Keyboard,
   Animated,
   TouchableWithoutFeedback,
+  Alert,
 } from "react-native";
 import { useWindowDimensions } from "react-native";
 import RenderHTML from "react-native-render-html";
@@ -35,8 +31,10 @@ import {
 import { useRouter } from "expo-router";
 import useApi from "../../../hooks/useApi";
 
-const { width } = Dimensions.get("window");
-const MEDIA_HEIGHT = Math.round(width * 0.75);
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CARD_HORIZONTAL_MARGIN = 8;
+const CARD_WIDTH = SCREEN_WIDTH - CARD_HORIZONTAL_MARGIN * 2;
+const MEDIA_HEIGHT = Math.round(CARD_WIDTH * 0.75);
 const AVATAR_SIZE = 48;
 
 function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
@@ -50,13 +48,15 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
     commentText,
     setCommentText,
     addComment,
+    votePost,
   } = useExpandPostContext();
+  const { callApi } = useApi();
 
-  // ── Detect Repost / Quote ─────────────────────────────────────────────────────
+  // Detect Repost / Quote
   const isRepost = Boolean(post.is_repost && post.parent_post);
   const isQuote = Boolean(post.parent_post && post.quote_text);
 
-  // ── Determine “effective” author & content ───────────────────────────────────
+  // Determine effective author & content
   const effectiveAuthor = isRepost
     ? post.parent_post.author
     : isQuote
@@ -69,15 +69,13 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
     ? post.parent_post.post
     : post.post;
 
-  // If repost/quote, “unwrap” to the parent’s post_type; otherwise use the top‐level
+  // Unwrap post_type if repost/quote
   const effectiveType =
-    isRepost || isQuote
-      ? post.parent_post.post_type
-      : post.post_type;
+    isRepost || isQuote ? post.parent_post.post_type : post.post_type;
 
   const isThread = effectiveType === "Thread";
 
-  // ── Media files only if not a Thread ────────────────────────────────────────
+  // Media files only if not a Thread
   const mediaFiles = isThread
     ? []
     : isRepost || isQuote
@@ -87,7 +85,7 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
   const mediaIndex = currentMediaIndex ?? 0;
   const flatListRef = React.useRef<FlatList<any>>(null);
 
-  // ── Double-tap to like animation ─────────────────────────────────────────────
+  // Double‐tap to like animation
   const lastTap = React.useRef<number | null>(null);
   const [heartAnim] = useState(new Animated.Value(0));
 
@@ -129,21 +127,28 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
     outputRange: [0, 1],
   });
 
-  // ── Decide what text to show ◉─────────────────────────────────────────────────
+  // Decide what text to show
   const textContent = isThread
     ? effectivePostObject?.content || ""
-    : effectivePostObject?.caption ||
-      post.caption ||
-      post.content ||
-      "";
+    : effectivePostObject?.caption || post.caption || post.content || "";
 
+  // We'll need dimensions for RenderHTML
+  const { width: contentWidth } = useWindowDimensions();
 
-          const { width: contentWidth } = useWindowDimensions();
-      
+  // Report Handler
+  const reportPost = async () => {
+    try {
+      await callApi(`posts/post/${post.id}/report/`, "POST", {});
+      Alert.alert("Reported", "Thank you for your feedback.");
+    } catch (e) {
+      console.error("Error reporting post", e);
+      Alert.alert("Error", "Could not submit report.");
+    }
+  };
 
   return (
     <View style={styles.postCard}>
-      {/* ── Repost / Quote Banner ────────────────────────────────────────────── */}
+      {/* Repost / Quote Banner */}
       {isRepost && post.parent_post && (
         <TouchableOpacity
           style={[styles.banner, styles.repostBanner]}
@@ -158,12 +163,12 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
           style={[styles.banner, styles.quoteBanner]}
           onPress={() => onPressDetails?.()}
         >
-        <FA name="quote-left" size={20} color="#1ccaff" />
+          <FA name="quote-left" size={20} color="#1ccaff" />
           <Text style={styles.bannerText}>Quote</Text>
         </TouchableOpacity>
       )}
 
-      {/* ── Header (author+time) ───────────────────────────────────────────────── */}
+      {/* Header (author + time) */}
       <View style={styles.postHeader}>
         <View style={styles.avatarContainer}>
           <Image
@@ -179,22 +184,18 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
           <Text style={styles.username}>@{effectiveAuthor?.username}</Text>
           <Text style={styles.time}>
             {post.meta?.created_at
-              ? formatDistanceToNow(new Date(post.meta.created_at), {
+              ? formatDistanceToNow(new Date(post.meta?.created_at), {
                   addSuffix: true,
                 })
               : ""}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={onPressDetails}
-          style={styles.detailsBtn}
-        >
+        <TouchableOpacity onPress={onPressDetails} style={styles.detailsBtn}>
           <Icon name="chevron-right" size={24} color="#888" />
         </TouchableOpacity>
       </View>
 
-
-      {/* ── Quoted Snippet ────────────────────────────────────────────────────── */}
+      {/* Quoted Snippet */}
       {isQuote && post.parent_post && (
         <TouchableOpacity
           style={styles.quoteBlockSmall}
@@ -205,9 +206,7 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
             <Image
               source={
                 post.parent_post.author.profile_image
-                  ? {
-                      uri: post.parent_post.author.profile_image,
-                    }
+                  ? { uri: post.parent_post.author.profile_image }
                   : require("../../../assets/default_profile_picture.png")
               }
               style={styles.quoteAvatarSmall}
@@ -218,7 +217,7 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
             <Text style={styles.quoteDateSmall}>
               {post.parent_post.meta?.created_at
                 ? formatDistanceToNow(
-                    new Date(post.parent_post.meta.created_at),
+                    new Date(post.parent_post.meta?.created_at),
                     { addSuffix: true }
                   )
                 : ""}
@@ -228,7 +227,7 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
         </TouchableOpacity>
       )}
 
-      {/* ── Media Carousel (if not Thread) ───────────────────────────────────── */}
+      {/* Media Carousel (if not Thread) */}
       {mediaFiles.length > 0 && (
         <View style={styles.mediaWrapper}>
           <FlatList
@@ -236,15 +235,15 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
             ref={flatListRef}
             horizontal
             pagingEnabled
-            snapToInterval={width}
+            snapToInterval={CARD_WIDTH}
             decelerationRate="fast"
             showsHorizontalScrollIndicator={false}
             keyExtractor={(_, idx) => idx.toString()}
             renderItem={({ item }) => (
               <TouchableWithoutFeedback onPress={handleDoubleTap}>
-                <View>
+                <View style={{ width: CARD_WIDTH }}>
                   <Image
-                    source={{ uri: item.file }}
+                    source={{ uri: item.file || item.url }}
                     style={styles.mediaImage}
                     resizeMode="cover"
                   />
@@ -267,15 +266,18 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
               </TouchableWithoutFeedback>
             )}
             onScroll={(e) => {
-              const idx = Math.round(e.nativeEvent.contentOffset.x / width);
+              const idx = Math.round(
+                e.nativeEvent.contentOffset.x / CARD_WIDTH
+              );
               setCurrentMediaIndex?.(idx);
             }}
             scrollEventThrottle={16}
             getItemLayout={(_, index) => ({
-              length: width,
-              offset: width * index,
+              length: CARD_WIDTH,
+              offset: CARD_WIDTH * index,
               index,
             })}
+            style={{ width: CARD_WIDTH, height: MEDIA_HEIGHT }}
           />
           {mediaFiles.length > 1 && (
             <View style={styles.dotsContainer}>
@@ -285,8 +287,7 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
                   style={[
                     styles.dot,
                     {
-                      backgroundColor:
-                        i === mediaIndex ? "#19dee8" : "#555",
+                      backgroundColor: i === mediaIndex ? "#19dee8" : "#555",
                     },
                   ]}
                 />
@@ -296,87 +297,129 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
         </View>
       )}
 
-      {/* ── Caption / Thread Content ────────────────────────────────────────────── */}
+      {/* Caption / Thread Content */}
       {Boolean(textContent) && (
         <View style={styles.postContent}>
-          {/* <Text style={styles.postText}>{textContent}</Text> */}
           <RenderHTML
-              contentWidth={contentWidth - 32} // account for horizontal padding if any
-              source={{ html: textContent || "<p></p>" }}
-              baseStyle={styles.postText}
-              tagsStyles={{
-                // You can override specific tag styles if needed:
-                p: { marginBottom: 8 },
-                strong: { fontWeight: "bold" },
-                em: { fontStyle: "italic" },
-                a: { color: "#19dee8", textDecorationLine: "underline" },
-              }}
-              // onLinkPress={(evt, href) => Linking.openURL(href)} // if you want links tappable
-            />
+            contentWidth={contentWidth - CARD_HORIZONTAL_MARGIN * 2}
+            source={{ html: textContent || "<p></p>" }}
+            baseStyle={styles.postText}
+            tagsStyles={{
+              p: { marginBottom: 6 },
+              strong: { fontWeight: "bold" },
+              em: { fontStyle: "italic" },
+              a: { color: "#19dee8", textDecorationLine: "underline" },
+            }}
+          />
         </View>
       )}
 
-      {/* ── Stats Row ───────────────────────────────────────────────────────────── */}
-      <View style={styles.statsRow}>
-        <TouchableOpacity
-          onPress={() => toggleLikeDislike("like")}
-          style={styles.stat}
-        >
-          <Icon
-            name="heart"
-            size={20}
-            color={
-              post.status?.like_status === "liked" ? "#ff2d55" : "#888"
-            }
-          />
-          <Text style={styles.statText}>
-            {post.stats?.likes_count || 0}
+      {/* Interaction Row (under content/media) */}
+      <View style={styles.interactionRow}>
+        {/* Left: Vertical Vote Buttons */}
+        <View style={styles.votePanel}>
+          <TouchableOpacity
+            onPress={() => votePost("upvote")}
+            style={styles.voteBtn}
+          >
+            <FA
+              name="arrow-up"
+              size={18}
+              color={
+                post.status?.vote_status === "upvoted" ? "#ff4b5c" : "#888"
+              }
+            />
+          </TouchableOpacity>
+          <Text style={styles.voteCount}>
+            {post.stats?.net_votes_count || 0}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={toggleBookmark} style={styles.stat}>
-          <Icon
-            name="bookmark"
-            size={20}
-            color={postBookmarked ? "#FFD700" : "#888"}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stat}>
-          <Icon name="message-circle" size={20} color="#888" />
-          <Text style={styles.statText}>
-            {post.stats?.comments_count || 0}
-          </Text>
-        </TouchableOpacity>
-        <View style={styles.spacer} />
-        <TouchableOpacity style={styles.share}>
-          <Icon name="share-2" size={20} color="#888" />
-        </TouchableOpacity>
-      </View>
-
-      {/* ── Quick Comment Row ──────────────────────────────────────────────────── */}
-      <View style={styles.addCommentRow}>
-        <View style={styles.avatarSmall}>
-          <Icon name="user" size={16} color="#888" />
+          <TouchableOpacity
+            onPress={() => votePost("downvote")}
+            style={styles.voteBtn}
+          >
+            <FA
+              name="arrow-down"
+              size={18}
+              color={
+                post.status?.vote_status === "downvoted" ? "#ff4b5c" : "#888"
+              }
+            />
+          </TouchableOpacity>
         </View>
-        <TextInput
-          style={styles.addCommentInput}
-          value={commentText}
-          onChangeText={setCommentText}
-          placeholder="Add a comment…"
-          placeholderTextColor="#777"
-          returnKeyType="send"
-          onSubmitEditing={() => {
-            if (commentText.trim()) addComment();
-            Keyboard.dismiss();
-          }}
-        />
-        <TouchableOpacity onPress={addComment} disabled={!commentText.trim()}>
-          <Icon
-            name="send"
-            size={18}
-            color={commentText.trim() ? "#19dee8" : "#555"}
-            style={{ marginLeft: 10 }}
-          />
-        </TouchableOpacity>
+
+        {/* Right: Two Rows – Actions & Comment Input */}
+        <View style={styles.rightPanel}>
+          {/* Row 1: Action Buttons */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              onPress={() => toggleLikeDislike("like")}
+              style={styles.actionBtn}
+            >
+              <Icon
+                name="heart"
+                size={22}
+                color={
+                  post.status?.like_status === "liked" ? "#ff2d55" : "#888"
+                }
+              />
+              <Text style={styles.actionText}>
+                {post.stats?.likes_count || 0}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionBtn}>
+              <Icon name="message-circle" size={22} color="#888" />
+              <Text style={styles.actionText}>
+                {post.stats?.comments_count || 0}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={toggleBookmark} style={styles.actionBtn}>
+              <Icon
+                name="bookmark"
+                size={22}
+                color={postBookmarked ? "#19dee8" : "#888"}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={reportPost} style={styles.actionBtn}>
+              <FA name="flag" size={21} color="#888" />
+            </TouchableOpacity>
+
+            <View style={styles.spacer} />
+
+            <TouchableOpacity style={styles.shareBtn}>
+              <Icon name="share-2" size={22} color="#888" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Row 2: Add Comment Input */}
+          <View style={styles.commentRow}>
+            <View style={styles.avatarSmall}>
+              <Icon name="user" size={16} color="#888" />
+            </View>
+            <TextInput
+              style={styles.addCommentInput}
+              placeholder="Add a comment…"
+              placeholderTextColor="#777"
+              returnKeyType="send"
+              value={commentText}
+              onChangeText={setCommentText}
+              onSubmitEditing={() => {
+                addComment();
+              }}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                addComment();
+                Keyboard.dismiss();
+              }}
+              style={{ marginLeft: 10 }}
+            >
+              <Icon name="send" size={20} color="#19dee8" />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -431,7 +474,7 @@ export default function Timeline() {
         setLoading(false);
       }
     },
-    [loading, filter] // ← include filter here
+    [loading, filter]
   );
 
   // Whenever `filter` changes, reset page counter and re‐fetch
@@ -453,7 +496,7 @@ export default function Timeline() {
     }
   };
 
-  // ── Client‐side: only show posts where p.post_type matches the filter ──
+  // Client‐side: only show posts where p.post_type matches the filter
   const filteredPosts = posts.filter((p) => {
     if (filter === "All") return true;
     return p.post_type === filter;
@@ -605,9 +648,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 
-  // Post Card container
+  // POST CARD
   postCard: {
-    marginBottom: 40,
+    backgroundColor: "#1a1a1a",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginHorizontal: CARD_HORIZONTAL_MARGIN,
+    marginBottom: 24,
   },
 
   // Small banner for Repost / Quote
@@ -617,7 +664,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    marginHorizontal: 14,
+    marginHorizontal: CARD_HORIZONTAL_MARGIN,
+    marginTop: CARD_HORIZONTAL_MARGIN,
     marginBottom: 4,
   },
   repostBanner: {
@@ -633,50 +681,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  // Small quoted snippet block
-  quoteBlockSmall: {
-    backgroundColor: "rgba(59, 61, 65, 0.119)",
-    borderRadius: 10,
-    marginHorizontal: 14,
-    marginBottom: 6,
-    padding: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: "#1ccaff",
-  },
-  quoteMetaSmall: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  quoteAvatarSmall: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#252d38",
-    marginRight: 6,
-  },
-  quoteUsernameSmall: {
-    color: "#c8c8c8",
-    fontWeight: "500",
-    marginRight: 6,
-  },
-  quoteDateSmall: {
-    color: "#898989",
-    fontSize: 11,
-    fontStyle: "italic",
-  },
-  quoteTextSmall: {
-    color: "#dcdcdc",
-    fontSize: 13,
-    fontStyle: "italic",
-    marginLeft: 4,
-  },
-
   // Post Header
   postHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
+    paddingHorizontal: CARD_HORIZONTAL_MARGIN,
     paddingVertical: 10,
   },
   avatarContainer: {
@@ -711,13 +720,53 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 
+  // Quoted Snippet Block
+  quoteBlockSmall: {
+    backgroundColor: "rgba(59, 61, 65, 0.119)",
+    borderRadius: 10,
+    marginHorizontal: CARD_HORIZONTAL_MARGIN,
+    marginBottom: 6,
+    padding: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: "#1ccaff",
+  },
+  quoteMetaSmall: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  quoteAvatarSmall: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#252d38",
+    marginRight: 6,
+  },
+  quoteUsernameSmall: {
+    color: "#c8c8c8",
+    fontWeight: "500",
+    marginRight: 6,
+  },
+  quoteDateSmall: {
+    color: "#898989",
+    fontSize: 11,
+    fontStyle: "italic",
+  },
+  quoteTextSmall: {
+    color: "#dcdcdc",
+    fontSize: 13,
+    fontStyle: "italic",
+    marginLeft: 4,
+  },
+
   // Media + Dots
   mediaWrapper: {
     position: "relative",
   },
   mediaImage: {
-    width: width,
+    width: CARD_WIDTH,
     height: MEDIA_HEIGHT,
+    backgroundColor: "#000",
   },
   dotsContainer: {
     position: "absolute",
@@ -735,12 +784,12 @@ const styles = StyleSheet.create({
   animatedHeart: {
     position: "absolute",
     top: MEDIA_HEIGHT / 2 - 40,
-    left: width / 2 - 40,
+    left: CARD_WIDTH / 2 - 40,
   },
 
   // Caption / Content
   postContent: {
-    paddingHorizontal: 14,
+    paddingHorizontal: CARD_HORIZONTAL_MARGIN,
     paddingVertical: 6,
   },
   postText: {
@@ -749,38 +798,79 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Stats Row
-  statsRow: {
+  // Interaction Row (under content/media)
+  interactionRow: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: CARD_HORIZONTAL_MARGIN,
+    paddingTop: 0,
+    padding: 0,
+    alignItems: "flex-start",
+    // backgroundColor: 'green',
+    height: 95,
+  },
+
+  // Left: Vertical Vote Panel
+  votePanel: {
+    width: 35,
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 0, // added small top padding so arrows align with actions
+    // backgroundColor: 'red',
+  },
+  voteBtn: {
+    paddingVertical: 4,
+  },
+  voteCount: {
+    color: "#ccc",
+    fontSize: 14,
+    marginVertical: 2, // tighten up count spacing
+    fontWeight: "500",
+  },
+
+  // Right: Two-row panel
+  rightPanel: {
+    flex: 1,
+    height: "100%",
+    // backgroundColor: 'blue',
+    flexDirection: "column",
+    gap: 2,
+    paddingTop: 14,
+  },
+
+  // Row 1: Action Buttons
+  actionRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    marginBottom: 4, // reduced gap before comment row
   },
-  stat: {
+  actionBtn: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 18,
+    marginRight: 12, // tightened spacing between icons
   },
-  share: {
+  shareBtn: {
     flexDirection: "row",
     alignItems: "center",
+    marginRight: 0,
   },
-  statText: {
+  actionText: {
     color: "#ccc",
     marginLeft: 6,
     fontSize: 14,
     fontWeight: "500",
   },
+
   spacer: {
     flex: 1,
   },
 
-  // Quick Comment
-  addCommentRow: {
+  // Row 2: Comment Input
+  commentRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    marginTop: 4, // slight gap after action row
   },
   avatarSmall: {
     width: 32,
