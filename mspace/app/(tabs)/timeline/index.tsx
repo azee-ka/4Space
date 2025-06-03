@@ -324,9 +324,9 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
           >
             <FA
               name="arrow-up"
-              size={18}
+              size={20}
               color={
-                post.status?.vote_status === "upvoted" ? "#ff4b5c" : "#888"
+                post.status?.vote_status === "upvoted" ? "#19dee8" : "#888"
               }
             />
           </TouchableOpacity>
@@ -339,7 +339,7 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
           >
             <FA
               name="arrow-down"
-              size={18}
+              size={20}
               color={
                 post.status?.vote_status === "downvoted" ? "#ff4b5c" : "#888"
               }
@@ -444,38 +444,41 @@ export default function Timeline() {
   const pageRef = useRef<number>(0);
 
   const fetchPosts = useCallback(
-    async (reset = false) => {
-      if (loading) return;
-      setLoading(true);
-      try {
-        const limit = 10;
-        const offset = reset ? 0 : pageRef.current * limit;
+  async (reset = false) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const limit = 10;
+      const offset = reset ? 0 : pageRef.current * limit;
+      const baseUrl = "posts/timeline/get-posts/";
+      const qs =
+        filter === "All"
+          ? `?limit=${limit}&offset=${offset}`
+          : `?post_type=${filter}&limit=${limit}&offset=${offset}`;
+      const resp = await callApi(`${baseUrl}${qs}`);
+      const data = resp.data; // { results: [...], next: "...", ... }
 
-        const baseUrl = "posts/timeline/get-posts/";
-        const qs =
-          filter === "All"
-            ? `?limit=${limit}&offset=${offset}`
-            : `?post_type=${filter}&limit=${limit}&offset=${offset}`;
-        const resp = await callApi(`${baseUrl}${qs}`);
-
-        const data = resp.data;
-
-        if (reset) {
-          setPosts(data.results);
-          pageRef.current = 1;
-        } else {
-          setPosts((prev) => [...prev, ...data.results]);
-          pageRef.current += 1;
-        }
-        setHasMore(!!data.next);
-      } catch (e) {
-        console.error("Error fetching posts", e);
-      } finally {
-        setLoading(false);
+      if (reset) {
+        setPosts(data.results);
+        pageRef.current = 1;
+      } else {
+        setPosts((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          // Filter out any duplicates from the new page
+          const newResults = data.results.filter((r) => !existingIds.has(r.id));
+          return [...prev, ...newResults];
+        });
+        pageRef.current += 1;
       }
-    },
-    [loading, filter]
-  );
+      setHasMore(!!data.next);
+    } catch (e) {
+      console.error("Error fetching posts", e);
+    } finally {
+      setLoading(false);
+    }
+  },
+  [loading, filter]
+);
 
   // Whenever `filter` changes, reset page counter and re‐fetch
   useEffect(() => {
@@ -835,7 +838,7 @@ const styles = StyleSheet.create({
     height: "100%",
     // backgroundColor: 'blue',
     flexDirection: "column",
-    gap: 2,
+    gap: 4,
     paddingTop: 14,
   },
 

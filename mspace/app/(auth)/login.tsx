@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet 
 import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/Feather';
 import axios from 'axios';
-import { useAuth } from '../../hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 import API_BASE_URL from '../../utils/apiUrl'; // Use your API base url
 
 export default function LoginScreen() {

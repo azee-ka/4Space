@@ -5,7 +5,7 @@ const useWebSocket = (url, options = {}) => {
     const socketRef = useRef(null);
 
     useEffect(() => {
-        const socket = new WebSocket(`ws://127.0.0.1:8000/ws/${url}`);
+        const socket = new WebSocket(`ws://10.0.0.6:8000/ws/${url}`);
         socketRef.current = socket;
 
         socket.onopen = () => {

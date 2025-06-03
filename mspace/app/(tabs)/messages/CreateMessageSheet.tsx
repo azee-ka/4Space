@@ -1,6 +1,4 @@
-// app/messages/CreateMessageSheet.tsx
-
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import useApi from "@/hooks/useApi";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.7; // sheet covers 70% of screen
@@ -36,8 +35,8 @@ export default function CreateMessageSheet({
   visible,
   onClose,
   onStartConversation,
-  searchUsers,
 }: CreateMessageSheetProps) {
+  const { callApi } = useApi();
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const [selected, setSelected] = useState<User[]>([]);
   const [query, setQuery] = useState("");
@@ -45,7 +44,7 @@ export default function CreateMessageSheet({
   const panRef = useRef<PanResponder | null>(null);
 
   // Animate sheet up/down when `visible` changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (visible) {
       Animated.timing(translateY, {
         toValue: 0,
@@ -92,24 +91,25 @@ export default function CreateMessageSheet({
     });
   }
 
-  // Search whenever `query` changes
-  useEffect(() => {
-    let active = true;
-    if (query.trim()) {
-      searchUsers(query.trim())
-        .then((users) => {
-          if (active) setResults(users);
-        })
-        .catch(() => {
-          if (active) setResults([]);
-        });
+  // Call API immediately on each keystroke
+  const handleChangeQuery = async (text: string) => {
+    setQuery(text);
+    const trimmed = text.trim();
+
+    if (trimmed) {
+      try {
+        console.log("[CreateMessageSheet] calling searchUsers →", trimmed);
+        const resp = await callApi(`search/user-search/?query=${trimmed}`);
+        console.log("[CreateMessageSheet] result →", resp.data);
+        setResults(resp.data);
+      } catch (e) {
+        console.log("[CreateMessageSheet] searchUsers failed →", e);
+        setResults([]);
+      }
     } else {
       setResults([]);
     }
-    return () => {
-      active = false;
-    };
-  }, [query]);
+  };
 
   const handleSelect = (user: User) => {
     if (!selected.some((s) => s.id === user.id)) {
@@ -181,7 +181,7 @@ export default function CreateMessageSheet({
           <TextInput
             style={styles.searchInput}
             value={query}
-            onChangeText={setQuery}
+            onChangeText={handleChangeQuery}
             placeholder="Type a username..."
             placeholderTextColor="#888"
             autoFocus
@@ -208,10 +208,7 @@ export default function CreateMessageSheet({
 
         {/* “Start” button */}
         <TouchableOpacity
-          style={[
-            styles.startButton,
-            { opacity: selected.length ? 1 : 0.5 },
-          ]}
+          style={[styles.startButton, { opacity: selected.length ? 1 : 0.5 }]}
           disabled={selected.length === 0}
           onPress={handleStart}
         >

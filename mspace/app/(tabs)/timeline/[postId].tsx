@@ -128,7 +128,9 @@ function PostHeader({ origin }: { origin?: string }) {
 
   // When scrolling stops, update the index
   const onMomentumScrollEnd = (e: any) => {
-    const idx = Math.round(e.nativeEvent.contentOffset.x / IMAGE_CONTAINER_WIDTH);
+    const idx = Math.round(
+      e.nativeEvent.contentOffset.x / IMAGE_CONTAINER_WIDTH
+    );
     setCurrentMediaIndex?.(idx);
   };
 
@@ -214,64 +216,57 @@ function PostHeader({ origin }: { origin?: string }) {
         </TouchableOpacity>
       )}
 
-      {/* ── MEDIA CAROUSEL (non‐thread), wrapped to detect double‐tap ────────── */}
+      {/* ── MEDIA CAROUSEL (non‐thread), images individually wrapped for double‐tap ────────── */}
       {!isThread && media.length > 0 && (
         <View style={styles.media}>
-          <TouchableWithoutFeedback onPress={handleDoubleTapPost}>
-            <View
-              style={{
-                width: IMAGE_CONTAINER_WIDTH,
-                height: IMAGE_CONTAINER_HEIGHT,
-              }}
-            >
-              <FlatList
-                data={media}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(_, idx) => idx.toString()}
-                ref={flatListRef}
-                getItemLayout={(_, index) => ({
-                  length: IMAGE_CONTAINER_WIDTH,
-                  offset: IMAGE_CONTAINER_WIDTH * index,
-                  index,
-                })}
-                onMomentumScrollEnd={onMomentumScrollEnd}
-                initialScrollIndex={mediaIndex}
-                renderItem={({ item }) => (
-                  <Image
-                    source={{ uri: item.file || item.url || (item as any) }}
-                    style={{
-                      width: IMAGE_CONTAINER_WIDTH,
-                      height: IMAGE_CONTAINER_HEIGHT,
-                      borderRadius: 14,
-                      backgroundColor: "#222",
-                    }}
-                    resizeMode="cover"
-                  />
-                )}
-                style={{
-                  width: IMAGE_CONTAINER_WIDTH,
-                  height: IMAGE_CONTAINER_HEIGHT,
-                  borderRadius: 14,
-                  overflow: "hidden",
-                }}
-              />
+          <FlatList
+            data={media}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(_, idx) => idx.toString()}
+            ref={flatListRef}
+            getItemLayout={(_, index) => ({
+              length: IMAGE_CONTAINER_WIDTH,
+              offset: IMAGE_CONTAINER_WIDTH * index,
+              index,
+            })}
+            onMomentumScrollEnd={onMomentumScrollEnd}
+            initialScrollIndex={mediaIndex}
+            renderItem={({ item }) => (
+              <TouchableWithoutFeedback onPress={handleDoubleTapPost}>
+                <Image
+                  source={{ uri: item.file || item.url || (item as any) }}
+                  style={{
+                    width: IMAGE_CONTAINER_WIDTH,
+                    height: IMAGE_CONTAINER_HEIGHT,
+                    borderRadius: 14,
+                    backgroundColor: "#222",
+                  }}
+                  resizeMode="cover"
+                />
+              </TouchableWithoutFeedback>
+            )}
+            style={{
+              width: IMAGE_CONTAINER_WIDTH,
+              height: IMAGE_CONTAINER_HEIGHT,
+              borderRadius: 14,
+              overflow: "hidden",
+            }}
+          />
 
-              {/* Animated heart over the media */}
-              <Animated.View
-                style={[
-                  styles.animatedHeartMain,
-                  {
-                    opacity: heartOpacity,
-                    transform: [{ scale: heartScale }],
-                  },
-                ]}
-              >
-                <Icon name="heart" size={100} color="rgba(255, 75, 92, 0.8)" />
-              </Animated.View>
-            </View>
-          </TouchableWithoutFeedback>
+          {/* Animated heart over the media */}
+          <Animated.View
+            style={[
+              styles.animatedHeartMain,
+              {
+                opacity: heartOpacity,
+                transform: [{ scale: heartScale }],
+              },
+            ]}
+          >
+            <Icon name="heart" size={100} color="rgba(255, 75, 92, 0.8)" />
+          </Animated.View>
 
           {media.length > 1 && (
             <View style={styles.dots}>
@@ -281,8 +276,7 @@ function PostHeader({ origin }: { origin?: string }) {
                   style={[
                     styles.dot,
                     {
-                      backgroundColor:
-                        mediaIndex === i ? "#19dee8" : "#444",
+                      backgroundColor: mediaIndex === i ? "#19dee8" : "#444",
                     },
                   ]}
                 />
@@ -296,19 +290,16 @@ function PostHeader({ origin }: { origin?: string }) {
       {isThread && (
         <TouchableWithoutFeedback onPress={handleDoubleTapPost}>
           <View>
-            {/* ← Replace plain Text with RenderHTML for “effectiveContent.content” */}
             <RenderHTML
-              contentWidth={contentWidth - 32} // account for horizontal padding if any
+              contentWidth={contentWidth - 32}
               source={{ html: effectiveContent?.content || "<p></p>" }}
               baseStyle={styles.caption}
               tagsStyles={{
-                // You can override specific tag styles if needed:
                 p: { marginBottom: 8 },
                 strong: { fontWeight: "bold" },
                 em: { fontStyle: "italic" },
                 a: { color: "#19dee8", textDecorationLine: "underline" },
               }}
-              // onLinkPress={(evt, href) => Linking.openURL(href)} // if you want links tappable
             />
 
             <Animated.View
@@ -338,7 +329,7 @@ function PostHeader({ origin }: { origin?: string }) {
               name="arrow-up"
               size={22}
               color={
-                post.status?.vote_status === "upvoted" ? "#ff4b5c" : "#aaa"
+                post.status?.vote_status === "upvoted" ? "#19dee8" : "#aaa"
               }
             />
           </TouchableOpacity>
@@ -369,7 +360,7 @@ function PostHeader({ origin }: { origin?: string }) {
               style={styles.action}
               onPress={() => toggleLikeDislike("like")}
             >
-              <FA
+              <Icon
                 name="heart"
                 size={20}
                 color={
@@ -487,7 +478,7 @@ function PostDetailInner({ origin }: { origin?: string }) {
                           name="arrow-up"
                           size={20}
                           color={
-                            item.vote_status === "upvoted" ? "#ff4b5c" : "#aaa"
+                            item.vote_status === "upvoted" ? "#19dee8" : "#aaa"
                           }
                         />
                       </TouchableOpacity>
@@ -753,12 +744,6 @@ const styles = StyleSheet.create({
     width: IMAGE_CONTAINER_WIDTH,
     height: IMAGE_CONTAINER_HEIGHT,
   },
-  mediaImage: {
-    width: IMAGE_CONTAINER_WIDTH,
-    height: IMAGE_CONTAINER_HEIGHT,
-    borderRadius: 14,
-    backgroundColor: "#222",
-  },
   dots: {
     flexDirection: "row",
     alignSelf: "center",
@@ -813,6 +798,7 @@ const styles = StyleSheet.create({
   voteButton: {
     paddingVertical: 4,
     paddingHorizontal: 8,
+    color: "rgb(0, 183, 228)",
   },
   voteCount: {
     color: "#aaa",

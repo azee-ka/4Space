@@ -27,7 +27,7 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
   // Determine if current user is the author
   useEffect(() => {
     setIsSelfPost(post?.author?.username === authState?.user?.username);
-  }, [post, authState]);
+  }, []);
 
   // Fetch post data if not pre-fetched
   useEffect(() => {
