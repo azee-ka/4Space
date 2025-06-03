@@ -82,3 +82,12 @@
 .sidebar-menu-icon {
     font-size: 1.2em;
 }
+
+
+
+
+@media (max-width: 800px) {
+    .sidebar-container {
+    width: 270px;
+}
+}

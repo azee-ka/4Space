@@ -265,3 +265,16 @@
     border-color: rgba(255, 255, 255, 0.16);
     color: #eee;
 }
+
+
+
+
+
+@media (max-width: 800px) {
+.profile-menu-container {
+    top: 50px;
+    backdrop-filter: blur(50px);
+    background: rgba(65, 65, 65, 0.155);
+
+}
+}
