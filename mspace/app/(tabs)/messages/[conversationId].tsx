@@ -32,12 +32,6 @@ import {
 } from "./utils/messageGrouping";
 import useAuth from "@/hooks/useAuth";
 
-//
-// Add this at the very top to hide the bottom Tabs when this screen is active:
-export const unstable_settings = {
-  tabBarStyle: { display: "none" },
-};
-
 type MessageType = {
   uuid: string;
   text: string;
@@ -591,7 +585,7 @@ export default function ChatScreen() {
       {/* ── Footer ── */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 95 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 50 : 0}
       >
         <View style={styles.chatFooter}>{renderFooter()}</View>
       </KeyboardAvoidingView>
@@ -827,7 +821,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#3F3F46",
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 6,
     backgroundColor: "#27272A",
   },
   requestWarningContainer: {

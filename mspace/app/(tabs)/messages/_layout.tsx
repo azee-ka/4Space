@@ -2,8 +2,6 @@
 
 import { Stack } from "expo-router";
 
-// We do NOT want a nested <Tabs> here; instead, just treat "index" and "[conversationId]" as a Stack.
-// This way, /messages → index.tsx shows our custom top tabs, and /messages/[conversationId] → chat screen.
 export const unstable_settings = {
   headerShown: false,
 };
@@ -17,7 +15,16 @@ export default function MessagesLayout() {
         options={{
           presentation: "modal",
           gestureEnabled: true,
-          // animation: "slide_from_right",
+          gestureDirection: "vertical",
+          // Only recognize a downward drag (dy > 5) as “close.”
+          // Removing failOffsetY so upward drags simply do nothing.
+          gestureHandlerProps: {
+            activeOffsetY: [5, Number.POSITIVE_INFINITY],
+          },
+          // Only start the gesture if the touch begins within the top 30px.
+          gestureResponseDistance: {
+            vertical: 30,
+          },
         }}
       />
     </Stack>
