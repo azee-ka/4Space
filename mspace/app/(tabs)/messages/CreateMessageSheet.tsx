@@ -16,7 +16,7 @@ import { Feather } from "@expo/vector-icons";
 import useApi from "@/hooks/useApi";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const SHEET_HEIGHT = SCREEN_HEIGHT * 0.7; // sheet covers 70% of screen
+const SHEET_HEIGHT = SCREEN_HEIGHT * 0.77; // sheet covers 70% of screen
 
 interface User {
   id: string;
