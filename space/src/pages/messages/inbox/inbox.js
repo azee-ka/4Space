@@ -22,6 +22,7 @@ const MessageInbox = ({ setShowCreateMessageOverlay }) => {
       }
     };
     fetchChats();
+    // eslint-disable-next-line
   }, []);
 
   return (

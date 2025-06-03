@@ -36,6 +36,7 @@ const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
             setProfileInfo(data);
             setIsLoading(false);
         });
+        // eslint-disable-next-line
     }, [username]);
 
     if (isLoading) {

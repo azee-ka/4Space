@@ -32,6 +32,9 @@ function Layout({ children }) {
     const [displayMenuVisible, setDisplayMenuVisible] = useState(false);
 
 
+    // for small screen
+    const [smallSidebarOpen, setSmallSidebarOpen] = useState(false);
+    const isMobile = window.innerWidth <= 600;
 
     const location = useLocation();
 
