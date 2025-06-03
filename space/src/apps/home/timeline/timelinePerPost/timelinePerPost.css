@@ -575,32 +575,50 @@
 /* ---- MOBILE (max-width: 600px) ---- */
 @media (max-width: 600px) {
   .timeline-per-post-wrapper {
-    width: 100vw !important;
+    width: 95vw !important;
     min-width: 0;
-    max-width: 99vw;
-    padding: 0 2px 0 2px;
+    padding: 0 8px 0 2px;
     gap: 7px;
   }
 
   .timeline-floating-actions {
-    /* flex-direction: row; */
+    flex-direction: row;
     gap: 10px;
     position: static;
     margin-bottom: 5px;
     width: 100%;
-    /* justify-content: flex-end; */
+    justify-content: space-evenly;
     height: auto;
   }
+  .timeline-floating-actions {
+    display: flex;
+    flex-direction: row;
+  }
+  
   .float-btn {
     width: 34px;
     height: 34px;
     padding: 2px;
     font-size: 0.98em;
+    all: unset;
   }
+    .float-btn:hover {
+      background: none;
+    }
+  .thread-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+    .thread-action-btn img {
+      height: 20px;
+    }
 
   .timeline-per-post {
     border-radius: 10px;
     padding: 6px;
+    /* width: 90%; */
   }
 
   .timeline-post-user-details .user-profile-wrapper {
@@ -609,7 +627,7 @@
   }
 
   .thread-post-body {
-    flex-direction: column;
+    flex-direction: row;
     gap: 5px;
   }
 
@@ -617,14 +635,6 @@
     padding: 0 6px 8px 6px;
     font-size: 0.97em;
     min-height: 58px;
-  }
-  .thread-vote-buttons {
-    flex-direction: row;
-    gap: 10px;
-    top: unset;
-    position: static;
-    margin: 4px 0;
-    justify-content: flex-end;
   }
 
   .timeline-post-stats {

@@ -36,3 +36,13 @@ p, span, div {
   width: auto;
 }
 
+
+
+
+ @media (min-height: 600px) {
+  .App {
+     /* background-color: rgb(119, 12, 12) !important; */
+    height: 100svh; 
+    width: 100svw;
+  }
+ }
