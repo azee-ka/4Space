@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import './loadingBar.scss';
+import './loadingBar.css';
 
 const LoadingBar = ({ isLoading }) => {
     const [progress, setProgress] = useState(0);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import './messagesControl.scss';
+import './messagesControl.css';
 import useApi from "../../../../utils/useApi";
 
 const MessagesControl = () => {

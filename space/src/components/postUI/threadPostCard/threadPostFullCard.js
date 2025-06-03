@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import { formatCount } from '../../../utils/formatCount';
-import './threadPostFullCard.scss';
+import './threadPostFullCard.css';
 
 // Only handles props - for feed cards
 const ThreadPostFullCard = ({

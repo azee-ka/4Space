@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import useApi from "../../../utils/useApi";
 import DOMPurify from "dompurify";
 import { Virtuoso } from 'react-virtuoso';
-import "./chatContainer.scss";
+import "./chatContainer.css";
 import { FaEllipsisV, FaPaperPlane, FaRegSmile } from "react-icons/fa";
 import { useAuth } from "../../../hooks/useAuth";
 import RenderText from "../../../utils/autoCompleteInput/renderText";

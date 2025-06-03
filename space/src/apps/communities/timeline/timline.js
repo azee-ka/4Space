@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './timeline.scss';
+import './timeline.css';
 import useApi from '../../../utils/useApi';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';

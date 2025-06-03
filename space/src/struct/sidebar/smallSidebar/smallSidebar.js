@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './smallSidebar.scss';
+import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faPlus, faStream, faLayerGroup, faSearch, faChartBar, faGear, faUser, faChartLine, faUserGroup, faPenToSquare, faTools, faBook, faCodeBranch, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
@@ -11,10 +11,8 @@ import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { useModeContext } from '../../../context/modeContext';
 import CreateSpaceTulip from '../../../apps/space/createSpaceTulip/createSpaceTulip';
 import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
-import { useDevice } from '../../../context/DeviceContext';
 
 const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
-    const { isM } = useDevice();
     const { mode } = useModeContext();
     const { openCreatePostOverlay } = useCreatePostContext();
     const { openCreateCommunityOverlay } = useCreateCommunityContext();
@@ -99,17 +97,11 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
 
     const sidebarBtns = mode === 'communities' ? communitiesIcons : mode === 'space' ? spaceIcons : homeIcons;
 
-
-    const filteredSidebarBtns = isM
-    ? sidebarBtns.filter(item => item.label !== "Search")
-    : sidebarBtns;
-
-
     return (
         <div className={`small-sidebar ${searchSidebarOpen ? 'search-sidebar-open' : ''}`}>
             <div className='small-sidebar-inner-menu'>
                 <div className="small-sidebar-top">
-                    {filteredSidebarBtns?.map((item, index) => (
+                    {sidebarBtns?.map((item, index) => (
                         <div
                             key={index}
                             className="small-sidebar-item"
@@ -130,9 +122,8 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                         </div>
                     ))}
                 </div>
-                
-                {!isM &&
-                    <div className="small-sidebar-bottom">
+
+                <div className="small-sidebar-bottom">
                     {bottomIcons?.map((item, index) => (
                         <div
                             key={index}
@@ -150,7 +141,6 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                         </div>
                     ))}
                 </div>
-                }
             </div>
 
 

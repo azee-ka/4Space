@@ -1,6 +1,6 @@
 // CreateCommunity.jsx
 import React, { useEffect, useState } from 'react';
-import './createCommunity.scss';
+import './createCommunity.css';
 import useApi from '../../../utils/useApi';
 import { useNavigate } from 'react-router-dom';
 import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';

@@ -1,0 +1,271 @@
+/* Register.css */
+
+.register-auth-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  background-color: rgba(255, 0, 0, 0);
+}
+
+.register-auth-container-inner {
+  width: 800px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: center;
+  gap: 10px;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0);
+  background: linear-gradient(100deg, #05060874, #44476930);
+  backdrop-filter: blur(50px);
+  border: 1px solid rgba(57, 57, 57, 0.495);
+  border-radius: 10px;
+  transition: background-color 0.3s ease, transform 0.4s ease;
+  padding: 0em 2em;
+}
+
+.register-auth-container-inner {
+  transform: scale(1.03);
+}
+
+.register-auth-container .register-auth-card {
+  width: 400px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  color: white !important;
+  background-color: rgba(171, 50, 50, 0);
+  gap: 30px;
+}
+
+.register-auth-card h2 {
+  margin: 0;
+  padding: 0;
+  font-size: 1.4em;
+  color: white;
+  background-color: rgba(255, 0, 0, 0);
+  height: 110px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.register-auth-container input {
+  box-shadow: 0px 0px 5px rgba(0, 245, 196, 0.389);
+  border: 0px solid #a1a1a1;
+  border-radius: 8px;
+  background-color: black;
+  color: white;
+  font-size: 16px;
+  /* padding: 20px 12px; */
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.register-auth-container input:focus {
+  outline: none;
+  border-color: lightgray;
+  background-color: rgba(0, 241, 245, 0.022);
+  box-shadow: 0 0 5px rgb(0, 154, 181);
+
+}
+
+.register-auth-container input:hover {
+  outline: none;
+  border-color: lightgray;
+  background-color: rgba(0, 241, 245, 0.022);
+  box-shadow: 0 0 5px rgb(0, 154, 181);
+}
+
+.register-auth-container form {
+  background-color: rgba(255, 255, 255, 0);
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  gap: 15px;
+  box-sizing: border-box;
+}
+
+.register-card-full-name {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  /* padding: 8px 10px; */
+  box-sizing: border-box;
+}
+
+.register-card-full-name input {
+  width: 50%;
+}
+
+
+.register-card-other-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 13px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0);
+  box-sizing: border-box;
+}
+
+.redirect-to-login {
+  text-decoration: none;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.643);
+  background-color: rgba(255, 255, 255, 0);
+  width: 100%;
+  text-align: left;
+  margin-top: -2%;
+  margin-bottom: -1%;
+}
+
+.redirect-to-login a {
+  text-decoration: none;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.708);
+  font-size: 12px;
+}
+
+.register-auth-container button {
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #004e61;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.register-auth-container button:hover {
+  background-color: #00100b;
+  box-shadow: 0px 0px 5px 2px #004e61;
+}
+
+.register-password-field-container input {
+  padding-right: 32px;
+}
+
+.register-password-field-container {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0);
+  position: relative;
+
+}
+
+
+.register-password-field-container .password-toggle-button-container {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  transition: right 0.25s ease;
+}
+
+/* .register-password-field-container input:focus+.password-toggle-button-container {
+    right: 40px !important;
+  } */
+
+.register-password-field-container .password-toggle-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.register-password-field-container .password-toggle-button-container button {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px !important;
+  color: rgb(151, 149, 149);
+}
+
+.register-password-field-container .password-toggle-button-container button:hover {
+  background-color: rgba(255, 255, 255, 0) !important;
+  box-shadow: 0px 0px 0px 0px rgba(255, 255, 255, .2) !important;
+  border-radius: 10px;
+  color: white;
+}
+
+.register-password-field-container .eye-icon-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+.register-error-display {
+  background-color: rgba(0, 128, 0, 0);
+  flex-grow: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.register-card-select-account-type-field {
+  background-color: rgba(0, 0, 0, 0);
+  width: 100%;
+}
+
+.register-card-select-account-type-field select {
+  background-color: black;
+  width: 100%;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  border: 0;
+  box-shadow: 0px 0px 0px 0px rgb(0, 238, 234) !important;
+  transition: box-shadow 0.3s ease;
+}
+
+.register-card-select-account-type-field select:hover {
+  box-shadow: 0px 0px 4px 3px rgb(0, 238, 234) !important;
+}
+
+
+.register-card-organization {
+  padding: 0;
+  margin: 0;
+  font-size: 0.7em;
+  background-color: rgba(255, 0, 0, 0);
+  color: gray;
+}
+
+.register-card-organization a {
+  text-decoration: none;
+  color: rgb(0, 255, 255);
+}

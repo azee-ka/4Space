@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./library.scss";
+import "./library.css";
 import useApi from "../../../utils/useApi";
 import {
     FiUpload,

@@ -1,5 +1,5 @@
 import React from "react";
-import './postMoreOverlay.scss';
+import './postMoreOverlay.css';
 import { FaTimes } from "react-icons/fa";
 import { useReportOverlayContext } from "../../../../context/ReportOverlayContext";
 

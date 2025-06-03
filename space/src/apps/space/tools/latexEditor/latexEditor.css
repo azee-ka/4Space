@@ -1,0 +1,599 @@
+.latex-editor-root {
+   position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0;
+  margin: 0;
+  font-family: 'Fira Code', monospace;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.save-status {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+.save-status.saved {
+  color: lightgreen;
+}
+.save-status.unsaved {
+  color: orange;
+}
+
+.latex-editor-split {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.latex-editor-textarea {
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #e0e0e0;
+  border: none;
+  padding: 20px;
+  font-size: 0.95em;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.latex-editor-preview {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.latex-editor-page-preview {
+  flex: 1;
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.02);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.latex-editor-actions {
+  height: 50px;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(20, 20, 20, 0.8);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.latex-editor-actions button {
+  background: linear-gradient(135deg, rgba(0, 140, 155, 0.6), rgba(0, 41, 50, 0.5));
+  color: white;
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  padding: 0.5em 1.2em;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.latex-editor-actions button:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+}
+
+
+
+
+.latex-editor-codemirror {
+  flex: 1;
+  min-height: 100%;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  background-color: #0a0a0a;
+  font-size: 0.95em;
+}
+
+
+
+
+.latex-toolbar-actions {
+  display: flex;
+  gap: 0.5em;
+  padding: 0.6em 1.2em;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.latex-toolbar-actions button {
+  background: rgba(0, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 12px;
+  font-size: 0.8em;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.latex-toolbar-actions button:hover {
+  background: rgba(0, 255, 255, 0.15);
+  border: 1px solid cyan;
+}
+
+
+
+
+
+.latex-editor-split {
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+}
+
+.latex-editor-pane {
+  flex: 1;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+
+.latex-preview-pane {
+  flex: 1;
+  background: #1c1c1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.preview-placeholder {
+  color: #888;
+  font-size: 0.95em;
+}
+
+
+
+
+
+
+
+
+
+/* File Upload Styling */
+.latex-toolbar-iconbar input[type="file"] {
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 0.75em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-left: auto;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.latex-toolbar-iconbar input[type="file"]::file-selector-button {
+  background: rgba(0, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-right: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.latex-toolbar-iconbar input[type="file"]::file-selector-button:hover {
+  background: rgba(0, 255, 255, 0.25);
+  border-color: cyan;
+  transform: scale(1.04);
+}
+
+@media screen and (max-width: 768px) {
+  .latex-editor-toolbar h2 {
+    font-size: 1em;
+  }
+
+  .latex-toolbar-iconbar {
+    gap: 0.4em;
+    padding: 0.5em;
+    flex-wrap: wrap;
+  }
+
+  .latex-toolbar-iconbar button,
+  .tooltip-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1em;
+  }
+
+  .latex-toolbar-iconbar input[type="file"] {
+    font-size: 0.65em;
+    padding: 3px 6px;
+  }
+}
+
+
+
+.save-status:hover {
+  opacity: 1;
+  font-weight: 600;
+}
+
+
+
+
+
+
+.compile-btn.has-errors {
+  background: linear-gradient(to right, #ff4d4d, #aa0000);
+  border: 1px solid red;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
+}
+
+.compile-btn.has-errors:hover {
+  background: linear-gradient(to right, #ff6666, #cc0000);
+}
+
+
+
+.cm-diagnostic {
+  background-color: rgba(255, 0, 0, 0.15);
+}
+
+.cm-diagnostic-error::before {
+  content: "⚠";
+  color: red;
+  padding-right: 4px;
+}
+
+
+
+
+
+
+
+
+
+
+/* HEADER BAR (Top) */
+.latex-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+  height: 64px;
+  background: rgba(18, 20, 30, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  /* backdrop-filter: blur(10px); */
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.latex-editor-header h1 {
+  font-size: 1.25rem;
+  color: #00f5ff;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.save-status {
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0.85;
+  margin-left: auto;
+  margin-right: 1rem;
+}
+
+.save-status.saved {
+  color: #6cffc4;
+}
+
+.save-status.unsaved {
+  color: #ffc273;
+}
+
+
+
+
+.latex-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 255, 255, 0.035);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;   
+}
+
+
+/* Compact buttons */
+.tooltip-btn {
+  all: unset;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e6faff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tooltip-btn:hover {
+  background: rgba(0, 255, 255, 0.15);
+  border-color: #00eaff;
+  transform: scale(1.05);
+}
+
+.tooltip-text {
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 25, 0.95);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.15s ease-in-out;
+  z-index: 9999;
+}
+.tooltip-btn:hover .tooltip-text {
+  opacity: 1;
+}
+/* Target only the tooltip on the top-right settings icon */
+.settings-btn .tooltip-text {
+  top: 115%; 
+  bottom: auto;
+  /* z-index: 50; */
+}
+
+.tooltip-text::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: rgba(20, 20, 25, 0.95);
+}
+
+
+
+/* Compact compile button */
+.compile-btn {
+  background: linear-gradient(to right, #00d4ff, #0072ff);
+  color: white;
+  font-weight: bold;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: none;
+  width: 120px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.compile-btn.has-errors {
+  background: linear-gradient(to right, #ff5a5a, #7e0000);
+  border: 1px solid red;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #00e1ff;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+.toggle-label {
+  font-size: 0.85em;
+  color: #ddd;
+}
+.raw-latex-view {
+  width: 100%;
+  height: 100%;
+  padding: 1em;
+  background-color: #111;
+  color: #0f0;
+  font-family: monospace;
+  overflow-y: auto;
+}
+
+
+
+
+
+
+.view-toggle {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 10px;
+}
+.switch {
+  position: relative;
+  width: 46px;
+  height: 24px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  border-radius: 24px;
+  transition: 0.4s;
+}
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 18px; width: 18px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #00e1ff;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+.toggle-label {
+  color: #ccc;
+  font-size: 0.85em;
+}
+
+
+.raw-latex-line {
+  color: #aaa;
+  margin: 0.5em 0;
+  white-space: pre-wrap;
+}
+
+
+
+.latex-preview-pane {
+  flex: 1;
+  background: #1c1c1c;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  /* padding: 20px; */
+  overflow-y: auto;
+  overflow-x: auto; /* ✅ Add this too */
+  box-sizing: border-box;
+}
+
+/* 
+.katex-preview > div {
+  margin: 0.5em 0;
+} */
+
+
+
+
+/* 
+.katex-preview > span {
+  margin-bottom: 0.75em;
+  line-height: 1.8em;
+  display: inline-block;
+}
+
+
+.katex-display {
+  display: inline !important;
+  white-space: normal !important;
+}
+
+.katex {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+  display: inline !important;
+}
+
+.katex .mfrac {
+  display: inline-block !important;
+  max-width: 100%;
+} */
+
+
+
+
+
+.katex-preview {
+  padding: 1em;
+  background-color: #111;
+  color: white;
+  font-size: 1.2em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8em;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.math-line {
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 2;
+}
+
+
+.katex {
+  white-space: normal !important;
+  word-break: break-word;
+}

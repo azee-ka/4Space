@@ -1,7 +1,7 @@
 // personalProfile.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import './postGrid.scss';
+import './postGrid.css';
 
 import { FaBoxes, FaFile, FaLayerGroup, FaStackExchange, FaTh, FaVideo } from 'react-icons/fa';
 import ImageWrapper from '../../../utils/imageWrapper/imageWrapper';

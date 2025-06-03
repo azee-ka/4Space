@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { faGear, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
-import './profileMenuSidebar.scss';
+import './profileMenuSidebar.css';
 
 const ProfileMenuSidebar = () => {
     const menuBtns = [

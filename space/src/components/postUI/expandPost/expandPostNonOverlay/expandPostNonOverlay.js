@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import './expandPostNonOverlay.scss';
+import './expandPostNonOverlay.css';
 import DOMPurify from 'dompurify';
 import { useAuth } from '../../../../hooks/useAuth';
 import { timeAgo } from '../../../../utils/convertDateTIme';

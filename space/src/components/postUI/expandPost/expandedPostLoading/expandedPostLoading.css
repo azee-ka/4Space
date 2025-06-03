@@ -1,0 +1,141 @@
+.expanded-post-loading {
+    background-color: rgba(255, 255, 255, 0.0);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.expanded-post-loading.expanded-post-overlay-comments-innner {
+    border-radius: 10px;
+    width: 90%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+
+}
+
+
+.expanded-post-loading.expanded-post-per-comment {
+    background-color: rgba(255, 255, 255, 0.5);
+    width: 100%;
+    height: 20%;
+    border-bottom: 0.5px solid rgba(128, 128, 128, 0.497);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 5px;
+}
+
+.expanded-post-loading.expanded-post-per-comment:first-child {
+    margin-top: 10%;
+}
+
+.expanded-post-loading.expanded-post-per-comment:last-child {
+    border-bottom: 0px solid rgba(128, 128, 128, 0.497);
+    margin-bottom: 5%;
+
+}
+
+
+
+
+.expanded-post-loading .expanded-post-commenting-user-profile-picture-inner {
+    width: 95%;
+    height: 95%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(37, 37, 37);
+    border-radius: 50%;
+    animation: glowAnimation 1.5s infinite alternate;
+
+}
+
+
+.expanded-post-loading .expanded-post-commenting-user-username {
+    background-color: rgba(255, 255, 0, 0);
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    color: white;
+    gap: 10px;
+
+}
+
+.expanded-post-commenting-user-username-loading-state {
+    width: 80%;
+    height: 40%;
+    background-color: rgb(34, 34, 34);
+    border-radius: 8px;
+    animation: glowAnimation 1.5s infinite alternate;
+}
+
+.expanded-post-commenting-user-username-loading-state-2 {
+    width: 40%;
+    height: 30%;
+    background-color: rgb(34, 34, 34);
+    border-radius: 8px;
+    animation: glowAnimation 1.5s infinite alternate;
+}
+
+@keyframes glowAnimation {
+    from {
+      box-shadow: 0 0 0px rgba(34, 34, 34, 0);
+    }
+    to {
+      box-shadow: 0 0px 3px 3px rgba(34, 34, 34, 0.839);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+.expanded-post-loading .expanded-post-overlay-img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    object-fit: cover;
+    height: 600px !important;
+    width: 600px !important;
+    z-index: 5;
+
+    background-color: rgb(11, 11, 11);
+    animation: glowAnimation 1.5s infinite alternate;
+    border-radius: 10px;
+
+
+}
+
+
+.expanded-post-loading .expanded-post-overlay-interaction-container {
+    width: 100%;
+    height: 100%;
+    width: 50px;
+    height: 400px;
+    background-color: rgb(22, 22, 22);
+    border-radius: 10px;
+    animation: glowAnimation 1.5s infinite alternate;
+}
+
+.expanded-post-loading .expanded-post-overlay-comments {
+    animation: glowAnimation 1.5s infinite alternate;
+    border: 0;
+}

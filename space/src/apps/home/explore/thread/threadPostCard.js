@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from 'react-dom';
 import { FaArrowDown, FaArrowUp, FaBan, FaBellSlash, FaBookmark, FaChevronLeft, FaChevronRight, FaCommentDots, FaEdit, FaEllipsisH, FaEllipsisV, FaExpandAlt, FaExpandArrowsAlt, FaFlag, FaHeart, FaMagic, FaPaperPlane, FaQuoteLeft, FaQuoteRight, FaReply, FaRetweet, FaShareAlt, FaTrashAlt, FaVolumeMute } from 'react-icons/fa';
 import { formatDateTime } from "../../../../utils/formatDateTime";
-import "./threadPostCard.scss";
+import "./threadPostCard.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useExpandPostContext } from "../../../../components/postUI/expandPost/expandPostContext";
 import { useTrackPostView } from "../../../../hooks/useTrackPostView";

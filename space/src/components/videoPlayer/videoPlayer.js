@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { FaPlay, FaPause, FaForward, FaBackward, FaEllipsisV, FaVolumeUp, FaVolumeMute, FaRedo, FaCheck, FaExpand, FaCompress, FaVideo, FaViadeoSquare, FaVideoSlash, FaFileVideo } from 'react-icons/fa';
-import './videoPlayer.scss';
+import './videoPlayer.css';
 
 const VideoPlayer = ({ mediaFile, playable, videoQualities, subtitles, audioTracks }) => {
   const videoRef = useRef(null);

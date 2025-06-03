@@ -1,0 +1,90 @@
+.parent-layout {
+    color: white;
+    height: 100%;
+    background-color: rgba(0, 0, 255, 0);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.layout-navbar {
+    background-color: rgba(255, 0, 0, 0);
+    height: 70px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.layout-page {
+    background-color: rgba(255, 255, 255, 0);
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+}
+
+.layout-small-sidebar {
+    position: fixed;
+    /* width: 80px; */
+    height: calc(100% - 60px);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-left: 15px;
+    left: 0;
+    bottom: 0;
+    top: 60px;
+    box-sizing: border-box;
+    z-index: 48;
+    background-color: rgba(255, 0, 0, 0);
+    padding: 2px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.layout-page-content {
+    background-color: rgba(255, 255, 255, 0);
+    flex-grow: 1 !important;
+    height: 100%;
+    width: calc(100% - 90px);
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    background-color: rgba(255, 0, 0, 0);
+}
+.layout-page-content.sidebar {
+    /* margin-left: 80px; */
+    padding: 10px 0px 10px 20px;
+    padding-bottom: 0px;
+        margin-left: 90px;
+}
+
+.layout-page-content h2 {
+    padding: 0;
+    margin: 0;
+    font-size: 1.5em;
+    
+}
+
+
+
+.editor-isolated-layout {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+}

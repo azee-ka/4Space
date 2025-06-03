@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './displayMenu.scss';
+import './displayMenu.css';
 import { useDisplaySettings } from '../../../context/DisplaySettingsContext';
 import useApi from '../../../utils/useApi';
 

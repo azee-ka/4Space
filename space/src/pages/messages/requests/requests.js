@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useApi from "../../../utils/useApi";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import ChatContainer from "../chatContainer/chatContainer";
-import "./requests.scss";
+import "./requests.css";
 
 const MessageRequests = () => {
   const navigate = useNavigate();

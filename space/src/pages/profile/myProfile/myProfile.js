@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import './myProfile.scss';
+import './myProfile.css';
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
@@ -36,7 +36,6 @@ const MyProfile = ({ username, fetchProfileData, isCustomizing }) => {
             setProfileInfo(data);
             setIsLoading(false);
         });
-        // eslint-disable-next-line
     }, [username]);
 
     if (isLoading) {

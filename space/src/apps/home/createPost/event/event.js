@@ -1,5 +1,5 @@
 import React from 'react';
-import './event.scss';
+import './event.css';
 
 const Event = () => {
     return (

@@ -1,0 +1,281 @@
+.space-projects-page {
+  width: 100%;
+  height: 100%;
+  padding-right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  color: white;
+}
+
+/* Header */
+.space-projects-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 2em;
+  margin-left: 10px;
+}
+
+.space-projects-header h2 {
+  font-size: 1.5em;
+  margin: 0;
+}
+
+.projects-view-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.projects-view-toggle button {
+  all: unset;
+  padding: 0.4em 0.6em;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(0, 0, 0, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.projects-view-toggle button:hover {
+  border-color: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.projects-view-toggle button.active {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(12, 124, 204, 0.4));
+  border: 1px solid rgba(0, 247, 255, 0.6);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+}
+
+/* Grid View */
+.space-projects-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 10px 2em 20px 10px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.project-card {
+  position: relative;
+  text-decoration: none;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.project-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 1px rgba(0, 200, 255, 0.08),
+    0 8px 16px rgba(0, 200, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.project-card-blur {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  backdrop-filter: blur(6px);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+}
+
+.project-card-inner {
+  position: relative;
+  z-index: 2;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: white;
+}
+
+.project-card-icon,
+.project-card-icon.top {
+  font-size: 1.5rem;
+  color: #00ffe1;
+}
+
+.project-card h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  color: #ffffff;
+}
+
+.project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.project-type {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #8be9fd;
+}
+
+.project-dates {
+  font-size: 0.7rem;
+  color: #bdbdbd;
+}
+
+
+
+
+.project-group-column {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+}
+
+.project-group-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #d2f7ff;
+  border-left: 3px solid rgba(0, 255, 255, 0.4);
+  padding-left: 8px;
+}
+
+.project-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+
+
+/* .project-id {
+  font-size: 0.65rem;
+  color: #999;
+  margin-top: auto;
+} */
+
+
+
+
+
+
+
+/* =============================== */
+/* List View */
+/* =============================== */
+/* List container */
+.space-projects-content.list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* max-width: 1100px; */
+  /* margin: 0 auto; */
+  /* padding: 0; */
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 20%;
+  padding-bottom: 20px;
+  padding-top: 0;
+}
+
+/* List header */
+.list-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75em 1.5em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #a0a0a0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 80%;
+  box-sizing: border-box;
+}
+
+/* Row */
+.project-card.list-row {
+  position: relative;
+  display: flex;
+  text-decoration: none;
+  padding: 0.75em 1.5em;
+  border-radius: 12px;
+  transition: all 0.2s;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.015);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.project-card.list-row:hover {
+  background-color: rgba(255, 255, 255, 0.106);
+  box-shadow: 0 0 8px rgba(0, 200, 255, 0);
+  transform: scale(1.01);
+}
+
+/* Blur layer */
+.project-card.list-row .project-card-blur {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+}
+
+/* List row columns */
+.list-row-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  /* gap: 1rem; */
+}
+
+.col-icon-title,
+.col-type,
+.col-updated {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  /* overflow: hidden; */
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+  color: #e0e0e0;
+}
+
+.col-icon-title {
+  flex: 3;
+  gap: 0.5em;
+  font-weight: 500;
+}
+
+.col-type,
+.col-updated {
+  flex: 1;
+}
+
+.project-card-icon {
+  font-size: 1.2rem;
+  color: #00ffe1;
+}
+
+.list-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

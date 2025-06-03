@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import './visibility.scss';
+import './visibility.css';
 import useApi from "../../../../utils/useApi";
 import ToggleSlider from "../../../../utils/toggleSlider/toggleSlider";
 

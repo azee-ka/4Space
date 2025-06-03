@@ -1,5 +1,5 @@
 import React from "react";
-import './notifications.scss';
+import './notifications.css';
 
 const NotificationsTab = () => {
     return (

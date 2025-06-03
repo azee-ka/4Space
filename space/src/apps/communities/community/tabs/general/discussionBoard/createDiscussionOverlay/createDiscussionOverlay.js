@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import './createDiscussionOverlay.scss';
+import './createDiscussionOverlay.css';
 import useApi from '../../../../../../../utils/useApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
