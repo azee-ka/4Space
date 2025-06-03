@@ -5,7 +5,6 @@ import {
   View,
   Text,
   ActivityIndicator,
-  Image,
   TouchableOpacity,
   Dimensions,
   StyleSheet,
@@ -23,6 +22,7 @@ import RenderHTML from "react-native-render-html";
 import FA from "react-native-vector-icons/FontAwesome";
 import Icon from "react-native-vector-icons/Feather";
 import { formatDistanceToNow } from "date-fns";
+import { Image } from "expo-image";
 import {
   ExpandPostProvider,
   useExpandPostContext,
@@ -171,7 +171,9 @@ function PostHeader({ origin }: { origin?: string }) {
               ? { uri: effectiveAuthor.profile_image }
               : require("../../../assets/default_profile_picture.png")
           }
+          cachePolicy="memory-disk"
           style={styles.avatar}
+          contentFit="cover"
         />
         <View>
           <Text style={styles.username}>@{effectiveAuthor?.username}</Text>
@@ -198,7 +200,9 @@ function PostHeader({ origin }: { origin?: string }) {
                   ? { uri: post.parent_post.author.profile_image }
                   : require("../../../assets/default_profile_picture.png")
               }
+              cachePolicy="memory-disk"
               style={styles.quoteAvatar}
+              contentFit="cover"
             />
             <Text style={styles.quoteUsername}>
               @{post.parent_post.author.username}
@@ -236,14 +240,15 @@ function PostHeader({ origin }: { origin?: string }) {
             renderItem={({ item }) => (
               <TouchableWithoutFeedback onPress={handleDoubleTapPost}>
                 <Image
-                  source={{ uri: item.file || item.url || (item as any) }}
+                  source={{ uri: item.file || item.url }}
+                  cachePolicy="memory-disk"
                   style={{
                     width: IMAGE_CONTAINER_WIDTH,
                     height: IMAGE_CONTAINER_HEIGHT,
                     borderRadius: 14,
                     backgroundColor: "#222",
                   }}
-                  resizeMode="cover"
+                  contentFit="cover"
                 />
               </TouchableWithoutFeedback>
             )}
@@ -512,7 +517,9 @@ function PostDetailInner({ origin }: { origin?: string }) {
                               ? { uri: item.author.profile_image }
                               : require("../../../assets/default_profile_picture.png")
                           }
+                          cachePolicy="memory-disk"
                           style={styles.commentAvatar}
+                          contentFit="cover"
                         />
                         <View>
                           <Text style={styles.commentUser}>

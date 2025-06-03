@@ -367,7 +367,7 @@ function TimelinePostCard({ onPressDetails }: { onPressDetails: () => void }) {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionBtn}>
+            <TouchableOpacity onPress={onPressDetails} style={styles.actionBtn}>
               <Icon name="message-circle" size={22} color="#888" />
               <Text style={styles.actionText}>
                 {post.stats?.comments_count || 0}
