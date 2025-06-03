@@ -162,23 +162,33 @@ def quote_post(request, post_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_post_comments(request, post_id):
+    # 1) Find the post (ThreadPost or VisualPost) or 404
     post = None
-    for model_class in [ThreadPost, VisualPost]:
+    for Model in (ThreadPost, VisualPost):
         try:
-            post = model_class.objects.get(id=post_id)
+            post = Model.objects.get(id=post_id)
             break
-        except model_class.DoesNotExist:
+        except Model.DoesNotExist:
             continue
 
     if not post:
         return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    comments_qs = post.comments.filter(parent_comment__isnull=True).order_by('-created_at')
-    paginator = LimitOffsetPagination()
-    paginated_comments = paginator.paginate_queryset(comments_qs, request)
-    serializer = CommentSerializer(paginated_comments, many=True, context={'request': request})
+    comments_qs = (
+        post.comments
+            .filter(parent_comment__isnull=True)
+            .order_by('-created_at')
+    )
 
+    paginator = LimitOffsetPagination()
+    paginator.default_limit = 10       # ← set a sensible default page size
+    page = paginator.paginate_queryset(comments_qs, request)
+
+    # If no page could be formed (e.g. limit=None), DRF returns None.
+    # But because default_limit=10, `page` will be a list of up to 10 comments.
+    serializer = CommentSerializer(page, many=True, context={'request': request})
     return paginator.get_paginated_response(serializer.data)
+
 
 
 

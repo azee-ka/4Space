@@ -1,5 +1,5 @@
 // hooks/useRequireAuth.js
-import { useAuth } from '../hooks/useAuth';
+import useAuth from '../hooks/useAuth';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 

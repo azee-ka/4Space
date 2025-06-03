@@ -12,15 +12,15 @@ import {
   RefreshControl,
   SafeAreaView,
 } from "react-native";
-import MasonryList from "@react-native-seoul/masonry-list"; // yarn add @react-native-seoul/masonry-list
+import MasonryList from "@react-native-seoul/masonry-list";
 import { useRouter } from "expo-router";
-import fetchWithAuth from "../../../utils/fetchWithAuth";
+import useApi from "../../../hooks/useApi";
 import ExploreVisualPostCard from "../../../components/ExploreVisualPostCard";
 import ThreadPostCard from "../../../components/ExploreThreadPostCard";
-import { useAuth } from "@/hooks/useAuth";
 
 const { width } = Dimensions.get("window");
 const NUM_COLUMNS = 2;
+
 const TAB_OPTIONS = [
   { key: "visual", label: "Visual" },
   { key: "thread", label: "Thread" },
@@ -28,7 +28,8 @@ const TAB_OPTIONS = [
 
 export default function Explore() {
   const router = useRouter();
-  const { authState } = useAuth();
+  const { callApi } = useApi();
+
   const [activeTab, setActiveTab] = useState<"visual" | "thread">("visual");
 
   // ─── Visual tab state ────────────────────────────────────────────────────────
@@ -50,13 +51,18 @@ export default function Explore() {
     async (reset = false) => {
       if (visualLoading) return;
       setVisualLoading(true);
+
       try {
         const limit = 20;
         const offset = reset ? 0 : visualPage * limit;
-        const data = await fetchWithAuth(
-          `posts/explore/get-posts/?post_type=Visual&limit=${limit}&offset=${offset}`,
-          { method: "GET", authState }
+
+        // callApi returns AxiosResponse<{ results: any[]; next: string | null; ... }>
+        const resp = await callApi(
+          `posts/explore/get-posts/?post_type=Visual&limit=${limit}&offset=${offset}`
         );
+
+        const data = resp.data; // { results: [...], next: "...", previous: "...", count: number }
+
         if (reset) {
           setVisualPosts(data.results);
           setVisualPage(1);
@@ -71,7 +77,7 @@ export default function Explore() {
         setVisualLoading(false);
       }
     },
-    [authState, visualLoading, visualPage]
+    [visualLoading, visualPage]
   );
 
   // ─── Fetch Thread Posts ──────────────────────────────────────────────────────
@@ -79,14 +85,17 @@ export default function Explore() {
     async (reset = false) => {
       if (threadLoading) return;
       setThreadLoading(true);
+
       try {
         const limit = 20;
         const offset = reset ? 0 : threadPage * limit;
-        const resp = await fetchWithAuth(
-          `posts/explore/get-posts/?post_type=Thread&limit=${limit}&offset=${offset}`,
-          { method: "GET", authState }
+
+        const resp = await callApi(
+          `posts/explore/get-posts/?post_type=Thread&limit=${limit}&offset=${offset}`
         );
-        const data = resp.data;
+        console.log('resp', resp)
+        const data = resp.data; // { results: [...], next: "...", previous: "...", count: number }
+
         if (reset) {
           setThreadPosts(data.results);
           setThreadPage(1);
@@ -101,10 +110,10 @@ export default function Explore() {
         setThreadLoading(false);
       }
     },
-    [authState, threadLoading, threadPage]
+    [threadLoading, threadPage]
   );
 
-  // ─── When tab changes, reset and reload ─────────────────────────────────────
+  // ─── When the active tab flips, reset and reload that tab ────────────────────
   useEffect(() => {
     if (activeTab === "visual") {
       setVisualPage(0);
@@ -182,15 +191,18 @@ export default function Explore() {
 
       {/* ─── Content Area ──────────────────────────────────────────────────────── */}
       {activeTab === "visual" ? (
+        // If we’re still loading the very first “page” of visual posts:
         visualLoading && visualPosts.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#19dee8" />
           </View>
         ) : visualPosts.length === 0 ? (
+          // No visual posts at all:
           <View style={styles.noPostsContainer}>
             <Text style={styles.noPostsText}>No Visual Posts</Text>
           </View>
         ) : (
+          // Show Masonry grid of “Visual” posts
           <MasonryList
             data={visualPosts}
             keyExtractor={(item) => item.id.toString()}
@@ -215,7 +227,9 @@ export default function Explore() {
             )}
           />
         )
-      ) : threadLoading && threadPosts.length === 0 ? (
+      ) : // ───────────────────────────────────────────────────────────────────
+      // THREAD tab chosen:
+      threadLoading && threadPosts.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#19dee8" />
         </View>
@@ -228,7 +242,10 @@ export default function Explore() {
           data={threadPosts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <ThreadPostCard post={item} onPress={() => handleThreadPress(item)} />
+            <ThreadPostCard
+              post={item}
+              onPress={() => handleThreadPress(item)}
+            />
           )}
           onEndReached={loadMoreThread}
           onEndReachedThreshold={0.5}
@@ -311,7 +328,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   masonryContent: {
-    paddingHorizontal: 8, // half of HORIZONTAL_PADDING
+    paddingHorizontal: 8,
     paddingTop: 10,
     paddingBottom: 20,
   },

@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Animated, View, TouchableOpacity, StyleSheet, FlatList, Image, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
-const DRAWER_WIDTH = 340;
+const DRAWER_WIDTH = 300;
 
 export default function NotificationSidebar({ visible, onClose, notifications }) {
   const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current; // start offscreen right
