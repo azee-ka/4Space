@@ -29,9 +29,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def get_participants(self, conversation):
         print(f'Fetching participants for conversation: {conversation.uuid}')
         # Fetch Participant objects related to the given conversation
-        participants = Participant.objects.filter(conversation=conversation)
-        print(f'Participants found: {participants}')
-        return participants
+        # participants = Participant.objects.filter(conversation=conversation)
+        # print(f'Participants found: {participants}')
+        return Participant.objects.filter(conversation=conversation)
+        # return participants
 
     @sync_to_async
     def update_invite_sent(self, conversation):
@@ -139,24 +140,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({'error': 'Conversation or sender not found'}))
             return
 
-        participants = await self.get_participants(conversation)
-        is_group_chat = await sync_to_async(lambda: len(participants))() > 2
+        # get_participants returns a QuerySet
+        participants_qs = await self.get_participants(conversation)
 
-        # Handle the first message scenario
+        # Count participants in a thread:
+        num_participants = await sync_to_async(participants_qs.count)()
+        is_group_chat = num_participants > 2
+
         if not await sync_to_async(conversation.messages.exists)():
-            print(f'First message for conversation {conversation.uuid}')
+            # First message: update invite flag, evaluate participants, etc.
             await self.update_invite_sent(conversation)
             await self.evaluate_participants(conversation, sender)
             message = await self.create_message(conversation, sender, message_content)
         else:
-            # For subsequent messages in a group chat, ensure the sender is active
             if is_group_chat:
-                accepted_users = await sync_to_async(lambda: participants.filter(status='active').all())()
-                if sender not in accepted_users:
-                    await self.send(text_data=json.dumps({'error': 'User has not accepted the invitation yet.'}))
+                # Check “does an active Participant row exist with this conversation, status='active', and user=sender?”
+                has_active_participant = await sync_to_async(
+                    lambda: Participant.objects.filter(
+                        conversation=conversation,
+                        status="active",
+                        user=sender
+                    ).exists()
+                )()
+
+                if not has_active_participant:
+                    await self.send(text_data=json.dumps({
+                        "error": "User has not accepted the invitation yet."
+                    }))
                     return
 
             message = await self.create_message(conversation, sender, message_content)
+
 
                 
         print(f'Message created: {message}')

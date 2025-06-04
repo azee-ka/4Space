@@ -41,7 +41,6 @@ type MessageType = {
   text: string;
   sender_username: string;
   sent_at: string;
-  // Removed `_optimistic`—no optimistic insertion
 };
 
 type ConversationType = {
@@ -59,10 +58,27 @@ type ConversationType = {
 };
 
 function isEmojiOnlyMessage(text: string) {
+  // Strip spaces and zero‐width‐spaces:
   const cleaned = text.replace(/[\s\u200B]/g, "");
   if (!cleaned) return false;
-  const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
-  return [...cleaned].every((char) => emojiRegex.test(char));
+
+  // This pattern matches one “Extended_Pictographic” cluster (an emoji),
+  // optionally followed by a U+FE0F/FE0E variation selector,
+  // then zero or more sequences of [ZWJ + another Extended_Pictographic(+opt. var.sel.)].
+  //
+  // By wrapping it in ^(?: … )+$ we ensure the entire string is made up of one
+  // or more back‐to‐back emoji clusters (no other characters allowed).
+  const emojiOnlyRegex = new RegExp(
+    "^" +
+      "(?:" +
+      "\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?" +
+      "(?:\\u200D\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?)*" +
+      ")+" +
+      "$",
+    "u"
+  );
+
+  return emojiOnlyRegex.test(cleaned);
 }
 
 interface ChatOverlayProps {
@@ -83,13 +99,12 @@ export default function ChatOverlay({
 
   // Gap from top (safe area + extra 20px)
   const OPEN_TOP = insets.top + 20;
-  // Distance to translate sheet off-screen (so its top starts below bottom edge)
+  // Distance to translate sheet off-screen
   const SHEET_OFFSET = SCREEN_HEIGHT - OPEN_TOP;
 
   // ── ANIMATION / PANRESPONDER ──
   const translateY = useRef(new Animated.Value(SHEET_OFFSET)).current;
   const [closing, setClosing] = useState(false);
-
   const [justSent, setJustSent] = useState(false);
 
   const panResponder = useRef(
@@ -131,7 +146,6 @@ export default function ChatOverlay({
 
   useEffect(() => {
     if (!visible) return;
-    // reset to off-screen before animating up
     translateY.setValue(SHEET_OFFSET);
     Animated.timing(translateY, {
       toValue: 0,
@@ -194,7 +208,6 @@ export default function ChatOverlay({
         if (pageToLoad === 0) {
           setMessages(results);
         } else {
-          // Filter out any that are already in state
           setMessages((prev) => {
             const existingIds = new Set(prev.map((m) => m.uuid));
             const filtered = results.filter((m) => !existingIds.has(m.uuid));
@@ -222,7 +235,6 @@ export default function ChatOverlay({
   const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
     onMessage: (data: MessageType) => {
       setMessages((prev) => {
-        // Ensure we don’t add duplicates
         if (prev.some((m) => m.uuid === data.uuid)) return prev;
         return [data, ...prev];
       });
@@ -324,7 +336,7 @@ export default function ChatOverlay({
               </Text>
             </View>
           )}
-          <BlurView intensity={40} tint="dark" style={styles.inputBlur}>
+          <BlurView intensity={40} tint="dark" style={styles.headerBlur}>
             <View style={styles.writeMessageContainer}>
               <Icon
                 name="smile"
@@ -468,7 +480,7 @@ export default function ChatOverlay({
 
   // ── IF STILL LOADING FIRST CONVERSATION ──
   if (loading && !conversation) {
-    return null; // Optionally render a spinner inside the sheet
+    return null;
   }
 
   return (
@@ -575,14 +587,10 @@ export default function ChatOverlay({
             inverted
             onScroll={onScroll}
             scrollEventThrottle={16}
-            // Always fetch older if needed:
             onEndReached={onEndReached}
             onEndReachedThreshold={0.1}
-            // Enable native bounce/overscroll on iOS:
             bounces={true}
-            // Keep overscroll on Android:
             overScrollMode="always"
-            // Give the content container flexGrow so overscroll area exists even with few items:
             contentContainerStyle={[
               {
                 flexGrow: 1,
@@ -668,33 +676,42 @@ export default function ChatOverlay({
                       )}
 
                       {own ? (
-                        <LinearGradient
-                          colors={["rgb(30, 170, 200)", "rgb(0, 140, 160)"]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={[
-                            styles.chatBubble,
-                            styles.chatBubbleOwn,
-                            grouped && first && styles.chatBubbleFirstOwn,
-                            grouped && last && styles.chatBubbleLastOwn,
-                            emojiOnly && styles.emojiOnlyBubble,
-                          ]}
-                        >
-                          <Pressable
-                            onLongPress={() => openPopup(item)}
-                            style={{ flex: 1 }}
+                        // ── OWN MESSAGE ──
+                        emojiOnly ? (
+                          <View style={styles.emojiOnlyContainerOwn}>
+                            <Pressable onLongPress={() => openPopup(item)}>
+                              <Text style={styles.emojiText}>{item.text}</Text>
+                            </Pressable>
+                          </View>
+                        ) : (
+                          <LinearGradient
+                            colors={["rgb(30, 170, 200)", "rgb(0, 140, 160)"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={[
+                              styles.chatBubble,
+                              styles.chatBubbleOwn,
+                              grouped && first && styles.chatBubbleFirstOwn,
+                              grouped && last && styles.chatBubbleLastOwn,
+                            ]}
                           >
-                            <Text
-                              style={
-                                emojiOnly
-                                  ? styles.emojiText
-                                  : styles.bubbleTextOwn
-                              }
+                            <Pressable
+                              onLongPress={() => openPopup(item)}
+                              style={{ flex: 1 }}
                             >
-                              {item.text}
-                            </Text>
+                              <Text style={styles.bubbleTextOwn}>
+                                {item.text}
+                              </Text>
+                            </Pressable>
+                          </LinearGradient>
+                        )
+                      ) : // ── OTHER'S MESSAGE ──
+                      emojiOnly ? (
+                        <View style={styles.emojiOnlyContainerOther}>
+                          <Pressable onLongPress={() => openPopup(item)}>
+                            <Text style={styles.emojiText}>{item.text}</Text>
                           </Pressable>
-                        </LinearGradient>
+                        </View>
                       ) : (
                         <View
                           style={[
@@ -702,7 +719,6 @@ export default function ChatOverlay({
                             styles.chatBubbleOther,
                             grouped && first && styles.chatBubbleFirstOther,
                             grouped && last && styles.chatBubbleLastOther,
-                            emojiOnly && styles.emojiOnlyBubble,
                             { overflow: "hidden" },
                           ]}
                         >
@@ -715,13 +731,7 @@ export default function ChatOverlay({
                             onLongPress={() => openPopup(item)}
                             style={{ flex: 1 }}
                           >
-                            <Text
-                              style={
-                                emojiOnly
-                                  ? styles.emojiText
-                                  : styles.bubbleTextOther
-                              }
-                            >
+                            <Text style={styles.bubbleTextOther}>
                               {item.text}
                             </Text>
                           </Pressable>
@@ -737,7 +747,7 @@ export default function ChatOverlay({
           {/* ── FOOTER / INPUT ── */}
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
+            keyboardVerticalOffset={Platform.OS === "ios" ? insets.top - 15 : 0}
           >
             <View
               style={[styles.chatFooter, { paddingBottom: insets.bottom + 8 }]}
@@ -918,6 +928,7 @@ const styles = StyleSheet.create({
   chatHeaderInfo: {
     flexDirection: "column",
     flexShrink: 1,
+    marginLeft: 12,
   },
   chatHeaderName: {
     fontSize: 20,
@@ -1010,12 +1021,22 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 24,
     marginBottom: 4,
   },
-  emojiOnlyBubble: {
+
+  // ── Containers for emoji-only messages ──
+  //    Increased padding + center alignment prevents clipping
+  emojiOnlyContainerOwn: {
     backgroundColor: "transparent",
-    elevation: 0,
-    shadowOpacity: 0,
-    padding: 8,
+    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
+  emojiOnlyContainerOther: {
+    backgroundColor: "transparent",
+    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   bubbleTextOwn: {
     fontSize: 15,
     color: "#FFFFFF",
@@ -1026,9 +1047,10 @@ const styles = StyleSheet.create({
     color: "#D4D4D8",
     lineHeight: 20,
   },
+  // ── Bump default emoji size ──
   emojiText: {
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 40,
+    lineHeight: 44,
   },
 
   // ── Footer/Input ──
@@ -1048,7 +1070,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(27,27,31,0.7)",
-    // borderRadius: 30,
     paddingVertical: 0,
     paddingHorizontal: 0,
   },
@@ -1057,7 +1078,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#FFFFFF",
     paddingHorizontal: 5,
-    paddingVertical: 0,
+    paddingVertical: 10,
     maxHeight: 120,
     minHeight: 44,
     borderRadius: 20,
@@ -1065,8 +1086,8 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   sendMessageBtn: {
-    width: 44,
-    height: 44,
+    width: 38,
+    height: 38,
     borderRadius: 22,
     backgroundColor: "#66E0FF",
     alignItems: "center",

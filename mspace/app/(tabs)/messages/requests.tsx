@@ -50,7 +50,7 @@ export default function RequestsScreen({ onOpenConversation }: { onOpenConversat
       }
     };
     fetchRequests();
-  }, [callApi]);
+  }, []);
 
   const onStartConversation = useCallback(
     async (recipients: { id: string }[]) => {

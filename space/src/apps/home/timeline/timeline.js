@@ -67,7 +67,7 @@ const { isM, isT } = useDevice();
             {/* Header (Title & Toggle) */}
             <div className="timeline-header">
                 <h2>Timeline</h2>
-                {!isM && !isT && <DropdownButton
+                {(isM || isT) && <DropdownButton
                         toggleContent={
                             <button className="filter-toggle">
                                 <span>Filter by: {leftFilter}</span>

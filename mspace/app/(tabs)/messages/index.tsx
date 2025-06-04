@@ -51,6 +51,7 @@ export default function MessagesIndex() {
           id: u.user?.id ?? u.id,
           username: u.user?.username ?? u.username,
         }));
+        console.log('payload', payload);
         const res = await callApi("messages/create_conversation/", "POST", {
           recipients: payload,
         });
@@ -118,7 +119,7 @@ export default function MessagesIndex() {
         {currentTab === "requests" ? (
           <RequestsScreen onOpenConversation={onOpenConversation} />
         ) : (
-          <InboxScreen onOpenConversation={onOpenConversation} setOpenConversationId={setOpenConversationId} />
+          <InboxScreen />
         )}
       </View>
 
@@ -162,7 +163,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
   },
-  // headerButton: { padding: 8 },
   tabBar: {
     flexDirection: "row",
     backgroundColor: "#121212",

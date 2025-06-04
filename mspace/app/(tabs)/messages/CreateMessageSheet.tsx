@@ -98,9 +98,9 @@ export default function CreateMessageSheet({
 
     if (trimmed) {
       try {
-        console.log("[CreateMessageSheet] calling searchUsers →", trimmed);
+        // console.log("[CreateMessageSheet] calling searchUsers →", trimmed);
         const resp = await callApi(`search/user-search/?query=${trimmed}`);
-        console.log("[CreateMessageSheet] result →", resp.data);
+        // console.log("[CreateMessageSheet] result →", resp.data);
         setResults(resp.data);
       } catch (e) {
         console.log("[CreateMessageSheet] searchUsers failed →", e);

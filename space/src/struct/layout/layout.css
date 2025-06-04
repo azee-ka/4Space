@@ -12,7 +12,7 @@
 
 .layout-navbar {
   background-color: rgba(255, 0, 0, 0);
-  /* height: 70px; */
+  height: 70px;
   width: 100%;
   box-sizing: border-box;
   position: fixed;

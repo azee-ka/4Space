@@ -1,5 +1,4 @@
 // app/messages/inbox.tsx
-
 import React, { useEffect, useState, useCallback } from "react";
 import {
   SafeAreaView,
@@ -16,9 +15,11 @@ import useApi from "../../../hooks/useApi";
 import ProfilePicture from "../../../utils/getProfilePicture";
 import CreateMessageSheet from "./CreateMessageSheet";
 import useAuth from "../../../hooks/useAuth";
+import ChatOverlay from "./ChatOverlay";
 
 type ChatType = {
   uuid: string;
+  group_participant_count: number;
   other_participant: {
     user: {
       id: number;
@@ -30,74 +31,88 @@ type ChatType = {
   };
 };
 
-export default function InboxScreen({ onOpenConversation, setOpenConversationId }) {
+export default function InboxScreen() {
   const router = useRouter();
   const { callApi } = useApi();
-    const { authState } = useAuth();
+  const { authState } = useAuth();
   const [chats, setChats] = useState<ChatType[]>([]);
   const [loading, setLoading] = useState(true);
   const [overlayVisible, setOverlayVisible] = useState(false);
 
   // Fetch “inbox” list
-useEffect(() => {
-  const fetchChats = async () => {
-    try {
-      const resp = await callApi("messages/list_conversations/");
-    //   console.log('chatsArray',chatsArray);
-      setChats(resp.data);
-    } catch (err) {
-      console.error("Failed to fetch inbox", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchChats();
-}, [authState]);
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const resp = await callApi("messages/list_conversations/");
+        console.log("chatsArray", resp.data);
+        setChats(resp.data);
+      } catch (err) {
+        console.error("Failed to fetch inbox", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChats();
+  }, [authState]);
 
-
+  const [openConversationId, setOpenConversationId] = useState<string | null>(null);
+  const onOpenConversation = useCallback((conversationUuid: string) => {
+    setOpenConversationId(conversationUuid);
+  }, []);
 
   // New Chat callbacks
   const onStartConversation = useCallback(
-      async (recipients: { id: string }[]) => {
-        if (recipients.length === 0) return;
-        try {
-          const payload = recipients.map((u) => ({
-            id: u.user?.id ?? u.id,
-            username: u.user?.username ?? u.username,
-          }));
-          const res = await callApi("messages/create_conversation/", "POST", {
-            recipients: payload,
-          });
-          const newUuid = res.data.conversation_uuid;
-          console.log('res chat', res.data);
-          setOverlayVisible(false);
-          setOpenConversationId(newUuid);
-        } catch (e) {
-          console.error("Error starting conversation", e);
-        }
-      },
-      []
-    );
+    async (recipients: { id: string }[]) => {
+      if (recipients.length === 0) return;
+      try {
+        const payload = recipients.map((u) => ({
+          id: u.user?.id ?? u.id,
+          username: u.user?.username ?? u.username,
+        }));
+        const res = await callApi("messages/create_conversation/", "POST", {
+          recipients: payload,
+        });
+        const newUuid = res.data.conversation_uuid;
+        console.log("res chat", res.data);
+        setOverlayVisible(false);
+        setOpenConversationId(newUuid);
+      } catch (e) {
+        console.error("Error starting conversation", e);
+      }
+    },
+    []
+  );
 
   const renderItem = ({ item }: { item: ChatType }) => {
-    const user = item.other_participant.user;
+    const { group_participant_count: count } = item;
+    const firstUser = item.other_participant.user;
+    const extraCount = count - 1; // how many “other” participants beyond the one we show
+
     return (
       <TouchableOpacity
         style={styles.chatCard}
-        // onPress={() =>
-        //   router.push({ pathname: `/messages/${item.uuid}` })
-        // }
         onPress={() => onOpenConversation(item.uuid)}
       >
-        <ProfilePicture
-          src={user.profile_image}
-          style={styles.chatAvatar}
-        />
+        <ProfilePicture src={firstUser.profile_image} style={styles.chatAvatar} />
+
         <View style={styles.chatMeta}>
+          {/* 
+            Show “First Last” always.
+            If it’s a group (count > 1), append +extraCount.
+          */}
           <Text style={styles.chatName}>
-            {user.first_name} {user.last_name}
+            {firstUser.first_name} {firstUser.last_name}{" "}
+            {extraCount > 0 ? `+${extraCount}` : ""}
           </Text>
-          <Text style={styles.chatUsername}>@{user.username}</Text>
+          {/* 
+            Underneath, you can still show a subtitle—e.g. “@username” for 1:1,
+            or “X participants” for group. Adjust as desired.
+          */}
+          {count === 1 ? (
+            <Text style={styles.chatUsername}>@{firstUser.username}</Text>
+          ) : (
+            <Text style={styles.chatUsername}>{count} participants</Text>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -123,16 +138,20 @@ useEffect(() => {
         />
       )}
 
-      {/* One “New Chat” sheet can be shared across both tabs if you like;
-          here we put it inside InboxScreen. */}
       <CreateMessageSheet
         visible={overlayVisible}
         onClose={() => setOverlayVisible(false)}
         onStartConversation={onStartConversation}
       />
 
-      {/* A button in the header opens this sheet; since the “header” is in index.tsx,
-          you could also pass setOverlayVisible() down if you prefer. */}
+      {openConversationId !== null && (
+        <ChatOverlay
+          visible={true}
+          conversationId={openConversationId}
+          onClose={() => setOpenConversationId(null)}
+        />
+      )}
+
       <TouchableOpacity
         style={styles.floatingButton}
         onPress={() => setOverlayVisible(true)}

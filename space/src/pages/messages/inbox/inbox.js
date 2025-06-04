@@ -51,6 +51,9 @@ const MessageInbox = ({ setShowCreateMessageOverlay }) => {
                   <p className="chat-name">
                     {chat?.other_participant?.user?.first_name}{" "}
                     {chat?.other_participant?.user?.last_name}
+                    {chat?.group_participant_count > 1 && (
+                      <span> +{chat?.group_participant_count - 1}</span>
+                    )}
                   </p>
                   <p className="chat-username">@{chat?.other_participant?.user?.username}</p>
                 </div>
