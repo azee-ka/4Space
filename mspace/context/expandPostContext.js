@@ -36,7 +36,6 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
         try {
           const response = await callApi(`posts/post/${postId}/`);
           setPost(response.data);
-          console.log('post called')
         } catch (err) {
           console.error("Error fetching post:", err);
           setPost(null);
