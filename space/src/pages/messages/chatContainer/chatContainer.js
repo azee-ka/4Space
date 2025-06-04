@@ -221,16 +221,16 @@ const ChatContainer = ({ conversationId }) => {
 
 
 
-useEffect(() => {
-  const el = scrollRef.current;
-  if (!el) return;
-  if (!userScrolledUp || justSent) {
-    requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight;
-      setJustSent(false);
-    });
-  }
-}, [messages, userScrolledUp, justSent]);
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        if (!userScrolledUp || justSent) {
+            requestAnimationFrame(() => {
+                el.scrollTop = el.scrollHeight;
+                setJustSent(false);
+            });
+        }
+    }, [messages, userScrolledUp, justSent]);
 
 
 
@@ -241,7 +241,7 @@ useEffect(() => {
         onMessage: (data) => {
             setItems(prev => {
                 if (prev.some((m) => m.uuid === data.uuid)) return prev;
-                return [...prev, data]; // append at end, so after reverse it's at the bottom
+                return [data, ...prev]; // append at end, so after reverse it's at the bottom
             });
         }
     });
@@ -421,34 +421,24 @@ useEffect(() => {
                     </>
                 )}
             </div>
-            <div
-                className="chat-body"
-                ref={scrollRef}
-            >
-                {messages
-   .slice()                 // make a shallow copy so you don’t mutate state
-   .reverse()               // now the oldest is first, newest last
-   .map((msg, i, arr) => {
-     // “arr” is the reversed array, so arr[i - 1] is the previous chrono message
-     const previousMsg = arr[i - 1];
-     const nextMsg     = arr[i + 1];
-     return (
-                    <div
-                        key={msg.uuid}
-                        className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}
-                    >
-                        <ChatMessage
-                            message={msg}
-                            previous={messages[i - 1]}
-                            next={messages[i + 1]}
-                            isOwn={isOwn(msg)}
-                            centerPanelRef={scrollRef}
-                        />
-                    </div>
-                );
-})}
-                <div ref={endRef} />
-            </div>
+<div className="chat-body" ref={scrollRef}>
+  {[...messages].reverse().map((msg, i, arr) => {
+    return (
+      <div key={msg.uuid} className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}>
+        <ChatMessage
+          message={msg}
+          previous={arr[i - 1]} 
+          next={arr[i + 1]} 
+          isOwn={isOwn(msg)}
+          centerPanelRef={scrollRef}
+        />
+      </div>
+    );
+  })}
+  <div ref={endRef} />
+</div>
+
+
             <div className="chat-container-bottom-panel">
                 {renderFooter()}
             </div>
