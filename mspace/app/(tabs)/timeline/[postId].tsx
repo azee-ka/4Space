@@ -454,154 +454,151 @@ function PostDetailInner({ origin }: { origin?: string }) {
   );
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
-    >
-      <SafeAreaView style={{ height: "100%", backgroundColor: "#111317" }}>
-        {/* 1) FlatList for comments */}
-        <View style={{ flex: 1 }}>
-          <FlatList
-            ListHeaderComponent={<CombinedHeader />}
-            data={comments}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item, index }) => (
-              <View>
-                {/* Divider above every comment except the first */}
-                {index > 0 && <View style={styles.commentDivider} />}
+    <SafeAreaView style={{ height: "100%", backgroundColor: "#111317" }}>
+      {/* 1) FlatList for comments */}
+      <View style={{ flex: 1 }}>
+        <FlatList
+          ListHeaderComponent={<CombinedHeader />}
+          data={comments}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={({ item, index }) => (
+            <View>
+              {/* Divider above every comment except the first */}
+              {index > 0 && <View style={styles.commentDivider} />}
 
-                <View style={styles.commentCard}>
-                  <View style={styles.commentContainer}>
-                    {/* ── COMMENT VOTE SECTION (VERTICAL) ───────────────── */}
-                    <View style={styles.commentVoteSection}>
-                      <TouchableOpacity
-                        onPress={() => voteComment(item.id, "upvote")}
-                        style={styles.voteButton}
-                      >
-                        <FA
-                          name="arrow-up"
-                          size={20}
-                          color={
-                            item.vote_status === "upvoted" ? "#19dee8" : "#aaa"
-                          }
-                        />
-                      </TouchableOpacity>
+              <View style={styles.commentCard}>
+                <View style={styles.commentContainer}>
+                  {/* ── COMMENT VOTE SECTION (VERTICAL) ───────────────── */}
+                  <View style={styles.commentVoteSection}>
+                    <TouchableOpacity
+                      onPress={() => voteComment(item.id, "upvote")}
+                      style={styles.voteButton}
+                    >
+                      <FA
+                        name="arrow-up"
+                        size={20}
+                        color={
+                          item.vote_status === "upvoted" ? "#19dee8" : "#aaa"
+                        }
+                      />
+                    </TouchableOpacity>
 
-                      <Text style={styles.commentVoteCount}>
-                        {item.net_votes_count || 0}
-                      </Text>
+                    <Text style={styles.commentVoteCount}>
+                      {item.net_votes_count || 0}
+                    </Text>
 
-                      <TouchableOpacity
-                        onPress={() => voteComment(item.id, "downvote")}
-                        style={styles.voteButton}
-                      >
-                        <FA
-                          name="arrow-down"
-                          size={20}
-                          color={
-                            item.vote_status === "downvoted"
-                              ? "#ff4b5c"
-                              : "#aaa"
-                          }
-                        />
-                      </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => voteComment(item.id, "downvote")}
+                      style={styles.voteButton}
+                    >
+                      <FA
+                        name="arrow-down"
+                        size={20}
+                        color={
+                          item.vote_status === "downvoted" ? "#ff4b5c" : "#aaa"
+                        }
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* ── COMMENT BODY AND ACTION ROW ───────────────────── */}
+                  <View style={styles.commentBody}>
+                    <View style={styles.commentHeader}>
+                      <Image
+                        source={
+                          item.author?.profile_image
+                            ? { uri: item.author.profile_image }
+                            : require("../../../assets/default_profile_picture.png")
+                        }
+                        cachePolicy="memory-disk"
+                        style={styles.commentAvatar}
+                        contentFit="cover"
+                      />
+                      <View>
+                        <Text style={styles.commentUser}>
+                          @{item.author?.username}
+                        </Text>
+                        <Text style={styles.commentTime}>
+                          {formatDistanceToNow(new Date(item.created_at), {
+                            addSuffix: true,
+                          })}
+                        </Text>
+                      </View>
                     </View>
 
-                    {/* ── COMMENT BODY AND ACTION ROW ───────────────────── */}
-                    <View style={styles.commentBody}>
-                      <View style={styles.commentHeader}>
-                        <Image
-                          source={
-                            item.author?.profile_image
-                              ? { uri: item.author.profile_image }
-                              : require("../../../assets/default_profile_picture.png")
+                    <Text style={styles.commentText}>{item.text}</Text>
+
+                    {/* Single row of comment‐specific actions */}
+                    <View style={styles.commentActionRow}>
+                      <TouchableOpacity
+                        style={styles.commentSmallAction}
+                        onPress={() => toggleCommentLike(item.id)}
+                      >
+                        <FA
+                          name="heart"
+                          size={18}
+                          color={
+                            item.like_status === "liked" ? "#ff4b5c" : "#aaa"
                           }
-                          cachePolicy="memory-disk"
-                          style={styles.commentAvatar}
-                          contentFit="cover"
                         />
-                        <View>
-                          <Text style={styles.commentUser}>
-                            @{item.author?.username}
-                          </Text>
-                          <Text style={styles.commentTime}>
-                            {formatDistanceToNow(new Date(item.created_at), {
-                              addSuffix: true,
-                            })}
-                          </Text>
-                        </View>
-                      </View>
-
-                      <Text style={styles.commentText}>{item.text}</Text>
-
-                      {/* Single row of comment‐specific actions */}
-                      <View style={styles.commentActionRow}>
-                        <TouchableOpacity
-                          style={styles.commentSmallAction}
-                          onPress={() => toggleCommentLike(item.id)}
-                        >
-                          <FA
-                            name="heart"
-                            size={18}
-                            color={
-                              item.like_status === "liked" ? "#ff4b5c" : "#aaa"
-                            }
-                          />
-                          <Text style={styles.commentActionCount}>
-                            {item.likes_count || 0}
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.commentSmallAction}>
-                          <Icon name="share-2" size={18} color="#aaa" />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.commentSmallAction}>
-                          <FA name="flag" size={18} color="#aaa" />
-                        </TouchableOpacity>
-                      </View>
+                        <Text style={styles.commentActionCount}>
+                          {item.likes_count || 0}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.commentSmallAction}>
+                        <Icon name="share-2" size={18} color="#aaa" />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.commentSmallAction}>
+                        <FA name="flag" size={18} color="#aaa" />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
               </View>
-            )}
-            ListEmptyComponent={() => {
-              if (commentsLoading) {
-                return (
-                  <ActivityIndicator
-                    size="small"
-                    color="#19dee8"
-                    style={{ marginTop: 20 }}
-                  />
-                );
-              }
-              return <Text style={styles.noCommentsText}>No Comments Yet</Text>;
-            }}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: INPUT_BAR_HEIGHT + 12,
-            }}
-            onEndReached={() => {
-              if (commentsNextPage && !commentsLoadingMore) {
-                loadMoreComments();
-              }
-            }}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={() => {
-              if (commentsLoadingMore) {
-                return (
-                  <ActivityIndicator
-                    size="small"
-                    color="#19dee8"
-                    style={{ marginVertical: 12 }}
-                  />
-                );
-              }
-              return null;
-            }}
-          />
-        </View>
+            </View>
+          )}
+          ListEmptyComponent={() => {
+            if (commentsLoading) {
+              return (
+                <ActivityIndicator
+                  size="small"
+                  color="#19dee8"
+                  style={{ marginTop: 20 }}
+                />
+              );
+            }
+            return <Text style={styles.noCommentsText}>No Comments Yet</Text>;
+          }}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: INPUT_BAR_HEIGHT + 12,
+          }}
+          onEndReached={() => {
+            if (commentsNextPage && !commentsLoadingMore) {
+              loadMoreComments();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => {
+            if (commentsLoadingMore) {
+              return (
+                <ActivityIndicator
+                  size="small"
+                  color="#19dee8"
+                  style={{ marginVertical: 12 }}
+                />
+              );
+            }
+            return null;
+          }}
+        />
+      </View>
 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 95 : 0}
+      >
         {/* 2) Input bar at bottom */}
         <View style={styles.inputBar}>
           <TextInput
@@ -625,8 +622,8 @@ function PostDetailInner({ origin }: { origin?: string }) {
             <Icon name="send" size={22} color="#19dee8" />
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
