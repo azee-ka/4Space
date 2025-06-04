@@ -72,35 +72,73 @@ def block_user(request, conversation_id):
 
 
 
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.timezone import now
+from django.db.models import Count, Q
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
+from ..user.models import BaseUser
+from .models import Conversation, Participant
+from .serializers import ConversationSerializer
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_conversation(request):
+    """
+    - Expects request.data = { "recipients": [ {"id": <int>}, ... ] }
+    - If a conversation already exists whose participants are exactly
+      (request.user + all of those recipient IDs), return its UUID.
+    - Otherwise, create a new Conversation + Participant rows.
+    """
+
+    # 1) Build a sorted list of all participant IDs: the requester + recipients
     recipients = request.data.get('recipients', [])
-    recipient_ids = [recipient['id'] for recipient in recipients]
+    recipient_ids = [r.get('id') for r in recipients]
     all_user_ids = sorted([request.user.id] + recipient_ids)
 
+    # 2) Verify that every ID in all_user_ids corresponds to a real BaseUser
     users = BaseUser.objects.filter(id__in=all_user_ids)
-    if len(users) != len(all_user_ids):
-        return Response({"error": "One or more recipients are invalid."}, status=status.HTTP_400_BAD_REQUEST)
+    if users.count() != len(all_user_ids):
+        return Response(
+            {"error": "One or more recipients are invalid."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    # Check for an existing conversation with exactly these participants
+    # 3) Look for any Conversation whose Participant set matches exactly all_user_ids
+    #
+    #    We use two annotations:
+    #      - total_participants: how many Participant rows exist for that conversation
+    #      - matched_participants: how many Participant rows match one of our IDs
+    #
+    #    If both counts == len(all_user_ids), then this convo has exactly those users.
     possible_convos = Conversation.objects.annotate(
-        participant_count=Count('participants')
-    ).filter(participant_count=len(all_user_ids))
+        total_participants=Count('participant_records'),
+        matched_participants=Count(
+            'participant_records',
+            filter=Q(participant_records__user__id__in=all_user_ids)
+        )
+    ).filter(
+        total_participants=len(all_user_ids),
+        matched_participants=len(all_user_ids)
+    )
 
-    for convo in possible_convos:
-        convo_participant_ids = sorted(convo.participants.values_list('id', flat=True))
-        if convo_participant_ids == all_user_ids:
-            serializer = ConversationSerializer(convo, context={'request': request})
-            return Response({
-                "message": "A conversation with these participants already exists.",
-                "conversation_uuid": convo.uuid,
-                "existing": True
-            }, status=status.HTTP_200_OK)
+    if possible_convos.exists():
+        # Pick the first one (there should be at most one that matches exactly)
+        existing_convo = possible_convos.first()
+        return Response({
+            "message": "A conversation with these participants already exists.",
+            "conversation_uuid": existing_convo.uuid,
+            "existing": True
+        }, status=status.HTTP_200_OK)
 
-    # Create new conversation
+    # 4) No existing conversation found → create a new one
     conversation = Conversation.objects.create()
 
+    # 4a) Create a Participant record for the creator (active immediately)
     Participant.objects.create(
         user=request.user,
         conversation=conversation,
@@ -108,20 +146,24 @@ def create_conversation(request):
         status='active',
     )
 
-    for user in users:
-        if user != request.user:
+    # 4b) Create Participant rows for each other user
+    for u in users:
+        if u.id != request.user.id:
             Participant.objects.create(
-                user=user,
+                user=u,
                 conversation=conversation,
                 role='member',
-                status='added'
+                status='added'   # they will see this as "added" until accepted, etc.
             )
 
+    # 5) Serialize and return the new conversation UUID
     serializer = ConversationSerializer(conversation, context={'request': request})
     return Response({
         "conversation_uuid": conversation.uuid,
         "existing": False
     }, status=status.HTTP_201_CREATED)
+
+
 
 
 

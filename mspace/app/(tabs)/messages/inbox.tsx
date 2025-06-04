@@ -30,7 +30,7 @@ type ChatType = {
   };
 };
 
-export default function InboxScreen({ onOpenConversation }: { onOpenConversation: (id: string) => void }) {
+export default function InboxScreen({ onOpenConversation, setOpenConversationId }) {
   const router = useRouter();
   const { callApi } = useApi();
     const { authState } = useAuth();
@@ -59,25 +59,24 @@ useEffect(() => {
   // New Chat callbacks
   const onStartConversation = useCallback(
       async (recipients: { id: string }[]) => {
+        if (recipients.length === 0) return;
         try {
-          if (recipients.length > 0) {
-            console.log("Starting conversation with:", recipients);
-            const payload = recipients.map((u) => ({
-              id: u.user?.id ?? u.id,
-              username: u.user?.username ?? u.username,
-            }));
-  
-            const res = await callApi("messages/create_conversation/", "POST", {
-              recipients: payload,
-            });
-            router.push({ pathname: `/messages/${res.data.conversation_uuid}` });
-            setOverlayVisible(false);
-          }
+          const payload = recipients.map((u) => ({
+            id: u.user?.id ?? u.id,
+            username: u.user?.username ?? u.username,
+          }));
+          const res = await callApi("messages/create_conversation/", "POST", {
+            recipients: payload,
+          });
+          const newUuid = res.data.conversation_uuid;
+          console.log('res chat', res.data);
+          setOverlayVisible(false);
+          setOpenConversationId(newUuid);
         } catch (e) {
           console.error("Error starting conversation", e);
         }
       },
-      [router]
+      []
     );
 
   const renderItem = ({ item }: { item: ChatType }) => {
