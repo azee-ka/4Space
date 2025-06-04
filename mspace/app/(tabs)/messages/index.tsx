@@ -61,7 +61,7 @@ export default function MessagesIndex() {
         console.error("Error starting conversation", e);
       }
     },
-    [callApi]
+    []
   );
 
   return (
@@ -118,7 +118,7 @@ export default function MessagesIndex() {
         {currentTab === "requests" ? (
           <RequestsScreen onOpenConversation={onOpenConversation} />
         ) : (
-          <InboxScreen onOpenConversation={onOpenConversation} />
+          <InboxScreen onOpenConversation={onOpenConversation} setOpenConversationId={setOpenConversationId} />
         )}
       </View>
 

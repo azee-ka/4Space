@@ -194,8 +194,12 @@ export default function ChatOverlay({
         if (pageToLoad === 0) {
           setMessages(results);
         } else {
-          // Prepend older messages to the end of the inverted list
-          setMessages((prev) => [...prev, ...results]);
+          // Filter out any that are already in state
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.uuid));
+            const filtered = results.filter((m) => !existingIds.has(m.uuid));
+            return [...prev, ...filtered];
+          });
         }
 
         setHasMore(!!next);
@@ -225,7 +229,6 @@ export default function ChatOverlay({
     },
   });
 
-
   // ── 4) Auto‐scroll to bottom logic ──
   useEffect(() => {
     if (!loadingOlder && flatListRef.current) {
@@ -235,16 +238,14 @@ export default function ChatOverlay({
     }
   }, [messages, userScrolledUp, justSent, loadingOlder, loading]);
 
-
   // ── SEND A MESSAGE ──
   const handleSend = () => {
-  const trimmed = input.trim();
-  if (!trimmed) return;
-  setInput("");
-  setJustSent(true);
-  sendMessage({ text: trimmed, sender_username: currentUsername });
-};
-
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    setInput("");
+    setJustSent(true);
+    sendMessage({ text: trimmed, sender_username: currentUsername });
+  };
 
   // ── HANDLERS FOR REQUEST‐TYPE ──
   const handleAcceptRequest = async () => {
@@ -275,7 +276,8 @@ export default function ChatOverlay({
     }
   };
 
-  const isOwnMessage = (m: MessageType) => m.sender_username === currentUsername;
+  const isOwnMessage = (m: MessageType) =>
+    m.sender_username === currentUsername;
 
   // ── RENDER FOOTER (INPUT / REQUEST UI) ──
   const renderFooter = () => {
@@ -341,7 +343,10 @@ export default function ChatOverlay({
                   if (input.trim()) handleSend();
                 }}
               />
-              <TouchableOpacity onPress={handleSend} style={styles.sendMessageBtn}>
+              <TouchableOpacity
+                onPress={handleSend}
+                style={styles.sendMessageBtn}
+              >
                 <Icon name="send" size={20} color="#1B1B1F" />
               </TouchableOpacity>
             </View>
@@ -493,14 +498,20 @@ export default function ChatOverlay({
           ]}
         >
           {/* ── DRAG HANDLE ── */}
-          <View {...panResponder.panHandlers} style={styles.dragHandleContainer}>
+          <View
+            {...panResponder.panHandlers}
+            style={styles.dragHandleContainer}
+          >
             <View style={styles.dragHandle} />
           </View>
 
           {/* ── HEADER ── */}
           <BlurView intensity={40} tint="dark" style={styles.headerBlur}>
             <View style={styles.chatHeader}>
-              <TouchableOpacity onPress={triggerClose} style={styles.backButton}>
+              <TouchableOpacity
+                onPress={triggerClose}
+                style={styles.backButton}
+              >
                 <Icon name="arrow-left" size={24} color="#66E0FF" />
               </TouchableOpacity>
 
@@ -564,16 +575,13 @@ export default function ChatOverlay({
             inverted
             onScroll={onScroll}
             scrollEventThrottle={16}
-
             // Always fetch older if needed:
             onEndReached={onEndReached}
             onEndReachedThreshold={0.1}
-
             // Enable native bounce/overscroll on iOS:
             bounces={true}
             // Keep overscroll on Android:
             overScrollMode="always"
-
             // Give the content container flexGrow so overscroll area exists even with few items:
             contentContainerStyle={[
               {
@@ -583,7 +591,6 @@ export default function ChatOverlay({
                 paddingBottom: 0,
               },
             ]}
-
             ListFooterComponent={() =>
               loadingOlder ? (
                 <ActivityIndicator
@@ -730,9 +737,11 @@ export default function ChatOverlay({
           {/* ── FOOTER / INPUT ── */}
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
           >
-            <View style={[styles.chatFooter, { paddingBottom: insets.bottom + 8 }]}>
+            <View
+              style={[styles.chatFooter, { paddingBottom: insets.bottom + 8 }]}
+            >
               {renderFooter()}
             </View>
           </KeyboardAvoidingView>
@@ -740,7 +749,11 @@ export default function ChatOverlay({
           {/* ── LONG-PRESS POPUP modal ── */}
           {focusedMessage && (
             <Modal transparent animationType="none">
-              <BlurView intensity={60} tint="dark" style={styles.blurContainer} />
+              <BlurView
+                intensity={60}
+                tint="dark"
+                style={styles.blurContainer}
+              />
               <View style={styles.modalContainer}>
                 <Animated.View
                   style={[
@@ -776,7 +789,10 @@ export default function ChatOverlay({
                   </TouchableOpacity>
                 </View>
 
-                <Pressable style={styles.overlayTouchable} onPress={closePopup} />
+                <Pressable
+                  style={styles.overlayTouchable}
+                  onPress={closePopup}
+                />
               </View>
             </Modal>
           )}
@@ -1032,8 +1048,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(27,27,31,0.7)",
-    borderRadius: 30,
-    paddingVertical: 6,
+    // borderRadius: 30,
+    paddingVertical: 0,
     paddingHorizontal: 0,
   },
   chatTextarea: {
@@ -1041,7 +1057,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#FFFFFF",
     paddingHorizontal: 5,
-    paddingVertical: 10,
+    paddingVertical: 0,
     maxHeight: 120,
     minHeight: 44,
     borderRadius: 20,
