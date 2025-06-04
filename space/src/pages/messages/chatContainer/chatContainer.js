@@ -425,7 +425,14 @@ useEffect(() => {
                 className="chat-body"
                 ref={scrollRef}
             >
-                {messages.map((msg, i) => (
+                {messages
+   .slice()                 // make a shallow copy so you don’t mutate state
+   .reverse()               // now the oldest is first, newest last
+   .map((msg, i, arr) => {
+     // “arr” is the reversed array, so arr[i - 1] is the previous chrono message
+     const previousMsg = arr[i - 1];
+     const nextMsg     = arr[i + 1];
+     return (
                     <div
                         key={msg.uuid}
                         className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}
@@ -438,7 +445,8 @@ useEffect(() => {
                             centerPanelRef={scrollRef}
                         />
                     </div>
-                ))}
+                );
+})}
                 <div ref={endRef} />
             </div>
             <div className="chat-container-bottom-panel">

@@ -30,7 +30,7 @@ type ChatType = {
   };
 };
 
-export default function InboxScreen() {
+export default function InboxScreen({ onOpenConversation }: { onOpenConversation: (id: string) => void }) {
   const router = useRouter();
   const { callApi } = useApi();
     const { authState } = useAuth();
@@ -85,9 +85,10 @@ useEffect(() => {
     return (
       <TouchableOpacity
         style={styles.chatCard}
-        onPress={() =>
-          router.push({ pathname: `/messages/${item.uuid}` })
-        }
+        // onPress={() =>
+        //   router.push({ pathname: `/messages/${item.uuid}` })
+        // }
+        onPress={() => onOpenConversation(item.uuid)}
       >
         <ProfilePicture
           src={user.profile_image}

@@ -15,13 +15,19 @@ import useApi from "../../../hooks/useApi";
 import InboxScreen from "./inbox";
 import RequestsScreen from "./requests";
 import CreateMessageSheet from "./CreateMessageSheet";
+import ChatOverlay from "./ChatOverlay";
 
 export default function MessagesIndex() {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
-  const currentTab = params.tab || "inbox"; // “inbox” or “requests”
+  const currentTab = params.tab || "inbox";
 
+  // “+ → New Chat” sheet state
   const [overlayVisible, setOverlayVisible] = useState(false);
+
+  // Which conversation is open in ChatOverlay?
+  const [openConversationId, setOpenConversationId] = useState<string | null>(null);
+
   const { callApi } = useApi();
 
   const goToTab = useCallback(
@@ -31,33 +37,36 @@ export default function MessagesIndex() {
     [router]
   );
 
-  // Called when CreateMessageSheet’s “Start” is pressed:
+  // Called by InboxScreen / RequestsScreen when a conversation is tapped
+  const onOpenConversation = useCallback((conversationUuid: string) => {
+    setOpenConversationId(conversationUuid);
+  }, []);
+
+  // Called by CreateMessageSheet → “Start”
   const onStartConversation = useCallback(
     async (recipients: { id: string }[]) => {
+      if (recipients.length === 0) return;
       try {
-        if (recipients.length > 0) {
-          console.log("Starting conversation with:", recipients);
-          const payload = recipients.map((u) => ({
-            id: u.user?.id ?? u.id,
-            username: u.user?.username ?? u.username,
-          }));
-
-          const res = await callApi("messages/create_conversation/", "POST", {
-            recipients: payload,
-          });
-          router.push({ pathname: `/messages/${res.data.conversation_uuid}` });
-          setOverlayVisible(false);
-        }
+        const payload = recipients.map((u) => ({
+          id: u.user?.id ?? u.id,
+          username: u.user?.username ?? u.username,
+        }));
+        const res = await callApi("messages/create_conversation/", "POST", {
+          recipients: payload,
+        });
+        const newUuid = res.data.conversation_uuid;
+        setOverlayVisible(false);
+        setOpenConversationId(newUuid);
       } catch (e) {
         console.error("Error starting conversation", e);
       }
     },
-    [router]
+    [callApi]
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* ─── “Messages” Header ─── */}
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Messages</Text>
         <TouchableOpacity
@@ -68,7 +77,7 @@ export default function MessagesIndex() {
         </TouchableOpacity>
       </View>
 
-      {/* ─── Manual Tab Bar (Inbox / Requests) ─── */}
+      {/* Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity
           style={[
@@ -104,26 +113,36 @@ export default function MessagesIndex() {
         </TouchableOpacity>
       </View>
 
-      {/* ─── Content Area ─── */}
+      {/* Content */}
       <View style={styles.content}>
-        {currentTab === "requests" ? <RequestsScreen /> : <InboxScreen />}
+        {currentTab === "requests" ? (
+          <RequestsScreen onOpenConversation={onOpenConversation} />
+        ) : (
+          <InboxScreen onOpenConversation={onOpenConversation} />
+        )}
       </View>
 
-      {/* ─── New Chat Sheet ─── */}
+      {/* New Chat Sheet */}
       <CreateMessageSheet
         visible={overlayVisible}
         onClose={() => setOverlayVisible(false)}
         onStartConversation={onStartConversation}
       />
+
+      {/* Chat Overlay */}
+      {openConversationId !== null && (
+        <ChatOverlay
+          visible={true}
+          conversationId={openConversationId}
+          onClose={() => setOpenConversationId(null)}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
+  container: { flex: 1, backgroundColor: "#121212" },
   header: {
     height: 56,
     backgroundColor: "#1E1E1E",
@@ -132,14 +151,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
   },
-  headerTitle: {
-    color: "#FFF",
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  headerButton: {
-    padding: 8,
-  },
+  headerTitle: { color: "#FFF", fontSize: 20, fontWeight: "600" },
+  headerButton: { padding: 8 },
   tabBar: {
     flexDirection: "row",
     backgroundColor: "#121212",
@@ -147,25 +160,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     height: 48,
   },
-  tabItem: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabItemActive: {
-    borderBottomColor: "#00FFFF",
-    borderBottomWidth: 2,
-  },
-  tabText: {
-    color: "#888",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  tabTextActive: {
-    color: "#00FFFF",
-  },
-  content: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
+  tabItem: { flex: 1, alignItems: "center", justifyContent: "center" },
+  tabItemActive: { borderBottomColor: "#00FFFF", borderBottomWidth: 2 },
+  tabText: { color: "#888", fontSize: 16, fontWeight: "500" },
+  tabTextActive: { color: "#00FFFF" },
+  content: { flex: 1, backgroundColor: "transparent" },
 });

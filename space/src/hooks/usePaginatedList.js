@@ -27,7 +27,7 @@ export function usePaginatedList(fetchPageFn, { pageSize = 20, immediate = true,
         try {
             const resp = await fetchPageFn({ page, pageSize });
             setItems(prev => {
-                const merged = [...resp.results, ...prev];
+                const merged = [...prev, ...resp.results];
                 const deduped = [];
                 const seen = new Set();
                 for (const c of merged) {

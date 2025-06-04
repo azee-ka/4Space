@@ -30,7 +30,7 @@ type RequestType = {
   group_participant_count: number;
 };
 
-export default function RequestsScreen() {
+export default function RequestsScreen({ onOpenConversation }: { onOpenConversation: (id: string) => void }) {
   const router = useRouter();
   const { callApi } = useApi();
 
@@ -80,11 +80,12 @@ export default function RequestsScreen() {
     return (
       <TouchableOpacity
         style={styles.chatCard}
-        onPress={() =>
-          router.push({
-            pathname: `/messages/${item.uuid}`,
-          })
-        }
+        // onPress={() =>
+        //   router.push({
+        //     pathname: `/messages/${item.uuid}`,
+        //   })
+        // }
+        onPress={() => onOpenConversation(item.uuid)}
       >
         <ProfilePicture src={user.profile_image} style={styles.chatAvatar} />
         <View style={styles.chatMeta}>
