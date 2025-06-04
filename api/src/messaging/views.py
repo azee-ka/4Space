@@ -180,7 +180,7 @@ def get_messages(request, conversation_id):
         uuid=conversation_id,
         participant_records__user=request.user
     )
-    qs = conversation.messages.order_by('-sent_at')  # Oldest → newest
+    qs = conversation.messages.order_by('-sent_at')
     paginator = LimitOffsetPagination()
     paginated = paginator.paginate_queryset(qs, request)
     serializer = MessageSerializer(paginated, many=True)
