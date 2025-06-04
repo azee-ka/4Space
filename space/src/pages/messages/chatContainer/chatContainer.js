@@ -25,7 +25,7 @@ import { useInfiniteScrollTrigger } from "../../../hooks/useInfiniteScrollTrigge
 
 function isEmojiOnlyMessage(text) {
     // Remove whitespace and zero-width joiners
-    const cleaned = text.replace(/[\s\u200B]/g, "");
+    const cleaned = text?.replace(/[\s\u200B]/g, "");
     if (!cleaned) return false;
 
     // Regex that matches a single emoji codepoint (modern)
@@ -40,12 +40,11 @@ function isEmojiOnlyMessage(text) {
 
 const TIME_GAP_THRESHOLD = 15 * 60 * 1000;
 
-const ChatMessage = React.memo(({ message, previous, next, isOwn, centerPanelRef
-}) => {
+const ChatMessage = React.memo(({ message, previous, next, isOwn, centerPanelRef }) => {
     const grouped = shouldGroupMessages(message, previous);
     const first = isFirstGroupedMessage(message, previous);
     const last = isLastGroupedMessage(message, next);
-    const plainText = message?.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
+    const plainText = message?.text?.replace(/<\/?[^>]+(>|$)/g, "").trim();
     const isEmojiOnly = isEmojiOnlyMessage(plainText);
     const timeGap =
         !grouped ||
@@ -111,8 +110,6 @@ const ChatMessage = React.memo(({ message, previous, next, isOwn, centerPanelRef
 });
 
 
-
-
 const SCROLL_TRIGGER_PX = 150;
 
 const ChatContainer = ({ conversationId }) => {
@@ -139,7 +136,6 @@ const ChatContainer = ({ conversationId }) => {
             const resp = await callApi(
                 `messages/get_messages/${conversationId}/?limit=${pageSize}&offset=${offset}`
             );
-            console.log(resp);
             return {
                 results: resp.data.results,
                 next: resp.data.next,
@@ -149,14 +145,11 @@ const ChatContainer = ({ conversationId }) => {
         { pageSize: 30, immediate: true, resetDeps: [conversationId] }
     );
 
-
-
     // 3. Fetch conversation details (not messages)
     useEffect(() => {
         const fetchConvoDetails = async () => {
             try {
                 const res = await callApi(`messages/get_conversation_details/${conversationId}`);
-                // console.log(res.data);
                 setConversation(res.data);
             } catch (err) {
                 console.error('Error fetching convo details', err);
@@ -167,13 +160,8 @@ const ChatContainer = ({ conversationId }) => {
 
 
     const [justSent, setJustSent] = useState(false);
-
-
     const scrollRef = useRef();
-
-
     const [userScrolledUp, setUserScrolledUp] = useState(false);
-
 
 
     useEffect(() => {
@@ -200,25 +188,14 @@ const ChatContainer = ({ conversationId }) => {
             }
         };
 
-        const onScroll = (e) => {
+        const onScroll = () => {
             onScrollUser();
             onScrollPagination();
         };
 
         el.addEventListener("scroll", onScroll);
-
         return () => el.removeEventListener("scroll", onScroll);
     }, [loading, hasMore, loadMore]);
-
-
-    // useEffect(() => {
-    //     const el = scrollRef.current;
-    //     if (!el) return;
-    //     if (!userScrolledUp) {
-    //         el.scrollTop = el.scrollHeight;
-    //     }
-    // }, [messages, userScrolledUp]);
-
 
 
     useEffect(() => {
@@ -233,19 +210,21 @@ const ChatContainer = ({ conversationId }) => {
     }, [messages, userScrolledUp, justSent]);
 
 
-
-
-
-    // 5. WebSocket for incoming messages (append at end, dedupe by uuid)
+    // 5. WebSocket for incoming messages
     const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
         onMessage: (data) => {
-            setItems(prev => {
-                if (prev.some((m) => m.uuid === data.uuid)) return prev;
-                return [data, ...prev]; // append at end, so after reverse it's at the bottom
-            });
+            // Now that server wraps every new message in { type: "chat_message", message: { … } },
+            // we must unwrap it here:
+            if (data.type === "chat_message" && data.message) {
+                const newMsg = data.message;
+                setItems(prev => {
+                    if (prev.some(m => m.uuid === newMsg.uuid)) return prev;
+                    return [newMsg, ...prev];
+                });
+            }
+            // you can also handle `reaction_update` here if desired
         }
     });
-
 
 
     const handleSend = () => {
@@ -291,10 +270,6 @@ const ChatContainer = ({ conversationId }) => {
     const isOwn = (msg) =>
         msg.sender_username === authState?.current?.user?.username;
 
-    const recipient = conversation?.participants?.find(
-        (p) => p.user.id !== authState?.current?.user?.id
-    );
-
     const renderFooter = () => {
         if (!conversation) return null;
 
@@ -302,8 +277,6 @@ const ChatContainer = ({ conversationId }) => {
         const isBlocked = conversation_status === "blocked";
         const isInvite = conversation_status === "invite";
         const isInviteAccepted = conversation_status === "allowed";
-        const isInboxView = view_type === "inbox";
-        const isRequestView = view_type === "request";
         const hasSentInvite = messages.length >= 1;
 
         if (isBlocked) {
@@ -323,7 +296,7 @@ const ChatContainer = ({ conversationId }) => {
             );
         }
 
-        if ((isInvite || isInviteAccepted) && isInboxView) {
+        if ((isInvite || isInviteAccepted) && view_type === "inbox") {
             return (
                 <>
                     {isInvite && (
@@ -365,7 +338,7 @@ const ChatContainer = ({ conversationId }) => {
             );
         }
 
-        if (isRequestView) {
+        if (view_type === "request") {
             return (
                 <div className="message-request-actions">
                     <button className="request-btn primary" onClick={handleAcceptRequest}>Accept</button>
@@ -373,7 +346,6 @@ const ChatContainer = ({ conversationId }) => {
                     <button className="request-btn danger" onClick={handleBlockRequest}>Block</button>
                     <button className="request-btn danger-outline" onClick={handleBlockRequest}>Report & Block</button>
                 </div>
-
             );
         }
 
@@ -402,7 +374,6 @@ const ChatContainer = ({ conversationId }) => {
                                     +{conversation.participants.length - 3}
                                 </div>
                             )}
-
                         </div>
                         <div className="chat-header-info">
                             <p className="chat-header-name">
@@ -421,24 +392,22 @@ const ChatContainer = ({ conversationId }) => {
                     </>
                 )}
             </div>
-<div className="chat-body" ref={scrollRef}>
-  {[...messages].reverse().map((msg, i, arr) => {
-    return (
-      <div key={msg.uuid} className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}>
-        <ChatMessage
-          message={msg}
-          previous={arr[i - 1]} 
-          next={arr[i + 1]} 
-          isOwn={isOwn(msg)}
-          centerPanelRef={scrollRef}
-        />
-      </div>
-    );
-  })}
-  <div ref={endRef} />
-</div>
-
-
+            <div className="chat-body" ref={scrollRef}>
+                {[...messages].reverse().map((msg, i, arr) => {
+                    return (
+                        <div key={msg.uuid} className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}>
+                            <ChatMessage
+                                message={msg}
+                                previous={arr[i - 1]}
+                                next={arr[i + 1]}
+                                isOwn={isOwn(msg)}
+                                centerPanelRef={scrollRef}
+                            />
+                        </div>
+                    );
+                })}
+                <div ref={endRef} />
+            </div>
             <div className="chat-container-bottom-panel">
                 {renderFooter()}
             </div>

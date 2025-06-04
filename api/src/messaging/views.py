@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
 from django.db.models import Count
@@ -8,10 +9,92 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
 from ..user.models import BaseUser
-from .models import Conversation, Message, MessageSettings, Participant
-from .serializers import ConversationSerializer, MessageSerializer, ConversationListSerializer
+from .models import Conversation, Message, Attachment, MessageSettings, Participant, Reaction
+from .serializers import ConversationSerializer, MessageSerializer, ConversationListSerializer, AttachmentSerializer, ReactionSerializer
 from rest_framework.pagination import LimitOffsetPagination
 
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_reaction(request, message_uuid):
+    """
+    Expect JSON: { "reaction_type": "like" }
+    """
+    reaction_type = request.data.get('reaction_type')
+    if reaction_type not in dict(Reaction.REACTION_CHOICES):
+        return Response({'error': 'Invalid reaction_type.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        message = Message.objects.get(uuid=message_uuid)
+    except Message.DoesNotExist:
+        return Response({'error': 'Message not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    reaction, created = Reaction.objects.get_or_create(
+        message=message,
+        user=request.user,
+        reaction_type=reaction_type
+    )
+    if not created:
+        return Response({'detail': 'Reaction already exists.'}, status=status.HTTP_200_OK)
+
+    serializer = ReactionSerializer(reaction)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def remove_reaction(request, message_uuid, reaction_type):
+    """
+    URL: /remove_reaction/<message_uuid>/<reaction_type>/
+    """
+    try:
+        message = Message.objects.get(uuid=message_uuid)
+    except Message.DoesNotExist:
+        return Response({'error': 'Message not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        reaction = Reaction.objects.get(
+            message=message,
+            user=request.user,
+            reaction_type=reaction_type
+        )
+    except Reaction.DoesNotExist:
+        return Response({'error': 'Reaction not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    reaction.delete()
+    return Response({'detail': 'Reaction removed.'}, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def upload_attachment(request, message_uuid):
+    """
+    Upload one or more files for a message. Expects: files in request.FILES.getlist('files')
+    """
+    try:
+        message = Message.objects.get(uuid=message_uuid)
+    except Message.DoesNotExist:
+        return Response({'error': 'Message not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Only the message sender can attach files
+    if message.sender != request.user:
+        return Response({'error': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+
+    files = request.FILES.getlist('files')
+    if not files:
+        return Response({'error': 'No files provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    attachments = []
+    for f in files:
+        mime = f.content_type
+        attachment = Attachment.objects.create(message=message, file=f, mime_type=mime)
+        attachments.append(attachment)
+
+    serializer = AttachmentSerializer(attachments, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
@@ -223,8 +306,9 @@ def get_messages(request, conversation_id):
     qs = conversation.messages.order_by('-sent_at')
     paginator = LimitOffsetPagination()
     paginated = paginator.paginate_queryset(qs, request)
-    serializer = MessageSerializer(paginated, many=True)
+    serializer = MessageSerializer(paginated, many=True, context={'request': request})
     return paginator.get_paginated_response(serializer.data)
+
 
 
 
@@ -238,13 +322,36 @@ def get_messages(request, conversation_id):
 def create_message(request):
     """
     Create a new message in an existing conversation.
+
+    If request.data contains "parent_message_uuid", we associate the new message to that parent.
     """
     data = request.data
-    conversation = get_object_or_404(Conversation, id=data['conversation'], participants=request.user)
+    conversation = get_object_or_404(
+        Conversation,
+        uuid=data.get('conversation'),
+        participant_records__user=request.user
+    )
+
+    parent_uuid = data.get('parent_message_uuid')
+    parent = None
+    if parent_uuid:
+        try:
+            parent = Message.objects.get(uuid=parent_uuid)
+            # we could verify parent.conversation == conversation if desired
+        except Message.DoesNotExist:
+            return Response({'error': 'Invalid parent_message_uuid.'}, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = MessageSerializer(data=data)
     if serializer.is_valid():
-        serializer.save(sender=request.user, conversation=conversation)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        message_instance = serializer.save(
+            sender=request.user,
+            conversation=conversation,
+            parent_message=parent
+        )
+        # Return full nested object (including attachments=[] and reactions=[])
+        full_serializer = MessageSerializer(message_instance, context={'request': request})
+        return Response(full_serializer.data, status=status.HTTP_201_CREATED)
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -16,4 +16,9 @@ urlpatterns = [
     path('request/<uuid:conversation_id>/block/', views.block_user, name='block_user'),
     
     path('settings/', views.message_settings, name='message_settings'),
+    
+    path('upload_attachment/<uuid:message_uuid>/', views.upload_attachment, name='upload_attachment'),
+    path('add_reaction/<uuid:message_uuid>/', views.add_reaction, name='add_reaction'),
+    path('remove_reaction/<uuid:message_uuid>/<str:reaction_type>/', views.remove_reaction, name='remove_reaction'),
+
 ]

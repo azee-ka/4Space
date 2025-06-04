@@ -1,8 +1,31 @@
 from rest_framework import serializers
-from .models import Conversation, Message, Participant
+from .models import Conversation, Message, Participant, Attachment, Reaction
 from ..user.models import BaseUser
 from ..user.serializers import MentionUserSearchSerializer
 
+
+
+class AttachmentSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attachment
+        fields = ['id', 'mime_type', 'url', 'uploaded_at']
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        # Build absolute URL for the file
+        return request.build_absolute_uri(obj.file.url)
+    
+class ReactionSerializer(serializers.ModelSerializer):
+    user_username = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = Reaction
+        fields = ['id', 'user_username', 'reaction_type', 'reacted_at']
+
+
+    
 class ParticipantSerializer(serializers.ModelSerializer):
     user = MentionUserSearchSerializer()
     role = serializers.ChoiceField(choices=Participant.ROLE_CHOICES)
@@ -16,12 +39,33 @@ class ParticipantSerializer(serializers.ModelSerializer):
             'user', 'role', 'status', 'last_seen_at', 'invitation_sent_at',
         ]
 
+
 class MessageSerializer(serializers.ModelSerializer):
     sender_username = serializers.ReadOnlyField(source='sender.username')
+    attachments = AttachmentSerializer(many=True, read_only=True)
+    reactions = ReactionSerializer(many=True, read_only=True)
+    parent_message_uuid = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        fields = ['uuid', 'conversation', 'sender', 'sender_username', 'text', 'sent_at', 'read']
+        fields = [
+            'uuid',
+            'conversation',
+            'sender',
+            'sender_username',
+            'text',
+            'sent_at',
+            'read',
+            'attachments',
+            'reactions',
+            'parent_message_uuid',
+        ]
+        read_only_fields = ['sender', 'conversation', 'uuid', 'sent_at', 'read']
+
+    def get_parent_message_uuid(self, obj):
+        return obj.parent_message.uuid if obj.parent_message else None
+
+
 
 
 class ConversationSerializer(serializers.ModelSerializer):
