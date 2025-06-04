@@ -1,7 +1,57 @@
+# src/messaging/models.py
+
 import uuid
 from django.db import models
 from django.utils.timezone import now
 from ..user.models import BaseUser
+
+def attachment_upload_path(instance, filename):
+    # e.g. attachments/<conversation_uuid>/<message_uuid>/<filename>
+    return f"attachments/{instance.message.conversation.uuid}/{instance.message.uuid}/{filename}"
+
+class Attachment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message = models.ForeignKey(
+        'Message',
+        related_name='attachments',
+        on_delete=models.CASCADE
+    )
+    file = models.FileField(upload_to=attachment_upload_path)
+    mime_type = models.CharField(max_length=100)  # e.g. "image/png", "video/mp4", "application/pdf"
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Attachment {self.id} ({self.mime_type}) for message {self.message.uuid}"
+
+
+
+class Reaction(models.Model):
+    REACTION_CHOICES = [
+        ('like', '👍'),
+        ('love', '❤️'),
+        ('laugh', '😂'),
+        ('sad', '😢'),
+        ('angry', '😡'),
+        # ... you can expand this list or let users supply custom emoji/unicode
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message = models.ForeignKey(
+        'Message',
+        related_name='reactions',
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
+    reaction_type = models.CharField(max_length=20, choices=REACTION_CHOICES)
+    reacted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('message', 'user', 'reaction_type')
+
+    def __str__(self):
+        return f"{self.user.username} reacted {self.reaction_type} on {self.message.uuid}"
+    
+    
 
 class Conversation(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # Add UUID field
@@ -25,16 +75,25 @@ class Message(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # Add UUID field
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
     sender = models.ForeignKey(BaseUser, on_delete=models.CASCADE)
-    text = models.TextField()
+    text = models.TextField(blank=True)
     sent_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
     deleted_for = models.ManyToManyField(BaseUser, related_name='deleted_messages', blank=True)
 
+    parent_message = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='thread_replies',
+        on_delete=models.SET_NULL
+    )
+    
     def delete_for_user(self, user):
         self.deleted_for.add(user)
 
     def __str__(self):
-        return f"Message from {self.sender.username}: {self.text[:30]}"
+        preview = (self.text[:30] + "...") if self.text else f"Attachment message {self.uuid}"
+        return f"Message from {self.sender.username}: {preview}"
     
     
     
