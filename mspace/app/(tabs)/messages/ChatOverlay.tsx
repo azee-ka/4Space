@@ -580,7 +580,7 @@ export default function ChatOverlay({
                 flexGrow: 1,
                 paddingHorizontal: 16,
                 paddingTop: 12,
-                paddingBottom: insets.bottom + 80,
+                paddingBottom: 0,
               },
             ]}
 
