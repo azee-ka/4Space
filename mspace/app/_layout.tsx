@@ -1,90 +1,106 @@
-// /app/_layout.js   (or wherever your RootLayout resides)
+// /app/_layout.js
 
-import React, { useState } from 'react';
-import { Provider } from 'react-redux';
-import store from '../state/store';
-import { StatusBar } from 'expo-status-bar';
-import { Stack, useSegments } from 'expo-router';
-import useAuth  from '../hooks/useAuth';
-import Navbar from '../components/struct/Navbar';
-import NotificationSidebar from '../components/struct/NotificationSidebar';
-import Sidebar from '../components/struct/Sidebar';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { Provider } from "react-redux";
+import store from "../state/store";
+import { StatusBar } from "expo-status-bar";
+import { Stack, useSegments } from "expo-router";
+import useAuth from "../hooks/useAuth";
+import Navbar from "../components/struct/Navbar";
+import NotificationSidebar from "../components/struct/NotificationSidebar";
+import Sidebar from "../components/struct/Sidebar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
+
+// Hooks for profile + notifications
+import useProfile from "../hooks/useProfile";
+import useNotifications from "../hooks/useNotifications";
+import { useNotificationsSocket } from "../state/services/notificationsSocket";
 
 function AppStack() {
-  const { isAuthenticated, isLoading, logout } = useAuth();
+  // 1) Authentication
+  const { isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
-  // 1. useSegments to detect current route segments
-  const segments = useSegments();
-  // segments is an array, e.g. ["(tabs)", "timeline"] or ["(tabs)", "explore", "index"], etc.
+  // 2) Profile (only fetches once after login)
+  const {
+    minimalProfileData,
+    isLoading: profileLoading,
+    error: profileError,
+  } = useProfile();
 
-  // 2. Map active segment to a human-readable title
-  let currentTitle = 'Home';
+  // 3) Notifications (Redux + WebSocket)
+  const { notifications, count } = useNotifications();
+  useNotificationsSocket(isAuthenticated);
+
+  // 4) Title logic from route segments
+  const segments = useSegments();
+  let currentTitle = "Home";
   if (segments.length > 1) {
-    const route = segments[1]; // e.g. "timeline" or "explore" or "messages", etc.
-    switch (route) {
-      case 'timeline':
-        currentTitle = 'Timeline';
+    switch (segments[1]) {
+      case "timeline":
+        currentTitle = "Timeline";
         break;
-      case 'explore':
-        currentTitle = 'Explore';
+      case "explore":
+        currentTitle = "Explore";
         break;
-      case 'messages':
-        currentTitle = 'Messages';
+      case "messages":
+        currentTitle = "Messages";
         break;
-      case 'profile':
-        currentTitle = 'Profile';
+      case "profile":
+        currentTitle = "Profile";
         break;
       default:
-        currentTitle = 'Home';
+        currentTitle = "Home";
     }
   }
 
-  if (isLoading) return null;
+  // 5) Don’t render anything until auth state is known
+  if (authLoading) {
+    return null;
+  }
 
-  // Sample profile + notifications (replace with real)
-  const profileData = {
-    username: 'gizmo',
-    profile_image: 'https://yourdomain.com/myprofileimg.png',
-    first_name: 'Gizmo',
-    last_name: 'Bot'
-  };
-  const notifications = [
-    {
-      id: 1,
-      title: 'Welcome!',
-      message: 'Hello world',
-      sender: { profile_image: 'https://yourdomain.com/someimg.png' }
-    }
-  ];
+  // 6) If the user is authenticated but profile is still loading, show a spinner
+  if (isAuthenticated && profileLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#19dee8" />
+      </View>
+    );
+  }
+
+  // 7) If there was a profile‐fetch error, you can warn or still show UI
+  if (profileError) {
+    console.warn("[AppStack] Profile fetch error:", profileError);
+  }
 
   return (
     <View style={{ flex: 1 }}>
       {isAuthenticated && (
         <>
-          {/* Pass down currentTitle */}
           <Navbar
             title={currentTitle}
             sidebarOpen={sidebarOpen}
             onOpenSidebar={() => setSidebarOpen(true)}
             onOpenNotifications={() => setNotifOpen(true)}
+            notificationCount={count}
           />
+
           <Sidebar
             visible={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
             onNavigate={(route) => {
               setSidebarOpen(false);
-              // optionally navigate with router.push(route) ...
+              // e.g. router.push(route)
             }}
-            profileData={profileData}
+            profileData={minimalProfileData || {}}
             onSignOut={async () => {
               setSidebarOpen(false);
               await logout();
             }}
           />
+
           <NotificationSidebar
             visible={notifOpen}
             onClose={() => setNotifOpen(false)}
@@ -108,7 +124,8 @@ function AppStack() {
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      {/* ← Keep exactly these edges so bottom‐tabs stay where they were */}
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <AppStack />
         <StatusBar style="auto" />
       </SafeAreaView>
@@ -119,6 +136,11 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#000",
   },
 });

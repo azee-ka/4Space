@@ -1,18 +1,26 @@
-// services/notificationsSocket.js
-export const listenForRealTimeNotifications = (dispatch) => {
-    const socket = new WebSocket('wss://your-websocket-url.com');  // Replace with your WebSocket URL
+// /state/services/useNotificationsSocket.js
 
-    socket.onmessage = (event) => {
-        const newNotification = JSON.parse(event.data);  // Assuming the WebSocket sends notification data in JSON format
-        dispatch(appendNotification(newNotification));  // Dispatch an action to store the new notification in Redux
-    };
+import { useDispatch } from "react-redux";
+import { appendNotification } from "../reducers/notificationsSlice";
+import useWebSocket from "../../hooks/useWebSocket";
 
-    socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
+export const useNotificationsSocket = (isAuthenticated) => {
+  const dispatch = useDispatch();
 
-    // Clean up the WebSocket connection when no longer needed
-    return () => {
-        socket.close();
-    };
+  // Always call useWebSocket at the top level. It will automatically open
+  // or close based on the URL and its own cleanup. We use `dependencies:[isAuthenticated]`
+  // so the hook re-runs whenever authentication changes.
+  useWebSocket("notifications/", {
+    // Only dispatch if the user is authenticated. If not, do nothing.
+    onMessage: (payload) => {
+      if (isAuthenticated) {
+        dispatch(appendNotification(payload));
+      }
+    },
+    onError: (err) => {
+      console.error("Notification WS error:", err);
+    },
+    // When `isAuthenticated` flips, React will re-run this hook:
+    dependencies: [isAuthenticated],
+  });
 };

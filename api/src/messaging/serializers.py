@@ -161,4 +161,3 @@ class ConversationListSerializer(serializers.ModelSerializer):
         active_participants_count = Participant.objects.filter(conversation=obj).exclude(user=current_user).count()
 
         return active_participants_count
-

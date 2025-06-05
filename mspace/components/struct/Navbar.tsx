@@ -10,10 +10,11 @@ export default function Navbar({
   sidebarOpen,
   onOpenSidebar,
   onOpenNotifications,
+  notificationCount = 0,   // ← new prop
 }) {
   return (
     <View style={styles.navbar}>
-      {/* Left: Hamburger + Logo (floats above sidebar) */}
+      {/* Left: Hamburger + Logo */}
       <View
         style={[
           styles.leftSection,
@@ -26,17 +27,23 @@ export default function Navbar({
         <Text style={styles.logoText}>4Space</Text>
       </View>
 
-      {/* Center: Title */}
+      {/* Center: (you can put the title here if desired) */}
       <View style={styles.centerSection}>
         {/* <Text style={styles.screenTitle}>{title}</Text> */}
       </View>
 
-      {/* Right: Notification */}
-      <TouchableOpacity
-        onPress={onOpenNotifications}
-        style={styles.iconButton}
-      >
+      {/* Right: Notification (bell icon with badge) */}
+      <TouchableOpacity onPress={onOpenNotifications} style={styles.iconButton}>
         <Icon name="bell" size={25} color="#19dee8" />
+
+        {/* Render badge if there are unread notifications */}
+        {notificationCount > 0 && (
+          <View style={styles.badgeContainer}>
+            <Text style={styles.badgeText}>
+              {notificationCount > 99 ? '99+' : notificationCount}
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -48,8 +55,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     height: 54,
-    // backgroundColor: '#000',
-    backgroundColor: "#121212",
+    backgroundColor: '#121212',
     paddingHorizontal: 5,
     borderBottomWidth: 0.5,
     borderColor: '#333',
@@ -59,7 +65,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  // Only this left block floats above sidebar
   leftAboveSidebar: {
     position: 'absolute',
     left: 10,
@@ -67,10 +72,9 @@ const styles = StyleSheet.create({
     height: 53,
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 100,             // above sidebar (zIndex: 99)
-    // backgroundColor: '#000',  // default, changes when sidebarOpen
-    backgroundColor: "#121212",
-    paddingHorizontal: 0,     // match navbar padding
+    zIndex: 100,             
+    backgroundColor: '#121212',
+    paddingHorizontal: 0,
   },
   centerSection: {
     flex: 1,
@@ -80,7 +84,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-    marginLeft: 40, // adjust to keep centered visually
+    marginLeft: 40,
   },
   logo: {
     width: 22,
@@ -94,5 +98,22 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: 8,
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
   },
 });

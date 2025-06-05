@@ -2,8 +2,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loadMinimalProfileData } from '../state/actions/profileActions';  // Action to fetch profile data
 import { selectMinimalProfileData, selectIsProfileLoading, selectProfileError } from '../state/reducers/profileSlice';  // Selectors
 import { useEffect } from 'react';
-import useApi from '../utils/useApi';
-import { useAuth } from './useAuth';
+import useApi from './useApi';
+import useAuth from './useAuth';
 
 const useProfile = () => {
     const dispatch = useDispatch();
