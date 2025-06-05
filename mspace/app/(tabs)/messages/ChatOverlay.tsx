@@ -26,8 +26,8 @@ import {
   findNodeHandle,
   UIManager,
 } from "react-native";
-
 import * as Clipboard from "expo-clipboard";
+import * as MediaLibrary from "expo-media-library";
 import { Video } from "expo-av";
 import * as DocumentPicker from "expo-document-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -48,11 +48,44 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get(
   "window"
 );
 
-// Types remain unchanged...
-type AttachmentType = { /* ... */ };
-type ReactionType = { /* ... */ };
-type MessageType = { /* ... */ };
-type ConversationType = { /* ... */ };
+// ─────── Types ───────
+type AttachmentType = {
+  id: string;
+  mime_type: string;
+  url: string;
+  uploaded_at: string;
+};
+
+type ReactionType = {
+  id: string;
+  user_username: string;
+  reaction_type: string;
+  reacted_at: string;
+};
+
+type MessageType = {
+  uuid: string;
+  text: string;
+  sender_username: string;
+  sent_at: string;
+  attachments: AttachmentType[];
+  reactions: ReactionType[];
+  parent_message_uuid: string | null;
+};
+
+type ConversationType = {
+  participants: Array<{
+    user: {
+      id: number;
+      first_name: string;
+      last_name: string;
+      username: string;
+      profile_image: string | null;
+    };
+  }>;
+  view_type: "inbox" | "request";
+  conversation_status: "blocked" | "invite" | "allowed" | string;
+};
 
 interface ChatOverlayProps {
   visible: boolean;
@@ -85,21 +118,23 @@ export default function ChatOverlay({
   const currentUsername = authState?.current?.user?.username || "UNKNOWN";
   const { callApi } = useApi();
 
-  // Animated values for slide-up sheet and “+” menu
+  // ─────── Animation Values ───────
   const translateY = useRef(new Animated.Value(0)).current;
   const plusAnim = useRef(new Animated.Value(0)).current;
 
-  // Animated values for the long-press popup
+  // For long-press bubble focus:
   const blurOpacity = useRef(new Animated.Value(0)).current;
-  const bubbleScale = useRef(new Animated.Value(1)).current; // start at 1, animate to 1.1
-  const [reactionRowWidth, setReactionRowWidth] = useState(0);
-  const [actionRowWidth, setActionRowWidth] = useState(0);
+  // We'll animate scale via a spring from 0.8→1.1→1.0
+  const bubbleScale = useRef(new Animated.Value(0.8)).current;
+  // We also track x/y translation via Animated.ValueXY
+  const bubbleTranslate = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
 
+  // ─────── Refs ───────
   const inputRef = useRef<TextInput>(null);
   const flatListRef = useRef<FlatList<MessageType>>(null);
-
-  // Refs & state for measuring each bubble
   const bubbleRefs = useRef<Record<string, React.RefObject<View>>>({});
+
+  // ─────── State ───────
   const [focusedMessage, setFocusedMessage] = useState<MessageType | null>(
     null
   );
@@ -110,7 +145,6 @@ export default function ChatOverlay({
     height: number;
   } | null>(null);
 
-  // “+” menu state
   const [plusX, setPlusX] = useState(0);
   const [plusY, setPlusY] = useState(0);
   const [attachmentsToSend, setAttachmentsToSend] = useState<
@@ -119,14 +153,12 @@ export default function ChatOverlay({
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [plusMenuVisible, setPlusMenuVisible] = useState(false);
 
-  // Reply state
   const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
   const [showChainModal, setShowChainModal] = useState<{
     rootUuid: string;
     chain: MessageType[];
   } | null>(null);
 
-  // Conversation & messages
   const [conversation, setConversation] = useState<ConversationType | null>(
     null
   );
@@ -140,14 +172,11 @@ export default function ChatOverlay({
   const [closing, setClosing] = useState(false);
   const [justSent, setJustSent] = useState(false);
 
-  // When dragging a bubble side-to-side, show/hide timestamps
   const [showTimestamps, setShowTimestamps] = useState(false);
 
-  // Offsets for sliding sheet
   const OPEN_TOP = insets.top + 20;
   const SHEET_OFFSET = SCREEN_HEIGHT - OPEN_TOP;
 
-  // PANRESPONDER for showing timestamps on long press & drag
   const bubblePanResponderRef = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -156,9 +185,7 @@ export default function ChatOverlay({
     })
   ).current;
 
-  //
-  // ANIMATE SLIDING SHEET
-  //
+  // ─────── Slide‐Up Sheet Animation ───────
   useEffect(() => {
     if (!visible) return;
     translateY.setValue(SHEET_OFFSET);
@@ -170,9 +197,7 @@ export default function ChatOverlay({
     }).start();
   }, [translateY, visible, SHEET_OFFSET]);
 
-  //
-  // ANIMATE “+” MENU
-  //
+  // ─────── “+” Menu Animation ───────
   useEffect(() => {
     if (showPlusMenu) {
       setPlusMenuVisible(true);
@@ -195,9 +220,7 @@ export default function ChatOverlay({
     }
   }, [showPlusMenu, plusAnim, plusMenuVisible]);
 
-  //
-  // DRAG TO CLOSE (PANRESPONDER)
-  //
+  // ─────── Drag‐to‐Close (Swipe down) ───────
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -233,9 +256,7 @@ export default function ChatOverlay({
     });
   }, [closing, onClose, translateY, SHEET_OFFSET]);
 
-  //
-  // FETCH CONVERSATION DETAILS
-  //
+  // ─────── Fetch Conversation Details ───────
   useEffect(() => {
     async function fetchConversation() {
       try {
@@ -250,9 +271,7 @@ export default function ChatOverlay({
     if (visible) fetchConversation();
   }, [conversationId, visible]);
 
-  //
-  // FETCH MESSAGES (PAGINATED)
-  //
+  // ─────── Fetch Messages (paginated) ───────
   const fetchMessages = useCallback(
     async (pageToLoad: number) => {
       try {
@@ -291,9 +310,7 @@ export default function ChatOverlay({
     if (visible) fetchMessages(0);
   }, [fetchMessages, visible]);
 
-  //
-  // WEBSOCKET FOR LIVE UPDATES
-  //
+  // ─────── WebSocket for Live Updates ───────
   const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
     onMessage: (data: any) => {
       if (data.type === "chat_message") {
@@ -309,13 +326,16 @@ export default function ChatOverlay({
             m.uuid === message_uuid ? { ...m, reactions } : m
           )
         );
+      } else if (data.type === "unsend") {
+        const { message_uuid } = data;
+        setMessages((prev) =>
+          prev.filter((m) => m.uuid !== message_uuid)
+        );
       }
     },
   });
 
-  //
-  // AUTO-SCROLL
-  //
+  // ─────── Auto‐scroll on new messages ───────
   useEffect(() => {
     if (!loadingOlder && flatListRef.current) {
       if (!justSent && !userScrolledUp && loading === false) {
@@ -324,15 +344,11 @@ export default function ChatOverlay({
     }
   }, [messages, userScrolledUp, justSent, loadingOlder, loading]);
 
-  //
-  // HELPER: OWN MESSAGE?
-  //
+  // ─────── Helper: Is it my message? ───────
   const isOwnMessage = (m: MessageType) =>
     m.sender_username === currentUsername;
 
-  //
-  // BUILD REPLY CHAIN (ALL ANCESTORS)
-  //
+  // ─────── Build Reply Chain (all ancestors) ───────
   const getReplyChain = useCallback(
     (rootUuid: string): MessageType[] => {
       const chain: MessageType[] = [];
@@ -352,9 +368,6 @@ export default function ChatOverlay({
     [messages]
   );
 
-  //
-  // OPEN THREAD OVERLAY
-  //
   const openChainModal = (msg: MessageType) => {
     const chain = getReplyChain(msg.uuid);
     if (chain.length > 1) {
@@ -362,9 +375,7 @@ export default function ChatOverlay({
     }
   };
 
-  //
-  // SEND MESSAGE + ATTACHMENTS
-  //
+  // ─────── Send Message ───────
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed && attachmentsToSend.length === 0) return;
@@ -387,6 +398,7 @@ export default function ChatOverlay({
     setInput("");
     setReplyingTo(null);
     setJustSent(true);
+    setMessages((prev) => [optimisticMessage, ...prev]);
 
     if (attachmentsToSend.length === 0) {
       sendMessage({
@@ -406,7 +418,7 @@ export default function ChatOverlay({
       if (replyingTo) body.parent_message_uuid = replyingTo.uuid;
 
       const resp = await callApi("messages/create_message/", "POST", body);
-      const newMessage: MessageType = resp.data;
+      let newMessage: MessageType = resp.data;
 
       if (attachmentsToSend.length > 0) {
         const formData = new FormData();
@@ -444,9 +456,7 @@ export default function ChatOverlay({
     }
   };
 
-  //
-  // PICK MEDIA (PHOTO/VIDEO)
-  //
+  // ─────── Pick Media ───────
   const handleMediaPick = async () => {
     setShowPlusMenu(false);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -455,7 +465,7 @@ export default function ChatOverlay({
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsMultipleSelection: true,
       quality: 0.8,
     });
@@ -469,37 +479,89 @@ export default function ChatOverlay({
     }
   };
 
-  //
-  // TOGGLE REACTIONS
-  //
+  // ─────── Toggle Reaction ───────
   const handleToggleReaction = async (
     msg: MessageType,
     reactionType: string
   ) => {
-    const messageUuid = msg.uuid;
     const existing = msg.reactions.some(
       (r) =>
-        r.user_username === currentUsername && r.reaction_type === reactionType
+        r.user_username === currentUsername &&
+        r.reaction_type === reactionType
     );
-    try {
-      if (existing) {
-        await callApi(
-          `messages/remove_reaction/${messageUuid}/${reactionType}/`,
-          "DELETE"
-        );
-      } else {
-        await callApi(`messages/add_reaction/${messageUuid}/`, "POST", {
-          reaction_type: reactionType,
-        });
-      }
-    } catch (err) {
-      console.error("Reaction error:", err);
+
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.uuid !== msg.uuid) return m;
+        let newReactions: ReactionType[];
+        if (existing) {
+          newReactions = m.reactions.filter(
+            (r) => !(r.user_username === currentUsername && r.reaction_type === reactionType)
+          );
+        } else {
+          newReactions = [
+            ...m.reactions,
+            {
+              id: `temp-${Date.now()}`,
+              user_username: currentUsername,
+              reaction_type: reactionType,
+              reacted_at: new Date().toISOString(),
+            },
+          ];
+        }
+        return { ...m, reactions: newReactions };
+      })
+    );
+
+    if (existing) {
+      sendMessage({
+        action: "remove_reaction",
+        message_uuid: msg.uuid,
+        reaction_type: reactionType,
+      });
+    } else {
+      sendMessage({
+        action: "add_reaction",
+        message_uuid: msg.uuid,
+        reaction_type: reactionType,
+      });
     }
   };
 
-  //
-  // ON SCROLL DETECT IF USER SCROLLED UP
-  //
+  // ─────── Unsend Message ───────
+  const handleUnsend = async (msg: MessageType) => {
+    try {
+      await callApi(`messages/unsend_message/${msg.uuid}/`, "POST");
+      setMessages((prev) => prev.filter((m) => m.uuid !== msg.uuid));
+      sendMessage({
+        type: "unsend",
+        message_uuid: msg.uuid,
+      });
+    } catch (err) {
+      console.error("Error unsending message:", err);
+      Alert.alert("Unable to unsend", "Try again in a moment.");
+    }
+  };
+
+  // ─────── Save Media ───────
+  const handleSaveMedia = async (att: AttachmentType) => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission denied", "Can't save media without permission.");
+        return;
+      }
+      const asset = await MediaLibrary.createAssetAsync(att.url);
+      if (asset) {
+        Alert.alert("Saved!", "Media saved to your camera roll.");
+      }
+    } catch (err) {
+      console.error("Error saving media:", err);
+      Alert.alert("Save failed", "Could not save media.");
+    }
+  };
+
+  // ─────── Detect Scroll Up ───────
   const onScroll = (e: any) => {
     const offsetY = e.nativeEvent.contentOffset.y;
     const contentHeight = e.nativeEvent.contentSize.height;
@@ -513,18 +575,13 @@ export default function ChatOverlay({
     }
   };
 
-  //
-  // MEASURE AND OPEN LONG-PRESS POPUP
-  //
+  // ─────── Measure & Open Long‐Press Popup ───────
   const measureAndOpenPopup = (message: MessageType) => {
     const ref = bubbleRefs.current[message.uuid];
     if (!ref || !ref.current) {
-      // fallback if ref is missing
       openPopupDirectly(message, null);
       return;
     }
-
-    // Measure in window to get absolute coordinates
     UIManager.measureInWindow(
       findNodeHandle(ref.current)!,
       (x: number, y: number, width: number, height: number) => {
@@ -538,38 +595,66 @@ export default function ChatOverlay({
     layout: { x: number; y: number; width: number; height: number } | null
   ) => {
     setFocusedMessage(message);
+
     if (layout) {
-      // We only need the raw layout to position—we’ll scale in place
+      const maxBubbleWidth = SCREEN_WIDTH * 0.6;
+      let finalWidth = layout.width;
+      if (layout.width > maxBubbleWidth) {
+        finalWidth = maxBubbleWidth;
+      }
+
       setFocusedLayout({
         x: layout.x,
         y: layout.y,
-        width: layout.width,
+        width: finalWidth,
         height: layout.height,
       });
 
-      // Initialize bubbleScale at 1 → animate to 1.1
-      bubbleScale.setValue(1);
+      // Initialize scale to 0.8, and set translate to bubble center
+      bubbleScale.setValue(0.8);
+      bubbleTranslate.setValue({
+        x: layout.x + layout.width / 2,
+        y: layout.y + layout.height / 2,
+      });
 
-      // Fade in blur, then scale bubble up
-      Animated.sequence([
-        Animated.timing(blurOpacity, {
-          toValue: 1,
-          duration: 180,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: false,
-        }),
-        Animated.timing(bubbleScale, {
-          toValue: 1.1,
-          duration: 200,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      // fallback: show only blur and actions at bottom
+      // Animate background blur instantly
       Animated.timing(blurOpacity, {
         toValue: 1,
-        duration: 180,
+        duration: 150,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+
+      // Animate bubble: spring from 0.8→1.1→1.0, and move to center
+      Animated.parallel([
+        Animated.spring(bubbleScale, {
+          toValue: 1.1,
+          friction: 4,
+          tension: 120,
+          useNativeDriver: true,
+        }),
+        Animated.spring(bubbleTranslate, {
+          toValue: {
+            x: SCREEN_WIDTH / 2,
+            y: SCREEN_HEIGHT / 2,
+          },
+          friction: 6,
+          tension: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // After overshoot, settle to 1.0
+        Animated.spring(bubbleScale, {
+          toValue: 1.0,
+          friction: 5,
+          tension: 80,
+          useNativeDriver: true,
+        }).start();
+      });
+    } else {
+      Animated.timing(blurOpacity, {
+        toValue: 1,
+        duration: 150,
         easing: Easing.inOut(Easing.quad),
         useNativeDriver: false,
       }).start();
@@ -578,49 +663,68 @@ export default function ChatOverlay({
   };
 
   const closePopup = () => {
-    // Reverse: scale bubble back to 1, then fade blur out
-    Animated.sequence([
-      Animated.timing(bubbleScale, {
-        toValue: 1,
-        duration: 120,
-        easing: Easing.in(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(blurOpacity, {
-        toValue: 0,
-        duration: 180,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: false,
-      }),
-    ]).start(() => {
+    Animated.timing(blurOpacity, {
+      toValue: 0,
+      duration: 120,
+      easing: Easing.inOut(Easing.quad),
+      useNativeDriver: false,
+    }).start(() => {
       setFocusedMessage(null);
       setFocusedLayout(null);
-      setReactionRowWidth(0);
-      setActionRowWidth(0);
     });
   };
 
-  //
-  // RENDER LARGE MEDIA ATTACHMENTS (FULL-WIDTH BUBBLE)
-  //
+  // ─────── Render Media Attachment ───────
   const renderMediaAttachment = (att: AttachmentType) => {
     if (att.mime_type.startsWith("image/")) {
       return (
-        <Image
+        <Pressable
           key={att.id}
-          source={{ uri: att.url }}
-          style={styles.largeMediaFull}
-        />
+          onLongPress={() =>
+            Alert.alert(
+              "Save Image",
+              "Would you like to save this image to your device?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Save",
+                  onPress: () => handleSaveMedia(att),
+                },
+              ]
+            )
+          }
+        >
+          <Image
+            source={{ uri: att.url }}
+            style={styles.largeMediaFull}
+          />
+        </Pressable>
       );
     } else if (att.mime_type.startsWith("video/")) {
       return (
-        <Video
+        <Pressable
           key={att.id}
-          source={{ uri: att.url }}
-          style={styles.largeMediaFull}
-          useNativeControls
-          resizeMode="contain"
-        />
+          onLongPress={() =>
+            Alert.alert(
+              "Save Video",
+              "Would you like to save this video to your device?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Save",
+                  onPress: () => handleSaveMedia(att),
+                },
+              ]
+            )
+          }
+        >
+          <Video
+            source={{ uri: att.url }}
+            style={styles.largeMediaFull}
+            useNativeControls
+            resizeMode="contain"
+          />
+        </Pressable>
       );
     } else {
       return (
@@ -628,6 +732,19 @@ export default function ChatOverlay({
           key={att.id}
           style={styles.docCard}
           onPress={() => Linking.openURL(att.url)}
+          onLongPress={() =>
+            Alert.alert(
+              "Download File",
+              "Would you like to download this file?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Download",
+                  onPress: () => Linking.openURL(att.url),
+                },
+              ]
+            )
+          }
         >
           <MaterialIcons
             name="insert-drive-file"
@@ -642,9 +759,7 @@ export default function ChatOverlay({
     }
   };
 
-  //
-  // RENDER A SINGLE MESSAGE BUBBLE (WITH PANRESPONDER FOR TIMESTAMPS)
-  //
+  // ─────── Render Single Message Bubble ───────
   const renderMessageItem = ({
     item,
     index,
@@ -652,7 +767,6 @@ export default function ChatOverlay({
     item: MessageType;
     index: number;
   }) => {
-    // Create or retrieve a ref for this bubble
     if (!bubbleRefs.current[item.uuid]) {
       bubbleRefs.current[item.uuid] = React.createRef<View>();
     }
@@ -668,7 +782,6 @@ export default function ChatOverlay({
       minute: "2-digit",
     });
 
-    // REPLY PREVIEW if item.parent_message_uuid exists
     const parentMsg = item.parent_message_uuid
       ? messages.find((m) => m.uuid === item.parent_message_uuid)
       : null;
@@ -680,9 +793,8 @@ export default function ChatOverlay({
         : "Attachment"
       : "";
 
-    // DETERMINE “KNOT” STYLE (branching)
     const isKnot =
-      own &&
+      item.parent_message_uuid &&
       parentMsg &&
       parentMsg.sender_username !== currentUsername &&
       messages.some(
@@ -691,12 +803,11 @@ export default function ChatOverlay({
           m.sender_username !== currentUsername
       );
 
-    // MAIN BUBBLE CONTENT
     return (
       <View style={{ marginVertical: 6 }}>
-        {/* IF there’s a 15+ minute gap, show a date separator */}
         {(!prev ||
-          new Date(prev.sent_at).getTime() + 15 * 60 * 1000 <
+          new Date(prev.sent_at).getTime() +
+            15 * 60 * 1000 <
             msgDate.getTime()) && (
           <View style={styles.dateSeparatorWrapper}>
             <Text style={styles.dateSeparatorText}>
@@ -710,7 +821,6 @@ export default function ChatOverlay({
           </View>
         )}
 
-        {/* PARENT PREVIEW */}
         {parentMsg && (
           <View
             style={[
@@ -728,16 +838,20 @@ export default function ChatOverlay({
                 style={[
                   styles.branchLine,
                   isKnot && styles.branchKnot,
+                  index -
+                    messages.findIndex((m) => m.uuid === parentMsg.uuid) <
+                  5
+                    ? { height: 20 }
+                    : { height: 40 },
                 ]}
               />
-              <Text style={styles.parentPreviewText}>
+              <Text style={styles.parentPreviewText} numberOfLines={1}>
                 {parentMsg.sender_username}: {parentPreviewText}
               </Text>
             </Pressable>
           </View>
         )}
 
-        {/* BUBBLE ROW */}
         <View
           style={[
             styles.messageRow,
@@ -746,7 +860,7 @@ export default function ChatOverlay({
         >
           <Pressable
             ref={bubbleRef}
-            {...bubblePanResponderRef}
+            {...bubblePanResponderRef.panHandlers}
             onLongPress={() => measureAndOpenPopup(item)}
             style={[
               styles.bubbleContainer,
@@ -772,7 +886,6 @@ export default function ChatOverlay({
             )}
           </Pressable>
 
-          {/* IF showTimestamps is true */}
           {showTimestamps && (
             <Text
               style={[
@@ -787,7 +900,6 @@ export default function ChatOverlay({
           )}
         </View>
 
-        {/* MEDIA ATTACHMENTS */}
         {item.attachments?.length > 0 && (
           <View
             style={[
@@ -803,7 +915,6 @@ export default function ChatOverlay({
           </View>
         )}
 
-        {/* REACTIONS (below bubble) */}
         {item.reactions?.length > 0 && (
           <View
             style={[
@@ -861,12 +972,12 @@ export default function ChatOverlay({
     );
   };
 
-  //
-  // RENDER THE FOCUSED BUBBLE + REACTIONS & ACTION ROWS ON TOP OF A BLUR
-  //
+  // ─────── Render the Focused Bubble + Reaction/Action Overlay ───────
   const renderPopupOverlay = () => {
-    if (!focusedMessage || !focusedLayout) {
-      // Fallback: Fullscreen blur + bottom-center reaction/action
+    if (!focusedMessage) return null;
+
+    // If layout missing, just blur + fallback menu
+    if (!focusedLayout) {
       return (
         <Animated.View
           pointerEvents="box-none"
@@ -875,18 +986,17 @@ export default function ChatOverlay({
             { opacity: blurOpacity },
           ]}
         >
-          {/* Captures taps to close */}
           <Pressable
             style={StyleSheet.absoluteFillObject}
             onPress={closePopup}
-          />
-          <BlurView
-            intensity={70}
-            tint="dark"
-            style={StyleSheet.absoluteFill}
-          />
-
-          {/* Reactions row at bottom center */}
+          >
+            <BlurView
+              intensity={70}
+              tint="dark"
+              style={StyleSheet.absoluteFill}
+            />
+          </Pressable>
+          {/* Fallback reaction/action at bottom */}
           <View style={styles.popupContainerFallback}>
             <View style={styles.reactionPopupRow}>
               {["👍", "❤️", "😂", "😢", "😡"].map((emoji) => (
@@ -911,14 +1021,7 @@ export default function ChatOverlay({
                 </Pressable>
               ))}
             </View>
-
-            <View
-              style={[
-                styles.popupActionButtons,
-                { width: actionRowWidth || 200 },
-              ]}
-              onLayout={(e) => setActionRowWidth(e.nativeEvent.layout.width)}
-            >
+            <View style={styles.popupActionButtons}>
               <Pressable
                 onPress={() => {
                   setReplyingTo(focusedMessage);
@@ -939,40 +1042,62 @@ export default function ChatOverlay({
               </Pressable>
               <Pressable
                 onPress={() => {
-                  console.log("Unsend:", focusedMessage.uuid);
+                  handleUnsend(focusedMessage);
                   closePopup();
                 }}
                 style={styles.popupActionBtn}
               >
                 <Text style={styles.popupActionText}>Unsend</Text>
               </Pressable>
+              {focusedMessage.attachments?.length > 0 && (
+                <Pressable
+                  onPress={() => {
+                    handleSaveMedia(focusedMessage.attachments[0]);
+                    closePopup();
+                  }}
+                  style={styles.popupActionBtn}
+                >
+                  <Text style={styles.popupActionText}>Save</Text>
+                </Pressable>
+              )}
             </View>
           </View>
         </Animated.View>
       );
     }
 
-    // If we have a measured layout, position bubble exactly at (x,y) and scale it.
     const { x, y, width, height } = focusedLayout;
     const isOwn = isOwnMessage(focusedMessage);
     const emojiOnly = isEmojiOnlyMessage(
       focusedMessage.text.replace(/<\/?[^>]+(>|$)/g, "").trim()
     );
 
+    // Center coordinates:
+    const centerX = SCREEN_WIDTH / 2 - width / 2;
+    const centerY = SCREEN_HEIGHT / 2 - height / 2;
+
+    // Animated style for bubble:
     const bubbleAnimatedStyle = {
-      position: "absolute" as const,
-      top: y,
-      left: x,
+      transform: [
+        {
+          translateX: bubbleTranslate.x.interpolate({
+            inputRange: [0, SCREEN_WIDTH],
+            outputRange: [x, centerX],
+            extrapolate: "clamp",
+          }),
+        },
+        {
+          translateY: bubbleTranslate.y.interpolate({
+            inputRange: [0, SCREEN_HEIGHT],
+            outputRange: [y, centerY],
+            extrapolate: "clamp",
+          }),
+        },
+        { scale: bubbleScale },
+      ],
       width,
       height,
-      transform: [{ scale: bubbleScale }],
     };
-
-    // Center each row above / below the bubble
-    const reactionLeft =
-      x + width / 2 - (reactionRowWidth / 2 || 0);
-    const actionLeft =
-      x + width / 2 - (actionRowWidth / 2 || 0);
 
     return (
       <Animated.View
@@ -982,29 +1107,36 @@ export default function ChatOverlay({
           { opacity: blurOpacity },
         ]}
       >
-        {/* Tappable background to close */}
+        {/* Tapping anywhere outside the bubble will close */}
         <Pressable
           style={StyleSheet.absoluteFillObject}
           onPress={closePopup}
-        />
-        <BlurView
-          intensity={70}
-          tint="dark"
-          style={StyleSheet.absoluteFill}
-        />
+        >
+          <BlurView
+            intensity={70}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+          />
+        </Pressable>
 
-        {/* Focused bubble, slightly enlarged */}
-        <Animated.View style={bubbleAnimatedStyle}>
+        {/* Focused bubble */}
+        <Animated.View
+          style={[styles.focusedBubbleWrapper, bubbleAnimatedStyle]}
+        >
           <View
             style={[
               styles.bubbleContainer,
-              isOwn ? styles.bubbleContainerOwn : styles.bubbleContainerOther,
+              isOwn
+                ? styles.bubbleContainerOwn
+                : styles.bubbleContainerOther,
               emojiOnly && styles.emojiOnlyContainer,
               { width: "100%", height: "100%", justifyContent: "center" },
             ]}
           >
             {emojiOnly ? (
-              <Text style={styles.emojiText}>{focusedMessage.text}</Text>
+              <Text style={styles.emojiText}>
+                {focusedMessage.text}
+              </Text>
             ) : (
               <Text
                 style={[
@@ -1013,7 +1145,7 @@ export default function ChatOverlay({
                     ? styles.messageTextOwn
                     : styles.messageTextOther,
                 ]}
-                numberOfLines={3} // shrink if too long
+                numberOfLines={3}
               >
                 {focusedMessage.text}
               </Text>
@@ -1021,17 +1153,16 @@ export default function ChatOverlay({
           </View>
         </Animated.View>
 
-        {/* Reactions row, positioned just above the bubble */}
+        {/* Reaction row above bubble */}
         <View
           style={[
             styles.reactionPopupRow,
             {
-              position: "absolute" as const,
-              top: y - 48,
-              left: reactionLeft < 0 ? 0 : reactionLeft,
+              position: "absolute",
+              left: centerX + width / 2 - (width * 0.6) / 2,
+              top: centerY - 50,
             },
           ]}
-          onLayout={(e) => setReactionRowWidth(e.nativeEvent.layout.width)}
         >
           {["👍", "❤️", "😂", "😢", "😡"].map((emoji) => (
             <Pressable
@@ -1053,18 +1184,17 @@ export default function ChatOverlay({
           ))}
         </View>
 
-        {/* Action buttons, positioned just below the bubble */}
+        {/* Action buttons below bubble (no “Cancel”) */}
         <View
           style={[
             styles.popupActionButtons,
             {
-              position: "absolute" as const,
-              top: y + height + 12,
-              left: actionLeft < 0 ? 0 : actionLeft,
-              width: actionRowWidth || width,
+              position: "absolute",
+              top: centerY + height / 2 + 10,
+              left: centerX,
+              width,
             },
           ]}
-          onLayout={(e) => setActionRowWidth(e.nativeEvent.layout.width)}
         >
           <Pressable
             onPress={() => {
@@ -1086,13 +1216,24 @@ export default function ChatOverlay({
           </Pressable>
           <Pressable
             onPress={() => {
-              console.log("Unsend:", focusedMessage.uuid);
+              handleUnsend(focusedMessage);
               closePopup();
             }}
             style={styles.popupActionBtn}
           >
             <Text style={styles.popupActionText}>Unsend</Text>
           </Pressable>
+          {focusedMessage.attachments?.length > 0 && (
+            <Pressable
+              onPress={() => {
+                handleSaveMedia(focusedMessage.attachments[0]);
+                closePopup();
+              }}
+              style={styles.popupActionBtn}
+            >
+              <Text style={styles.popupActionText}>Save</Text>
+            </Pressable>
+          )}
         </View>
       </Animated.View>
     );
@@ -1104,7 +1245,6 @@ export default function ChatOverlay({
 
   return (
     <>
-      {/* MAIN MODAL */}
       <Modal
         animationType="none"
         transparent
@@ -1113,10 +1253,11 @@ export default function ChatOverlay({
       >
         <GestureHandlerRootView style={{ flex: 1 }}>
           <View style={styles.overlayContainer}>
-            {/* BACKDROP */}
-            <Pressable style={styles.backdrop} onPress={triggerClose} />
+            <Pressable
+              style={styles.backdrop}
+              onPress={triggerClose}
+            />
 
-            {/* SLIDING SHEET */}
             <Animated.View
               style={[
                 styles.sheetContainer,
@@ -1127,7 +1268,6 @@ export default function ChatOverlay({
                 },
               ]}
             >
-              {/* DRAG HANDLE */}
               <View
                 {...panResponder.panHandlers}
                 style={styles.dragHandleContainer}
@@ -1135,7 +1275,6 @@ export default function ChatOverlay({
                 <View style={styles.dragHandle} />
               </View>
 
-              {/* HEADER */}
               <BlurView intensity={50} tint="dark" style={styles.headerBlur}>
                 <View style={styles.chatHeader}>
                   <Pressable
@@ -1174,7 +1313,10 @@ export default function ChatOverlay({
                           (p) => p.user.username !== currentUsername
                         ).length > 3 && (
                           <View
-                            style={[styles.avatarWrapper, styles.stackedExtra]}
+                            style={[
+                              styles.avatarWrapper,
+                              styles.stackedExtra,
+                            ]}
                           >
                             <Text style={styles.extraCountText}>
                               +
@@ -1186,10 +1328,7 @@ export default function ChatOverlay({
                         )}
                       </View>
                       <View style={styles.chatHeaderInfo}>
-                        <Text
-                          style={styles.chatHeaderName}
-                          numberOfLines={1}
-                        >
+                        <Text style={styles.chatHeaderName} numberOfLines={1}>
                           {conversation.participants
                             .filter(
                               (p) => p.user.username !== currentUsername
@@ -1217,7 +1356,6 @@ export default function ChatOverlay({
                 </View>
               </BlurView>
 
-              {/* MESSAGES LIST */}
               <FlatList
                 ref={flatListRef}
                 data={messages}
@@ -1247,21 +1385,26 @@ export default function ChatOverlay({
                 renderItem={renderMessageItem}
               />
 
-              {/* FOOTER / INPUT AREA */}
               <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={Platform.select({
+                  ios: 90,
+                  android: 80,
+                })}
               >
                 <View
                   style={[
                     styles.chatFooter,
-                    { paddingBottom: insets.bottom + 30 },
+                    { paddingBottom: insets.bottom + 10 },
                   ]}
                 >
-                  {/* ATTACHMENT PREVIEWS */}
                   {attachmentsToSend.length > 0 && (
                     <View style={styles.attachmentsPreview}>
                       {attachmentsToSend.map((file, idx) => (
-                        <View key={idx} style={styles.attachmentPreview}>
+                        <View
+                          key={idx}
+                          style={styles.attachmentPreview}
+                        >
                           <Image
                             source={{ uri: file.uri }}
                             style={styles.attachmentThumbnail}
@@ -1285,7 +1428,6 @@ export default function ChatOverlay({
                     </View>
                   )}
 
-                  {/* IF BLOCKED / INVITE */}
                   {conversation &&
                   conversation.conversation_status === "blocked" ? (
                     <View style={styles.requestWarningContainer}>
@@ -1297,7 +1439,10 @@ export default function ChatOverlay({
                     conversation.view_type === "request" ? (
                     <View style={styles.requestActions}>
                       <Pressable
-                        style={[styles.requestBtn, styles.requestBtnPrimary]}
+                        style={[
+                          styles.requestBtn,
+                          styles.requestBtnPrimary,
+                        ]}
                         onPress={async () => {
                           try {
                             await callApi(
@@ -1318,7 +1463,10 @@ export default function ChatOverlay({
                         </Text>
                       </Pressable>
                       <Pressable
-                        style={[styles.requestBtn, styles.requestBtnSubtle]}
+                        style={[
+                          styles.requestBtn,
+                          styles.requestBtnSubtle,
+                        ]}
                         onPress={async () => {
                           try {
                             await callApi(
@@ -1336,7 +1484,10 @@ export default function ChatOverlay({
                         </Text>
                       </Pressable>
                       <Pressable
-                        style={[styles.requestBtn, styles.requestBtnDanger]}
+                        style={[
+                          styles.requestBtn,
+                          styles.requestBtnDanger,
+                        ]}
                         onPress={async () => {
                           try {
                             await callApi(
@@ -1349,12 +1500,17 @@ export default function ChatOverlay({
                           }
                         }}
                       >
-                        <Text style={styles.requestBtnTextDanger}>Block</Text>
+                        <Text style={styles.requestBtnTextDanger}>
+                          Block
+                        </Text>
                       </Pressable>
                     </View>
                   ) : (
-                    <BlurView intensity={30} tint="dark" style={styles.footerBlur}>
-                      {/* REPLYING BANNER */}
+                    <BlurView
+                      intensity={30}
+                      tint="dark"
+                      style={styles.footerBlur}
+                    >
                       {replyingTo && (
                         <View style={styles.replyingBanner}>
                           <Text style={styles.replyingBannerText}>
@@ -1363,10 +1519,12 @@ export default function ChatOverlay({
                               ? replyingTo.text.length > 30
                                 ? replyingTo.text.substring(0, 30) + "…"
                                 : replyingTo.text
-                              : "Attachment"}
+                              : "Attachment"}{" "}
                             … ”
                           </Text>
-                          <Pressable onPress={() => setReplyingTo(null)}>
+                          <Pressable
+                            onPress={() => setReplyingTo(null)}
+                          >
                             <MaterialIcons
                               name="close"
                               size={18}
@@ -1376,20 +1534,26 @@ export default function ChatOverlay({
                           </Pressable>
                         </View>
                       )}
+
                       <View style={styles.writeContainer}>
-                        {/* EMOJI BUTTON */}
                         <Pressable
-                          onPress={() => inputRef.current?.focus()}
+                          onPress={() =>
+                            inputRef.current?.focus()
+                          }
                           style={{ marginRight: 12 }}
                         >
-                          <MaterialIcons name="insert-emoticon" size={24} color="#0A84FF" />
+                          <MaterialIcons
+                            name="insert-emoticon"
+                            size={24}
+                            color="#0A84FF"
+                          />
                         </Pressable>
 
-                        {/* “+” BUTTON */}
                         <Pressable
                           onPress={() => setShowPlusMenu(true)}
                           onLayout={(e) => {
-                            const { x, y } = e.nativeEvent.layout;
+                            const { x, y } =
+                              e.nativeEvent.layout;
                             setPlusX(x);
                             setPlusY(y);
                           }}
@@ -1402,7 +1566,6 @@ export default function ChatOverlay({
                           />
                         </Pressable>
 
-                        {/* TEXT INPUT */}
                         <TextInput
                           ref={inputRef}
                           style={styles.chatInput}
@@ -1418,9 +1581,15 @@ export default function ChatOverlay({
                           }}
                         />
 
-                        {/* SEND BUTTON */}
-                        <Pressable onPress={handleSend} style={styles.sendButton}>
-                          <FontAwesome name="send" size={22} color="#0A84FF" />
+                        <Pressable
+                          onPress={handleSend}
+                          style={styles.sendButton}
+                        >
+                          <FontAwesome
+                            name="send"
+                            size={22}
+                            color="#0A84FF"
+                          />
                         </Pressable>
                       </View>
                     </BlurView>
@@ -1428,12 +1597,9 @@ export default function ChatOverlay({
                 </View>
               </KeyboardAvoidingView>
 
-              {/* LONG-PRESS OVERLAY */}
               {focusedMessage && renderPopupOverlay()}
-
             </Animated.View>
 
-            {/* “+” MENU OVERLAY */}
             {plusMenuVisible && (
               <Animated.View
                 style={[
@@ -1487,16 +1653,19 @@ export default function ChatOverlay({
                       style={styles.plusMenuButton}
                       onPress={async () => {
                         setShowPlusMenu(false);
-                        const res = await DocumentPicker.getDocumentAsync({
-                          copyToCacheDirectory: false,
-                        });
+                        const res =
+                          await DocumentPicker.getDocumentAsync({
+                            copyToCacheDirectory: false,
+                          });
                         if (res.type === "success") {
                           const { uri, name, mimeType } = res;
                           setAttachmentsToSend((prev) => [
                             ...prev,
                             {
                               uri,
-                              type: mimeType || "application/octet-stream",
+                              type:
+                                mimeType ||
+                                "application/octet-stream",
                               name,
                             },
                           ]);
@@ -1517,11 +1686,20 @@ export default function ChatOverlay({
                       style={styles.plusMenuButton}
                       onPress={() => {
                         setShowPlusMenu(false);
-                        Alert.alert("Launcher", "No additional apps.");
+                        Alert.alert(
+                          "Launcher",
+                          "No additional apps."
+                        );
                       }}
                     >
-                      <FontAwesome name="gamepad" size={28} color="#FFF" />
-                      <Text style={styles.plusMenuButtonText}>Play</Text>
+                      <FontAwesome
+                        name="gamepad"
+                        size={28}
+                        color="#FFF"
+                      />
+                      <Text style={styles.plusMenuButtonText}>
+                        Play
+                      </Text>
                     </Pressable>
                   </View>
                 </Animated.View>
@@ -1531,7 +1709,6 @@ export default function ChatOverlay({
         </GestureHandlerRootView>
       </Modal>
 
-      {/* REPLY CHAIN (THREAD) MODAL */}
       {showChainModal && (
         <Modal transparent animationType="fade">
           <BlurView
@@ -1542,8 +1719,14 @@ export default function ChatOverlay({
           <View style={styles.chainContainer}>
             <View style={styles.chainHeader}>
               <Text style={styles.chainTitle}>Thread</Text>
-              <Pressable onPress={() => setShowChainModal(null)}>
-                <MaterialIcons name="close" size={24} color="#000" />
+              <Pressable
+                onPress={() => setShowChainModal(null)}
+              >
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color="#000"
+                />
               </Pressable>
             </View>
             <View style={styles.chainScroll}>
@@ -1555,10 +1738,9 @@ export default function ChatOverlay({
                     key={m.uuid}
                     style={[
                       styles.chainMessageRow,
-                      { marginLeft: idx * 12 }, // indent by level
+                      { marginLeft: idx * 12 },
                     ]}
                   >
-                    {/* vertical branch line */}
                     {idx < showChainModal.chain.length - 1 && (
                       <View
                         style={[
@@ -1598,7 +1780,6 @@ export default function ChatOverlay({
 }
 
 const styles = StyleSheet.create({
-  // OVERLAY BEHIND SLIDING SHEET
   overlayContainer: {
     flex: 1,
     justifyContent: "flex-end",
@@ -1609,12 +1790,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.4)",
   },
 
-  // SLIDING SHEET
   sheetContainer: {
     position: "absolute",
     left: 0,
     right: 0,
-    backgroundColor: "#000", // deep black
+    backgroundColor: "#000",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: "hidden",
@@ -1625,11 +1805,10 @@ const styles = StyleSheet.create({
     elevation: 20,
   },
 
-  // DRAG HANDLE
   dragHandleContainer: {
     alignItems: "center",
     paddingVertical: 6,
-    backgroundColor: "#111", // slightly lighter black
+    backgroundColor: "#111",
   },
   dragHandle: {
     width: 60,
@@ -1638,7 +1817,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#444",
   },
 
-  // HEADER
   headerBlur: {
     width: "100%",
     overflow: "hidden",
@@ -1714,7 +1892,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // DATE SEPARATOR
   dateSeparatorWrapper: {
     alignSelf: "center",
     borderRadius: 12,
@@ -1728,7 +1905,6 @@ const styles = StyleSheet.create({
     color: "#DDD",
   },
 
-  // PARENT PREVIEW
   parentPreviewContainer: {
     marginBottom: 4,
     flexDirection: "row",
@@ -1756,7 +1932,6 @@ const styles = StyleSheet.create({
   },
   branchLine: {
     width: 2,
-    height: 20,
     backgroundColor: "#0A84FF",
     borderRadius: 1,
     marginRight: 6,
@@ -1769,7 +1944,6 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
 
-  // MESSAGE ROW (bubble + optional timestamp)
   messageRow: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -1794,11 +1968,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   bubbleContainerOwn: {
-    backgroundColor: "#0A84FF", // iMessage blue
+    backgroundColor: "#0A84FF",
   },
   bubbleContainerOther: {
-    backgroundColor: "#1C1C1E", // dark gray bubble
+    backgroundColor: "#1C1C1E",
   },
+
   messageText: {
     fontSize: 16,
     lineHeight: 22,
@@ -1810,7 +1985,6 @@ const styles = StyleSheet.create({
     color: "#FFF",
   },
 
-  // EMOJI-ONLY BUBBLE
   emojiOnlyContainer: {
     backgroundColor: "transparent",
     paddingVertical: 0,
@@ -1821,13 +1995,11 @@ const styles = StyleSheet.create({
     lineHeight: 44,
   },
 
-  // TIMESTAMP (appears when dragging)
   timeTextMain: {
     fontSize: 11,
     color: "#AAA",
   },
 
-  // MEDIA BUBBLE (full-width)
   mediaBubbleContainer: {
     marginTop: 4,
     borderRadius: 18,
@@ -1860,7 +2032,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // REACTIONS (below bubble)
   reactionContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1886,7 +2057,6 @@ const styles = StyleSheet.create({
     color: "#FFF",
   },
 
-  // FOOTER (chat input)
   footerBlur: {
     width: "100%",
     paddingTop: 6,
@@ -1900,7 +2070,7 @@ const styles = StyleSheet.create({
   writeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1C1C1E",
+    backgroundColor: "transparent",
     borderRadius: 100,
     marginHorizontal: 1,
     marginVertical: 8,
@@ -1927,12 +2097,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // ATTACHMENT PREVIEWS
   attachmentsPreview: {
     maxHeight: 150,
     marginBottom: 6,
     marginHorizontal: 12,
-    display: "flex",
     flexDirection: "row",
     flexWrap: "wrap",
     paddingVertical: 5,
@@ -1941,10 +2109,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 10,
     position: "relative",
-    display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: 0,
   },
   attachmentThumbnail: {
     width: 70,
@@ -1957,7 +2123,6 @@ const styles = StyleSheet.create({
     right: -6,
   },
 
-  // REQUEST / INVITE UI
   requestWarningContainer: {
     backgroundColor: "#2C2C2E",
     borderColor: "#444",
@@ -1974,7 +2139,6 @@ const styles = StyleSheet.create({
   requestActions: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 12,
     paddingVertical: 12,
   },
   requestBtn: {
@@ -2008,13 +2172,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  // LONG-PRESS POPUP OVERLAY
+  // ─────── Long‐Press Overlay ───────
   blurContainer: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
+    justifyContent: "center",
+    alignItems: "center",
   },
   focusedBubbleWrapper: {
+    position: "absolute",
     borderRadius: 18,
     overflow: "hidden",
     backgroundColor: "transparent",
@@ -2025,6 +2190,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     paddingVertical: 8,
     paddingHorizontal: 16,
+    marginBottom: 20,
     alignItems: "center",
   },
   reactionEmojiBtn: {
@@ -2054,7 +2220,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // “+” MENU OVERLAY
+  // ─────── “+” Menu Overlay ───────
   plusMenuOverlayContainer: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 9999,
@@ -2086,7 +2252,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 
-  // REPLYING BANNER ABOVE INPUT
+  // ─────── Replying Banner ───────
   replyingBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -2102,7 +2268,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  // THREAD (“BRANCHING”) OVERLAY
+  // ─────── Thread Overlay ───────
   chainBlurContainer: {
     ...StyleSheet.absoluteFillObject,
   },
