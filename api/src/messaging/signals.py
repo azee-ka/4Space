@@ -8,7 +8,7 @@ from channels.layers import get_channel_layer
 from .models import Message, Conversation, Participant
 from ..notifications.models import Notification
 from ..notifications.serializers import NotificationSerializer
-from ..notifications.utils import send_push_to_user  # (we’ll define this later)
+from ..notifications.utils.utils import send_push_to_user  # (we’ll define this later)
 
 @receiver(post_save, sender=Message)
 def create_message_notification(sender, instance: Message, created, **kwargs):
