@@ -1,14 +1,14 @@
 .profile-page {
-    display: flex;
-    gap: 20px;
+
     /* background: radial-gradient(ellipse at center, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%); */
     color: white;
-    height: 100%;
+    height: 705px;
     width: 100%;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    padding: 0px 8px 0 0px;
+        display: flex !important;
+    gap: 20px;
+    flex-direction: column !important;
+    overflow: hidden;
 }
 
 .profile-top-panel {
@@ -28,7 +28,6 @@
     background-color: rgba(187, 187, 187, 0);
     display: flex;
     align-items: flex-end;
-    /* color: white; */
 }
 .profile-top-panel h2 a {
     color: white;
@@ -53,8 +52,12 @@
     flex-direction: row;
     gap: 20px;
     width: 100%;
-    height: 100%;
+    flex-grow: 1;
     box-sizing: border-box;
+     position: relative;
+     min-height: 0;
+     overflow-y: hidden;
+
 }
 
 
@@ -68,13 +71,19 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    flex-shrink: 0;
 }
 
 .profile-center {
+    height: 100%;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    overflow-y: auto;
+             padding: 0px 12px 0 0px;
+
+
 }
 
 .profile-card {
@@ -89,10 +98,9 @@
 
 
 
-
 .profile-profile-image {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
     margin: 0 auto 10px;
     background: rgba(255,255,255,0.1);
@@ -105,6 +113,12 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.profile-card h2 {
+    margin-top: 5px;
+    color: rgba(220, 220, 220, 0.8);
+    font-size: 1.2em;
 }
 
 .display-name {
@@ -145,6 +159,8 @@
     backdrop-filter: blur(8px);
     border-radius: 12px;
     padding: 15px;
+    z-index: 0;
+     position: relative;
 }
 
 .highlight-section h3 {

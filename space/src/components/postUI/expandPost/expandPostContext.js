@@ -177,10 +177,10 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
             }
         };
 
-        if (!post && postId) {
+        if ((!postData && postId)) {
             fetchPostData();
         }
-    }, [postId, post]);
+    }, [postId]);
 
 
 
