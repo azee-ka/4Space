@@ -108,8 +108,7 @@ export default function ChatOverlay({
   const { callApi } = useApi();
 
   // ─────── Animation Values ───────
-  // We use one animated value “popupAnim” that goes 0 → 1.  At 0, the popup is invisible
-  // and scaled down to 0.8.  At 1, the popup is fully opaque at scale 1.
+  // 1) For the long-press popup on messages:
   const popupAnim = useRef(new Animated.Value(0)).current;
   const blurOpacity = popupAnim.interpolate({
     inputRange: [0, 0.2, 1],
@@ -120,12 +119,15 @@ export default function ChatOverlay({
     outputRange: [0.8, 1],
   });
 
+  // 2) For the attachment menu:
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const attachAnim = useRef(new Animated.Value(0)).current;
+  // attachAnim: 0 → hidden, 1 → visible
+
   // ─────── State ───────
   const [focusedMessage, setFocusedMessage] = useState<MessageType | null>(
     null
   );
-
-  // NEW: when you long‐press a bubble, we measure its on‐screen layout: {x, y, width, height}
   const [pressedLayout, setPressedLayout] = useState<{
     x: number;
     y: number;
@@ -156,15 +158,13 @@ export default function ChatOverlay({
   const flatListRef = useRef<FlatList<MessageType>>(null);
   const inputRef = useRef<TextInput>(null);
 
-  // NEW: map of refs for each bubble, keyed by message UUID.
-  // We’ll store a `View` reference under bubbleRefs.current[uuid], so we can
-  // call measureInWindow(...) later.
+  // map of refs for each bubble, keyed by message UUID.
   const bubbleRefs = useRef<Record<string, View | null>>({});
 
   const OPEN_TOP = insets.top + 20;
   const SHEET_OFFSET = SCREEN_HEIGHT - OPEN_TOP;
 
-  // ─────── Slide‐Up Sheet Animation ───────
+  // ─────── Slide-Up Sheet Animation ───────
   const translateY = useRef(new Animated.Value(SHEET_OFFSET)).current;
   useEffect(() => {
     if (!visible) return;
@@ -254,9 +254,7 @@ export default function ChatOverlay({
       } else if (data.type === "reaction_update") {
         const { message_uuid, reactions } = data;
         setMessages((prev) =>
-          prev.map((m) =>
-            m.uuid === message_uuid ? { ...m, reactions } : m
-          )
+          prev.map((m) => (m.uuid === message_uuid ? { ...m, reactions } : m))
         );
       } else if (data.type === "unsend") {
         const { message_uuid } = data;
@@ -265,7 +263,7 @@ export default function ChatOverlay({
     },
   });
 
-  // ─────── Auto‐scroll on new messages ───────
+  // ─────── Auto-scroll on new messages ───────
   useEffect(() => {
     if (!loadingOlder && flatListRef.current) {
       if (!justSent && !userScrolledUp && loading === false) {
@@ -414,8 +412,7 @@ export default function ChatOverlay({
   ) => {
     const existing = msg.reactions.some(
       (r) =>
-        r.user_username === currentUsername &&
-        r.reaction_type === reactionType
+        r.user_username === currentUsername && r.reaction_type === reactionType
     );
 
     setMessages((prev) =>
@@ -480,7 +477,10 @@ export default function ChatOverlay({
     try {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert("Permission denied", "Can't save media without permission.");
+        Alert.alert(
+          "Permission denied",
+          "Can't save media without permission."
+        );
         return;
       }
       const asset = await MediaLibrary.createAssetAsync(att.url);
@@ -516,7 +516,7 @@ export default function ChatOverlay({
       setFocusedMessage(message);
       Animated.timing(popupAnim, {
         toValue: 1,
-        duration: 2000,
+        duration: 200,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
@@ -571,10 +571,7 @@ export default function ChatOverlay({
             )
           }
         >
-          <Image
-            source={{ uri: att.url }}
-            style={styles.largeMediaFull}
-          />
+          <Image source={{ uri: att.url }} style={styles.largeMediaFull} />
         </Pressable>
       );
     } else if (att.mime_type.startsWith("video/")) {
@@ -623,11 +620,7 @@ export default function ChatOverlay({
             )
           }
         >
-          <MaterialIcons
-            name="insert-drive-file"
-            size={48}
-            color="#888"
-          />
+          <MaterialIcons name="insert-drive-file" size={48} color="#888" />
           <Text style={styles.docFileName} numberOfLines={1}>
             {att.url.split("/").pop()}
           </Text>
@@ -674,8 +667,7 @@ export default function ChatOverlay({
     return (
       <View style={{ marginVertical: 6 }}>
         {(!prev ||
-          new Date(prev.sent_at).getTime() +
-            15 * 60 * 1000 <
+          new Date(prev.sent_at).getTime() + 15 * 60 * 1000 <
             msgDate.getTime()) && (
           <View style={styles.dateSeparatorWrapper}>
             <Text style={styles.dateSeparatorText}>
@@ -704,8 +696,7 @@ export default function ChatOverlay({
                 style={[
                   styles.branchLine,
                   isKnot && styles.branchKnot,
-                  index -
-                    messages.findIndex((m) => m.uuid === parentMsg.uuid) <
+                  index - messages.findIndex((m) => m.uuid === parentMsg.uuid) <
                   5
                     ? { height: 20 }
                     : { height: 40 },
@@ -726,7 +717,6 @@ export default function ChatOverlay({
         >
           <Pressable
             ref={(ref) => {
-              // Save the native view reference so we can measure it later
               bubbleRefs.current[item.uuid] = ref;
             }}
             delayLongPress={200}
@@ -767,52 +757,45 @@ export default function ChatOverlay({
           <View
             style={[
               styles.reactionContainer,
-              own
-                ? styles.reactionContainerOwn
-                : styles.reactionContainerOther,
+              own ? styles.reactionContainerOwn : styles.reactionContainerOther,
             ]}
           >
             {(() => {
               const counts: Record<string, number> = {};
               item.reactions.forEach((r) => {
-                counts[r.reaction_type] =
-                  (counts[r.reaction_type] || 0) + 1;
+                counts[r.reaction_type] = (counts[r.reaction_type] || 0) + 1;
               });
-              return Object.entries(counts).map(
-                ([type, count]) => {
-                  let emoji = "❓";
-                  switch (type) {
-                    case "like":
-                      emoji = "👍";
-                      break;
-                    case "love":
-                      emoji = "❤️";
-                      break;
-                    case "laugh":
-                      emoji = "😂";
-                      break;
-                    case "sad":
-                      emoji = "😢";
-                      break;
-                    case "angry":
-                      emoji = "😡";
-                      break;
-                  }
-                  return (
-                    <Pressable
-                      key={type}
-                      onPress={() =>
-                        handleToggleReaction(item, type)
-                      }
-                      style={styles.reactionBtn}
-                    >
-                      <Text style={styles.reactionEmoji}>
-                        {emoji} {count}
-                      </Text>
-                    </Pressable>
-                  );
+              return Object.entries(counts).map(([type, count]) => {
+                let emoji = "❓";
+                switch (type) {
+                  case "like":
+                    emoji = "👍";
+                    break;
+                  case "love":
+                    emoji = "❤️";
+                    break;
+                  case "laugh":
+                    emoji = "😂";
+                    break;
+                  case "sad":
+                    emoji = "😢";
+                    break;
+                  case "angry":
+                    emoji = "😡";
+                    break;
                 }
-              );
+                return (
+                  <Pressable
+                    key={type}
+                    onPress={() => handleToggleReaction(item, type)}
+                    style={styles.reactionBtn}
+                  >
+                    <Text style={styles.reactionEmoji}>
+                      {emoji} {count}
+                    </Text>
+                  </Pressable>
+                );
+              });
             })()}
           </View>
         )}
@@ -828,29 +811,22 @@ export default function ChatOverlay({
     const emojiOnly = isEmojiOnlyMessage(plainText);
     const isOwn = isOwnMessage(focusedMessage);
 
-    // Reaction row’s height (≈40) and action row’s height (≈50).  Margins of 8px.
+    // Reaction row’s height & action row’s height, plus margin:
     const REACTION_ROW_HEIGHT = 40;
     const ACTION_ROW_HEIGHT = 50;
     const MARGIN = 8;
 
-    // If we measured the bubble, place everything relative to pressedLayout.
     if (pressedLayout) {
       const { x, y, width, height } = pressedLayout;
-      // “bubble scale” goes from 0.8 → 1:
-      // (We already have popupScale = popupAnim.interpolate([0→1]→[0.8→1]))
-      // and blurOpacity = popupAnim.interpolate(...) controlling fade.
 
-      // 1) Bubble copy Animated.View:
-      //    - position absolute at (x, y)
-      //    - width exactly = pressedLayout.width
-      //    - scale animated from 0.8→1
+      // 1) Clamp bubble’s X so that the bubble copy never overflows 16 px from edges:
       const minX = 16;
       const maxX = SCREEN_WIDTH - width - 16;
       let clampedX = x;
       if (clampedX < minX) clampedX = minX;
       if (clampedX > maxX) clampedX = maxX;
 
-      // 1) Bubble copy Animated.View:
+      // 2) Bubble copy style:
       const bubbleStyle = {
         position: "absolute" as const,
         top: y,
@@ -859,41 +835,31 @@ export default function ChatOverlay({
         transform: [{ scale: popupScale }],
       };
 
-      // 2) Reaction row: place it just **above** the scaled bubble.
-      //    Because bubble is scaling from its top-left, its top stays at ‘y’—the height
-      //    grows downward/​rightward. So the **top** of the bubble is always at “y”.
-      //    Therefore the reaction row’s bottom edge should be at “y – MARGIN”.
-      //    So its “top” = (y – MARGIN – REACTION_ROW_HEIGHT).  But if “y” is too small,
-      //    clamp so reactionRow does not go off-screen.
+      // 3) Reaction row (above) and action row (below) vertical positions:
       let reactionTop = y - MARGIN - REACTION_ROW_HEIGHT;
       if (reactionTop < insets.top + MARGIN) {
         reactionTop = insets.top + MARGIN;
       }
 
-      // 3) Action row: place it just **below** the scaled bubble.
-      //    Because scale=1 at the end, the bottom of the bubble = y + height.
-      //    We’ll anchor the action row’s “top” at (y + height + MARGIN).
-      //    But if that pushes it off‐screen, clamp to bottom.
       let actionTop = y + height + MARGIN;
-      if (actionTop + ACTION_ROW_HEIGHT > SCREEN_HEIGHT - insets.bottom - MARGIN) {
+      if (
+        actionTop + ACTION_ROW_HEIGHT >
+        SCREEN_HEIGHT - insets.bottom - MARGIN
+      ) {
         actionTop = SCREEN_HEIGHT - insets.bottom - MARGIN - ACTION_ROW_HEIGHT;
       }
 
       return (
         <Animated.View
-          style={[
-            styles.popupOverlayContainer,
-            { opacity: blurOpacity },
-          ]}
+          style={[styles.popupOverlayContainer, { opacity: blurOpacity }]}
         >
-          {/* FULL-SCREEN BLUR */}
+          {/* FULL‐SCREEN BLUR */}
           <AnimatedBlurView
             intensity={70}
             tint="dark"
             style={[
               StyleSheet.absoluteFill,
               {
-                // Scale the blur from 0→1 as popupAnim goes 0→1:
                 transform: [
                   { translateX: SCREEN_WIDTH / 2 },
                   { translateY: SCREEN_HEIGHT / 2 },
@@ -905,7 +871,7 @@ export default function ChatOverlay({
             ]}
           />
 
-          {/* 1) “Bubble Copy” at the exact (x,y), same width as the original bubble */}
+          {/* (1) “Bubble Copy” */}
           <Animated.View style={bubbleStyle}>
             <View
               style={[
@@ -920,9 +886,7 @@ export default function ChatOverlay({
                 <Text
                   style={[
                     styles.messageText,
-                    isOwn
-                      ? styles.messageTextOwn
-                      : styles.messageTextOther,
+                    isOwn ? styles.messageTextOwn : styles.messageTextOther,
                   ]}
                   numberOfLines={3}
                 >
@@ -932,16 +896,14 @@ export default function ChatOverlay({
             </View>
           </Animated.View>
 
-          {/* 2) “Reaction” row just above the bubble */}
+          {/* (2) “Reaction” row just above the bubble */}
           <Animated.View
             style={{
               position: "absolute" as const,
               top: reactionTop,
-              // left: clampedX,
-              // width: width,
               ...(isOwn
-                    ? { right: 16 }
-                    : { left: clampedX }),
+                ? { right: 16 } // right-align for sent messages
+                : { left: clampedX, width: width }), // under bubble for received
               opacity: blurOpacity,
               transform: [{ scale: popupScale }],
             }}
@@ -971,16 +933,14 @@ export default function ChatOverlay({
             </View>
           </Animated.View>
 
-          {/* 3) “Action” buttons just below the bubble */}
+          {/* (3) “Action” buttons just below the bubble */}
           <Animated.View
             style={{
               position: "absolute" as const,
               top: actionTop,
-              // left: clampedX,
-              // width: width,
               ...(isOwn
-                    ? { right: 16}
-                    : { left: clampedX }),
+                ? { right: 16, width: 200 } // right-align the 200px-wide container
+                : { left: clampedX, width: width }),
               opacity: blurOpacity,
               transform: [{ scale: popupScale }],
             }}
@@ -1009,26 +969,23 @@ export default function ChatOverlay({
                   handleUnsend(focusedMessage);
                   closePopup();
                 }}
-               style={[styles.actionButton, { borderBottomWidth: 0 }]}
+                style={[styles.actionButton, { borderBottomWidth: 0 }]}
               >
                 <Text style={styles.actionText}>Unsend</Text>
               </Pressable>
             </View>
           </Animated.View>
 
-          {/* 4) Tapping outside closes */}
+          {/* (4) Tapping outside closes */}
           <Pressable style={StyleSheet.absoluteFill} onPress={closePopup} />
         </Animated.View>
       );
     }
 
-    // If pressedLayout is null, we simply center a fallback
+    // Fallback: center‐in‐screen
     return (
       <Animated.View
-        style={[
-          styles.popupOverlayContainer,
-          { opacity: blurOpacity },
-        ]}
+        style={[styles.popupOverlayContainer, { opacity: blurOpacity }]}
       >
         <AnimatedBlurView
           intensity={70}
@@ -1047,7 +1004,7 @@ export default function ChatOverlay({
           ]}
         />
 
-        {/* Fallback: center bubble copy */}
+        {/* Centered fallback bubble */}
         <Animated.View
           style={{
             position: "absolute",
@@ -1080,7 +1037,7 @@ export default function ChatOverlay({
           </View>
         </Animated.View>
 
-        {/* Fallback: simple “Copy” action below */}
+        {/* Centered fallback action */}
         <Animated.View
           style={{
             position: "absolute",
@@ -1109,6 +1066,177 @@ export default function ChatOverlay({
     );
   };
 
+  // ─────── Render the Attachment Menu Overlay ───────
+  const hideAttachMenu = () => {
+    Animated.timing(attachAnim, {
+      toValue: 0,
+      duration: 200,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start(() => {
+      setShowAttachMenu(false);
+    });
+  };
+
+  const showAttachMenuAnimated = () => {
+    setShowAttachMenu(true);
+    attachAnim.setValue(0);
+    Animated.timing(attachAnim, {
+      toValue: 1,
+      duration: 300,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  };
+
+const renderAttachMenu = () => {
+  if (!showAttachMenu) return null;
+
+  const attachBlurOpacity = attachAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+  const attachScale = attachAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.8, 1],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        StyleSheet.absoluteFill,
+        { opacity: attachBlurOpacity, zIndex: 1001 },
+      ]}
+    >
+      {/* 1) Full-screen blur behind everything (pointerEvents="none" so touches pass through) */}
+      <AnimatedBlurView
+        intensity={60}
+        tint="dark"
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            transform: [
+              { translateX: SCREEN_WIDTH / 2 },
+              { translateY: SCREEN_HEIGHT / 2 },
+              { scale: attachScale },
+              { translateX: -SCREEN_WIDTH / 2 },
+              { translateY: -SCREEN_HEIGHT / 2 },
+            ],
+          },
+        ]}
+      />
+
+      {/* 2) One full-screen Pressable: any tap not handled by a child button will bubble here and close. */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={hideAttachMenu}>
+        {/* 3) The menu container itself is a child of this Pressable. 
+               Taps on empty space in or around the menu will bubble up to this Pressable. */}
+        <Animated.View
+          style={[
+            styles.attachMenuContainer,
+            {
+              transform: [{ scale: attachScale }],
+              opacity: attachBlurOpacity,
+            },
+          ]}
+        >
+          <Animated.ScrollView
+            style={StyleSheet.absoluteFill}
+            contentContainerStyle={styles.attachScrollContent}
+            showsVerticalScrollIndicator={false}
+            horizontal={false}
+          >
+            {/* 4) Actual menu items: a View wrapping all buttons.
+                   Empty areas here also count as “outside” since they bubble to parent Pressable. */}
+            <View style={styles.attachMenu}>
+              {/* “Photos/Videos” Button */}
+              <Pressable
+                style={styles.attachItem}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  hideAttachMenu();
+                  handleMediaPick();
+                }}
+              >
+                <MaterialIcons name="photo" size={24} color="#FFF" />
+                <Text style={styles.attachText}>Photos/Videos</Text>
+              </Pressable>
+
+              {/* “Play” Button */}
+              <Pressable
+                style={styles.attachItem}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  hideAttachMenu();
+                  console.log("Play");
+                  // …your “Play” logic…
+                }}
+              >
+                <MaterialIcons name="games" size={24} color="#FFF" />
+                <Text style={styles.attachText}>Play</Text>
+              </Pressable>
+
+              {/* “Document” Button */}
+              <Pressable
+                style={styles.attachItem}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  hideAttachMenu();
+                  console.log("Document");
+                  // …your “Document” logic…
+                }}
+              >
+                <MaterialIcons
+                  name="insert-drive-file"
+                  size={24}
+                  color="#FFF"
+                />
+                <Text style={styles.attachText}>Document</Text>
+              </Pressable>
+
+              {/* “Location” Button */}
+              <Pressable
+                style={styles.attachItem}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  hideAttachMenu();
+                  console.log("Location");
+                  // …your “Location” logic…
+                }}
+              >
+                <MaterialIcons name="location-pin" size={24} color="#FFF" />
+                <Text style={styles.attachText}>Location</Text>
+              </Pressable>
+
+              {/* “Contact” Button */}
+              <Pressable
+                style={styles.attachItem}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  hideAttachMenu();
+                  console.log("Contact");
+                  // …your “Contact” logic…
+                }}
+              >
+                <MaterialIcons name="person" size={24} color="#FFF" />
+                <Text style={styles.attachText}>Contact</Text>
+              </Pressable>
+
+              {/* …add more items here following the same pattern… */}
+            </View>
+          </Animated.ScrollView>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
+
+
+
+
+
+
   if (loading && !conversation) {
     return null;
   }
@@ -1127,8 +1255,11 @@ export default function ChatOverlay({
             {/* BACKDROP */}
             <Pressable style={styles.backdrop} onPress={triggerClose} />
 
-            {/* (1) LONG-PRESS OVERLAY */}
+            {/* (A) Long-press overlay on messages */}
             {renderPopupOverlay()}
+
+            {/* (B) Attach-menu overlay (when user taps “+”) */}
+            {renderAttachMenu()}
 
             {/* SLIDING SHEET */}
             <Animated.View
@@ -1149,23 +1280,14 @@ export default function ChatOverlay({
               {/* HEADER */}
               <BlurView intensity={50} tint="dark" style={styles.headerBlur}>
                 <View style={styles.chatHeader}>
-                  <Pressable
-                    onPress={triggerClose}
-                    style={styles.backButton}
-                  >
-                    <MaterialIcons
-                      name="chevron-left"
-                      size={28}
-                      color="#FFF"
-                    />
+                  <Pressable onPress={triggerClose} style={styles.backButton}>
+                    <MaterialIcons name="chevron-left" size={28} color="#FFF" />
                   </Pressable>
                   {conversation?.participants && (
                     <View style={styles.headerGroup}>
                       <View style={styles.avatarGroup}>
                         {conversation.participants
-                          .filter(
-                            (p) => p.user.username !== currentUsername
-                          )
+                          .filter((p) => p.user.username !== currentUsername)
                           .slice(0, 3)
                           .map((p, idx) => (
                             <View
@@ -1185,10 +1307,7 @@ export default function ChatOverlay({
                           (p) => p.user.username !== currentUsername
                         ).length > 3 && (
                           <View
-                            style={[
-                              styles.avatarWrapper,
-                              styles.stackedExtra,
-                            ]}
+                            style={[styles.avatarWrapper, styles.stackedExtra]}
                           >
                             <Text style={styles.extraCountText}>
                               +
@@ -1200,17 +1319,11 @@ export default function ChatOverlay({
                         )}
                       </View>
                       <View style={styles.chatHeaderInfo}>
-                        <Text
-                          style={styles.chatHeaderName}
-                          numberOfLines={1}
-                        >
+                        <Text style={styles.chatHeaderName} numberOfLines={1}>
                           {conversation.participants
-                            .filter(
-                              (p) => p.user.username !== currentUsername
-                            )
+                            .filter((p) => p.user.username !== currentUsername)
                             .map(
-                              (p) =>
-                                `${p.user.first_name} ${p.user.last_name}`
+                              (p) => `${p.user.first_name} ${p.user.last_name}`
                             )
                             .join(", ")}
                         </Text>
@@ -1219,9 +1332,7 @@ export default function ChatOverlay({
                           numberOfLines={1}
                         >
                           {conversation.participants
-                            .filter(
-                              (p) => p.user.username !== currentUsername
-                            )
+                            .filter((p) => p.user.username !== currentUsername)
                             .map((p) => `@${p.user.username}`)
                             .join(", ")}
                         </Text>
@@ -1272,17 +1383,14 @@ export default function ChatOverlay({
                 <View
                   style={[
                     styles.chatFooter,
-                    { paddingBottom: insets.bottom - 10 },
+                    { paddingBottom: insets.bottom - 5 },
                   ]}
                 >
                   {/* ATTACHMENT PREVIEWS */}
                   {attachmentsToSend.length > 0 && (
                     <View style={styles.attachmentsPreview}>
                       {attachmentsToSend.map((file, idx) => (
-                        <View
-                          key={idx}
-                          style={styles.attachmentPreview}
-                        >
+                        <View key={idx} style={styles.attachmentPreview}>
                           <Image
                             source={{ uri: file.uri }}
                             style={styles.attachmentThumbnail}
@@ -1314,14 +1422,10 @@ export default function ChatOverlay({
                         You cannot send messages in this conversation.
                       </Text>
                     </View>
-                  ) : conversation &&
-                    conversation.view_type === "request" ? (
+                  ) : conversation && conversation.view_type === "request" ? (
                     <View style={styles.requestActions}>
                       <Pressable
-                        style={[
-                          styles.requestBtn,
-                          styles.requestBtnPrimary,
-                        ]}
+                        style={[styles.requestBtn, styles.requestBtnPrimary]}
                         onPress={async () => {
                           try {
                             await callApi(
@@ -1337,15 +1441,10 @@ export default function ChatOverlay({
                           }
                         }}
                       >
-                        <Text style={styles.requestBtnTextPrimary}>
-                          Accept
-                        </Text>
+                        <Text style={styles.requestBtnTextPrimary}>Accept</Text>
                       </Pressable>
                       <Pressable
-                        style={[
-                          styles.requestBtn,
-                          styles.requestBtnSubtle,
-                        ]}
+                        style={[styles.requestBtn, styles.requestBtnSubtle]}
                         onPress={async () => {
                           try {
                             await callApi(
@@ -1358,15 +1457,10 @@ export default function ChatOverlay({
                           }
                         }}
                       >
-                        <Text style={styles.requestBtnTextSubtle}>
-                          Reject
-                        </Text>
+                        <Text style={styles.requestBtnTextSubtle}>Reject</Text>
                       </Pressable>
                       <Pressable
-                        style={[
-                          styles.requestBtn,
-                          styles.requestBtnDanger,
-                        ]}
+                        style={[styles.requestBtn, styles.requestBtnDanger]}
                         onPress={async () => {
                           try {
                             await callApi(
@@ -1379,9 +1473,7 @@ export default function ChatOverlay({
                           }
                         }}
                       >
-                        <Text style={styles.requestBtnTextDanger}>
-                          Block
-                        </Text>
+                        <Text style={styles.requestBtnTextDanger}>Block</Text>
                       </Pressable>
                     </View>
                   ) : (
@@ -1402,9 +1494,7 @@ export default function ChatOverlay({
                               : "Attachment"}{" "}
                             … ”
                           </Text>
-                          <Pressable
-                            onPress={() => setReplyingTo(null)}
-                          >
+                          <Pressable onPress={() => setReplyingTo(null)}>
                             <MaterialIcons
                               name="close"
                               size={18}
@@ -1416,35 +1506,20 @@ export default function ChatOverlay({
                       )}
 
                       <View style={styles.writeContainer}>
-                        {/* “+” Attachment Button */}
+                        {/* “+” Attachment Button (now opens attach menu) */}
                         <Pressable
-                          onPress={handleMediaPick}
+                          onPress={showAttachMenuAnimated}
                           style={{ marginRight: 12 }}
                         >
                           <MaterialIcons
                             name="add"
                             size={24}
                             color="rgba(222, 222, 222, 0.62)"
-                            backgroundColor="rgba(81, 81, 81, 0.42)"
-                            borderRadius='50%'
-                            padding={4}
-                          />
-                        </Pressable>
-
-                        {/* EMOJI BUTTON */}
-                        <Pressable
-                          onPress={() =>
-                            inputRef.current?.focus()
-                          }
-                          style={{ marginRight: 12 }}
-                        >
-                          <MaterialIcons
-                            name="insert-emoticon"
-                            size={24}
-                            color="rgba(222, 222, 222, 0.62)"
-                            backgroundColor="rgba(81, 81, 81, 0.42)"
-                            borderRadius='50%'
-                            padding={4}
+                            style={{
+                              backgroundColor: "rgba(81, 81, 81, 0.42)",
+                              borderRadius: 999,
+                              padding: 4,
+                            }}
                           />
                         </Pressable>
 
@@ -1452,7 +1527,7 @@ export default function ChatOverlay({
                         <TextInput
                           ref={inputRef}
                           style={styles.chatInput}
-                          placeholder="4Message"
+                          placeholder="Message"
                           placeholderTextColor="#888"
                           value={input}
                           onChangeText={setInput}
@@ -1469,11 +1544,7 @@ export default function ChatOverlay({
                           onPress={handleSend}
                           style={styles.sendButton}
                         >
-                          <FontAwesome
-                            name="send"
-                            size={22}
-                            color="#0A84FF"
-                          />
+                          <FontAwesome name="send" size={22} color="#0A84FF" />
                         </Pressable>
                       </View>
                     </BlurView>
@@ -1494,7 +1565,14 @@ export default function ChatOverlay({
             style={[
               styles.chainBlurContainer,
               {
-                transform: [{ scale: popupScale }],
+                transform: [
+                  {
+                    scale: popupAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.8, 1],
+                    }),
+                  },
+                ],
               },
             ]}
           />
@@ -1512,10 +1590,7 @@ export default function ChatOverlay({
                 return (
                   <View
                     key={m.uuid}
-                    style={[
-                      styles.chainMessageRow,
-                      { marginLeft: idx * 12 },
-                    ]}
+                    style={[styles.chainMessageRow, { marginLeft: idx * 12 }]}
                   >
                     {idx < showChainModal.chain.length - 1 && (
                       <View
@@ -1528,9 +1603,7 @@ export default function ChatOverlay({
                     <View
                       style={[
                         styles.chainBubble,
-                        own
-                          ? styles.chainBubbleOwn
-                          : styles.chainBubbleOther,
+                        own ? styles.chainBubbleOwn : styles.chainBubbleOther,
                       ]}
                     >
                       <Text style={styles.chainSenderName}>
@@ -1556,18 +1629,16 @@ export default function ChatOverlay({
 }
 
 const styles = StyleSheet.create({
-  // ─────── MODIFIED CONTAINER ───────
+  // ─────── CONTAINERS ───────
   containerWithoutOverflow: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 999,
     backgroundColor: "transparent",
   },
-
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0, 0, 0, 0.4)",
   },
-
   sheetContainer: {
     position: "absolute",
     left: 0,
@@ -1582,11 +1653,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 20,
   },
-
   dragHandleContainer: {
     alignItems: "center",
     paddingVertical: 6,
-    // backgroundColor: "#111",
   },
   dragHandle: {
     width: 60,
@@ -1594,7 +1663,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: "#444",
   },
-
   headerBlur: {
     width: "100%",
     overflow: "hidden",
@@ -1790,12 +1858,12 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   largeMediaFull: {
-    width: (SCREEN_WIDTH * 0.75) - 4,
-    height: ((SCREEN_WIDTH * 0.75) - 4) * (9 / 16),
+    width: SCREEN_WIDTH * 0.75 - 4,
+    height: (SCREEN_WIDTH * 0.75 - 4) * (9 / 16),
     backgroundColor: "#000",
   },
   docCard: {
-    width: (SCREEN_WIDTH * 0.75) - 4,
+    width: SCREEN_WIDTH * 0.75 - 4,
     height: 120,
     backgroundColor: "#333",
     borderRadius: 12,
@@ -1838,7 +1906,7 @@ const styles = StyleSheet.create({
   footerBlur: {
     width: "100%",
     paddingTop: 0,
-    backgroundColor: "rgba(0,0,0,0)",
+    backgroundColor: "transparent",
   },
   chatFooter: {
     borderTopWidth: 1,
@@ -1864,7 +1932,9 @@ const styles = StyleSheet.create({
     maxHeight: 120,
     minHeight: 40,
     borderRadius: 18,
-    backgroundColor: "#2C2C2E",
+    backgroundColor: "rgba(79, 79, 79, 0)",
+    borderColor: "rgba(79, 79, 79, 0.3)",
+    borderWidth: 1,
     marginRight: 8,
   },
   sendButton: {
@@ -1960,8 +2030,6 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     zIndex: 1000,
   },
-
-  // NEW: wrap the reactions row
   reactionsRowContainer: {
     flexDirection: "row",
     backgroundColor: "#1C1C1E",
@@ -1970,18 +2038,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
   },
-
-  // NEW: wrap the actions row
   actionsRowContainer: {
     flexDirection: "column",
-    // backgroundColor: "#1C1C1E",
     backgroundColor: "rgba(104, 104, 104, 0.15)",
     borderRadius: 12,
     width: 200,
     justifyContent: "space-evenly",
     alignItems: "flex-start",
   },
-
   reactionButton: {
     marginHorizontal: 8,
   },
@@ -1994,11 +2058,55 @@ const styles = StyleSheet.create({
     paddingRight: 6,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(157, 157, 157, 0.27)',
-    width: '100%',
+    borderBottomColor: "rgba(157, 157, 157, 0.27)",
+    width: "100%",
   },
   actionText: {
     fontSize: 16,
+    color: "#FFF",
+  },
+
+  // ─────── Attachment Menu Styles ───────
+  attachMenuContainer: {
+    position: "absolute",
+    top: 0, // fill from top
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1002,
+    backgroundColor: "transparent",
+  },
+  attachScrollContent: {
+    // This padding pushes the very first item down
+    // so that it sits in the vertical middle of the screen:
+    paddingTop: SCREEN_HEIGHT / 2 - 30,
+    // 30 is roughly half the item height (adjust if necessary).
+    paddingBottom: 100, // allow pulling up further if you want
+  },
+  attachMenu: {
+    backgroundColor: "transparent", // transparent—blur is behind
+    alignItems: "flex-start",
+  },
+  attachItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "transparent",
+  paddingVertical: 20,
+  paddingHorizontal: 24,
+
+  // iOS shadow:
+  shadowColor: "rgb(255, 255, 255)",             // any color to tint the shadow
+  shadowOffset: { width: 0, height: 0 }, // how far the shadow is offset
+  shadowOpacity: 0.65,             // opacity of the shadow (0–1)
+  shadowRadius: 20,              // how “blurred” the shadow is
+
+  // Android elevation:
+  elevation: 5,
+},
+
+  attachText: {
+    marginLeft: 16,
+    fontSize: 18,
     color: "#FFF",
   },
 
