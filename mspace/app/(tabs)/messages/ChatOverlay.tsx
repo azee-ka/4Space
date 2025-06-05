@@ -18,6 +18,8 @@ import {
   Image,
   Linking,
   Alert,
+  TouchableWithoutFeedback,
+  ScrollView,
 } from "react-native";
 
 import * as Clipboard from "expo-clipboard";
@@ -29,6 +31,7 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { BlurView } from "expo-blur";
 import * as ImagePicker from "expo-image-picker";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Keyboard } from "react-native";
 
 import useApi from "../../../hooks/useApi";
 import useWebSocket from "../../../hooks/useWebSocket";
@@ -108,7 +111,6 @@ export default function ChatOverlay({
   const { callApi } = useApi();
 
   // ─────── Animation Values ───────
-  // 1) For the long-press popup on messages:
   const popupAnim = useRef(new Animated.Value(0)).current;
   const blurOpacity = popupAnim.interpolate({
     inputRange: [0, 0.2, 1],
@@ -119,12 +121,10 @@ export default function ChatOverlay({
     outputRange: [0.8, 1],
   });
 
-  // 2) For the attachment menu:
+  // ─────── State ───────
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const attachAnim = useRef(new Animated.Value(0)).current;
-  // attachAnim: 0 → hidden, 1 → visible
 
-  // ─────── State ───────
   const [focusedMessage, setFocusedMessage] = useState<MessageType | null>(
     null
   );
@@ -134,6 +134,10 @@ export default function ChatOverlay({
     width: number;
     height: number;
   } | null>(null);
+
+  const [reactionSummaryMessage, setReactionSummaryMessage] = useState<
+    MessageType | null
+  >(null);
 
   const [conversation, setConversation] = useState<ConversationType | null>(
     null
@@ -245,6 +249,7 @@ export default function ChatOverlay({
   // ─────── WebSocket for Live Updates ───────
   const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
     onMessage: (data: any) => {
+      console.log("WS incoming →", data);
       if (data.type === "chat_message") {
         const newMsg: MessageType = data.message;
         setMessages((prev) => {
@@ -253,8 +258,11 @@ export default function ChatOverlay({
         });
       } else if (data.type === "reaction_update") {
         const { message_uuid, reactions } = data;
+        console.log("Applying reactions for", message_uuid, reactions);
         setMessages((prev) =>
-          prev.map((m) => (m.uuid === message_uuid ? { ...m, reactions } : m))
+          prev.map((m) =>
+            m.uuid === message_uuid ? { ...m, reactions } : m
+          )
         );
       } else if (data.type === "unsend") {
         const { message_uuid } = data;
@@ -324,7 +332,6 @@ export default function ChatOverlay({
     setInput("");
     setReplyingTo(null);
     setJustSent(true);
-    setMessages((prev) => [optimisticMessage, ...prev]);
 
     if (attachmentsToSend.length === 0) {
       sendMessage({
@@ -410,17 +417,19 @@ export default function ChatOverlay({
     msg: MessageType,
     reactionType: string
   ) => {
-    const existing = msg.reactions.some(
-      (r) =>
-        r.user_username === currentUsername && r.reaction_type === reactionType
+    const existingByUser = msg.reactions.find(
+      (r) => r.user_username === currentUsername
     );
+    const isSameType = existingByUser?.reaction_type === reactionType;
 
     setMessages((prev) =>
       prev.map((m) => {
         if (m.uuid !== msg.uuid) return m;
-        let newReactions: ReactionType[];
-        if (existing) {
-          newReactions = m.reactions.filter(
+
+        let newReactions: ReactionType[] = [...m.reactions];
+
+        if (isSameType && existingByUser) {
+          newReactions = newReactions.filter(
             (r) =>
               !(
                 r.user_username === currentUsername &&
@@ -428,21 +437,24 @@ export default function ChatOverlay({
               )
           );
         } else {
-          newReactions = [
-            ...m.reactions,
-            {
-              id: `temp-${Date.now()}`,
-              user_username: currentUsername,
-              reaction_type: reactionType,
-              reacted_at: new Date().toISOString(),
-            },
-          ];
+          if (existingByUser) {
+            newReactions = newReactions.filter(
+              (r) => r.user_username !== currentUsername
+            );
+          }
+          newReactions.push({
+            id: `temp-${Date.now()}`,
+            user_username: currentUsername,
+            reaction_type: reactionType,
+            reacted_at: new Date().toISOString(),
+          });
         }
+
         return { ...m, reactions: newReactions };
       })
     );
 
-    if (existing) {
+    if (isSameType && existingByUser) {
       sendMessage({
         action: "remove_reaction",
         message_uuid: msg.uuid,
@@ -499,7 +511,7 @@ export default function ChatOverlay({
     const contentHeight = e.nativeEvent.contentSize.height;
     const layoutHeight = e.nativeEvent.layoutMeasurement.height;
     const distanceFromBottom = contentHeight - offsetY - layoutHeight;
-    setUserScrolledUp(distanceFromBottom > 100);
+    setUserScrolledUp(distanceFromBottom > 50);
   };
   const onEndReached = () => {
     if (hasMore && !loadingOlder) {
@@ -514,6 +526,7 @@ export default function ChatOverlay({
       // fallback to centered if ref missing
       setPressedLayout(null);
       setFocusedMessage(message);
+      popupAnim.setValue(0);
       Animated.timing(popupAnim, {
         toValue: 1,
         duration: 200,
@@ -526,8 +539,6 @@ export default function ChatOverlay({
     ref.measureInWindow((x, y, width, height) => {
       setPressedLayout({ x, y, width, height });
       setFocusedMessage(message);
-
-      // Animate popupAnim 0 → 1
       popupAnim.setValue(0);
       Animated.timing(popupAnim, {
         toValue: 1,
@@ -549,6 +560,14 @@ export default function ChatOverlay({
       setFocusedMessage(null);
       setPressedLayout(null);
     });
+  };
+
+  // ─────── Open / Close Reaction Summary ───────
+  const openReactionSummary = (msg: MessageType) => {
+    setReactionSummaryMessage(msg);
+  };
+  const closeReactionSummary = () => {
+    setReactionSummaryMessage(null);
   };
 
   // ─────── Render Media Attachment ───────
@@ -641,7 +660,6 @@ export default function ChatOverlay({
     const emojiOnly = isEmojiOnlyMessage(plainText);
     const own = isOwnMessage(item);
     const msgDate = new Date(item.sent_at);
-
     const prev = messages[index + 1];
     const parentMsg = item.parent_message_uuid
       ? messages.find((m) => m.uuid === item.parent_message_uuid)
@@ -663,6 +681,22 @@ export default function ChatOverlay({
           m.parent_message_uuid === parentMsg.uuid &&
           m.sender_username !== currentUsername
       );
+
+    // ─────── Prepare distinct reactions ───────
+    const uniqueByUser: { [username: string]: ReactionType } = {};
+    item.reactions.forEach((r) => {
+      if (!uniqueByUser[r.user_username]) {
+        uniqueByUser[r.user_username] = r;
+      }
+    });
+    const distinctReactions = Object.values(uniqueByUser);
+
+    // At most 3 badges; overflow hides behind “+N”
+    const maxToShow = 3;
+    const overflowCount =
+      distinctReactions.length > maxToShow
+        ? distinctReactions.length - (maxToShow - 1)
+        : 0;
 
     return (
       <View style={{ marginVertical: 6 }}>
@@ -696,7 +730,8 @@ export default function ChatOverlay({
                 style={[
                   styles.branchLine,
                   isKnot && styles.branchKnot,
-                  index - messages.findIndex((m) => m.uuid === parentMsg.uuid) <
+                  index -
+                    messages.findIndex((m) => m.uuid === parentMsg.uuid) <
                   5
                     ? { height: 20 }
                     : { height: 40 },
@@ -709,10 +744,12 @@ export default function ChatOverlay({
           </View>
         )}
 
+        {/* ─────── Bubble wrapper (position: "relative") ─────── */}
         <View
           style={[
-            styles.messageRow,
+            { position: "relative", maxWidth: "75%" },
             own ? styles.messageRowOwn : styles.messageRowOther,
+            distinctReactions.length > 0 && styles.reactedMarginTop,
           ]}
         >
           <Pressable
@@ -740,6 +777,69 @@ export default function ChatOverlay({
               </Text>
             )}
           </Pressable>
+
+          {/* ─────── Reaction Badges ─────── */}
+          {distinctReactions.length > 0 &&
+            distinctReactions.slice(0, maxToShow).map((r, idx) => {
+              // Determine what to show on the last badge if overflow exists
+              let emojiChar: string;
+              if (idx === maxToShow - 1 && overflowCount > 0) {
+                emojiChar = `+${overflowCount}`;
+              } else {
+                switch (r.reaction_type) {
+                  case "like":
+                    emojiChar = "👍";
+                    break;
+                  case "love":
+                    emojiChar = "❤️";
+                    break;
+                  case "laugh":
+                    emojiChar = "😂";
+                    break;
+                  case "sad":
+                    emojiChar = "😢";
+                    break;
+                  case "angry":
+                    emojiChar = "😡";
+                    break;
+                  default:
+                    emojiChar = "❓";
+                }
+              }
+
+              // Shift each subsequent badge inward by 12px
+              const shiftX = idx * 12;
+              const topOffset = -28; // same vertical offset as before
+
+              // Highlight if it’s the current user’s reaction
+              const isMine =
+                (r.user_username === currentUsername &&
+                  overflowCount === 0) ||
+                (r.user_username === currentUsername && idx < maxToShow - 1);
+              const badgeColor = isMine ? "#0A84FF" : "#333";
+
+              return (
+                <View
+                  key={
+                    idx === maxToShow - 1 && overflowCount > 0
+                      ? `overflow-${idx}`
+                      : r.user_username
+                  }
+                  style={[
+                    styles.reactionBadge,
+                    {
+                      backgroundColor: badgeColor,
+                      top: topOffset,
+                      ...(own
+                        ? { left: -18 + shiftX }
+                        : { right: -18 - shiftX }),
+                    },
+                  ]}
+                >
+                  <Text style={styles.reactionBadgeText}>{emojiChar}</Text>
+                </View>
+              );
+            })}
         </View>
 
         {item.attachments?.length > 0 && (
@@ -752,66 +852,18 @@ export default function ChatOverlay({
             {item.attachments.map((att) => renderMediaAttachment(att))}
           </View>
         )}
-
-        {item.reactions?.length > 0 && (
-          <View
-            style={[
-              styles.reactionContainer,
-              own ? styles.reactionContainerOwn : styles.reactionContainerOther,
-            ]}
-          >
-            {(() => {
-              const counts: Record<string, number> = {};
-              item.reactions.forEach((r) => {
-                counts[r.reaction_type] = (counts[r.reaction_type] || 0) + 1;
-              });
-              return Object.entries(counts).map(([type, count]) => {
-                let emoji = "❓";
-                switch (type) {
-                  case "like":
-                    emoji = "👍";
-                    break;
-                  case "love":
-                    emoji = "❤️";
-                    break;
-                  case "laugh":
-                    emoji = "😂";
-                    break;
-                  case "sad":
-                    emoji = "😢";
-                    break;
-                  case "angry":
-                    emoji = "😡";
-                    break;
-                }
-                return (
-                  <Pressable
-                    key={type}
-                    onPress={() => handleToggleReaction(item, type)}
-                    style={styles.reactionBtn}
-                  >
-                    <Text style={styles.reactionEmoji}>
-                      {emoji} {count}
-                    </Text>
-                  </Pressable>
-                );
-              });
-            })()}
-          </View>
-        )}
       </View>
     );
   };
 
   // ─────── Render the Focused Bubble + Reaction/Action Overlay ───────
-  const renderPopupOverlay = () => {
+  function renderPopupOverlay() {
     if (!focusedMessage) return null;
 
     const plainText = focusedMessage.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
     const emojiOnly = isEmojiOnlyMessage(plainText);
     const isOwn = isOwnMessage(focusedMessage);
 
-    // Reaction row’s height & action row’s height, plus margin:
     const REACTION_ROW_HEIGHT = 40;
     const ACTION_ROW_HEIGHT = 50;
     const MARGIN = 8;
@@ -819,14 +871,14 @@ export default function ChatOverlay({
     if (pressedLayout) {
       const { x, y, width, height } = pressedLayout;
 
-      // 1) Clamp bubble’s X so that the bubble copy never overflows 16 px from edges:
+      // 1) Clamp X so the bubble copy doesn’t overflow screen edges
       const minX = 16;
       const maxX = SCREEN_WIDTH - width - 16;
       let clampedX = x;
       if (clampedX < minX) clampedX = minX;
       if (clampedX > maxX) clampedX = maxX;
 
-      // 2) Bubble copy style:
+      // 2) Style for the “bubble copy” preview
       const bubbleStyle = {
         position: "absolute" as const,
         top: y,
@@ -835,7 +887,7 @@ export default function ChatOverlay({
         transform: [{ scale: popupScale }],
       };
 
-      // 3) Reaction row (above) and action row (below) vertical positions:
+      // 3) Compute vertical positions for reaction row (above) and action row (below)
       let reactionTop = y - MARGIN - REACTION_ROW_HEIGHT;
       if (reactionTop < insets.top + MARGIN) {
         reactionTop = insets.top + MARGIN;
@@ -853,30 +905,112 @@ export default function ChatOverlay({
         <Animated.View
           style={[styles.popupOverlayContainer, { opacity: blurOpacity }]}
         >
-          {/* FULL‐SCREEN BLUR */}
-          <AnimatedBlurView
-            intensity={70}
-            tint="dark"
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                transform: [
-                  { translateX: SCREEN_WIDTH / 2 },
-                  { translateY: SCREEN_HEIGHT / 2 },
-                  { scale: popupScale },
-                  { translateX: -SCREEN_WIDTH / 2 },
-                  { translateY: -SCREEN_HEIGHT / 2 },
-                ],
-              },
-            ]}
-          />
+          {/* 1) Full-screen blur (tappable outside to close) */}
+          <TouchableWithoutFeedback onPress={closePopup}>
+            <AnimatedBlurView
+              intensity={70}
+              tint="dark"
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  transform: [
+                    { translateX: SCREEN_WIDTH / 2 },
+                    { translateY: SCREEN_HEIGHT / 2 },
+                    { scale: popupScale },
+                    { translateX: -SCREEN_WIDTH / 2 },
+                    { translateY: -SCREEN_HEIGHT / 2 },
+                  ],
+                },
+              ]}
+            />
+          </TouchableWithoutFeedback>
 
-          {/* (1) “Bubble Copy” */}
+          {/* (A) Reaction Summary Overlay (if open) */}
+          {reactionSummaryMessage === focusedMessage && (
+            <View style={styles.summaryOverlay}>
+              <BlurView intensity={50} tint="dark" style={styles.summaryBlur} />
+              <View style={styles.summaryContent}>
+                <Text style={styles.summaryTitle}>Reactions</Text>
+                <ScrollView style={{ maxHeight: 200 }}>
+                  {(() => {
+                    const grouping: Record<
+                      string,
+                      { count: number; users: string[] }
+                    > = {};
+                    focusedMessage.reactions.forEach((r) => {
+                      if (!grouping[r.reaction_type]) {
+                        grouping[r.reaction_type] = { count: 0, users: [] };
+                      }
+                      grouping[r.reaction_type].count += 1;
+                      grouping[r.reaction_type].users.push(r.user_username);
+                    });
+                    return Object.entries(grouping).map(
+                      ([reaction_type, { count, users }]) => {
+                        let emoji = "❓";
+                        switch (reaction_type) {
+                          case "like":
+                            emoji = "👍";
+                            break;
+                          case "love":
+                            emoji = "❤️";
+                            break;
+                          case "laugh":
+                            emoji = "😂";
+                            break;
+                          case "sad":
+                            emoji = "😢";
+                            break;
+                          case "angry":
+                            emoji = "😡";
+                            break;
+                        }
+                        const youReacted =
+                          users.indexOf(currentUsername) !== -1;
+                        return (
+                          <View key={reaction_type} style={styles.summaryRow}>
+                            <Text style={styles.summaryEmoji}>{emoji}</Text>
+                            <Text style={styles.summaryText}>
+                              {count} – {users.join(", ")}
+                            </Text>
+                            {youReacted && (
+                              <Pressable
+                                onPress={async () => {
+                                  await handleToggleReaction(
+                                    focusedMessage,
+                                    reaction_type
+                                  );
+                                  closeReactionSummary();
+                                  closePopup();
+                                }}
+                                style={styles.unreactButton}
+                              >
+                                <Text style={styles.unreactText}>Unreact</Text>
+                              </Pressable>
+                            )}
+                          </View>
+                        );
+                      }
+                    );
+                  })()}
+                </ScrollView>
+                <Pressable
+                  onPress={closeReactionSummary}
+                  style={styles.closeSummaryBtn}
+                >
+                  <Text style={styles.closeSummaryText}>Close</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+
+          {/* (1) “Bubble Copy” Preview */}
           <Animated.View style={bubbleStyle}>
             <View
               style={[
                 styles.bubbleContainer,
-                isOwn ? styles.bubbleContainerOwn : styles.bubbleContainerOther,
+                isOwn
+                  ? styles.bubbleContainerOwn
+                  : styles.bubbleContainerOther,
                 emojiOnly && styles.emojiOnlyContainer,
               ]}
             >
@@ -886,7 +1020,9 @@ export default function ChatOverlay({
                 <Text
                   style={[
                     styles.messageText,
-                    isOwn ? styles.messageTextOwn : styles.messageTextOther,
+                    isOwn
+                      ? styles.messageTextOwn
+                      : styles.messageTextOther,
                   ]}
                   numberOfLines={3}
                 >
@@ -896,22 +1032,20 @@ export default function ChatOverlay({
             </View>
           </Animated.View>
 
-          {/* (2) “Reaction” row just above the bubble */}
+          {/* (2) Reaction Row (above the bubble) */}
           <Animated.View
             style={{
               position: "absolute" as const,
               top: reactionTop,
-              ...(isOwn
-                ? { right: 16 } // right-align for sent messages
-                : { left: clampedX, width: width }), // under bubble for received
+              ...(isOwn ? { right: 16 } : { left: clampedX }),
               opacity: blurOpacity,
               transform: [{ scale: popupScale }],
             }}
           >
             <View style={styles.reactionsRowContainer}>
-              {["👍", "❤️", "😂", "😢", "😡"].map((e) => (
+              {["👍", "❤️", "😂", "😢", "😡"].map((em) => (
                 <Pressable
-                  key={e}
+                  key={em}
                   onPress={async () => {
                     await handleToggleReaction(
                       focusedMessage,
@@ -921,26 +1055,24 @@ export default function ChatOverlay({
                         "😂": "laugh",
                         "😢": "sad",
                         "😡": "angry",
-                      }[e]
+                      }[em]
                     );
                     closePopup();
                   }}
                   style={styles.reactionButton}
                 >
-                  <Text style={styles.reactionEmoji}>{e}</Text>
+                  <Text style={styles.reactionEmojiBtn}>{em}</Text>
                 </Pressable>
               ))}
             </View>
           </Animated.View>
 
-          {/* (3) “Action” buttons just below the bubble */}
+          {/* (3) Action Row (below the bubble) */}
           <Animated.View
             style={{
               position: "absolute" as const,
               top: actionTop,
-              ...(isOwn
-                ? { right: 16, width: 200 } // right-align the 200px-wide container
-                : { left: clampedX, width: width }),
+              ...(isOwn ? { right: 16 } : { left: clampedX }),
               opacity: blurOpacity,
               transform: [{ scale: popupScale }],
             }}
@@ -975,110 +1107,33 @@ export default function ChatOverlay({
               </Pressable>
             </View>
           </Animated.View>
-
-          {/* (4) Tapping outside closes */}
-          <Pressable style={StyleSheet.absoluteFill} onPress={closePopup} />
         </Animated.View>
       );
     }
 
-    // Fallback: center‐in‐screen
-    return (
-      <Animated.View
-        style={[styles.popupOverlayContainer, { opacity: blurOpacity }]}
-      >
-        <AnimatedBlurView
-          intensity={70}
-          tint="dark"
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              transform: [
-                { translateX: SCREEN_WIDTH / 2 },
-                { translateY: SCREEN_HEIGHT / 2 },
-                { scale: popupScale },
-                { translateX: -SCREEN_WIDTH / 2 },
-                { translateY: -SCREEN_HEIGHT / 2 },
-              ],
-            },
-          ]}
-        />
+    return null;
+  }
 
-        {/* Centered fallback bubble */}
-        <Animated.View
-          style={{
-            position: "absolute",
-            top: SCREEN_HEIGHT / 2 - 40,
-            left: SCREEN_WIDTH / 2 - 100,
-            width: 200,
-            transform: [{ scale: popupScale }],
-          }}
-        >
-          <View
-            style={[
-              styles.bubbleContainer,
-              isOwn ? styles.bubbleContainerOwn : styles.bubbleContainerOther,
-              emojiOnly && styles.emojiOnlyContainer,
-            ]}
-          >
-            {emojiOnly ? (
-              <Text style={styles.emojiText}>{focusedMessage.text}</Text>
-            ) : (
-              <Text
-                style={[
-                  styles.messageText,
-                  isOwn ? styles.messageTextOwn : styles.messageTextOther,
-                ]}
-                numberOfLines={3}
-              >
-                {focusedMessage.text}
-              </Text>
-            )}
-          </View>
-        </Animated.View>
-
-        {/* Centered fallback action */}
-        <Animated.View
-          style={{
-            position: "absolute",
-            top: SCREEN_HEIGHT / 2 + 10,
-            left: SCREEN_WIDTH / 2 - 100,
-            width: 200,
-            opacity: blurOpacity,
-            transform: [{ scale: popupScale }],
-          }}
-        >
-          <View style={styles.actionsRowContainer}>
-            <Pressable
-              onPress={() => {
-                Clipboard.setString(focusedMessage.text || "");
-                closePopup();
-              }}
-              style={styles.actionButton}
-            >
-              <Text style={styles.actionText}>Copy</Text>
-            </Pressable>
-          </View>
-        </Animated.View>
-
-        <Pressable style={StyleSheet.absoluteFill} onPress={closePopup} />
-      </Animated.View>
-    );
-  };
-
-  // ─────── Render the Attachment Menu Overlay ───────
-  const hideAttachMenu = () => {
-    Animated.timing(attachAnim, {
-      toValue: 0,
-      duration: 200,
-      easing: Easing.in(Easing.cubic),
-      useNativeDriver: true,
-    }).start(() => {
-      setShowAttachMenu(false);
+  // ─────── Keyboard Tracking ───────
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
     });
-  };
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+  const keyboardWasOpen = useRef(false);
 
+  // ─────── Show / Hide Attach Menu ───────
   const showAttachMenuAnimated = () => {
+    keyboardWasOpen.current = keyboardVisible;
+    Keyboard.dismiss();
     setShowAttachMenu(true);
     attachAnim.setValue(0);
     Animated.timing(attachAnim, {
@@ -1088,154 +1143,157 @@ export default function ChatOverlay({
       useNativeDriver: true,
     }).start();
   };
+  const hideAttachMenu = () => {
+    Animated.timing(attachAnim, {
+      toValue: 0,
+      duration: 200,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start(() => {
+      setShowAttachMenu(false);
+      if (keyboardWasOpen.current && inputRef.current) {
+        inputRef.current.focus();
+      }
+      keyboardWasOpen.current = false;
+    });
+  };
 
-const renderAttachMenu = () => {
-  if (!showAttachMenu) return null;
+  // ─────── Render the Attachment Menu Overlay ───────
+  const renderAttachMenu = () => {
+    if (!showAttachMenu) return null;
 
-  const attachBlurOpacity = attachAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-  const attachScale = attachAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.8, 1],
-  });
+    const attachBlurOpacity = attachAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1],
+    });
+    const attachScale = attachAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.8, 1],
+    });
 
-  return (
-    <Animated.View
-      style={[
-        StyleSheet.absoluteFill,
-        { opacity: attachBlurOpacity, zIndex: 1001 },
-      ]}
-    >
-      {/* 1) Full-screen blur behind everything (pointerEvents="none" so touches pass through) */}
-      <AnimatedBlurView
-        intensity={60}
-        tint="dark"
-        pointerEvents="none"
+    return (
+      <Animated.View
         style={[
           StyleSheet.absoluteFill,
-          {
-            transform: [
-              { translateX: SCREEN_WIDTH / 2 },
-              { translateY: SCREEN_HEIGHT / 2 },
-              { scale: attachScale },
-              { translateX: -SCREEN_WIDTH / 2 },
-              { translateY: -SCREEN_HEIGHT / 2 },
-            ],
-          },
+          { opacity: attachBlurOpacity, zIndex: 1001 },
         ]}
-      />
-
-      {/* 2) One full-screen Pressable: any tap not handled by a child button will bubble here and close. */}
-      <Pressable style={StyleSheet.absoluteFill} onPress={hideAttachMenu}>
-        {/* 3) The menu container itself is a child of this Pressable. 
-               Taps on empty space in or around the menu will bubble up to this Pressable. */}
-        <Animated.View
+      >
+        {/* 1) Full-screen blur behind everything (pointerEvents="none" so touches pass through) */}
+        <AnimatedBlurView
+          intensity={60}
+          tint="dark"
+          pointerEvents="none"
           style={[
-            styles.attachMenuContainer,
+            StyleSheet.absoluteFill,
             {
-              transform: [{ scale: attachScale }],
-              opacity: attachBlurOpacity,
+              transform: [
+                { translateX: SCREEN_WIDTH / 2 },
+                { translateY: SCREEN_HEIGHT / 2 },
+                { scale: attachScale },
+                { translateX: -SCREEN_WIDTH / 2 },
+                { translateY: -SCREEN_HEIGHT / 2 },
+              ],
             },
           ]}
-        >
-          <Animated.ScrollView
-            style={StyleSheet.absoluteFill}
-            contentContainerStyle={styles.attachScrollContent}
-            showsVerticalScrollIndicator={false}
-            horizontal={false}
+        />
+
+        {/* 2) One full-screen Pressable: any tap not handled by a child button will bubble here and close. */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={hideAttachMenu}>
+          {/* 3) The menu container itself is a child of this Pressable. 
+                 Taps on empty space in or around the menu bubble up to this Pressable. */}
+          <Animated.View
+            style={[
+              styles.attachMenuContainer,
+              {
+                transform: [{ scale: attachScale }],
+                opacity: attachBlurOpacity,
+              },
+            ]}
           >
-            {/* 4) Actual menu items: a View wrapping all buttons.
-                   Empty areas here also count as “outside” since they bubble to parent Pressable. */}
-            <View style={styles.attachMenu}>
-              {/* “Photos/Videos” Button */}
-              <Pressable
-                style={styles.attachItem}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  hideAttachMenu();
-                  handleMediaPick();
-                }}
-              >
-                <MaterialIcons name="photo" size={24} color="#FFF" />
-                <Text style={styles.attachText}>Photos/Videos</Text>
-              </Pressable>
+            <Animated.ScrollView
+              style={StyleSheet.absoluteFill}
+              contentContainerStyle={styles.attachScrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* 4) Actual menu items live here */}
+              <View style={styles.attachMenu}>
+                {/* “Photos/Videos” Button */}
+                <Pressable
+                  style={styles.attachItem}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    hideAttachMenu();
+                    handleMediaPick();
+                  }}
+                >
+                  <MaterialIcons name="photo" size={24} color="#FFF" />
+                  <Text style={styles.attachText}>Photos/Videos</Text>
+                </Pressable>
 
-              {/* “Play” Button */}
-              <Pressable
-                style={styles.attachItem}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  hideAttachMenu();
-                  console.log("Play");
-                  // …your “Play” logic…
-                }}
-              >
-                <MaterialIcons name="games" size={24} color="#FFF" />
-                <Text style={styles.attachText}>Play</Text>
-              </Pressable>
+                {/* “Play” Button */}
+                <Pressable
+                  style={styles.attachItem}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    hideAttachMenu();
+                    console.log("Play");
+                  }}
+                >
+                  <MaterialIcons name="games" size={24} color="#FFF" />
+                  <Text style={styles.attachText}>Play</Text>
+                </Pressable>
 
-              {/* “Document” Button */}
-              <Pressable
-                style={styles.attachItem}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  hideAttachMenu();
-                  console.log("Document");
-                  // …your “Document” logic…
-                }}
-              >
-                <MaterialIcons
-                  name="insert-drive-file"
-                  size={24}
-                  color="#FFF"
-                />
-                <Text style={styles.attachText}>Document</Text>
-              </Pressable>
+                {/* “Document” Button */}
+                <Pressable
+                  style={styles.attachItem}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    hideAttachMenu();
+                    console.log("Document");
+                  }}
+                >
+                  <MaterialIcons
+                    name="insert-drive-file"
+                    size={24}
+                    color="#FFF"
+                  />
+                  <Text style={styles.attachText}>Document</Text>
+                </Pressable>
 
-              {/* “Location” Button */}
-              <Pressable
-                style={styles.attachItem}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  hideAttachMenu();
-                  console.log("Location");
-                  // …your “Location” logic…
-                }}
-              >
-                <MaterialIcons name="location-pin" size={24} color="#FFF" />
-                <Text style={styles.attachText}>Location</Text>
-              </Pressable>
+                {/* “Location” Button */}
+                <Pressable
+                  style={styles.attachItem}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    hideAttachMenu();
+                    console.log("Location");
+                  }}
+                >
+                  <MaterialIcons name="location-pin" size={24} color="#FFF" />
+                  <Text style={styles.attachText}>Location</Text>
+                </Pressable>
 
-              {/* “Contact” Button */}
-              <Pressable
-                style={styles.attachItem}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  hideAttachMenu();
-                  console.log("Contact");
-                  // …your “Contact” logic…
-                }}
-              >
-                <MaterialIcons name="person" size={24} color="#FFF" />
-                <Text style={styles.attachText}>Contact</Text>
-              </Pressable>
+                {/* “Contact” Button */}
+                <Pressable
+                  style={styles.attachItem}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    hideAttachMenu();
+                    console.log("Contact");
+                  }}
+                >
+                  <MaterialIcons name="person" size={24} color="#FFF" />
+                  <Text style={styles.attachText}>Contact</Text>
+                </Pressable>
 
-              {/* …add more items here following the same pattern… */}
-            </View>
-          </Animated.ScrollView>
-        </Animated.View>
-      </Pressable>
-    </Animated.View>
-  );
-};
-
-
-
-
-
-
+                {/* …you can add more items here in the same pattern… */}
+              </View>
+            </Animated.ScrollView>
+          </Animated.View>
+        </Pressable>
+      </Animated.View>
+    );
+  };
 
   if (loading && !conversation) {
     return null;
@@ -1357,7 +1415,7 @@ const renderAttachMenu = () => {
                 contentContainerStyle={{
                   flexGrow: 1,
                   paddingHorizontal: 16,
-                  paddingTop: 12,
+                  paddingTop: 20,
                   paddingBottom: 0,
                 }}
                 ListFooterComponent={() =>
@@ -1506,7 +1564,7 @@ const renderAttachMenu = () => {
                       )}
 
                       <View style={styles.writeContainer}>
-                        {/* “+” Attachment Button (now opens attach menu) */}
+                        {/* “+” Attachment Button */}
                         <Pressable
                           onPress={showAttachMenuAnimated}
                           style={{ marginRight: 12 }}
@@ -1540,12 +1598,18 @@ const renderAttachMenu = () => {
                         />
 
                         {/* Send Button */}
-                        <Pressable
-                          onPress={handleSend}
-                          style={styles.sendButton}
-                        >
-                          <FontAwesome name="send" size={22} color="#0A84FF" />
-                        </Pressable>
+                        {input.trim() !== "" && (
+                          <Pressable
+                            onPress={handleSend}
+                            style={styles.sendButton}
+                          >
+                            <FontAwesome
+                              name="send"
+                              size={22}
+                              color="rgba(222, 222, 222, 0.62)"
+                            />
+                          </Pressable>
+                        )}
                       </View>
                     </BlurView>
                   )}
@@ -1743,7 +1807,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 4,
-    backgroundColor: "#222",
     marginVertical: 12,
   },
   dateSeparatorText: {
@@ -1790,11 +1853,6 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
 
-  messageRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    maxWidth: "75%",
-  },
   messageRowOwn: {
     alignSelf: "flex-end",
     marginLeft: "25%",
@@ -1803,6 +1861,10 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginRight: "25%",
   },
+  reactedMarginTop: {
+    marginTop: 20, // extra space for badge overlap
+  },
+
   bubbleContainer: {
     borderRadius: 18,
     paddingHorizontal: 14,
@@ -1841,11 +1903,6 @@ const styles = StyleSheet.create({
     lineHeight: 44,
   },
 
-  timeTextMain: {
-    fontSize: 11,
-    color: "#AAA",
-  },
-
   mediaBubbleContainer: {
     marginTop: 4,
     borderRadius: 18,
@@ -1878,29 +1935,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  reactionContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 6,
+  // ─────── Corner-badge styles for iMessage-style reactions ───────
+  reactionBadge: {
+    position: "absolute",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#000",
+    zIndex: 5,
   },
-  reactionContainerOwn: {
-    alignSelf: "flex-end",
-    marginRight: 14,
-  },
-  reactionContainerOther: {
-    alignSelf: "flex-start",
-    marginLeft: 14,
-  },
-  reactionBtn: {
-    marginRight: 6,
-    backgroundColor: "#333",
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  reactionEmoji: {
-    fontSize: 14,
+  reactionBadgeText: {
+    fontSize: 16,
     color: "#FFF",
+    textAlign: "center",
   },
 
   footerBlur: {
@@ -1969,6 +2024,42 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -6,
     right: -6,
+  },
+
+  // ─────── Styles for the Attach Menu ───────
+  attachMenuContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1002,
+    backgroundColor: "transparent",
+  },
+  attachScrollContent: {
+    paddingTop: SCREEN_HEIGHT / 2 - 30,
+    paddingBottom: 100,
+  },
+  attachMenu: {
+    backgroundColor: "transparent",
+    alignItems: "flex-start",
+  },
+  attachItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    shadowColor: "rgb(255, 255, 255)",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.65,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  attachText: {
+    marginLeft: 16,
+    fontSize: 18,
+    color: "#FFF",
   },
 
   requestWarningContainer: {
@@ -2049,7 +2140,7 @@ const styles = StyleSheet.create({
   reactionButton: {
     marginHorizontal: 8,
   },
-  reactionEmoji: {
+  reactionEmojiBtn: {
     fontSize: 28,
     color: "#FFF",
   },
@@ -2069,7 +2160,7 @@ const styles = StyleSheet.create({
   // ─────── Attachment Menu Styles ───────
   attachMenuContainer: {
     position: "absolute",
-    top: 0, // fill from top
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
@@ -2077,37 +2168,91 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   attachScrollContent: {
-    // This padding pushes the very first item down
-    // so that it sits in the vertical middle of the screen:
     paddingTop: SCREEN_HEIGHT / 2 - 30,
-    // 30 is roughly half the item height (adjust if necessary).
-    paddingBottom: 100, // allow pulling up further if you want
+    paddingBottom: 100,
   },
   attachMenu: {
-    backgroundColor: "transparent", // transparent—blur is behind
+    backgroundColor: "transparent",
     alignItems: "flex-start",
   },
   attachItem: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "transparent",
-  paddingVertical: 20,
-  paddingHorizontal: 24,
-
-  // iOS shadow:
-  shadowColor: "rgb(255, 255, 255)",             // any color to tint the shadow
-  shadowOffset: { width: 0, height: 0 }, // how far the shadow is offset
-  shadowOpacity: 0.65,             // opacity of the shadow (0–1)
-  shadowRadius: 20,              // how “blurred” the shadow is
-
-  // Android elevation:
-  elevation: 5,
-},
-
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    shadowColor: "rgb(255, 255, 255)",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.65,
+    shadowRadius: 20,
+    elevation: 5,
+  },
   attachText: {
     marginLeft: 16,
     fontSize: 18,
     color: "#FFF",
+  },
+
+  // ─────── Summary Overlay Styles ───────
+  summaryOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2000,
+  },
+  summaryBlur: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  summaryContent: {
+    marginTop: 16,
+    marginHorizontal: 32,
+    backgroundColor: "#EFEFF4",
+    borderRadius: 12,
+    padding: 16,
+    maxHeight: SCREEN_HEIGHT * 0.5,
+    elevation: 20,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
+    color: "#000",
+  },
+  summaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  summaryEmoji: {
+    fontSize: 22,
+    marginRight: 8,
+  },
+  summaryText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#000",
+  },
+  unreactButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "#FF3B30",
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  unreactText: {
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  closeSummaryBtn: {
+    marginTop: 12,
+    alignSelf: "flex-end",
+  },
+  closeSummaryText: {
+    fontSize: 14,
+    color: "#0A84FF",
+    fontWeight: "700",
   },
 
   // ─────── Thread Overlay ───────

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Notification
+from .models import Notification, DeviceToken
 from ..user.serializers import EssentialUserSerializer
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -21,3 +21,18 @@ class NotificationSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+    
+    
+class DeviceTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeviceToken
+        fields = ['id','token','platform','created_at']
+        read_only_fields = ['id','created_at']
+
+    def create(self, validated_data):
+        # ensure no duplicates for this user
+        token = validated_data['token']
+        user = self.context['request'].user
+        obj, _ = DeviceToken.objects.get_or_create(user=user, token=token, defaults={'platform': validated_data['platform']})
+        return obj

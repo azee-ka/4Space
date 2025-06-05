@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadNotifications } from '../state/actions/notificationsActions'; // Action to load notifications
 import { selectNotifications, selectNotificationsCount, selectNotificationsLoading, selectNotificationsError } from '../state/reducers/notificationsSlice'; // Selectors
-import useApi from '../utils/useApi';
-import { useAuth } from './useAuth';
+import useApi from './useApi';
+import useAuth from './useAuth';
 
 const useNotifications = () => {
     const dispatch = useDispatch();

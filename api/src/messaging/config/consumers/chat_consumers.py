@@ -1,3 +1,5 @@
+# app/messages/consumers.py
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from django.utils.timezone import now
@@ -12,13 +14,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer for a single conversation.
     Supports:
-      - Receiving new chat messages (text‐only via WebSocket).
-      - First‐message invite logic (evaluate participants).
+      - Receiving new chat messages (text-only via WebSocket).
       - Adding/removing reactions (via `action`: 'add_reaction' / 'remove_reaction').
       - Broadcasting back `chat_message` or `reaction_update`.
     """
 
-    # ─── Helpers: wrap any ORM call in sync_to_async ───
+    # ─── Helpers: wrap ORM calls in sync_to_async ───
 
     @sync_to_async
     def get_conversation(self, conversation_id):
@@ -30,10 +31,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def create_message(self, conversation, sender, message_content, parent_uuid=None):
-        """
-        Creates a new Message. If parent_uuid is provided and valid,
-        we set message.parent_message to that Message instance.
-        """
         parent = None
         if parent_uuid:
             try:
@@ -55,7 +52,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def get_participants(self, conversation):
-        # Preload `.user` so accessing `participant.user` won’t hit the DB again
         return list(
             Participant.objects.filter(conversation=conversation)
                                .select_related("user")
@@ -78,91 +74,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def user_follows(self, user, possible_follower):
         return user.followers.filter(id=possible_follower.id).exists()
 
+
     # ─── “Connect” / “Disconnect” ───
 
     async def connect(self):
-        # Extract conversation_id (UUID) from URL route
         self.conversation_id = self.scope['url_route']['kwargs']['conversation_id']
-        self.user = self.scope["user"]  # Authenticated user
+        # Note: self.scope["user"] is a SimpleLazyObject. We will unwrap it when needed.
+        self.user = self.scope["user"]
         self.chat_group_name = f"chat_{self.conversation_id}"
 
-        # Join the channel-layer group for this conversation
         await self.channel_layer.group_add(
             self.chat_group_name,
             self.channel_name
         )
-
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave the group
         await self.channel_layer.group_discard(
             self.chat_group_name,
             self.channel_name
         )
 
-    # ─── Participant-invite logic ───
-
-    async def evaluate_participants(self, conversation, sender):
-        """
-        Called on the very first message in a conversation.
-        Decides which participants become “invited” vs. “active” vs. “added”.
-        Runs entirely inside async by awaiting sync_to_async calls.
-        """
-        participants = await self.get_participants(conversation)
-        is_group_chat = len(participants) > 2
-
-        for participant in participants:
-            participant_user = participant.user  # already select_related
-
-            if participant_user.id == sender.id:
-                continue  # skip the sender
-
-            if participant.status == 'blocked':
-                continue  # skip blocked users
-
-            message_settings = await self.get_message_settings(participant_user)
-
-            if is_group_chat:
-                allow_messages = (
-                    message_settings.allow_messages_from_others == 'allow'
-                    or (
-                        await self.user_follows(participant_user, sender)
-                        and message_settings.allow_messages_from_followers == 'allow'
-                    )
-                )
-                if allow_messages:
-                    participant.status = 'invited'
-                else:
-                    allow_requests = (
-                        message_settings.allow_messages_from_others == 'requests'
-                        or (
-                            await self.user_follows(participant_user, sender)
-                            and message_settings.allow_messages_from_followers == 'requests'
-                        )
-                    )
-                    participant.status = 'invited' if allow_requests else 'added'
-            else:
-                allow_messages = (
-                    message_settings.allow_messages_from_others == 'allow'
-                    or (
-                        await self.user_follows(participant_user, sender)
-                        and message_settings.allow_messages_from_followers == 'allow'
-                    )
-                )
-                if allow_messages:
-                    participant.status = 'active'
-                else:
-                    allow_requests = (
-                        message_settings.allow_messages_from_others == 'requests'
-                        or (
-                            await self.user_follows(participant_user, sender)
-                            and message_settings.allow_messages_from_followers == 'requests'
-                        )
-                    )
-                    participant.status = 'invited' if allow_requests else 'added'
-
-            await self.save_participant(participant)
 
     # ─── “receive” (incoming WS messages) ───
 
@@ -178,9 +110,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if data.get('action') == 'add_reaction':
             msg_uuid = data.get('message_uuid')
             reaction_type = data.get('reaction_type')
-            user = self.scope['user']
 
-            # Validate
+            # Instead of using self.scope["user"] (LazyUser), fetch the real BaseUser:
+            sender_username = self.scope["user"].username
+            try:
+                user_obj = await self.get_sender(sender_username)
+            except BaseUser.DoesNotExist:
+                # Shouldn’t really happen if they’re authenticated, but be defensive
+                await self.send(json.dumps({'error': 'User not found'}))
+                return
+
+            # Validate reaction_type
             if reaction_type not in dict(Reaction.REACTION_CHOICES):
                 await self.send(json.dumps({'error': 'Invalid reaction_type.'}))
                 return
@@ -191,18 +131,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({'error': 'Message not found'}))
                 return
 
-            # Create or get existing Reaction
+            # Create (or get) the Reaction
+            # Use sync_to_async on a lambda so that Django ORM runs in the threadpool
             await sync_to_async(lambda: Reaction.objects.get_or_create(
-                message=message, user=user, reaction_type=reaction_type
+                message=message,
+                user=user_obj,            # <-- now a real BaseUser, not a LazyUser
+                reaction_type=reaction_type
             ))()
 
-            # Re-serialize full reaction list
+            # Re-serialize the full reaction list
             reactions_qs = await sync_to_async(lambda: message.reactions.all())()
             reactions_data = await sync_to_async(
                 lambda: ReactionSerializer(reactions_qs, many=True).data
             )()
 
-            # Broadcast updated reaction-list to all group members
+            # Broadcast updated reaction list to everyone in the group
             await self.channel_layer.group_send(
                 self.chat_group_name,
                 {
@@ -213,11 +156,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             return
 
+
         # ——— 2) ‘remove_reaction’ ———
         elif data.get('action') == 'remove_reaction':
             msg_uuid = data.get('message_uuid')
             reaction_type = data.get('reaction_type')
-            user = self.scope['user']
+
+            # Again unwrap the lazy user to a real BaseUser:
+            sender_username = self.scope["user"].username
+            try:
+                user_obj = await self.get_sender(sender_username)
+            except BaseUser.DoesNotExist:
+                await self.send(json.dumps({'error': 'User not found'}))
+                return
 
             try:
                 message = await self.get_conversation_message(msg_uuid)
@@ -226,15 +177,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return
 
             try:
+                # Again, user_obj is a real BaseUser:
                 reaction = await sync_to_async(lambda: Reaction.objects.get(
-                    message=message, user=user, reaction_type=reaction_type
+                    message=message,
+                    user=user_obj,
+                    reaction_type=reaction_type
                 ))()
                 await sync_to_async(reaction.delete)()
             except Reaction.DoesNotExist:
                 await self.send(json.dumps({'error': 'Reaction not found'}))
                 return
 
-            # Re-serialize full reaction list
+            # Re-serialize the full reaction list
             reactions_qs = await sync_to_async(lambda: message.reactions.all())()
             reactions_data = await sync_to_async(
                 lambda: ReactionSerializer(reactions_qs, many=True).data
@@ -251,6 +205,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             return
 
+
         # ——— 3) Otherwise, normal chat message ———
         else:
             message_content = data.get('text')
@@ -261,7 +216,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({'error': 'Missing message or sender'}))
                 return
 
-            # 3a) Fetch conversation + sender
+            # 3a) Fetch conversation + sender (now using get_sender to unwrap the LazyUser)
             try:
                 conversation = await self.get_conversation(self.conversation_id)
                 sender = await self.get_sender(sender_username)
@@ -269,16 +224,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({'error': 'Conversation or sender not found'}))
                 return
 
-            # 3b) Check participant-status if group-chat
+            # 3b) Participant-status checks (unchanged)
             participants = await self.get_participants(conversation)
             num_participants = len(participants)
             is_group_chat = num_participants > 2
 
-            # Check if any messages exist
             has_messages = await sync_to_async(lambda: conversation.messages.exists())()
 
             if not has_messages:
-                # It’s the VERY FIRST message in this conversation:
                 await self.update_invite_sent(conversation)
                 await self.evaluate_participants(conversation, sender)
                 message = await self.create_message(conversation, sender, message_content, parent_uuid)
@@ -293,17 +246,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                 message = await self.create_message(conversation, sender, message_content, parent_uuid)
 
-            # 3c) Serialize the newly-created Message instance
+            # 3c) Serialize and broadcast
             msg_obj = await self.get_conversation_message(message.uuid)
             payload = await sync_to_async(
                 lambda: MessageSerializer(msg_obj, context={'request': None}).data
             )()
 
-            # 3d) Broadcast to everyone in this conversation
             await self.channel_layer.group_send(
                 self.chat_group_name,
                 {
-                    'type': 'chat_message',  # triggers self.chat_message
+                    'type': 'chat_message',
                     'message': payload,
                 }
             )
@@ -312,23 +264,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def reaction_update(self, event):
         """
-        Receives a ‘reaction_update’ event from group_send and forwards it to this WebSocket client.
+        Forwards a ‘reaction_update’ event to this WebSocket client.
         """
         await self.send(
             text_data=json.dumps({
                 'type': 'reaction_update',
                 'message_uuid': event['message_uuid'],
                 'reactions': event['reactions'],
-            }, default=str)  # <-- default=str ensures UUID → string
+            }, default=str)
         )
 
     async def chat_message(self, event):
         """
-        Receives a ‘chat_message’ event from group_send and forwards it to this WebSocket client.
+        Forwards a ‘chat_message’ event to this WebSocket client.
         """
         await self.send(
             text_data=json.dumps({
                 'type': 'chat_message',
                 'message': event['message'],
-            }, default=str)  # <-- default=str ensures UUID → string
+            }, default=str)
         )

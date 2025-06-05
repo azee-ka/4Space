@@ -5,5 +5,5 @@ class MessagingConfig(AppConfig):
     verbose_name = 'Messaging'
 
     def ready(self):
-        # You can import and register any messaging-related signals here in the future
-        pass
+        # Import the signal handlers so they get registered.
+        import src.messaging.signals

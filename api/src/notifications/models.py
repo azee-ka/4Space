@@ -29,3 +29,15 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.title} for {self.user.username}"
+
+
+
+
+class DeviceToken(models.Model):
+    user = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="device_tokens")
+    token = models.CharField(max_length=255, unique=True)
+    platform = models.CharField(max_length=10, choices=[("ios","iOS"),("android","Android")])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} @ {self.platform}"
