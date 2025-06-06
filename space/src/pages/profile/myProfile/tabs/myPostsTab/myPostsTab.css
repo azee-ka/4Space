@@ -142,6 +142,15 @@
   font-size: 1em;
 }
 
+
+.my-thread-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+
+
 @media (max-width: 900px) {
   .my-posts-masonry-grid {
     margin-left: -8px;
