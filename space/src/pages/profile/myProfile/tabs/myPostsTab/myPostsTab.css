@@ -45,7 +45,6 @@
   opacity: 0.85;
 }
 
-/* — Loading & “No Posts” States — */
 .my-posts-loading,
 .my-posts-no-posts {
   width: 100%;
@@ -60,50 +59,40 @@
   color: #d3d3d3;
 }
 
-/* — Masonry Wrapper & Columns — */
 .my-posts-masonry-wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
   box-sizing: border-box;
-  /* Prevent the masonry from exceeding its parent’s width: */
-  /* max-width: 100%; */
   overflow: hidden;
 }
 
-/* The “grid” that contains several column divs. */
 .my-posts-masonry-grid {
   display: flex;
-  /* margin-left: -12px; */
   width: 100%;
 }
 
-/* Each column in the masonry layout. */
+
 .my-posts-masonry-column {
   padding-left: 12px;
   background-clip: padding-box;
-  flex: 1;               /* make all columns share available space equally */
-  /* max-width: 300px;     */
+  flex: 1;
   box-sizing: border-box;
 }
-
-/* — Constrain Image Thumbnails — */
-/* 
-   Instead of letting images run to full height, we fix them 
-   to a set height (e.g. 225px), and use object-fit: cover. 
-   Adjust “225px” to your preferred thumbnail height.
-*/
-.visual-masonry-img {
-  width: 100%;
-  height: 225px;          /* fixed thumbnail height */
-  object-fit: cover;      /* cover & crop if needed */
-  display: block;
-  border-radius: 8px;
-  background: #212227;    /* fallback background color */
+.my-posts-masonry-grid > .my-posts-masonry-column:first-child {
+  padding-left: 0;
 }
 
-/* If your Explore VisualGridTile uses a parent wrapper, make sure it does not override height. */
+
+.visual-masonry-img {
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+  background: #212227;
+}
+
 .visual-grid-tile {
   width: 100%;
   border-radius: 10px;
@@ -114,11 +103,9 @@
   box-shadow: 0 1px 8px rgba(20, 22, 25, 0.07);
   margin-bottom: 10px;
   transition: all 0.2s ease;
-  /* Force the tile itself to match the image’s height + any overlay icons: */
   cursor: pointer;
 }
 
-/* Optional “hover‐darken” overlay (no size change): */
 .visual-grid-tile::after {
   content: '';
   position: absolute;
@@ -134,7 +121,6 @@
   opacity: 0.5;
 }
 
-/* If you show a “stack” icon for multiple media files, keep it in a corner: */
 .visual-multi-stack-icon {
   position: absolute;
   top: 10px;
@@ -143,13 +129,11 @@
   pointer-events: none;
 }
 
-/* — Sentinel (for infinite scroll) — */
 .my-posts-sentinel {
   height: 1px;
   width: 100%;
 }
 
-/* — “Loading more…” & End‐of‐List — */
 .my-posts-loading-more,
 .my-posts-end-of-list {
   text-align: center;
@@ -158,14 +142,13 @@
   font-size: 1em;
 }
 
-/* — Responsive Adjustments — */
 @media (max-width: 900px) {
   .my-posts-masonry-grid {
     margin-left: -8px;
   }
   .my-posts-masonry-column {
     padding-left: 8px;
-    max-width: 240px; /* narrower columns on smaller screens */
+    max-width: 240px;
   }
 }
 

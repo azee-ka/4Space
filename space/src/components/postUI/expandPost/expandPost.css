@@ -487,7 +487,7 @@
     aspect-ratio: 1 / 1;
     background-color: rgba(81, 81, 81, 0.799);
     display: flex;
-    justify-content: center;
+    justify-content: center ;
     align-items: center;
     border-radius: 50%;
     transition: all 0.3s ease;

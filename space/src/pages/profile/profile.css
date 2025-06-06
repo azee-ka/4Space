@@ -1,11 +1,9 @@
 .profile-page {
-
-    /* background: radial-gradient(ellipse at center, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%); */
     color: white;
     height: 705px;
     width: 100%;
     box-sizing: border-box;
-        display: flex !important;
+    display: flex !important;
     gap: 20px;
     flex-direction: column !important;
     overflow: hidden;
@@ -29,6 +27,7 @@
     display: flex;
     align-items: flex-end;
 }
+
 .profile-top-panel h2 a {
     color: white;
     text-decoration: none;
@@ -54,10 +53,9 @@
     width: 100%;
     flex-grow: 1;
     box-sizing: border-box;
-     position: relative;
-     min-height: 0;
-     overflow-y: hidden;
-
+    position: relative;
+    min-height: 0;
+    overflow-y: hidden;
 }
 
 
@@ -81,13 +79,13 @@
     flex-direction: column;
     gap: 20px;
     overflow-y: auto;
-             padding: 0px 12px 0 0px;
+    padding: 0px 12px 0 0px;
 
 
 }
 
 .profile-card {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(12px);
     border-radius: 12px;
     padding: 20px;
@@ -103,12 +101,13 @@
     height: 110px;
     border-radius: 50%;
     margin: 0 auto 10px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 .profile-profile-image img {
     width: 100%;
     height: 100%;
@@ -155,19 +154,19 @@
 
 
 .highlight-section {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(8px);
     border-radius: 12px;
     padding: 15px;
     z-index: 0;
-     position: relative;
+    position: relative;
 }
 
 .highlight-section h3 {
     margin: 15px 4px;
     font-size: 1.2em;
-    color: rgba(255,255,255,0.8);
-} 
+    color: rgba(255, 255, 255, 0.8);
+}
 
 .highlights-grid {
     display: flex;
@@ -177,15 +176,16 @@
 
 .highlight-card {
     flex: 1;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 10px;
     padding: 16px;
     text-align: center;
     transition: all 0.3s ease;
     font-size: 1.1em;
 }
+
 .highlight-card:hover {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     transform: scale(1.03);
     cursor: pointer;
 }
