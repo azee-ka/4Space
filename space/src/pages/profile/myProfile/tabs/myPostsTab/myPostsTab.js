@@ -1,4 +1,5 @@
 // File: src/pages/profile/myProfile/tabs/myPostsTab/MyPostsTab.jsx
+
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Masonry from 'react-masonry-css';
 import './myPostsTab.css';
@@ -7,7 +8,7 @@ import useApi from '../../../../../utils/useApi';
 import { useAuth } from '../../../../../hooks/useAuth';
 
 // ExpandPostContext (for Thread posts)
-import { useExpandPostContext, ExpandPostProvider } from '../../../../../components/postUI/expandPost/expandPostContext';
+import { ExpandPostProvider } from '../../../../../components/postUI/expandPost/expandPostContext';
 import { usePostContext } from '../../../../../context/PostContext';
 
 // Re‐use the same cards from Explore:
@@ -21,67 +22,218 @@ const MyPostsTab = () => {
   const { authState } = useAuth();
   const username = authState?.current?.user?.username;
 
-  // 1) “allPosts” holds everything we fetched: an array of { id, post_type, post, author, stats, … }
-  const [allPosts, setAllPosts] = useState([]);
+  // — which sub‐tab is active: 'visual' or 'thread'
+  //    We default to reading from window.location.hash on mount
+  const getTabFromHash = () => {
+    const h = window.location.hash.replace('#', '');
+    return h === 'thread' ? 'thread' : 'visual';
+  };
+  const [activeTab, setActiveTab] = useState(getTabFromHash());
 
-  // 2) Which tab is active: 'visual' or 'thread'
-  const [activeTab, setActiveTab] = useState('visual');
+  // Whenever the hash changes in the URL bar, re‐sync activeTab:
+  useEffect(() => {
+    const onHashChange = () => {
+      const newTab = getTabFromHash();
+      setActiveTab(newTab);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
-  // 3) How many we display so far _for the active tab_ (start by PAGE_SIZE)
-  const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
+  // If there's no hash at all, ensure it defaults to #visual:
+  useEffect(() => {
+    if (!window.location.hash) {
+      window.history.replaceState(null, '', '#visual');
+    }
+  }, []);
 
-  // 4) Loading indicator
-  const [loading, setLoading] = useState(true);
+  // Whenever activeTab changes, push the correct hash:
+  const switchToTab = (tabKey) => {
+    if (tabKey !== activeTab) {
+      window.location.hash = `#${tabKey}`;
+      // The "hashchange" listener will call setActiveTab for us,
+      // but we can also set it immediately to avoid any lag:
+      setActiveTab(tabKey);
+    }
+  };
 
-  // 5) Sentinel ref for infinite scroll
+  // ---- VISUAL POSTS STATE ----
+  const [visualPosts, setVisualPosts] = useState([]);
+  const [visualNextOffset, setVisualNextOffset] = useState(0);
+  const [visualHasMore, setVisualHasMore] = useState(false);
+  const [visualCount, setVisualCount] = useState(0);
+  const [visualLoading, setVisualLoading] = useState(false);
+
+  // ---- THREAD POSTS STATE ----
+  const [threadPosts, setThreadPosts] = useState([]);
+  const [threadNextOffset, setThreadNextOffset] = useState(0);
+  const [threadHasMore, setThreadHasMore] = useState(false);
+  const [threadCount, setThreadCount] = useState(0);
+  const [threadLoading, setThreadLoading] = useState(false);
+
+  // — sentinel ref for infinite scroll (shared)
   const sentinelRef = useRef(null);
 
-  // 6) ExpandPostContext (for Thread posts)
+  // — ExpandPostContext (for Thread posts)
   const { handleExpandPostOpen } = usePostContext();
 
-  // 7) Fetch “allPosts” once on mount
+  // Helper: build API URL
+  const buildApiUrl = (type, offset = 0) => {
+    return `profile/posts/${username}/list/?post_type=${type}&limit=${PAGE_SIZE}&offset=${offset}`;
+  };
+
+  // ─── 1) FETCH INITIAL PAGE FOR “Visual” WHEN ACTIVE ───
   useEffect(() => {
-    const fetchAll = async () => {
-      if (!username) return;
-      setLoading(true);
+    if (!username) return;
+    if (activeTab !== 'visual') return;
+
+    // If we've already loaded a page of visuals, do not re‐fetch
+    if (visualPosts.length > 0) return;
+
+    const fetchVisualFirstPage = async () => {
+      setVisualLoading(true);
       try {
-        // Backend returns a paginated response: { count, next, previous, results: [...] }
-        const resp = await callApi(`profile/posts/${username}/list/`);
-        const fetched = Array.isArray(resp.data.results) ? resp.data.results : [];
-        setAllPosts(fetched);
+        const url = buildApiUrl('Visual', 0);
+        const resp = await callApi(url);
+        const data = resp.data; // { results: [...], next: <url|null>, count: <int> }
+
+        setVisualPosts(data.results || []);
+        setVisualCount(data.count || 0);
+
+        if (data.next) {
+          const urlObj = new URL(data.next);
+          const nextOffParam = urlObj.searchParams.get('offset');
+          setVisualNextOffset(nextOffParam ? parseInt(nextOffParam, 10) : null);
+          setVisualHasMore(true);
+        } else {
+          setVisualNextOffset(null);
+          setVisualHasMore(false);
+        }
       } catch (err) {
-        console.error('Error fetching profile posts:', err);
+        console.error('Error fetching visual page 1:', err);
+        setVisualPosts([]);
+        setVisualCount(0);
+        setVisualNextOffset(null);
+        setVisualHasMore(false);
       } finally {
-        setLoading(false);
+        setVisualLoading(false);
       }
     };
-    fetchAll();
-  }, [username]);
 
-  // Whenever we switch tabs, reset displayedCount back to PAGE_SIZE:
+    fetchVisualFirstPage();
+  }, [username, activeTab, visualPosts.length, callApi]);
+
+  // ─── 2) FETCH INITIAL PAGE FOR “Thread” WHEN ACTIVE ───
   useEffect(() => {
-    setDisplayedCount(PAGE_SIZE);
-  }, [activeTab]);
+    if (!username) return;
+    if (activeTab !== 'thread') return;
 
-  // 8) Derive “filteredPosts” based on activeTab
-  const filteredPosts = allPosts.filter(p => {
-    if (activeTab === 'visual') return p.post_type === 'Visual';
-    if (activeTab === 'thread') return p.post_type === 'Thread';
-    return false;
-  });
+    // If we've already loaded a page of threads, do not re‐fetch
+    if (threadPosts.length > 0) return;
 
-  // 9) Determine “has more?” (per‐tab)
-  const hasMore = displayedCount < filteredPosts.length;
+    const fetchThreadFirstPage = async () => {
+      setThreadLoading(true);
+      try {
+        const url = buildApiUrl('Thread', 0);
+        const resp = await callApi(url);
+        const data = resp.data;
 
-  // 10) Only show the first “displayedCount” items from filteredPosts
-  const postsToShow = filteredPosts.slice(0, displayedCount);
+        setThreadPosts(data.results || []);
+        setThreadCount(data.count || 0);
 
-  // 11) When sentinel comes into view, load more
-  const loadMore = useCallback(() => {
-    if (!hasMore) return;
-    setDisplayedCount(prev => Math.min(prev + PAGE_SIZE, filteredPosts.length));
-  }, [hasMore, filteredPosts.length]);
+        if (data.next) {
+          const urlObj = new URL(data.next);
+          const nextOffParam = urlObj.searchParams.get('offset');
+          setThreadNextOffset(nextOffParam ? parseInt(nextOffParam, 10) : null);
+          setThreadHasMore(true);
+        } else {
+          setThreadNextOffset(null);
+          setThreadHasMore(false);
+        }
+      } catch (err) {
+        console.error('Error fetching thread page 1:', err);
+        setThreadPosts([]);
+        setThreadCount(0);
+        setThreadNextOffset(null);
+        setThreadHasMore(false);
+      } finally {
+        setThreadLoading(false);
+      }
+    };
 
+    fetchThreadFirstPage();
+  }, [username, activeTab, threadPosts.length, callApi]);
+
+  // ─── 3) LOAD MORE (depending on activeTab) ───
+  const loadMore = useCallback(async () => {
+    if (activeTab === 'visual') {
+      if (visualLoading) return;
+      if (!visualHasMore || visualNextOffset === null) return;
+
+      setVisualLoading(true);
+      try {
+        const url = buildApiUrl('Visual', visualNextOffset);
+        const resp = await callApi(url);
+        const data = resp.data;
+
+        setVisualPosts(prev => [...prev, ...(data.results || [])]);
+
+        if (data.next) {
+          const urlObj = new URL(data.next);
+          const nextOffParam = urlObj.searchParams.get('offset');
+          setVisualNextOffset(nextOffParam ? parseInt(nextOffParam, 10) : null);
+          setVisualHasMore(true);
+        } else {
+          setVisualNextOffset(null);
+          setVisualHasMore(false);
+        }
+      } catch (err) {
+        console.error('Error fetching more visual posts:', err);
+        setVisualHasMore(false);
+      } finally {
+        setVisualLoading(false);
+      }
+    } else {
+      // activeTab === 'thread'
+      if (threadLoading) return;
+      if (!threadHasMore || threadNextOffset === null) return;
+
+      setThreadLoading(true);
+      try {
+        const url = buildApiUrl('Thread', threadNextOffset);
+        const resp = await callApi(url);
+        const data = resp.data;
+
+        setThreadPosts(prev => [...prev, ...(data.results || [])]);
+
+        if (data.next) {
+          const urlObj = new URL(data.next);
+          const nextOffParam = urlObj.searchParams.get('offset');
+          setThreadNextOffset(nextOffParam ? parseInt(nextOffParam, 10) : null);
+          setThreadHasMore(true);
+        } else {
+          setThreadNextOffset(null);
+          setThreadHasMore(false);
+        }
+      } catch (err) {
+        console.error('Error fetching more thread posts:', err);
+        setThreadHasMore(false);
+      } finally {
+        setThreadLoading(false);
+      }
+    }
+  }, [
+    activeTab,
+    visualLoading,
+    visualNextOffset,
+    visualHasMore,
+    threadLoading,
+    threadNextOffset,
+    threadHasMore,
+    callApi
+  ]);
+
+  // ─── 4) OBSERVER FOR “LOAD MORE” ───
   useEffect(() => {
     if (!sentinelRef.current) return;
     const observer = new IntersectionObserver(
@@ -98,7 +250,20 @@ const MyPostsTab = () => {
     return () => observer.disconnect();
   }, [loadMore]);
 
-  // 12) Masonry breakpoints (for Visual)
+  // ─── 5) EXPAND POST ───
+  const onExpand = (post, index) => {
+    const currentPath = window.location.pathname + window.location.hash;
+    const tabPosts = activeTab === 'visual' ? visualPosts : threadPosts;
+    handleExpandPostOpen(
+      post.id,
+      tabPosts.map(p => ({ id: p.id, post_type: p.post_type })),
+      currentPath,
+      index,
+      post.post_type
+    );
+  };
+
+  // ─── 6) RENDER ───
   const masonryBreakpoints = {
     default: 3,
     1200: 3,
@@ -106,54 +271,56 @@ const MyPostsTab = () => {
     600: 1,
   };
 
-  // 13) Handler for expanding ANY post (visual or thread):
-  const onExpand = (post, index) => {
-    // Build a “fullList” of just { id, post_type } – that’s what ExpandPostProvider expects
-    const fullList = postsToShow.map(p => ({ id: p.id, post_type: p.post_type }));
-    const currentPath = window.location.pathname + window.location.hash;
-    handleExpandPostOpen(post.id, fullList, currentPath, index, post.post_type);
-  };
+  const isVisual = activeTab === 'visual';
+  const displayedPosts = isVisual ? visualPosts : threadPosts;
+  const isLoadingFirstPage = isVisual
+    ? visualLoading && visualPosts.length === 0
+    : threadLoading && threadPosts.length === 0;
+  const hasAnyMore = isVisual ? visualHasMore : threadHasMore;
+  const isLoadingMore = isVisual
+    ? visualLoading && visualPosts.length > 0
+    : threadLoading && threadPosts.length > 0;
 
   return (
     <div className="my-posts-tab-container">
-      {/* — Tabs Header — */}
+      {/* — Sub‐Tabs Header — */}
       <div className="my-posts-tabs-header">
         <button
           className={`my-posts-tab-btn ${activeTab === 'visual' ? 'active' : ''}`}
-          onClick={() => setActiveTab('visual')}
+          onClick={() => switchToTab('visual')}
         >
           Visual
         </button>
         <button
           className={`my-posts-tab-btn ${activeTab === 'thread' ? 'active' : ''}`}
-          onClick={() => setActiveTab('thread')}
+          onClick={() => switchToTab('thread')}
         >
           Thread
         </button>
       </div>
 
-      {/* — Loading / No‐Posts States — */}
-      {loading && allPosts.length === 0 ? (
+      {/* — Loading first page — */}
+      {isLoadingFirstPage ? (
         <div className="my-posts-loading">Loading your posts…</div>
       ) : (
         <>
-          {filteredPosts.length === 0 ? (
+          {displayedPosts.length === 0 ? (
             <div className="my-posts-no-posts">
-              {activeTab === 'visual'
+              {isVisual
                 ? "You haven’t posted any visual posts yet!"
                 : "You haven’t posted any thread posts yet!"}
             </div>
           ) : (
             <>
-              {/* — Visual Tab: Masonry Grid of Fixed‐Height Thumbnails — */}
-              {activeTab === 'visual' && (
+              {/* — Visual Grid — */}
+              {isVisual && (
                 <div className="my-posts-masonry-wrapper">
                   <Masonry
                     breakpointCols={masonryBreakpoints}
                     className="my-posts-masonry-grid"
                     columnClassName="my-posts-masonry-column"
                   >
-                    {postsToShow.map((post, idx) => {
+                    {visualPosts.map((post, idx) => {
                       const firstMedia = post.post.media_files?.[0] || null;
                       const thumbnail = firstMedia
                         ? { file: firstMedia.file, media_type: firstMedia.media_type }
@@ -175,28 +342,28 @@ const MyPostsTab = () => {
                     })}
                   </Masonry>
 
-                  {/* Invisible sentinel for infinite‐scroll */}
+                  {/* Sentinel for infinite scroll */}
                   <div ref={sentinelRef} className="my-posts-sentinel" />
 
-                  {loading && postsToShow.length > 0 && (
+                  {isLoadingMore && (
                     <div className="my-posts-loading-more">Loading more…</div>
                   )}
                 </div>
               )}
 
-              {/* — Thread Tab: Vertical List (no Masonry) — */}
-              {activeTab === 'thread' && (
+              {/* — Thread List — */}
+              {!isVisual && (
                 <div className="my-thread-list">
-                  {postsToShow.map((post, idx) => (
+                  {threadPosts.map((post, idx) => (
                     <ExpandPostProvider key={post.id} postId={post.id} postData={post}>
                       <ThreadPostCard postId={post.id} index={idx} />
                     </ExpandPostProvider>
                   ))}
 
-                  {/* Sentinel at bottom of thread list */}
+                  {/* Sentinel at bottom */}
                   <div ref={sentinelRef} className="my-posts-sentinel" />
 
-                  {loading && postsToShow.length > 0 && (
+                  {isLoadingMore && (
                     <div className="my-posts-loading-more">Loading more…</div>
                   )}
                 </div>
