@@ -35,17 +35,17 @@ const CommunitiesDashboard = () => {
 
       {/* Stat Cards */}
       <section className="dashboard-grid">
-        {stats.map(([title, value, subtext, type], idx) => (
-          <div key={idx} className="stat-card">
-            <div className="stat-glow-layer" />
-            <div className="stat-content">
-              <h3>{title}</h3>
-              <p className="main-value">{value}</p>
-              <p className={`subtext ${type}`}>{subtext}</p>
-            </div>
-          </div>
-        ))}
-      </section>
+    {stats.map(([title, value, subtext, type], idx) => (
+      <div key={idx} className="stat-card">
+        <div className="stat-glow-layer" />
+        <div className="stat-content">
+          <h3>{title}</h3>
+          <p className="main-value">{value}</p>
+          <p className={`subtext ${type}`}>{subtext}</p>
+        </div>
+      </div>
+    ))}
+  </section>
 
       {/* Activity Feed + Graph */}
       <section className="dashboard-split">
