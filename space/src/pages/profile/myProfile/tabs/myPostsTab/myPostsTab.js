@@ -199,9 +199,6 @@ const MyPostsTab = () => {
                   {loading && postsToShow.length > 0 && (
                     <div className="my-posts-loading-more">Loading more…</div>
                   )}
-                  {!hasMore && (
-                    <div className="my-posts-end-of-list">You’ve reached the end of your posts.</div>
-                  )}
                 </div>
               )}
             </>
