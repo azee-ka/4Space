@@ -1,15 +1,16 @@
-/* === GLOBAL RESET === */
-.repo-page * {
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-}
+/* src/components/repositories.css */
 
 /* === PAGE LAYOUT === */
 .repo-page {
-  padding: 2rem;
-  color: #e0e0e0;
-  height: 100%;
   width: 100%;
+  padding: 0rem 2rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  font-family: 'Segoe UI', sans-serif;
+  color: #ecf1f8;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* === HEADER === */
@@ -17,12 +18,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 2rem;
 }
 .repo-header h1 {
-  margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0;
 }
 
 /* === BUTTON STYLES === */
@@ -36,7 +38,7 @@
   transition: background 0.2s, transform 0.1s;
 }
 .btn-primary {
-  background: #4fd1c5;
+  background: #4fd1c4d7;
   color: #121217;
 }
 .btn-primary:hover {
@@ -59,35 +61,69 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+  grid-auto-rows: 225px;
 }
 
 /* === REPO CARD === */
 .repo-card {
+  position: relative;
+  overflow: hidden;
   background: #1e1e25;
   border: 1px solid #2c2c33;
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 1rem;
+  box-sizing: border-box;
   cursor: pointer;
+
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 10px;
+  height: 100%;
   transition: transform 0.2s, box-shadow 0.2s;
 }
+
 .repo-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+.repo-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+.repo-card:hover::before {
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(79, 209, 197, 0.65),
+    rgba(126, 232, 217, 0.85)
+  );
 }
 
 /* Top row with title + badge */
 .repo-card-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  height: 46px;
 }
 .repo-card-top h2 {
   margin: 0;
   font-size: 1.25rem;
   color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .badge {
   background: #4fd1c5;
@@ -98,32 +134,77 @@
   border-radius: 4px;
 }
 
-/* description */
+/* description: clamp to 3 lines */
 .repo-desc {
-  margin: 0.75rem 0;
   font-size: 0.9rem;
   color: #bbb;
   flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin: 0 !important;
 }
 
 /* tags */
 .repo-tags {
-  margin-top: 0.75rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.3rem;
+  margin: 0 !important;
 }
-.tag {
+.repo-tags .tag {
   background: #333;
   color: #ccc;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   font-size: 0.75rem;
   border-radius: 4px;
 }
+.repo-tags .tag.more {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  background: #444;
+}
 
-/* === MODAL OVERLAY === */
+/* meta row */
+.repo-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: #999;
+  z-index: 2;
+  margin-top: 1rem !important;
+}
+
+/* slug ellipsis */
+.repo-slug {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;             /* allow shrinking */
+  overflow: hidden;
+}
+.repo-slug .slug-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.repo-slug .icon-style {
+  flex-shrink: 0;
+}
+
+/* date & users spans get default styling */
+.repo-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* === MODAL OVERLAY & CARD (unchanged) === */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -134,8 +215,6 @@
   padding: 1rem;
   z-index: 1000;
 }
-
-/* === MODAL CARD === */
 .modal-card {
   background: #1e1e25;
   border: 1px solid #2c2c33;
@@ -163,8 +242,6 @@
   font-size: 1.4rem;
   color: #fff;
 }
-
-/* form fields */
 .modal-card label {
   display: flex;
   flex-direction: column;
@@ -187,9 +264,10 @@
   outline: none;
   border-color: #4fd1c5;
 }
-.modal-card textarea { resize: vertical; min-height: 80px; }
-
-/* checkbox row */
+.modal-card textarea {
+  resize: vertical;
+  min-height: 80px;
+}
 .checkbox {
   flex-direction: row;
   align-items: center;
@@ -199,8 +277,6 @@
   width: auto;
   margin: 0;
 }
-
-/* modal footer */
 .modal-actions {
   display: flex;
   justify-content: flex-end;

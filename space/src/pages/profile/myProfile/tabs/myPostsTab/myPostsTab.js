@@ -121,7 +121,7 @@ const MyPostsTab = () => {
     };
 
     fetchVisualFirstPage();
-  }, [username, activeTab, visualPosts.length, callApi]);
+  }, [activeTab, visualPosts.length]);
 
   // ─── 2) FETCH INITIAL PAGE FOR “Thread” WHEN ACTIVE ───
   useEffect(() => {
@@ -162,7 +162,7 @@ const MyPostsTab = () => {
     };
 
     fetchThreadFirstPage();
-  }, [username, activeTab, threadPosts.length, callApi]);
+  }, [username, activeTab, threadPosts.length]);
 
   // ─── 3) LOAD MORE (depending on activeTab) ───
   const loadMore = useCallback(async () => {

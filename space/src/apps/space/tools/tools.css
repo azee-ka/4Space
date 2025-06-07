@@ -1,24 +1,28 @@
 /* Layout */
 .space-tools-page {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  overflow-y: auto;
-  box-sizing: border-box;
-  padding-left: 10px;
+    width: 100%;
+    padding: 0rem 2rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    font-family: 'Segoe UI', sans-serif;
+    color: #ecf1f8;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .space-tools-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
 }
 
-.space-tools-header h2 {
-  color: #f0f0f0;
-  margin: 0;
+.space-tools-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0rem;
 }
 
 .space-tools-content {

@@ -1,26 +1,29 @@
 .space-projects-page {
-  width: 100%;
-  height: 100%;
-  padding-right: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-sizing: border-box;
-  color: white;
+    width: 100%;
+    padding: 0rem 2rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    font-family: 'Segoe UI', sans-serif;
+    color: #ecf1f8;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 /* Header */
 .space-projects-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-right: 2em;
-  margin-left: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
 }
 
-.space-projects-header h2 {
-  font-size: 1.5em;
-  margin: 0;
+.space-projects-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0rem;
 }
 
 .projects-view-toggle {
@@ -59,7 +62,7 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 10px 2em 20px 10px;
+  /* padding: 10px 2em 20px 10px; */
   box-sizing: border-box;
   overflow-y: auto;
 }
