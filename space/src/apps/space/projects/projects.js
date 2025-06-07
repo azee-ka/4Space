@@ -58,7 +58,7 @@ const SpaceProjects = () => {
   return (
     <div className="space-projects-page">
       <div className="space-projects-header">
-        <h2>My Projects</h2>
+        <h1>My Projects</h1>
         <div className="projects-view-toggle">
           <button
             className={viewMode === "grid" ? "active" : ""}

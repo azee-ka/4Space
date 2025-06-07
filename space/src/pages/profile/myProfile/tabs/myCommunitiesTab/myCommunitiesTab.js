@@ -96,7 +96,7 @@ const MyCommunitiesTab = () => {
     };
 
     fetchFirstExchanges();
-  }, [username, activeTab, exchanges.length, callApi]);
+  }, [username, activeTab, exchanges.length]);
 
   // Load more exchanges if sentinel is visible
   const loadMoreExchanges = useCallback(async () => {
@@ -124,7 +124,7 @@ const MyCommunitiesTab = () => {
     } finally {
       setLoadingExchanges(false);
     }
-  }, [loadingExchanges, nextOffset, hasMoreExchanges, username, callApi]);
+  }, [loadingExchanges, nextOffset, hasMoreExchanges, username]);
 
   useEffect(() => {
     if (activeTab !== 'exchanges') return;
@@ -167,7 +167,7 @@ const MyCommunitiesTab = () => {
     };
 
     fetchCommunities();
-  }, [username, activeTab, communities.length, callApi]);
+  }, [activeTab, communities.length]);
 
   // ─── NAVIGATION HANDLERS ───
   const onExpandExchange = (exchangeId) => {

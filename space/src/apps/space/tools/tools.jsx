@@ -119,7 +119,7 @@ const SpaceTools = () => {
   return (
     <div className="space-tools-page">
       <div className="space-tools-header">
-        <h2>Tools</h2>
+        <h1>Tools</h1>
       </div>
       <div className="space-tools-content">
         {tools.map((tool, i) => (

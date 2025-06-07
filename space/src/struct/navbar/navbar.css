@@ -394,31 +394,27 @@
 
 
 .navbar-search-container {
+  flex: 1;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 42px;
-  width: 350px;
-  /* background: linear-gradient(135deg,  rgba(170, 74, 208, 0.649), rgba(58, 55, 155, 0.592), rgba(44, 70, 102, 0.7)); */
+  height: 40px;
+  width: 280px;
   background-color: rgba(50, 50, 50, 0.247);
   border-radius: 30px;
   padding: 2px;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   box-shadow: 0 0 4px 3px rgba(99, 89, 89, 0.255);
-  /* box-shadow: 0 4px 10px rgba(156, 89, 182, 0.212),
-              inset 0 0 3px rgba(255, 255, 255, 0.05); */
+  border: 2px solid rgba(128, 128, 128, 0);
   transition: all 0.4s ease;
-        border: 2px solid rgba(128, 128, 128, 0);
 }
 
 .navbar-search-container:focus-within {
-  /* border-color: rgba(167, 139, 250, 0.3); */
-      border: 2px solid rgba(128, 128, 128, 0.226);
-  /* box-shadow: 0 0 12px 4px rgba(103, 232, 249, 0.3), 0 0 4px rgba(255, 255, 255, 0.2); */
+      border: 2px solid rgba(128, 128, 128, 0.106);
+        width: 370px;
 }
-
 
 
 

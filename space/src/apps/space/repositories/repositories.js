@@ -1,7 +1,14 @@
+// src/components/SpaceRepositories.js
 import React, { useEffect, useState } from "react";
 import "./repositories.css";
 import { useNavigate } from "react-router-dom";
 import useApi from "../../../utils/useApi";
+import {
+  FiUsers,
+  FiLink,
+  FiCalendar,
+  FiClock,
+} from "react-icons/fi";
 
 export default function SpaceRepositories() {
   const { callApi } = useApi();
@@ -15,6 +22,8 @@ export default function SpaceRepositories() {
     tags: "",
   });
   const navigate = useNavigate();
+
+  const fmt = (dt) => new Date(dt).toLocaleDateString();
 
   useEffect(() => {
     (async () => {
@@ -52,39 +61,71 @@ export default function SpaceRepositories() {
       </header>
 
       <section className="repo-grid">
-        {repos.map((r) => (
-          <article
-            key={r.id}
-            className="repo-card"
-            onClick={() => navigate(`/space/repositories/r/${r.id}`)}
-          >
-            <div className="repo-card-top">
-              <h2>{r.title}</h2>
-              {r.is_public && <span className="badge">Public</span>}
-            </div>
-            <p className="repo-desc">
-              {r.description || "No description provided."}
-            </p>
-            {r.tags && (
-              <div className="repo-tags">
-                {r.tags.split(",").map((t) => (
-                  <span key={t.trim()} className="tag">
-                    {t.trim()}
-                  </span>
-                ))}
+        {repos.map((r) => {
+          const tagsArray = r.tags
+            ? r.tags.split(",").map((t) => t.trim()).filter(Boolean)
+            : [];
+          const maxVisible = 3;
+          const visible = tagsArray.slice(0, maxVisible);
+          const extraCount = tagsArray.length - visible.length;
+
+          return (
+            <article
+              key={r.id}
+              className="repo-card"
+              onClick={() => navigate(`/space/repositories/r/${r.id}`)}
+            >
+              <div className="repo-card-top">
+                <h2>{r.title}</h2>
+                {r.is_public ? (
+                  <span className="badge">Public</span>
+                ) : (
+                  <span className="badge">Private</span>
+                )}
               </div>
-            )}
-          </article>
-        ))}
+
+              <p className="repo-desc">
+                {r.description || "No description provided."}
+              </p>
+
+              {tagsArray.length > 0 && (
+                <div className="repo-tags">
+                  {visible.map((t) => (
+                    <span key={t} className="tag">
+                      {t}
+                    </span>
+                  ))}
+                  {extraCount > 0 && (
+                    <span className="tag more">+{extraCount}</span>
+                  )}
+                </div>
+              )}
+
+              <div className="repo-meta">
+                <span className="repo-slug">
+                  <FiLink className='icon-style' />
+                  <span className="slug-text">{r.slug}</span>
+                </span>
+                <span>
+                  <FiCalendar /> {fmt(r.created_at)}
+                </span>
+                <span>
+                  <FiClock /> {fmt(r.updated_at)}
+                </span>
+                <span>
+                  <FiUsers /> {r.collaborators?.length || 0}
+                </span>
+              </div>
+            </article>
+          );
+        })}
       </section>
 
       {showModal && (
         <div className="modal-backdrop" onClick={() => setShowModal(false)}>
-          <div
-            className="modal-card"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>New Repository</h3>
+
             <label>
               Title
               <input
@@ -93,6 +134,7 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
+
             <label>
               Slug
               <input
@@ -101,6 +143,7 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
+
             <label>
               Description
               <textarea
@@ -109,6 +152,7 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
+
             <label className="checkbox">
               <input
                 type="checkbox"
@@ -118,6 +162,7 @@ export default function SpaceRepositories() {
               />
               Make Public
             </label>
+
             <label>
               Tags
               <input
@@ -127,6 +172,7 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
+
             <footer className="modal-actions">
               <button className="btn-primary" onClick={handleCreate}>
                 Create
