@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import useApi from "../../../utils/useApi";
 import { formatDateTime } from "../../../utils/formatDateTime";
+import useTabSessionSync from "../../../hooks/useTabSessionSync";
 
 const toolIcons = {
   richtext: <FiFileText />,
@@ -33,6 +34,8 @@ const SpaceProjects = () => {
   const { callApi } = useApi();
   const [projects, setProjects] = useState([]);
   const [viewMode, setViewMode] = useState("grid");
+
+  const { openProjectInNewTab } = useTabSessionSync();
 
   useEffect(() => {
     async function fetchProjects() {
@@ -97,6 +100,10 @@ const SpaceProjects = () => {
             return (
               <a
                 key={project.id}
+                onClick={(e) => {
+                  e.preventDefault();
+                  openProjectInNewTab(href);
+                }}
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -126,6 +133,10 @@ const SpaceProjects = () => {
                   return (
                     <a
                       key={project.id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        openProjectInNewTab(href);
+                      }}
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"

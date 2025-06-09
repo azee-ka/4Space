@@ -3,10 +3,12 @@ import { useAuth } from '../../../hooks/useAuth';
 import './profileMenu.css';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { useNavigate } from 'react-router-dom';
+import useTabSessionSync from '../../../hooks/useTabSessionSync';
 
 const ProfileMenu = ({ profileData, onClose }) => {
     const { authState, logout, switchProfile } = useAuth();
     const navigate = useNavigate();
+const { openProjectInNewTab } = useTabSessionSync();
 
     const currentUsername = authState.current?.user?.username;
     const otherAccounts = authState?.accounts?.filter(a => a.user.username !== currentUsername);
@@ -48,27 +50,33 @@ const ProfileMenu = ({ profileData, onClose }) => {
 
             {/* Other Accounts */}
             {otherAccounts.length > 0 && (
-                <section className="profile-other-accounts">
-                    <div className="profile-section-subheader">Other Accounts</div>
-                    <div className="account-list">
-                        {otherAccounts.map(acc => (
-                            <div
-                                key={acc?.user?.username}
-                                className="account-item"
-                                onClick={() => switchProfile(acc)}
-                            >
-                                <div className="account-avatar">
-                                    <ProfilePicture src={acc?.user?.profile_image} />
-                                </div>
-                                <div className="account-meta">
-                                    <p className="account-name">{acc?.first_name} {acc?.last_name}</p>
-                                    <p className="account-username">@{acc?.username}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
+  <section className="profile-other-accounts">
+    <div className="profile-section-subheader">Other Accounts</div>
+    <div className="account-list">
+      {otherAccounts.map(acc => (
+        <div
+          key={acc?.user?.username}
+          className="account-item"
+          onClick={() => 
+            openProjectInNewTab('/', {
+              user: acc.user,
+              token: acc.token,
+            })
+          }
+        >
+          <div className="account-avatar">
+            <ProfilePicture src={acc?.user?.profile_image} />
+          </div>
+          <div className="account-meta">
+            <p className="account-name">{acc.user.first_name} {acc.user.last_name}</p>
+            <p className="account-username">@{acc.user.username}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
 
             {/* Add Account */}
             <section>

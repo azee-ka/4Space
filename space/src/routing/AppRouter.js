@@ -48,6 +48,7 @@ import { CreateCommunityProvider } from '../context/CreateCommunityContext';
 import SpaceRepositories from '../apps/space/repositories/repositories';
 import RepositoryView from '../apps/space/repositories/repository/repositoryView';
 import CommunityPage from '../apps/communities/community/community';
+import { Space } from 'lucide-react';
 
 
 const AppRouter = () => {
@@ -73,7 +74,7 @@ const AppRouter = () => {
 
 
         // Space
-        { name: 'Space Dashboard', path: '/space', component: <SpaceDashboard />, key: 'SpaceDashboard' },
+        { name: 'Space', path: '/space/', component: <Space />, key: 'Space' },
         { name: 'Space Dashboard', path: '/space/dashboard', component: <SpaceDashboard />, key: 'SpaceDashboard' },
         { name: 'Space Portfolio', path: '/space/portfolio', component: <SpacePortfolio />, key: 'SpacePortfolio' },
         { name: 'Space Projects', path: '/space/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
@@ -88,7 +89,7 @@ const AppRouter = () => {
         { name: 'Latex Editor', path: '/space/project/:projectId/latex-editor', component: <LaTeXEditor />, key: 'LaTeXEditor' },
         { name: 'Markdown Editor', path: '/space/project/:projectId/markdown-editor', component: <MarkdownEditor />, key: 'MarkdownEditor' },
         { name: 'Notebook', path: '/space/project/:projectId/notebook', component: <NotebookEditor />, key: 'NotebookEditor' },
-        { name: 'Calculator', path: '/space//calculator', component: <Calculator />, key: 'Calculator' },
+        { name: 'Calculator', path: '/space/calculator', component: <Calculator />, key: 'Calculator' },
 
 
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },

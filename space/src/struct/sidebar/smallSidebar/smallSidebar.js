@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faStream, faLayerGroup, faSearch, faChartBar, faGear, faUser, faChartLine, faUserGroup, faPenToSquare, faTools, faBook, faCodeBranch, faDiagramProject } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faStream, faLayerGroup, faSearch, faChartBar, faGear, faUser, faChartLine, faUserGroup, faPenToSquare, faTools, faBook, faCodeBranch, faDiagramProject, faNetworkWired, faProjectDiagram, faDna, faSitemap, faSatellite, faSatelliteDish, faBraille, faNeuter } from '@fortawesome/free-solid-svg-icons';
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import SearchSidebar from '../searchSidebar/searchSidebar';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
@@ -12,6 +12,25 @@ import { useModeContext } from '../../../context/modeContext';
 import CreateSpaceTulip from '../../../apps/space/createSpaceTulip/createSpaceTulip';
 import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
 import { useDevice } from '../../../context/DeviceContext';
+import WorkspaceIcon from './WorkspaceIcon';
+
+
+import {
+  DashboardIcon,
+  TimelineIcon,
+  ExploreIcon,
+  SearchIcon,
+  MessagesIcon,
+  CreateIcon,
+  ProjectsIcon,
+  LibraryIcon,
+  RepoIcon,
+  ToolsIcon,
+  SettingsIcon,
+  ProfileIcon
+} from './CustomIcons';
+
+
 
 const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     const { isM } = useDevice();
@@ -39,6 +58,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         { icon: <FontAwesomeIcon icon={faPenToSquare} />, label: 'Create Community', onClick: () => openCreateCommunityOverlay(window.location.pathname), type: 'button' },
     ];
     const spaceIcons = [
+        { icon: <WorkspaceIcon size={50} color="#00f0ff" />, label: 'Space', path: '/space/', type: 'link' },
         { icon: <FontAwesomeIcon icon={faChartLine} />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
         { icon: <FontAwesomeIcon icon={faDiagramProject} />, label: 'Projects', path: '/space/projects', type: 'link' },
         { icon: <FontAwesomeIcon icon={faBook} />, label: 'Library', path: '/space/library', type: 'link' },
