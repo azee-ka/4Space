@@ -3,7 +3,7 @@
   right: 75px;
   position: absolute;
   width: 300px;
-  padding: 16px 14px;
+  padding: 6px 14px 16px 14px;
   background: rgba(255,255,255,0.06);
   backdrop-filter: blur(23px);
   border: 1px solid rgba(255,255,255,0.08);
@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding-bottom: 6px;
+  /* padding-bottom: 6px; */
 }
 
 .settings-title-row h3 {
@@ -376,12 +376,21 @@ justify-content: space-between;
 /* Light mode overrides (keep your existing overrides here) */
 [data-theme="light"] .display-settings-container {
   background:#fff !important; color:#23272e !important;
-  border:1px solid #e8eaf0; box-shadow:0 8px 22px rgba(180,200,230,0.13);
+  border: 1px solid #e8eaf0; box-shadow:0 8px 22px rgba(180,200,230,0.13);
 }
 
-
+[data-theme="light"] .display-setting select {
+    background-color: #f3f6ff;
+    color: gray;
+    outline: none;
+}
 [data-theme="light"] .display-setting select:hover {
-    background-color: #e8eaf0;
+    background-color: #c5c6c8ad;
+    color: gray;
+}
+
+[data-theme="light"] .display-setting label {
+    color: #636363;
 }
 
 [data-theme="light"] .display-setting input[type="range"] {
@@ -399,7 +408,7 @@ justify-content: space-between;
 }
 
 [data-theme="light"] .slider-value {
-    color: #9297a3;
+    color: #8b8b8b;
 }
 
 [data-theme="light"] .color-swatch {

@@ -1,24 +1,24 @@
 // CustomIcons.js
 import React from "react";
 
-// Neon & light palettes
+// Neon‐cyan & green palettes (balanced mix)
 const DARK_PALETTE = {
-  color: "#00E5FF",
-  accent: "#00FF9D",
-  glow: "#00FF9D",
-  icon: "#00f0ff",
-  gray: "#23272e",
-  text: "#fff",
-  bubble: "#00e5ff",
+  color:  "#00CFFF",            // medium cyan
+  accent: "#00E5A3",            // soft green
+  glow:   "#00E5A3",
+  icon:   "#00CFFF",
+  gray:   "#23272e",
+  text:   "#ffffff",
+  bubble: "rgba(0,207,255,0.1)",
 };
 const LIGHT_PALETTE = {
-  color: "#0091c2",
-  accent: "#18cfa2",
-  glow: "#33b4e7",
-  icon: "#0070c0",
-  gray: "#23272e",
-  text: "#23272e",
-  bubble: "#d1f2fb",
+  color:  "#3399FF",
+  accent: "#33CC99",
+  glow:   "#33CC99",
+  icon:   "#0070c0",
+  gray:   "#23272e",
+  text:   "#23272e",
+  bubble: "rgba(51,153,255,0.1)",
 };
 const getPalette = (mode) => (mode === "light" ? LIGHT_PALETTE : DARK_PALETTE);
 
@@ -127,46 +127,108 @@ export function MessagesIcon({ size = 36, color, accent, mode = "dark" }) {
 
 
 // WORKSPACE
-export function WorkspaceIcon({ size = 36, color, mode = "dark" }) {
+export function WorkspaceIcon({ size = 36, color, accent, mode = "dark" }) {
   const palette = getPalette(mode);
-  color = color || palette.icon;
+  const base = color  || palette.color;   // cyan
+  const acc  = accent || palette.accent;  // green
+
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 64 64"
       fill="none"
-      style={glowFilter(color, mode)}
+      style={glowFilter(acc, mode)}
     >
-      <circle cx="32" cy="32" r="9" fill={color} opacity="0.1" />
+      <defs>
+        <linearGradient id="wsGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={base} />
+          <stop offset="100%" stopColor={acc} />
+        </linearGradient>
+      </defs>
+
+      {/* Background circle with gradient */}
+      <circle cx="32" cy="32" r="9" fill="url(#wsGrad)" opacity="0.1" />
+
+      {/* Central circle */}
       <circle
         cx="32"
         cy="32"
         r="6"
-        fill={color}
-        stroke={color}
+        fill={base}
+        stroke={acc}
         strokeWidth="2.5"
-        style={glowFilter(color, mode)}
+        style={glowFilter(acc, mode)}
       />
-      <circle cx="14" cy="12" r="3" fill={color} />
+
+      {/* Node circles */}
+      <circle cx="14" cy="12" r="3"   fill={acc} stroke={base} strokeWidth="1" />
+      <circle cx="53" cy="43" r="3.3" fill={acc} stroke={base} strokeWidth="1" />
+      <circle cx="25" cy="52" r="3"   fill={acc} stroke={base} strokeWidth="1" />
+      <circle cx="13" cy="40" r="2.8" fill={acc} stroke={base} strokeWidth="1" />
+
+      {/* Polygon accent shape */}
       <polygon
         points="47,13 52,19 50,27 43,29 39,22 41,15"
-        fill={color}
-        stroke={color}
+        fill="url(#wsGrad)"
+        stroke={acc}
         strokeWidth="0.8"
       />
-      <circle cx="53" cy="43" r="3.3" fill={color} />
-      <circle cx="25" cy="52" r="3" fill={color} />
-      <circle cx="13" cy="40" r="2.8" fill={color} />
-      <polyline points="32,32 22,22 14,12" stroke={color} strokeWidth="1.3" strokeLinecap="round" fill="none" />
-      <polyline points="32,32 43,24 47,13" stroke={color} strokeWidth="1.3" strokeLinecap="round" fill="none" />
-      <line x1="32" y1="32" x2="53" y2="43" stroke={color} strokeWidth="1.1" strokeLinecap="round" />
-      <line x1="32" y1="32" x2="25" y2="52" stroke={color} strokeWidth="1.1" strokeLinecap="round" />
-      <polyline points="32,32 20,36 13,40" stroke={color} strokeWidth="1" strokeLinecap="round" fill="none" />
-      <circle cx="24" cy="28" r="0.9" fill={color} opacity="0.6" />
-      <circle cx="41" cy="34" r="0.9" fill={color} opacity="0.6" />
-      <path d="M14 12 Q22 20 32 32" stroke={color} strokeWidth="0.7" opacity="0.4" fill="none" />
-      <path d="M47 13 Q48 28 53 43" stroke={color} strokeWidth="0.7" opacity="0.4" fill="none" />
+
+      {/* Connecting lines */}
+      <polyline
+        points="32,32 22,22 14,12"
+        stroke="url(#wsGrad)"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <polyline
+        points="32,32 43,24 47,13"
+        stroke="url(#wsGrad)"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <line
+        x1="32" y1="32" x2="53" y2="43"
+        stroke="url(#wsGrad)"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
+      <line
+        x1="32" y1="32" x2="25" y2="52"
+        stroke="url(#wsGrad)"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
+      <polyline
+        points="32,32 20,36 13,40"
+        stroke="url(#wsGrad)"
+        strokeWidth="1"
+        strokeLinecap="round"
+        fill="none"
+      />
+
+      {/* Tiny accent dots */}
+      <circle cx="24" cy="28" r="0.9" fill={acc} opacity="0.6" />
+      <circle cx="41" cy="34" r="0.9" fill={acc} opacity="0.6" />
+
+      {/* Decorative curves */}
+      <path
+        d="M14 12 Q22 20 32 32"
+        stroke="url(#wsGrad)"
+        strokeWidth="0.7"
+        opacity="0.4"
+        fill="none"
+      />
+      <path
+        d="M47 13 Q48 28 53 43"
+        stroke="url(#wsGrad)"
+        strokeWidth="0.7"
+        opacity="0.4"
+        fill="none"
+      />
     </svg>
   );
 }
