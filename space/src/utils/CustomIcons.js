@@ -100,7 +100,9 @@ export function MessagesIcon({ size = 36, color, accent, mode = "dark" }) {
           <stop offset="100%" stopColor={accent} />
         </linearGradient>
       </defs>
-      <g style={glowFilter(accent, mode)}>
+
+      <g style={glowFilter(accent, mode)} transform="translate(0 -5)">
+        {/* Bubble background with glow */}
         <path
           d="M 18 16 h 28 a 18 18 0 0 1 9 9 v 25 a 12 12 0 0 1 -9 9 h -14 l -8 2 v -7 h -8 a 22 22 0 0 1 -9 -9 v -20 a 11 11 0 0 1 9 -9 z"
           fill="url(#msgGlass)"
@@ -108,18 +110,21 @@ export function MessagesIcon({ size = 36, color, accent, mode = "dark" }) {
           strokeWidth="3"
           strokeLinejoin="round"
         />
+
+        {/* Inner wave path */}
+        <path
+          d="M22 36 Q28 42 34 36 Q40 30 46 36"
+          stroke="url(#msgGrad)"
+          strokeWidth="5"
+          fill="none"
+          strokeLinecap="round"
+        />
       </g>
-      <path
-        d="M22 36 Q28 42 34 36 Q40 30 46 36"
-        stroke="url(#msgGrad)"
-        strokeWidth="4"
-        fill="none"
-        strokeLinecap="round"
-        style={glowFilter(accent, mode)}
-      />
     </svg>
   );
 }
+
+
 
 // WORKSPACE
 export function WorkspaceIcon({ size = 36, color, mode = "dark" }) {
@@ -526,29 +531,6 @@ export const SystemIcon = ({ filled }) => (
   </svg>
 );
 
-// NINE DOT
-export const NineDotIcon = ({ style = {}, color, mode = null, onClick }) => {
-    let resolvedColor = color;
-    if (!resolvedColor && mode === 'dark') resolvedColor = '#fff';
-    if (!resolvedColor && mode === 'light') resolvedColor = '#23272e';
-    return (
-        <svg
-            className="nine-dot-icon"
-            onClick={onClick}
-            style={{ color: resolvedColor, ...style }}
-            width="1em"
-            height="1em"
-            viewBox="0 0 24 24"
-            fill="none"
-        >
-            {[5, 12, 19].flatMap(cx =>
-                [5, 12, 19].map(cy => (
-                    <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2" fill="currentColor" />
-                ))
-            )}
-        </svg>
-    );
-};
 
 // CHAT BUBBLE
 export const ChatIcon = ({ style = {}, color, mode = null, ...props }) => {
@@ -575,3 +557,151 @@ export const ChatIcon = ({ style = {}, color, mode = null, ...props }) => {
         </svg>
     );
 };
+
+
+
+
+
+
+// NOTIFICATION
+export function NotificationsIcon({ size = 36, color, accent, mode = "dark" }) {
+  const palette = getPalette(mode);
+  color = color || palette.icon;
+  accent = accent || palette.accent;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      style={glowFilter(accent, mode)}
+    >
+      <defs>
+        <linearGradient id="notifGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={color} />
+          <stop offset="100%" stopColor={accent} />
+        </linearGradient>
+      </defs>
+      {/* Bell Body */}
+      <g transform="scale(1.25) translate(-5.4 -4.4)">
+  <path
+    d="M32 6c-13 0-17 10-17 20v9c0 4.5-3.5 9-6.5 10h47c-3-1-6.5-5.5-6.5-10v-9c0-10-4-20-17-20z"
+    fill="url(#notifGrad)"
+    stroke={accent}
+    strokeWidth="2"
+    style={glowFilter(accent, mode)}
+  />
+</g>
+
+      {/* Clapper */}
+      <circle
+        cx="32"
+        cy="60"
+        r="4"
+        fill={accent}
+        stroke={palette.text}
+        strokeWidth="1"
+        style={glowFilter(accent, mode)}
+      />
+    </svg>
+  );
+}
+
+
+
+
+
+
+export function NineDotIcon({ size = 36, color, accent, mode = "dark" }) {
+  const palette = getPalette(mode);
+  color = color || palette.icon;
+  accent = accent || palette.accent;
+
+  const positions = [16, 32, 48];
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <g transform="scale(1.45) translate(-10.5 -10.5)">
+        {positions.map((cx, i) =>
+          positions.map((cy, j) => (
+            <circle
+              key={`${i}-${j}`}
+              cx={cx}
+              cy={cy}
+              r="4.5"
+              fill={color}
+              stroke={accent}
+              strokeWidth="1.2"
+              style={glowFilter(accent, mode)}
+            />
+          ))
+        )}
+      </g>
+    </svg>
+  );
+}
+
+
+
+
+
+export function ControlCenterIcon({ size = 36, color, accent, mode = "dark" }) {
+  const palette = getPalette(mode);
+  color = color || palette.icon;
+  accent = accent || palette.accent;
+
+  const trackColor = mode === "light" ? "#444" : "#ddd";
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <g transform="scale(1.2) translate(-6 -6)">
+        {/* Slider Tracks */}
+        {[16, 32, 48].map((x, i) => (
+          <line
+            key={`track-${i}`}
+            x1={x}
+            y1={8}
+            x2={x}
+            y2={56}
+            stroke={trackColor}
+            strokeWidth="4"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+        ))}
+
+        {/* Slider Handles */}
+        <circle
+          cx="16"
+          cy="22"
+          r="6"
+          fill={color}
+          stroke={accent}
+          strokeWidth="1.5"
+          style={glowFilter(accent, mode)}
+        />
+        <circle
+          cx="32"
+          cy="36"
+          r="6"
+          fill={color}
+          stroke={accent}
+          strokeWidth="1.5"
+          style={glowFilter(accent, mode)}
+        />
+        <circle
+          cx="48"
+          cy="28"
+          r="6"
+          fill={color}
+          stroke={accent}
+          strokeWidth="1.5"
+          style={glowFilter(accent, mode)}
+        />
+      </g>
+    </svg>
+  );
+}
+
+
