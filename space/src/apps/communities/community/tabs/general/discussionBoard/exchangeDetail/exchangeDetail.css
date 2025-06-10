@@ -12,7 +12,7 @@
   --exch-sidebar-header: #ffffff;
   --exch-sidebar-bg: rgba(255,255,255,0.025);
   --exch-sidebar-border: rgba(255,255,255,0.06);
-  --exch-sidebar-boxshadow: 0 4px 14px rgba(0,0,0,0.2);
+  --exch-sidebar-boxshadow: 0 0.25rem 0.875rem rgba(0,0,0,0.2);
 
   /* Buttons */
   --exch-icon-btn-bg: rgba(255,255,255,0.03);
@@ -35,7 +35,7 @@
 
   /* Post card / meta */
   --exch-post-bg: rgba(185,185,185,0.111);
-  --exch-post-shadow: 0 4px 10px black;
+  --exch-post-shadow: 0 0.25rem 0.625rem black;
   --exch-post-title: #f0f0f0;
   --exch-post-meta-row: #888;
   --exch-post-meta-dot: #666;
@@ -64,7 +64,7 @@
   --exch-comment-thread-line: #3e4c5a;
   --exch-comment-content-bg: rgba(156,156,156,0.161);
   --exch-comment-content-border: rgba(255,255,255,0.06);
-  --exch-comment-content-shadow: 0 4px 6px black;
+  --exch-comment-content-shadow: 0 0.25rem 0.375rem black;
   --exch-comment-header: #f0f0f0;
   --exch-comment-time: #8899aa;
   --exch-comment-text: #e1e1e1;
@@ -96,7 +96,7 @@
   --exch-sidebar-header: #05477c;
   --exch-sidebar-bg: rgba(240,247,252,0.97);
   --exch-sidebar-border: rgba(30,50,60,0.08);
-  --exch-sidebar-boxshadow: 0 4px 14px rgba(80,120,180,0.08);
+  --exch-sidebar-boxshadow: 0 0.25rem 0.875rem rgba(80,120,180,0.08);
 
   --exch-icon-btn-bg: rgba(30,50,60,0.03);
   --exch-icon-btn-border: rgba(80,120,180,0.09);
@@ -117,7 +117,7 @@
   --exch-join-btn-hover-border: rgba(0,190,150,0.5);
 
   --exch-post-bg: rgba(210,230,250,0.79);
-  --exch-post-shadow: 0 4px 10px #adc6da50;
+  --exch-post-shadow: 0 0.25rem 0.625rem #adc6da50;
   --exch-post-title: #05477c;
   --exch-post-meta-row: #547793;
   --exch-post-meta-dot: #aac2d9;
@@ -143,7 +143,7 @@
   --exch-comment-thread-line: #abd2ea;
   --exch-comment-content-bg: #e7f5fa;
   --exch-comment-content-border: rgba(80,120,180,0.13);
-  --exch-comment-content-shadow: 0 4px 6px #adc6da30;
+  --exch-comment-content-shadow: 0 0.25rem 0.375rem #adc6da30;
   --exch-comment-header: #05477c;
   --exch-comment-time: #547793;
   --exch-comment-text: #05477c;
@@ -197,11 +197,11 @@
 
 .icon-btn {
     all: unset;
-    width: 34px;
-    height: 34px;
-    border-radius: 6px;
+    width: 2.125rem;
+    height: 2.125rem;
+    border-radius: 0.375rem;
     background: var(--exch-icon-btn-bg);
-    border: 1px solid var(--exch-icon-btn-border);
+    border: 0.0625rem solid var(--exch-icon-btn-border);
     color: var(--exch-icon-btn-color);
     font-size: 1.2em;
     display: flex;
@@ -235,7 +235,7 @@
     /* background-color: rgba(255, 0, 0, 0); */
 }
 .exchange-detail-wrapper.non-embedded .exchange-detail-content-area {
-    padding-right: 320px;
+    padding-right: 20rem;
 }
 
 .exchange-detail-main {
@@ -252,9 +252,9 @@
 
 .exchange-detail-sidebar-wrapper {
     position: absolute;
-    top: 0px;
+    top: 0rem;
     right: 0;
-    width: 320px;
+    width: 20rem;
     height: 100%;
     overflow-y: auto;
     border-radius: 0;
@@ -269,10 +269,10 @@
 
 .exchange-detail-sidebar {
     background: var(--exch-sidebar-bg);
-    border: 1px solid var(--exch-sidebar-border);
-    border-radius: 14px;
+    border: 0.0625rem solid var(--exch-sidebar-border);
+    border-radius: 0.875rem;
     padding: 1.2rem;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(0.625rem);
     box-shadow: var(--exch-sidebar-boxshadow);
     width: 100%;
     height: 100%;
@@ -326,8 +326,8 @@
 /* ---------- Post Card ---------- */
 .exchange-post-card {
     display: flex;
-    gap: 12px;
-    border-radius: 14px;
+    gap: 0.75rem;
+    border-radius: 0.875rem;
     padding: 1.25rem;
     background-color: var(--exch-post-bg);
     box-shadow: var(--exch-post-shadow);
@@ -339,7 +339,7 @@
     align-items: center;
     color: var(--exch-vote-bar);
     font-size: 1.1rem;
-    min-width: 34px;
+    min-width: 2.125rem;
 }
 
 .vote-icon {
@@ -361,13 +361,13 @@
 
 .post-header {
     display: flex;
-    gap: 10px;
+    gap: 0.625rem;
     align-items: center;
 }
 
 .post-header img {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 50%;
 }
 
@@ -398,7 +398,7 @@
 
 .post-footer {
     display: flex;
-    gap: 6px;
+    gap: 0.375rem;
     font-size: 0.85rem;
     color: var(--exch-post-footer);
     align-items: center;
@@ -407,9 +407,9 @@
 
 /* ---------- Comments with threads + lines preserved ---------- */
 .comments-section {
-    border-radius: 12px;
+    border-radius: 0.75rem;
     padding: 1.2rem;
-    padding-bottom: 40px;
+    padding-bottom: 2.5rem;
     padding-top: 1em;
     display: flex;
     flex-direction: column;
@@ -421,7 +421,7 @@
     font-size: 1.15rem;
     font-weight: 600;
     color: var(--exch-comments-header);
-    margin-bottom: 4px;
+    margin-bottom: 0.25rem;
 }
 
 /* threaded root line */
@@ -439,7 +439,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-    width: 2px;
+    width: 0.125rem;
     background-color: var(--exch-comment-thread-line);
     z-index: 0;
 }
@@ -447,7 +447,7 @@
 /* levels */
 .comment-thread-level {
     position: relative;
-    padding-left: 24px;
+    padding-left: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -459,7 +459,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-    width: 2px;
+    width: 0.125rem;
     background-color: var(--exch-comment-thread-line);
     z-index: 0;
 }
@@ -477,13 +477,13 @@
 
 .comment-connector {
     position: absolute;
-    top: 12px;
-    left: -24px;
-    width: 24px;
-    height: 20px;
-    border-left: 2px solid var(--exch-comment-thread-line);
-    border-bottom: 2px solid var(--exch-comment-thread-line);
-    border-radius: 0 0 0 8px;
+    top: 0.75rem;
+    left: -1.5rem;
+    width: 1.5rem;
+    height: 1.25rem;
+    border-left: 0.125rem solid var(--exch-comment-thread-line);
+    border-bottom: 0.125rem solid var(--exch-comment-thread-line);
+    border-radius: 0 0 0 0.5rem;
     z-index: 1;
 }
 
@@ -496,10 +496,10 @@
     padding: 0.9rem;
     margin-left: 0.2rem;
     background: var(--exch-comment-content-bg);
-    border: 1px solid var(--exch-comment-content-border);
+    border: 0.0625rem solid var(--exch-comment-content-border);
     box-shadow: var(--exch-comment-content-shadow);
-    border-radius: 10px;
-    backdrop-filter: blur(6px);
+    border-radius: 0.625rem;
+    backdrop-filter: blur(0.375rem);
     position: relative;
     z-index: 2;
 }
@@ -513,8 +513,8 @@
 }
 
 .comment-header img {
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     border-radius: 50%;
 }
 
@@ -535,7 +535,7 @@
 
 .comment-actions {
     display: flex;
-    gap: 12px;
+    gap: 0.75rem;
     font-size: 0.85rem;
     color: var(--exch-comment-actions);
 }
@@ -552,7 +552,7 @@
 }
 
 .comment-children {
-    padding-left: 24px;
+    padding-left: 1.5rem;
 }
 
 /* Modernized Exchange Header */
@@ -564,7 +564,7 @@
     padding-bottom: 0.6rem;
     padding-top: 1em;
     padding-left: 0.5em;
-    border-bottom: 1px solid var(--exch-header-border);
+    border-bottom: 0.0625rem solid var(--exch-header-border);
 }
 
 .exchange-header-top {
@@ -589,16 +589,16 @@
     color: var(--exch-post-meta-row);
     /* margin-top: -0.5em;  */
     margin-bottom: 0.6em;
-    gap: 10px;
+    gap: 0.625rem;
     flex-wrap: wrap;
 }
 
 .exchange-meta-community-link {
     color: var(--exch-meta-community-link);
     background: var(--exch-meta-community-link-bg);
-    border: 1px solid var(--exch-meta-community-link-border);
-    padding: 4px 10px;
-    border-radius: 8px;
+    border: 0.0625rem solid var(--exch-meta-community-link-border);
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.5rem;
     font-size: 0.85em;
     text-decoration: none;
     transition: all 0.2s ease;
@@ -618,7 +618,7 @@
 
 .exchange-post-meta .dot {
     color: var(--exch-post-meta-dot);
-    padding: 5px;
+    padding: 0.3125rem;
 }
 
 /* Sidebar Redesign */
@@ -654,9 +654,9 @@
 .sidebar-button {
     all: unset;
     background: var(--exch-sidebar-btn-bg);
-    border: 1px solid var(--exch-sidebar-btn-border);
+    border: 0.0625rem solid var(--exch-sidebar-btn-border);
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     text-align: center;
     font-size: 0.85rem;
     color: var(--exch-sidebar-btn-color);
@@ -692,7 +692,7 @@
 .join-btn {
     margin-top: 0.8rem;
     background: var(--exch-join-btn-bg);
-    border: 1px solid var(--exch-join-btn-border);
+    border: 0.0625rem solid var(--exch-join-btn-border);
 }
 
 .join-btn:hover {

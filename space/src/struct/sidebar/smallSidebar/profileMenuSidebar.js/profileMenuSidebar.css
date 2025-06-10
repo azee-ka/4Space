@@ -1,16 +1,16 @@
 .sidebar-profile-menu {
     background-color: #1e1d1d;
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    padding: 10px 12px;
-    min-width: 230px;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+    padding: 0.625rem 0.75rem;
+    min-width: 14.375rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
     color: white;
     font-size: 0.95rem;
     animation: fadeIn 0.15s ease-out;
-    bottom: 10px;
+    bottom: 0.625rem;
     position: absolute;
 }
 
@@ -18,13 +18,13 @@
     text-decoration: none;
     color: rgb(159, 159, 159);
     background-color: rgba(0, 128, 0, 0);
-    padding: 10px 16px;
+    padding: 0.625rem 1rem;
     font-size: 1.1em;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     transition: all 0.3s ease;
     color: rgb(198, 198, 198);
 }

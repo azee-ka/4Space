@@ -4,12 +4,12 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: 1.25rem;
 }
 
 
 .expanded-post-loading.expanded-post-overlay-comments-innner {
-    border-radius: 10px;
+    border-radius: 0.625rem;
     width: 90%;
     height: 100%;
     background-color: rgba(255, 0, 0, 0);
@@ -17,7 +17,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    gap: 15px;
+    gap: 0.9375rem;
 
 }
 
@@ -26,12 +26,12 @@
     background-color: rgba(255, 255, 255, 0.5);
     width: 100%;
     height: 20%;
-    border-bottom: 0.5px solid rgba(128, 128, 128, 0.497);
+    border-bottom: 0.0313rem solid rgba(128, 128, 128, 0.497);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    gap: 5px;
+    gap: 0.3125rem;
 }
 
 .expanded-post-loading.expanded-post-per-comment:first-child {
@@ -39,7 +39,7 @@
 }
 
 .expanded-post-loading.expanded-post-per-comment:last-child {
-    border-bottom: 0px solid rgba(128, 128, 128, 0.497);
+    border-bottom: 0rem solid rgba(128, 128, 128, 0.497);
     margin-bottom: 5%;
 
 }
@@ -69,7 +69,7 @@
     justify-content: center;
     align-items: flex-start;
     color: white;
-    gap: 10px;
+    gap: 0.625rem;
 
 }
 
@@ -77,7 +77,7 @@
     width: 80%;
     height: 40%;
     background-color: rgb(34, 34, 34);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     animation: glowAnimation 1.5s infinite alternate;
 }
 
@@ -85,16 +85,16 @@
     width: 40%;
     height: 30%;
     background-color: rgb(34, 34, 34);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     animation: glowAnimation 1.5s infinite alternate;
 }
 
 @keyframes glowAnimation {
     from {
-      box-shadow: 0 0 0px rgba(34, 34, 34, 0);
+      box-shadow: 0 0 0rem rgba(34, 34, 34, 0);
     }
     to {
-      box-shadow: 0 0px 3px 3px rgba(34, 34, 34, 0.839);
+      box-shadow: 0 0rem 0.1875rem 0.1875rem rgba(34, 34, 34, 0.839);
     }
   }
 
@@ -113,13 +113,13 @@
     justify-content: center;
     align-items: center;
     object-fit: cover;
-    height: 600px !important;
-    width: 600px !important;
+    height: 37.5rem !important;
+    width: 37.5rem !important;
     z-index: 5;
 
     background-color: rgb(11, 11, 11);
     animation: glowAnimation 1.5s infinite alternate;
-    border-radius: 10px;
+    border-radius: 0.625rem;
 
 
 }
@@ -128,10 +128,10 @@
 .expanded-post-loading .expanded-post-overlay-interaction-container {
     width: 100%;
     height: 100%;
-    width: 50px;
-    height: 400px;
+    width: 3.125rem;
+    height: 25rem;
     background-color: rgb(22, 22, 22);
-    border-radius: 10px;
+    border-radius: 0.625rem;
     animation: glowAnimation 1.5s infinite alternate;
 }
 

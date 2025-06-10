@@ -6,7 +6,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    padding: 15px 10px;
+    padding: 0.9375rem 0.625rem;
     box-sizing: border-box;
-    gap: 10px;
+    gap: 0.625rem;
 }

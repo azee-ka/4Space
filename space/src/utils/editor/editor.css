@@ -12,15 +12,15 @@
 
 .editor-container {
     width: 100%;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #f0f0f0;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    gap: 3px;
-    border-top: 1px solid rgba(85, 85, 85, 0);
+    gap: 0.1875rem;
+    border-top: 0.0625rem solid rgba(85, 85, 85, 0);
     padding: 0;
     background-color: transparent;
     flex-grow: 1;
@@ -35,12 +35,12 @@
     justify-content: flex-start !important;
     align-items: center !important;
     gap: 0.2em;
-    border-bottom: 0px solid rgb(85, 85, 85, 0.5);
+    border-bottom: 0rem solid rgb(85, 85, 85, 0.5);
     padding: 0.3em 0.2em;
     width: 100%;
     box-sizing: border-box;
     flex-wrap: wrap;
-    border-top: 1px solid rgba(85, 85, 85, 0.5);
+    border-top: 0.0625rem solid rgba(85, 85, 85, 0.5);
 
 }
 
@@ -49,9 +49,9 @@
     margin: 0 !important;
     font-size: 0.9em;
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     background-color: rgba(43, 43, 43, 0);
-    border: 0px solid #55555590;
+    border: 0rem solid #55555590;
     color: #f0f0f0;
     transition: background-color 0.3s, transform 0.2s;
 }
@@ -94,7 +94,7 @@
     max-height: 100%;
     padding: 0;
     box-sizing: border-box;
-    font-size: 16px;
+    font-size: 1rem;
     color: #f0f0f0;
     background-color: transparent;
     box-sizing: border-box;
@@ -136,8 +136,8 @@
 
 
   .color-picker {
-    height: 28px !important;
-    width: 28px !important;
+    height: 1.75rem !important;
+    width: 1.75rem !important;
     box-sizing: border-box;
     aspect-ratio: 1 / 1;
     width: auto;
@@ -147,7 +147,7 @@
     justify-content: center !important;
     align-items: center !important;
     box-sizing: border-box;
-    border-radius: 0px;
+    border-radius: 0rem;
     border: 0;
   }
   .color-picker input {
@@ -160,7 +160,7 @@
 
 .editor-selector {
     flex-grow: 1;
-    min-width: 75px;
+    min-width: 4.6875rem;
     position: relative;
     background-color: rgba(0, 0, 255, 0);
     display: flex;
@@ -177,7 +177,7 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: 1px solid rgba(204, 204, 204, 0.353);
+    border: 0.0625rem solid rgba(204, 204, 204, 0.353);
     outline: none;
     cursor: pointer;
     font-size: 0.8em;
@@ -185,7 +185,7 @@
 }
 .editor-selector select:focus {
     box-shadow: none;
-    border: 1px solid rgb(0, 187, 190);
+    border: 0.0625rem solid rgb(0, 187, 190);
 }
 
 .editor-selector::after {
@@ -193,7 +193,7 @@
     font-size: 0.8em;
     color: rgba(255, 255, 255, 0.71);
     position: absolute;
-    right: 10px;
+    right: 0.625rem;
     top: 50%;
     transform: translateY(-40%);
     pointer-events: none;
@@ -219,11 +219,11 @@
     margin: 0 !important;
     font-size: 1.1em;
     cursor: pointer;
-    /* border: 1px solid #55555590; */
-    border-radius: 8px;
+    /* border: 0.0625rem solid #55555590; */
+    border-radius: 0.5rem;
     /* background-color: rgba(43, 43, 43, 0.787); */
     background-color: rgba(43, 43, 43, 0);
-    border: 0px solid #55555590;
+    border: 0rem solid #55555590;
     color: #f0f0f0;
     transition: background-color 0.3s, transform 0.2s;
     /* height: 100%; */
@@ -256,19 +256,19 @@
 
 .image-resizer {
     position: absolute;
-    border: 2px solid blue;
+    border: 0.125rem solid blue;
     display: inline-block;
 }
 
 .resize-handle {
-    width: 10px;
-    height: 10px;
+    width: 0.625rem;
+    height: 0.625rem;
     background-color: blue;
     position: absolute;
     cursor: pointer;
 }
 
-.top-left { top: -5px; left: -5px; cursor: nwse-resize; }
-.top-right { top: -5px; right: -5px; cursor: nesw-resize; }
-.bottom-left { bottom: -5px; left: -5px; cursor: nesw-resize; }
-.bottom-right { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.top-left { top: -0.3125rem; left: -0.3125rem; cursor: nwse-resize; }
+.top-right { top: -0.3125rem; right: -0.3125rem; cursor: nesw-resize; }
+.bottom-left { bottom: -0.3125rem; left: -0.3125rem; cursor: nesw-resize; }
+.bottom-right { bottom: -0.3125rem; right: -0.3125rem; cursor: nwse-resize; }

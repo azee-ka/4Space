@@ -1,7 +1,7 @@
 :root {
   --tulip-menu-bg: #1b1b1b91;
   --tulip-menu-border: rgba(255, 255, 255, 0.08);
-  --tulip-menu-shadow: 0 4px 20px rgba(8, 8, 8, 0.838);
+  --tulip-menu-shadow: 0 0.25rem 1.25rem rgba(8, 8, 8, 0.838);
   --tulip-tool-color: #e3e3e3;
   --tulip-tool-hover-bg: rgba(0, 255, 255, 0.08);
   --tulip-tool-accent: cyan;
@@ -10,7 +10,7 @@
 [data-theme="light"] {
   --tulip-menu-bg: #f6fafdcc;
   --tulip-menu-border: rgba(40, 120, 255, 0.11);
-  --tulip-menu-shadow: 0 4px 20px rgba(100, 150, 255, 0.09);
+  --tulip-menu-shadow: 0 0.25rem 1.25rem rgba(100, 150, 255, 0.09);
   --tulip-tool-color: #2c394a;
   --tulip-tool-hover-bg: rgba(18, 224, 232, 0.13);
   --tulip-tool-accent: #00c9e6;
@@ -18,21 +18,21 @@
 
 .tulip-menu {
     background-color: var(--tulip-menu-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--tulip-menu-border);
-    border-radius: 10px;
-    padding: 12px;
-    width: 260px;
+    backdrop-filter: blur(1.25rem);
+    -webkit-backdrop-filter: blur(1.25rem);
+    border: 0.0625rem solid var(--tulip-menu-border);
+    border-radius: 0.625rem;
+    padding: 0.75rem;
+    width: 16.25rem;
     max-height: 70vh;
     overflow-y: auto;
     box-shadow: var(--tulip-menu-shadow);
     z-index: 100;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
     position: relative;
-    left: 5px;
+    left: 0.3125rem;
 }
 
 .tulip-tool-item {
@@ -41,9 +41,9 @@
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  padding: 8px 20px;
-  border-radius: 8px;
+  gap: 0.625rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
   transition: background-color 0.25s ease;
   cursor: pointer;
   font-size: 0.95em;
@@ -57,7 +57,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 4px;
+  width: 0.25rem;
   height: 100%;
   background-color: var(--tulip-tool-accent);
   opacity: 0;
@@ -72,8 +72,8 @@
 
 .tulip-tool-item:hover {
   background-color: var(--tulip-tool-hover-bg);
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px;
+  border-top-left-radius: 0rem;
+  border-bottom-left-radius: 0rem;
 }
 
 .tulip-tool-item .icon {

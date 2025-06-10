@@ -1,39 +1,39 @@
 .follow-button {
-    padding: 8px 18px;
+    padding: 0.5rem 1.125rem;
     color: var(--follow-btn-text, #fff);
     font-size: 0.9em;
     background-color: var(--follow-btn-bg, rgba(0, 128, 255, 0.6));
     border: none;
-    border-radius: 20px;
+    border-radius: 1.25rem;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 .follow-button:hover {
     background-color: var(--follow-btn-hover-bg, rgba(0, 128, 255, 0.8));
-    box-shadow: 0 0 8px var(--follow-btn-shadow, rgba(0, 128, 255, 0.6));
+    box-shadow: 0 0 0.5rem var(--follow-btn-shadow, rgba(0, 128, 255, 0.6));
 }
 
 .profile-actions {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 0.625rem;
+    margin-top: 1.25rem;
 }
 
 .message-button {
-    padding: 8px 18px;
+    padding: 0.5rem 1.125rem;
     color: var(--message-btn-text, #fff);
     font-size: 0.9em;
     background-color: var(--message-btn-bg, rgba(16, 182, 149, 0.672));
     border: none;
-    border-radius: 20px;
+    border-radius: 1.25rem;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 .message-button:hover {
     background-color: var(--message-btn-hover-bg, rgba(16, 182, 149, 0.8));
-    box-shadow: 0 0 8px var(--message-btn-shadow, rgba(16, 182, 149, 0.672));
+    box-shadow: 0 0 0.5rem var(--message-btn-shadow, rgba(16, 182, 149, 0.672));
 }
 
 /* === LIGHT MODE OVERRIDES === */

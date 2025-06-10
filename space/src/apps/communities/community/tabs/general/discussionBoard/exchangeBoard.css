@@ -12,10 +12,10 @@
 
 .discussion-feed {
   width: 100%;
-  /* max-width: 900px; */
+  /* max-width: 56.25rem; */
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0.9375rem;
     /* overflow-y: hidden; */
 
 }
@@ -23,13 +23,13 @@
 .discussion-card {
   display: flex;
   flex-direction: row;
-  gap: 20px;
-  border-radius: 18px;
-  padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
+  gap: 1.25rem;
+  border-radius: 1.125rem;
+  padding: 1.125rem;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(0.875rem);
   background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   
 }
@@ -43,9 +43,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  gap: 4px;
-  padding-top: 6px;
-  width: 32px;
+  gap: 0.25rem;
+  padding-top: 0.375rem;
+  width: 2rem;
   color: #7be5ec;
     transform: translateZ(0);
   cursor: pointer;
@@ -60,15 +60,15 @@
 .discussion-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
 }
 
 .user-icon {
   font-size: 1.5rem;
   color: #ccc;
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -97,7 +97,7 @@
   font-size: 1.3rem;
   font-weight: 600;
   color: #eef9ff;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
 }
 .preview {
   font-size: 0.95rem;
@@ -112,7 +112,7 @@
 .discussion-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
   max-width: 100%;
   overflow: hidden;
 }
@@ -126,13 +126,13 @@
 .discussion-footer {
   display: flex;
   justify-content: flex-start;
-  margin-top: 12px;
+  margin-top: 0.75rem;
   background-color: rgba(255, 0, 0, 0);
 }
 .action {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   color: #aaa;
   font-size: 0.85rem;
 }
@@ -146,7 +146,7 @@
   font-size: 1.6rem;
   color: #949494;
   transition: transform 0.2s ease, color 0.3s ease;
-  padding: 3px;
+  padding: 0.1875rem;
   border-radius: 50%;
   transform: translateZ(0);
 }
@@ -163,18 +163,18 @@
   color: #aaa;
   text-align: center;
   font-style: italic;
-  padding: 40px 0;
+  padding: 2.5rem 0;
 }
 
 .floating-discussion-btn {
   position: fixed;
-  bottom: 32px;
-  right: 32px;
-  width: 56px;
-  height: 56px;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
   /* background: linear-gradient(145deg, rgba(0, 128, 255, 0.2), rgba(0, 225, 255, 0.3)); */
-  border: 1px solid rgba(75, 74, 74, 0.926);
-  backdrop-filter: blur(10px);
+  border: 0.0625rem solid rgba(75, 74, 74, 0.926);
+  backdrop-filter: blur(0.625rem);
   background-color: rgba(54, 54, 54, 0.571);
   border-radius: 50%;
   color: white;
@@ -187,7 +187,7 @@
 }
 .floating-discussion-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(79, 79, 79, 0.4);
+  box-shadow: 0 0 0.75rem rgba(79, 79, 79, 0.4);
   cursor: pointer;
 }
 
@@ -217,25 +217,25 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0.9375rem;
 }
 
 [data-theme="light"] .discussion-card {
   display: flex;
   flex-direction: row;
-  gap: 20px;
-  border-radius: 18px;
-  padding: 18px;
-  border: 1px solid #e7eaf3;
-  backdrop-filter: blur(12px);
+  gap: 1.25rem;
+  border-radius: 1.125rem;
+  padding: 1.125rem;
+  border: 0.0625rem solid #e7eaf3;
+  backdrop-filter: blur(0.75rem);
   background: rgba(255,255,255,0.92);
-  box-shadow: 0 8px 32px rgba(145, 180, 210, 0.10);
+  box-shadow: 0 0.5rem 2rem rgba(145, 180, 210, 0.10);
   transition: all 0.3s;
 }
 
 [data-theme="light"] .discussion-card:hover {
   border-color: #90eaff;
-  box-shadow: 0 12px 32px rgba(66, 194, 255, 0.13);
+  box-shadow: 0 0.75rem 2rem rgba(66, 194, 255, 0.13);
   cursor: pointer;
 }
 
@@ -244,9 +244,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  gap: 4px;
-  padding-top: 6px;
-  width: 32px;
+  gap: 0.25rem;
+  padding-top: 0.375rem;
+  width: 2rem;
   color: #26a0c7;
   cursor: pointer;
 }
@@ -264,15 +264,15 @@
 [data-theme="light"] .discussion-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
 }
 
 [data-theme="light"] .user-icon {
   font-size: 1.5rem;
   color: #b4c3ce;
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -302,7 +302,7 @@
   font-size: 1.3rem;
   font-weight: 600;
   color: #1b2b4c;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
 }
 [data-theme="light"] .preview {
   font-size: 0.97rem;
@@ -317,7 +317,7 @@
 [data-theme="light"] .discussion-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
   max-width: 100%;
   overflow: hidden;
   word-break: break-word;
@@ -327,13 +327,13 @@
 [data-theme="light"] .discussion-footer {
   display: flex;
   justify-content: flex-start;
-  margin-top: 12px;
+  margin-top: 0.75rem;
   background-color: transparent;
 }
 [data-theme="light"] .action {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   color: #8191a4;
   font-size: 0.87rem;
 }
@@ -346,7 +346,7 @@
   font-size: 1.6rem;
   color: #a1b6ce;
   transition: transform 0.2s, color 0.3s;
-  padding: 3px;
+  padding: 0.1875rem;
   border-radius: 50%;
 }
 [data-theme="light"] .vote-icon:hover {
@@ -358,17 +358,17 @@
   color: #b1b1c3;
   text-align: center;
   font-style: italic;
-  padding: 40px 0;
+  padding: 2.5rem 0;
 }
 
 [data-theme="light"] .floating-discussion-btn {
   position: fixed;
-  bottom: 32px;
-  right: 32px;
-  width: 56px;
-  height: 56px;
-  border: 1px solid #d9e8fa;
-  backdrop-filter: blur(10px);
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 0.0625rem solid #d9e8fa;
+  backdrop-filter: blur(0.625rem);
   background: linear-gradient(145deg, #d8f4ff 60%, #e5faff 100%);
   border-radius: 50%;
   color: #2376bb;
@@ -378,11 +378,11 @@
   justify-content: center;
   transition: all 0.3s;
   z-index: 50;
-  box-shadow: 0 2px 16px rgba(120, 170, 220, 0.10);
+  box-shadow: 0 0.125rem 1rem rgba(120, 170, 220, 0.10);
 }
 [data-theme="light"] .floating-discussion-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 16px rgba(88, 188, 255, 0.13);
+  box-shadow: 0 0 1rem rgba(88, 188, 255, 0.13);
   color: #125077;
   cursor: pointer;
 }

@@ -34,7 +34,7 @@
 
   --sidebar-bg: rgba(25,25,30,0.28);
   --sidebar-border: rgba(255,255,255,0.06);
-  --sidebar-shadow: 0 6px 20px rgba(0,255,255,0.025);
+  --sidebar-shadow: 0 0.375rem 1.25rem rgba(0,255,255,0.025);
   --sidebar-text: #e4e4e4;
   --sidebar-header: #fff;
   --sidebar-section-title: #c7f5ff;
@@ -109,7 +109,7 @@
 
   --sidebar-bg: rgba(250,251,252,0.85);
   --sidebar-border: rgba(0,0,0,0.04);
-  --sidebar-shadow: 0 6px 20px rgba(80,120,180,0.09);
+  --sidebar-shadow: 0 0.375rem 1.25rem rgba(80,120,180,0.09);
   --sidebar-text: #22303a;
   --sidebar-header: #05507a;
   --sidebar-section-title: #0089a7;
@@ -154,7 +154,7 @@
   display: flex;
   width: 100%;
   height: 100%;
-  gap: 24px;
+  gap: 1.5rem;
   padding: 1em;
   box-sizing: border-box;
   color: var(--page-text);
@@ -167,7 +167,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .communities-timeline-header h2 {
@@ -181,20 +181,20 @@
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .tabs {
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .tabs button {
   background: transparent;
   border: none;
-  padding: 6px 14px;
+  padding: 0.375rem 0.875rem;
   font-size: 0.85rem;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   color: var(--tab-inactive);
   transition: 0.2s ease;
 }
@@ -207,9 +207,9 @@
 
 .community-search {
   background: var(--search-bg);
-  border: 1px solid var(--search-border);
-  padding: 8px 12px;
-  border-radius: 8px;
+  border: 0.0625rem solid var(--search-border);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
   color: var(--search-text);
   font-size: 0.85rem;
 }
@@ -218,7 +218,7 @@
 .timeline-feed {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 1.125rem;
   width: 100%;
   height: 100%;
 }
@@ -227,15 +227,15 @@
 .community-lane {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
   background: var(--timeline-bg);
-  border: 1px solid var(--timeline-border);
+  border: 0.0625rem solid var(--timeline-border);
   text-decoration: none;
   color: var(--lane-title);
   transition: background 0.2s ease;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(0.875rem);
 }
 
 .community-lane:hover {
@@ -243,24 +243,24 @@
 }
 
 .lane-logo img {
-  width: 56px;
-  height: 56px;
-  border-radius: 15px;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.9375rem;
   object-fit: cover;
-  border: 1px solid var(--lane-logo-border);
+  border: 0.0625rem solid var(--lane-logo-border);
 }
 
 .lane-details {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .lane-title-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   flex-wrap: wrap;
 }
 
@@ -275,30 +275,30 @@
   font-size: 0.75rem;
   color: var(--lane-category);
   background-color: var(--lane-category-bg);
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
 }
 
 .lane-description {
   font-size: 0.9rem;
   color: var(--lane-description);
-  margin-top: 2px;
+  margin-top: 0.125rem;
 }
 
 .lane-meta {
   font-size: 0.75rem;
   color: var(--lane-meta);
   display: flex;
-  gap: 14px;
+  gap: 0.875rem;
   flex-wrap: wrap;
 }
 .lane-meta span {
   font-size: 0.75rem;
   color: var(--lane-meta-span);
-  border: 1px solid var(--lane-meta-border);
+  border: 0.0625rem solid var(--lane-meta-border);
   background-color: var(--lane-meta-bg);
-  padding: 2px 10px;
-  border-radius: 12px;
+  padding: 0.125rem 0.625rem;
+  border-radius: 0.75rem;
 }
 
 .lane-actions {
@@ -308,9 +308,9 @@
 
 .lane-action-btn {
   background: var(--lane-action-bg);
-  border: 1px solid var(--lane-action-border);
-  padding: 6px 14px;
-  border-radius: 6px;
+  border: 0.0625rem solid var(--lane-action-border);
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.375rem;
   color: var(--lane-action-color);
   font-size: 0.8rem;
   transition: background 0.2s ease;
@@ -324,7 +324,7 @@
 /* Loading Message */
 .timeline-feed .loading {
   color: var(--loading-text);
-  padding: 20px;
+  padding: 1.25rem;
   text-align: center;
   width: 100%;
   height: 100%;
@@ -332,16 +332,16 @@
 
 /* === SIDEBAR CONTAINER === */
 .community-timeline-sidebar {
-  width: 320px;
+  width: 20rem;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px;
-  border-radius: 14px;
-  border: 1px solid var(--sidebar-border);
+  gap: 0.625rem;
+  padding: 1.125rem;
+  border-radius: 0.875rem;
+  border: 0.0625rem solid var(--sidebar-border);
   background: var(--sidebar-bg);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(1rem);
   box-shadow: var(--sidebar-shadow);
   color: var(--sidebar-text);
   box-sizing: border-box;
@@ -359,7 +359,7 @@
 .sidebar-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   position: relative;
 }
 
@@ -369,16 +369,16 @@
   color: var(--sidebar-section-title);
   padding: 0;
   margin: 0;
-  margin-bottom: 2px;
+  margin-bottom: 0.125rem;
   position: relative;
 }
 
 .section-title::after {
   content: "";
   display: block;
-  width: 20px;
-  height: 2px;
-  margin-top: 10px;
+  width: 1.25rem;
+  height: 0.125rem;
+  margin-top: 0.625rem;
   background-color: var(--sidebar-section-after);
 }
 
@@ -386,17 +386,17 @@
 .sidebar-suggested {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .suggested-community {
   background: var(--suggested-bg);
-  border: 1px solid var(--suggested-border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border: 0.0625rem solid var(--suggested-border);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
   font-size: 0.82rem;
 }
 
@@ -414,10 +414,10 @@
   align-self: flex-start;
   all: unset;
   font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.375rem;
   color: var(--suggested-btn-color);
-  border: 1px solid var(--suggested-btn-border);
+  border: 0.0625rem solid var(--suggested-btn-border);
   background: var(--suggested-btn-bg);
   transition: all 0.2s ease;
 }
@@ -431,17 +431,17 @@
 .sidebar-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 2px;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
 }
 
 .tag-pill {
   font-size: 0.75rem;
   color: var(--tag-pill-color);
   background: var(--tag-pill-bg);
-  border: 1px solid var(--tag-pill-border);
-  padding: 4px 10px;
-  border-radius: 999px;
+  border: 0.0625rem solid var(--tag-pill-border);
+  padding: 0.25rem 0.625rem;
+  border-radius: 62.4375rem;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
@@ -455,10 +455,10 @@
 .sidebar-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 16px;
+  gap: 0.5rem;
+  padding-top: 1rem;
   margin-top: auto;
-  border-top: 1px solid var(--sidebar-actions-border);
+  border-top: 0.0625rem solid var(--sidebar-actions-border);
 }
 
 .sidebar-actions button {
@@ -467,9 +467,9 @@
   font-size: 0.85rem;
   color: var(--sidebar-actions-btn-color);
   background: var(--sidebar-actions-btn-bg);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 0.5em 1em;
-  border: 1px solid var(--sidebar-actions-btn-border);
+  border: 0.0625rem solid var(--sidebar-actions-btn-border);
   transition: all 0.2s ease;
 }
 
@@ -487,7 +487,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .sidebar-mini-list li,
@@ -497,10 +497,10 @@
   align-items: center;
   justify-content: space-between;
   font-size: 0.8rem;
-  padding: 8px 12px;
+  padding: 0.5rem 0.75rem;
   background: var(--sidebar-list-bg);
-  border: 1px solid var(--sidebar-list-border);
-  border-radius: 8px;
+  border: 0.0625rem solid var(--sidebar-list-border);
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--sidebar-list-color);
@@ -513,11 +513,11 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 0px;
-  bottom: 0px;
-  width: 4px;
+  top: 0rem;
+  bottom: 0rem;
+  width: 0.25rem;
   background: var(--sidebar-list-before);
-  border-radius: 2px;
+  border-radius: 0.125rem;
   transition: all 0.3s ease;
 }
 

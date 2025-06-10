@@ -1,5 +1,5 @@
 .small-sidebar {
-    width: 70px;
+    width: 4.375rem;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -7,22 +7,22 @@
     align-items: center;
     box-sizing: border-box;
     background-color: rgba(46, 46, 46, 0.241);
-    backdrop-filter: blur(35px);
-    box-shadow: 0 0 4px 2px rgba(202, 202, 202, 0.159);
-    border-radius: 40px;
+    backdrop-filter: blur(2.1875rem);
+    box-shadow: 0 0 0.25rem 0.125rem rgba(202, 202, 202, 0.159);
+    border-radius: 2.5rem;
     transition: all 0.3s ease-out;
     position: relative;
-    padding-left: 70px;
+    padding-left: 4.375rem;
     padding-right: 0 !important;
-        margin-top: 6px;
+        margin-top: 0.375rem;
 }
 
 .small-sidebar.search-sidebar-open {
-    width: 440px;
+    width: 27.5rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    box-shadow: 0 0 6px 6px rgba(8, 8, 8, 0.516);
+    box-shadow: 0 0 0.375rem 0.375rem rgba(8, 8, 8, 0.516);
     background-color: rgba(42, 42, 42, 0.422);
 }
 
@@ -33,10 +33,10 @@
     justify-content: space-between;
     align-items: center;
     background-color: rgba(128, 0, 128, 0);
-    height: 680px;
-    width: 70px;
+    height: 42.5rem;
+    width: 4.375rem;
     position: absolute;
-    top: 20px;
+    top: 1.25rem;
     left: 0;
 }
 
@@ -49,7 +49,7 @@
     align-items: center;
     padding: 0.5em 1em;
     box-sizing: border-box;
-    gap: 4px;
+    gap: 0.25rem;
 }
 
 .small-sidebar-bottom {
@@ -68,7 +68,7 @@
 
 .small-sidebar .small-sidebar-item button {
     background-color: rgba(255, 0, 0, 0) !important;
-    border: 1px solid rgba(128, 128, 128, 0);
+    border: 0.0625rem solid rgba(128, 128, 128, 0);
     transition: all 0.3s ease;
     display: flex;
     justify-content: center;
@@ -76,7 +76,7 @@
 }
 
 .small-sidebar .small-sidebar-item {
-    width: 45px;
+    width: 2.8125rem;
     aspect-ratio: 1 / 1;
     display: flex;
     justify-content: center;
@@ -92,11 +92,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 8px;
+    border-radius: 0.5rem;
 }
 
 .small-sidebar .small-sidebar-item .svg-inline--fa {
-    font-size: 23px;
+    font-size: 1.4375rem;
     color: rgb(184, 184, 184);
     background-color: rgba(255, 0, 0, 0) !important;
     align-self: center;
@@ -124,8 +124,8 @@
     background-color: #333;
     color: #fff;
     text-align: center;
-    padding: 8px 12px;
-    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
     position: absolute;
     z-index: 48;
     left: 100%;
@@ -135,7 +135,7 @@
     transform: translateY(-50%);
     opacity: 0;
     white-space: nowrap;
-    margin-left: 12px;
+    margin-left: 0.75rem;
     /* Space between icon and tooltip */
     display: inline-block;
 }
@@ -144,15 +144,15 @@
     content: "";
     position: absolute;
     top: 50%;
-    left: -10px;
+    left: -0.625rem;
     /* Position the arrow at the left of the tooltip */
     transform: translateY(-50%);
     width: 0;
     height: 0;
-    border-right: 10px solid #333;
+    border-right: 0.625rem solid #333;
     /* Arrow pointing towards the button */
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
+    border-top: 0.3125rem solid transparent;
+    border-bottom: 0.3125rem solid transparent;
 }
 
 .small-sidebar-item:hover .tooltip {
@@ -165,7 +165,7 @@
 
 
 .small-sidebar .chat-icon {
-    width: 29px;
+    width: 1.8125rem;
     aspect-ratio: 1 / 1;
     color: rgb(184, 184, 184);
 }
@@ -179,14 +179,14 @@
 
 
 
-@media (max-width: 600px) {
+@media (max-width: 37.5rem) {
   .small-sidebar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     top: auto;
-    height: 50px;
+    height: 3.125rem;
     width: 100vw;
     min-width: 0;
     border-radius: 0;
@@ -195,7 +195,7 @@
     align-items: center;
     background: rgba(28, 28, 28, 0.97);
     padding: 0 !important;
-    box-shadow: 0 -2px 14px 3px rgba(0,0,0,0.13);
+    box-shadow: 0 -0.125rem 0.875rem 0.1875rem rgba(0,0,0,0.13);
     z-index: 60;
   }
 
@@ -205,11 +205,11 @@
     align-items: center;
     position: static;
     width: 100vw;
-    height: 70px;
+    height: 4.375rem;
     top: 0;
     left: 0;
     right: 0;
-    padding: 0 5px;
+    padding: 0 0.3125rem;
     box-sizing: border-box;
     background: transparent;
   }
@@ -219,17 +219,17 @@
     justify-content: space-evenly;
     align-items: center;
     width: 100%;
-    height: 70px;
+    height: 4.375rem;
     padding: 0;
     gap: 0.2em;
     background: transparent;
   }
 
   .small-sidebar-item {
-    width: 45px;
-    height: 45px;
-    margin: 0 4px;
-    border-radius: 10px;
+    width: 2.8125rem;
+    height: 2.8125rem;
+    margin: 0 0.25rem;
+    border-radius: 0.625rem;
   }
   .small-sidebar-item.tooltip {
       display: none !important;
@@ -252,13 +252,13 @@
 
 [data-theme="light"] .small-sidebar {
     background: #ffffff !important;
-    box-shadow: 0 4px 18px 2px rgba(180,210,245,0.10) !important;
-    border-radius: 30px !important;
+    box-shadow: 0 0.25rem 1.125rem 0.125rem rgba(180,210,245,0.10) !important;
+    border-radius: 1.875rem !important;
 }
 
 [data-theme="light"] .small-sidebar.search-sidebar-open {
     background: #fff !important;
-    box-shadow: 0 6px 32px 0 rgba(144,180,220,0.09) !important;
+    box-shadow: 0 0.375rem 2rem 0 rgba(144,180,220,0.09) !important;
 }
 
 [data-theme="light"] .small-sidebar-inner-menu {
@@ -271,7 +271,7 @@
 
 [data-theme="light"] .small-sidebar .small-sidebar-item {
     background: none !important;
-    border-radius: 8px !important;
+    border-radius: 0.5rem !important;
 }
 
 [data-theme="light"] .small-sidebar .small-sidebar-item button {
@@ -289,17 +289,17 @@
 [data-theme="light"] .tooltip {
     background: #eaf2fb !important;
     color: #2e3b4e !important;
-    border: 1px solid #dbe6f4 !important;
+    border: 0.0625rem solid #dbe6f4 !important;
 }
 [data-theme="light"] .tooltip::before {
-    border-right: 10px solid #eaf2fb !important;
+    border-right: 0.625rem solid #eaf2fb !important;
 }
 
 /* Responsive/mobile tweaks */
-@media (max-width: 600px) {
+@media (max-width: 37.5rem) {
   [data-theme="light"] .small-sidebar {
     background: #fafdff !important;
-    box-shadow: 0 -2px 14px 3px rgba(160, 190, 220, 0.09) !important;
+    box-shadow: 0 -0.125rem 0.875rem 0.1875rem rgba(160, 190, 220, 0.09) !important;
   }
   [data-theme="light"] .small-sidebar-inner-menu {
     background: none !important;

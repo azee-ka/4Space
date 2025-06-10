@@ -2,30 +2,30 @@
 :root {
   /* Visibility settings panel */
   --visibility-bg: rgb(202, 11, 94, 0);
-  --visibility-padding: 15px 10px;
-  --visibility-gap: 10px;
+  --visibility-padding: 0.9375rem 0.625rem;
+  --visibility-gap: 0.625rem;
 
   --visibility-section-bg: rgba(0, 128, 0, 0);
-  --visibility-section-padding: 18px 0px;
-  --visibility-section-border: 1px solid rgba(128, 128, 128, 0.502);
+  --visibility-section-padding: 1.125rem 0rem;
+  --visibility-section-border: 0.0625rem solid rgba(128, 128, 128, 0.502);
 
   --visibility-section-header-color: rgb(199, 199, 199);
   --visibility-section-header-font: 1.1em;
 
   --visibility-section-p-color: rgb(229, 229, 229);
-  --visibility-section-p-padding: 10px 0px;
+  --visibility-section-p-padding: 0.625rem 0rem;
 
   --visibility-content-bg: rgba(0, 0, 255, 0);
   --visibility-content-width: 70%;
-  --visibility-content-padding: 0px 10px;
-  --visibility-content-gap: 15px;
+  --visibility-content-padding: 0rem 0.625rem;
+  --visibility-content-gap: 0.9375rem;
 
   --visibility-content-desc-bg: rgba(0, 255, 255, 0);
-  --visibility-content-desc-padding: 4px 8px;
+  --visibility-content-desc-padding: 0.25rem 0.5rem;
 
   --visibility-content-control-bg: rgb(255, 0, 242, 0);
-  --visibility-content-control-height: 32px;
-  --visibility-content-control-padding: 5px;
+  --visibility-content-control-height: 2rem;
+  --visibility-content-control-padding: 0.3125rem;
 }
 
 /* ========== COMPONENT CLASSES USING VARS ========== */
@@ -51,7 +51,7 @@
 
 .visibility-settings section h3 {
   margin: 0;
-  padding: 0px 0px 8px 0px;
+  padding: 0rem 0rem 0.5rem 0rem;
   font-size: var(--visibility-section-header-font);
   color: var(--visibility-section-header-color);
 }
@@ -81,7 +81,7 @@
 }
 
 .visiblity-setting-content-description p span {
-  margin-left: 4px;
+  margin-left: 0.25rem;
 }
 
 .visiblity-setting-content-control {
@@ -99,7 +99,7 @@
 [data-theme="light"] {
   --visibility-bg: #f7fafc00;
   --visibility-section-bg: #ffffff00;
-  --visibility-section-border: 1px solid #d7e6ee;
+  --visibility-section-border: 0.0625rem solid #d7e6ee;
 
   --visibility-section-header-color: #27607a;
   --visibility-section-p-color: #4e6a81;

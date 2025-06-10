@@ -4,25 +4,25 @@
     inset: 0;
     z-index: 51;
     background: rgba(10, 10, 20, 0.55);
-    backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(1.25rem) saturate(140%);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+    padding: 2.5rem;
 }
 
 /* === Modal Card === */
 .discussion-overlay-card {
     width: 100%;
-    max-width: 720px;
+    max-width: 45rem;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 18px;
-    padding: 36px 32px;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.125rem;
+    padding: 2.25rem 2rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 1.75rem;
     color: white;
     position: relative;
     box-sizing: border-box;
@@ -31,8 +31,8 @@
 /* === Close Button === */
 .overlay-close-btn {
     position: absolute;
-    top: 20px;
-    right: 24px;
+    top: 1.25rem;
+    right: 1.5rem;
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -71,7 +71,7 @@
     font-size: 1rem;
     font-weight: 600;
     color: #dcdcdc;
-    margin-bottom: 10px !important;
+    margin-bottom: 0.625rem !important;
 }
 
 
@@ -79,11 +79,11 @@
 /* === Content Editor === */
 .body-section .editor-container {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
     padding: 0.65em 0.55em;
-    min-height: 220px;
-    max-height: 450px;
+    min-height: 13.75rem;
+    max-height: 28.125rem;
 }
 
 /* === Toolbar === */
@@ -98,8 +98,8 @@
     font-size: 0.95em;
     background: rgba(255, 255, 255, 0.02);
     color: #e2e2e2;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
     outline: none;
     transition: border 0.2s ease, background 0.2s ease;
     box-sizing: border-box;
@@ -118,10 +118,10 @@
 }
 
 .submit-discussion-btn {
-    padding: 12px 26px;
+    padding: 0.75rem 1.625rem;
     background: rgba(0, 255, 251, 0.12);
-    border: 1px solid rgba(0, 255, 251, 0.3);
-    border-radius: 12px;
+    border: 0.0625rem solid rgba(0, 255, 251, 0.3);
+    border-radius: 0.75rem;
     color: #ffffff;
     font-size: 1rem;
     font-weight: 600;
@@ -161,24 +161,24 @@
     inset: 0;
     z-index: 51;
     background: rgba(225, 235, 255, 0.293);
-    backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(1.375rem) saturate(140%);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+    padding: 2.5rem;
 }
 
 [data-theme="light"] .discussion-overlay-card {
     width: 100%;
-    max-width: 720px;
+    max-width: 45rem;
     background: rgba(255,255,255,0.98);
-    border: 1px solid #e5eaf5;
-    border-radius: 18px;
-    padding: 36px 32px;
-    box-shadow: 0 16px 48px rgba(110, 130, 180, 0.12);
+    border: 0.0625rem solid #e5eaf5;
+    border-radius: 1.125rem;
+    padding: 2.25rem 2rem;
+    box-shadow: 0 1rem 3rem rgba(110, 130, 180, 0.12);
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 1.75rem;
     color: #23254d;
     position: relative;
     box-sizing: border-box;
@@ -187,8 +187,8 @@
 
 [data-theme="light"] .overlay-close-btn {
     position: absolute;
-    top: 20px;
-    right: 24px;
+    top: 1.25rem;
+    right: 1.5rem;
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -225,16 +225,16 @@
     font-size: 1rem;
     font-weight: 600;
     color: #535c70;
-    margin-bottom: 10px !important;
+    margin-bottom: 0.625rem !important;
 }
 
 [data-theme="light"] .body-section .editor-container {
     background: #f7f9fd;
-    border: 1px solid #e6eaf3;
-    border-radius: 12px;
+    border: 0.0625rem solid #e6eaf3;
+    border-radius: 0.75rem;
     padding: 0.65em 0.55em;
-    min-height: 220px;
-    max-height: 450px;
+    min-height: 13.75rem;
+    max-height: 28.125rem;
     color: black;
 }
 [data-theme="light"] .ql-editor {
@@ -258,8 +258,8 @@
     font-size: 0.95em;
     background: #f8fafd;
     color: #222c41;
-    border: 1px solid #e3eaf3;
-    border-radius: 8px;
+    border: 0.0625rem solid #e3eaf3;
+    border-radius: 0.5rem;
     outline: none;
     transition: border 0.2s, background 0.2s;
     box-sizing: border-box;
@@ -276,10 +276,10 @@
 }
 
 [data-theme="light"] .submit-discussion-btn {
-    padding: 12px 26px;
+    padding: 0.75rem 1.625rem;
     background: #e5faff;
-    border: 1px solid #b9f5fa;
-    border-radius: 12px;
+    border: 0.0625rem solid #b9f5fa;
+    border-radius: 0.75rem;
     color: #267c91;
     font-size: 1rem;
     font-weight: 600;
