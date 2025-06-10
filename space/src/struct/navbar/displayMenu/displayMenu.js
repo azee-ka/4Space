@@ -1,9 +1,11 @@
 // components/displayMenu/DisplayMenu.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './displayMenu.css';
 import { useDisplaySettings, defaultSettings } from '../../../context/DisplaySettingsContext';
 import useApi from '../../../utils/useApi';
 import { SystemIcon, SunIcon, MoonIcon } from '../../../utils/CustomIcons';
+import { HexColorPicker } from 'react-colorful';
+import DropdownButton from '../../../utils/popperButton/DropdownButton';
 
 const themeOptions = [
   { value: 'system', label: 'System', icon: SystemIcon },
@@ -29,16 +31,16 @@ export default function DisplayMenu({ onClose }) {
   const { callApi } = useApi();
 
   const [savedSettings, setSavedSettings] = useState(defaultSettings);
-  const [radialCoord,    setRadialCoord] = useState({ x: 50, y: 0 });
-  const [colorCount,     setColorCount]  = useState(1);
+  const [radialCoord, setRadialCoord]   = useState({ x: 50, y: 0 });
+  const [colorCount, setColorCount]     = useState(1);
 
-  // sync local UI state once context is ready
+  const containerRef = useRef(null);
+
   useEffect(() => {
     if (!loaded) return;
     setSavedSettings(settings);
-    const len = Math.min(4, Math.max(1, (settings.gradientColors || []).length));
-    setColorCount(len);
-    const [x, y] = settings.radialPosition.split(' ').map(str => parseFloat(str));
+    setColorCount(Math.min(4, Math.max(1, settings.gradientColors.length)));
+    const [x, y] = settings.radialPosition.split(' ').map(parseFloat);
     if (!isNaN(x) && !isNaN(y)) setRadialCoord({ x, y });
   }, [loaded, settings]);
 
@@ -49,7 +51,7 @@ export default function DisplayMenu({ onClose }) {
   };
 
   const updateColor = (i, prop, value) => {
-    const arr = [...(settings.gradientColors || [])];
+    const arr = [...settings.gradientColors];
     while (arr.length < colorCount) arr.push({ ...defaultSettings.gradientColors[0] });
     arr[i] = { ...arr[i], [prop]: value };
     update('gradientColors', arr);
@@ -58,52 +60,43 @@ export default function DisplayMenu({ onClose }) {
   const handleCount = e => {
     let n = Math.min(4, Math.max(1, parseInt(e.target.value, 10) || 1));
     setColorCount(n);
-    const arr = (settings.gradientColors || []).slice(0, n);
+    const arr = settings.gradientColors.slice(0, n);
     while (arr.length < n) arr.push({ ...defaultSettings.gradientColors[0] });
     update('gradientColors', arr);
   };
 
-  const reset = () => {
-    setSettings(savedSettings);
-    apply(savedSettings);
-  };
-
-  const revert = () => {
-    setColorCount(defaultSettings.gradientColors.length);
-    setSettings(defaultSettings);
-    apply(defaultSettings);
-  };
-
-  const save = async () => {
+  const reset  = () => { setSettings(savedSettings); apply(savedSettings); };
+  const revert = () => { setColorCount(defaultSettings.gradientColors.length); setSettings(defaultSettings); apply(defaultSettings); };
+  const save   = async () => {
     try {
-      await callApi('settings/save/', 'POST', {
-        category: 'display',
-        settings
-      });
+      await callApi('settings/save/', 'POST', { category: 'display', settings });
       onClose();
     } catch (err) {
       console.error('Failed to save display settings', err);
     }
   };
 
-  if (!loaded) {
-    return <div className="display-settings-container">Loading…</div>;
-  }
+  if (!loaded) return <div className="display-settings-container">Loading…</div>;
 
   const {
     gradient, fontSize, padding, animations,
     radialPosition, linearAngle, themeMode = 'system',
-    gradientColors = []
+    gradientColors,
+    brightness, contrast, saturation,
+    radialSizeX, radialSizeY,
   } = settings;
 
   const { label: themeLabel, icon: ThemeIcon } =
     themeOptions.find(o => o.value === themeMode) || themeOptions[0];
-
   const effectiveTheme = themeMode === 'system' ? getSystemTheme() : themeMode;
   const isLight = effectiveTheme === 'light';
 
   return (
-    <div className="display-settings-container" onClick={e => e.stopPropagation()}>
+    <div
+      ref={containerRef}
+      className="display-settings-container"
+      onClick={e => e.stopPropagation()}
+    >
       <div className="settings-title-row">
         <h3>Display Settings</h3>
         <button
@@ -117,18 +110,15 @@ export default function DisplayMenu({ onClose }) {
 
       {!isLight && (
         <>
+          {/* Gradient style & count */}
           <div className="display-setting gradient-row">
             <div className="field gradient-style-field">
               <label>Gradient Style</label>
-              <select
-                value={gradient}
-                onChange={e => update('gradient', e.target.value)}
-              >
+              <select value={gradient} onChange={e => update('gradient', e.target.value)}>
                 <option value="radial">Radial</option>
                 <option value="linear">Linear</option>
               </select>
             </div>
-
             <div className="field">
               <label>Color Count</label>
               <input
@@ -140,40 +130,65 @@ export default function DisplayMenu({ onClose }) {
             </div>
           </div>
 
+          {/* Radial settings */}
           {gradient === 'radial' && (
-            <div className="display-setting">
-              <label>Radial Position</label>
-              <div
-                className="radial-pad"
-                onMouseDown={e => {
-                  const pad = e.currentTarget;
-                  const move = ev => {
-                    const { left, top, width, height } = pad.getBoundingClientRect();
-                    const x = Math.max(0, Math.min(100, ((ev.clientX - left) / width) * 100));
-                    const y = Math.max(0, Math.min(100, ((ev.clientY - top) / height) * 100));
-                    setRadialCoord({ x, y });
-                    update('radialPosition', `${x.toFixed(0)}% ${y.toFixed(0)}%`);
-                  };
-                  const up = () => {
-                    document.removeEventListener('mousemove', move);
-                    document.removeEventListener('mouseup', up);
-                  };
-                  document.addEventListener('mousemove', move);
-                  document.addEventListener('mouseup', up);
-                  move(e);
-                }}
-              >
+            <>
+              <div className="display-setting">
+                <label>Radial Position</label>
                 <div
-                  className="radial-indicator"
-                  style={{
-                    left:  `${radialCoord.x}%`,
-                    top:   `${radialCoord.y}%`
+                  className="radial-pad"
+                  onMouseDown={e => {
+                    const pad = e.currentTarget;
+                    const move = ev => {
+                      const { left, top, width, height } = pad.getBoundingClientRect();
+                      const x = Math.max(0, Math.min(100, ((ev.clientX - left) / width) * 100));
+                      const y = Math.max(0, Math.min(100, ((ev.clientY - top) / height) * 100));
+                      setRadialCoord({ x, y });
+                      update('radialPosition', `${x.toFixed(0)}% ${y.toFixed(0)}%`);
+                    };
+                    const up = () => {
+                      document.removeEventListener('mousemove', move);
+                      document.removeEventListener('mouseup', up);
+                    };
+                    document.addEventListener('mousemove', move);
+                    document.addEventListener('mouseup', up);
+                    move(e);
                   }}
-                />
+                >
+                  <div
+                    className="radial-indicator"
+                    style={{ left: `${radialCoord.x}%`, top: `${radialCoord.y}%` }}
+                  />
+                </div>
               </div>
-            </div>
+
+              <div className="display-setting">
+                <label>Radial Size X</label>
+                <div className="slider-wrapper">
+                  <input
+                    type="range" min="50" max="200" step="1"
+                    value={radialSizeX}
+                    onChange={e => update('radialSizeX', parseFloat(e.target.value))}
+                  />
+                  <span className="slider-value">{radialSizeX}%</span>
+                </div>
+              </div>
+
+              <div className="display-setting">
+                <label>Radial Size Y</label>
+                <div className="slider-wrapper">
+                  <input
+                    type="range" min="50" max="200" step="1"
+                    value={radialSizeY}
+                    onChange={e => update('radialSizeY', parseFloat(e.target.value))}
+                  />
+                  <span className="slider-value">{radialSizeY}%</span>
+                </div>
+              </div>
+            </>
           )}
 
+          {/* Linear angle */}
           {gradient === 'linear' && (
             <div className="display-setting">
               <label>Linear Angle</label>
@@ -183,61 +198,99 @@ export default function DisplayMenu({ onClose }) {
                   value={parseInt(linearAngle)}
                   onChange={e => update('linearAngle', `${e.target.value}deg`)}
                 />
-                <span className="slider-value">
-                  {parseInt(linearAngle)}°
-                </span>
+                <span className="slider-value">{parseInt(linearAngle)}°</span>
               </div>
             </div>
           )}
 
-          {Array.from({ length: colorCount }).map((_, i) => (
-            <div key={i} className="display-setting gradient-color-group">
+          {/* Color swatches */}
+          {Array.from({ length: colorCount }).map((_, idx) => (
+            <div key={idx} className="display-setting gradient-color-group">
               <div className="color-swatch-grid">
-                {presetColors.map((c, si) => (
-                  <div
-                    key={si}
-                    className={
-                      `color-swatch ${
-                        c !== 'picker' && gradientColors[i]?.color === c
-                          ? 'active'
-                          : ''
-                      }`
-                    }
-                    onClick={() => {
-                      if (c === 'picker') {
-                        document.getElementById(`picker-${i}`).click();
-                      } else {
-                        updateColor(i, 'color', c);
+                {presetColors.map((c, si) =>
+                  c === 'picker' ? (
+                    <DropdownButton
+                      key={si}
+                      placement="bottom-start"
+                      boundaryRef={containerRef}
+                      toggleContent={
+                        <div className="color-swatch">
+                          <span className="picker-icon">🎨</span>
+                        </div>
                       }
-                    }}
-                    style={{ backgroundColor: c === 'picker' ? 'transparent' : c }}
-                  >
-                    {c === 'picker' && <span className="picker-icon">🎨</span>}
-                  </div>
-                ))}
-                <input
-                  id={`picker-${i}`}
-                  type="color"
-                  className="color-picker-popup"
-                  value={gradientColors[i]?.color || defaultSettings.gradientColors[0].color}
-                  onChange={e => updateColor(i, 'color', e.target.value)}
-                />
+                    >
+                      <div className="custom-color-picker" onClick={e => e.stopPropagation()}>
+                        <HexColorPicker
+                          color={gradientColors[idx]?.color ?? defaultSettings.gradientColors[0].color}
+                          onChange={newColor => updateColor(idx, 'color', newColor)}
+                        />
+                        <button className="close-picker">Close</button>
+                      </div>
+                    </DropdownButton>
+                  ) : (
+                    <div
+                      key={si}
+                      className={`color-swatch ${gradientColors[idx]?.color === c ? 'active' : ''}`}
+                      style={{ backgroundColor: c }}
+                      onClick={() => updateColor(idx, 'color', c)}
+                    />
+                  )
+                )}
               </div>
               <div className="slider-wrapper">
                 <input
                   type="range" min="0" max="1" step="0.01"
-                  value={gradientColors[i]?.alpha ?? defaultSettings.gradientColors[0].alpha}
-                  onChange={e => updateColor(i, 'alpha', parseFloat(e.target.value))}
+                  value={gradientColors[idx]?.alpha ?? defaultSettings.gradientColors[0].alpha}
+                  onChange={e => updateColor(idx, 'alpha', parseFloat(e.target.value))}
                 />
                 <span className="slider-value">
-                  {(gradientColors[i]?.alpha ?? defaultSettings.gradientColors[0].alpha).toFixed(2)}
+                  {(gradientColors[idx]?.alpha ?? defaultSettings.gradientColors[0].alpha).toFixed(2)}
                 </span>
               </div>
             </div>
           ))}
+
+          {/* Image Effects */}
+          <div className="effects-group">
+            <h4>Image Effects</h4>
+            <div className="display-setting">
+              <label>Brightness</label>
+              <div className="slider-wrapper">
+                <input
+                  type="range" min="0.5" max="1.5" step="0.01"
+                  value={brightness}
+                  onChange={e => update('brightness', parseFloat(e.target.value))}
+                />
+                <span className="slider-value">{brightness.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="display-setting">
+              <label>Contrast</label>
+              <div className="slider-wrapper">
+                <input
+                  type="range" min="0.5" max="1.5" step="0.01"
+                  value={contrast}
+                  onChange={e => update('contrast', parseFloat(e.target.value))}
+                />
+                <span className="slider-value">{contrast.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="display-setting">
+              <label>Saturation</label>
+              <div className="slider-wrapper">
+                <input
+                  type="range" min="0.5" max="2.0" step="0.01"
+                  value={saturation}
+                  onChange={e => update('saturation', parseFloat(e.target.value))}
+                />
+                <span className="slider-value">{saturation.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
         </>
       )}
 
+      {/* Font Size */}
       <div className="display-setting">
         <label>Font Size</label>
         <div className="slider-wrapper">
@@ -246,24 +299,21 @@ export default function DisplayMenu({ onClose }) {
             value={parseFloat(fontSize)}
             onChange={e => update('fontSize', `${e.target.value}em`)}
           />
-          <span className="slider-value">
-            {parseFloat(fontSize).toFixed(1)}em
-          </span>
+          <span className="slider-value">{parseFloat(fontSize).toFixed(1)}em</span>
         </div>
       </div>
 
+      {/* Padding */}
       <div className="display-setting">
         <label>Padding</label>
-        <select
-          value={padding}
-          onChange={e => update('padding', e.target.value)}
-        >
+        <select value={padding} onChange={e => update('padding', e.target.value)}>
           <option value="small">Small</option>
           <option value="medium">Medium</option>
           <option value="large">Large</option>
         </select>
       </div>
 
+      {/* Animations */}
       <div className="display-setting toggle-group">
         <label>Enable Animations</label>
         <label className="display-toggle">
@@ -276,14 +326,13 @@ export default function DisplayMenu({ onClose }) {
         </label>
       </div>
 
+      {/* Buttons */}
       <div className="button-row">
         <div className="inline-buttons">
           <button onClick={reset}>Reset</button>
           <button onClick={revert}>Revert to Default</button>
         </div>
-        <button className="save-button" onClick={save}>
-          Save
-        </button>
+        <button className="save-button" onClick={save}>Save</button>
       </div>
     </div>
   );

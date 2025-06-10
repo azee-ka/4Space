@@ -3,27 +3,33 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import useApi from '../utils/useApi';
 import { useAuth } from '../hooks/useAuth';
 
-// Export this so DisplayMenu can reuse it
 export const defaultSettings = {
   gradient: 'radial',
-  gradientColors: [{ color: '#5387be', alpha: 0.1 }],   // 0.20 alpha
+  gradientColors: [{ color: '#5387be', alpha: 0.15 }],
   fontSize: '1em',
-  themeMode: 'dark',         // always dark until backend says otherwise
+  themeMode: 'dark',
   backgroundColor: 'black',
   padding: 'medium',
   animations: true,
   radialPosition: '50% 0%',
   linearAngle: '135deg',
+  // Filters
+  brightness: 1,
+  contrast:   1,
+  saturation: 1,
+  // Radial ellipse sizes
+  radialSizeX: 100,
+  radialSizeY: 100,
 };
 
 const DisplaySettingsContext = createContext();
 
-const getEffectiveTheme = (themeMode) =>
-  themeMode === 'system'
+const getEffectiveTheme = (mode) =>
+  mode === 'system'
     ? window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light'
-    : themeMode;
+    : mode;
 
 const rgba = ({ color, alpha }) => {
   if (!/^#?[0-9A-Fa-f]{6}$/.test(color)) {
@@ -49,44 +55,59 @@ export const DisplaySettingsProvider = ({ children }) => {
       radialPosition,
       linearAngle,
       backgroundColor,
+      brightness,
+      contrast,
+      saturation,
+      radialSizeX,
+      radialSizeY,
     } = s;
 
-    // base font & data-theme
+    // Font size & theme attribute
     document.documentElement.style.setProperty('--base-font-size', fontSize);
     const theme = getEffectiveTheme(themeMode);
     document.documentElement.setAttribute('data-theme', theme);
     document.body.className = theme;
 
-    // light mode is just a solid
+    // Light mode: solid background, clear filters
     if (theme === 'light') {
-      document.body.style.background = '#eeeeee';
-      document.body.style.backgroundColor = '#eeeeee';
+      document.documentElement.style.setProperty('--display-bg', '#eeeeee');
+      document.documentElement.style.setProperty('--display-filter', '');
       return;
     }
 
-    // build gradient
+    // Build gradient stops
     const stops = gradientColors.map(rgba).join(', ');
     const fullStops = `${stops}, rgba(0,0,0,0)`;
-    const grad =
-      gradient === 'radial'
-        ? `radial-gradient(circle at ${radialPosition}, ${fullStops})`
-        : `linear-gradient(${linearAngle}, ${fullStops})`;
+    let grad;
+    if (gradient === 'radial') {
+      const shape = `ellipse ${radialSizeX}% ${radialSizeY}%`;
+      grad = `radial-gradient(${shape} at ${radialPosition}, ${fullStops})`;
+    } else {
+      grad = `linear-gradient(${linearAngle}, ${fullStops})`;
+    }
 
-    // apply both gradient layer + solid fallback
-    document.body.style.background = `${grad}, ${backgroundColor}`;
-    document.body.style.backgroundColor = backgroundColor;
+    document.documentElement.style.setProperty(
+      '--display-bg',
+      `${grad}, ${backgroundColor}`
+    );
+    document.documentElement.style.setProperty(
+      '--display-filter',
+      [
+        `brightness(${brightness})`,
+        `contrast(${contrast})`,
+        `saturate(${saturation})`
+      ].join(' ')
+    );
   };
 
-  // 1) on mount, immediately apply dark defaults and mark loaded
   useEffect(() => {
     apply(defaultSettings);
     setLoaded(true);
   }, []);
 
-  // 2) if authenticated, load real settings and re-apply
   useEffect(() => {
     if (!isAuthenticated) return;
-    const load = async () => {
+    (async () => {
       try {
         const res = await callApi('settings/load/?category=display');
         const raw = res.data.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {});
@@ -98,15 +119,12 @@ export const DisplaySettingsProvider = ({ children }) => {
         setSettings(merged);
         apply(merged);
       } catch {
-        // on error, stick with defaults
         setSettings(defaultSettings);
         apply(defaultSettings);
       }
-    };
-    load();
+    })();
   }, [isAuthenticated]);
 
-  // 3) respond to system theme changes if in “system” mode
   useEffect(() => {
     if (settings.themeMode !== 'system') return;
     const mql = window.matchMedia('(prefers-color-scheme: dark)');
@@ -116,9 +134,7 @@ export const DisplaySettingsProvider = ({ children }) => {
   }, [settings]);
 
   return (
-    <DisplaySettingsContext.Provider
-      value={{ settings, setSettings, apply, loaded }}
-    >
+    <DisplaySettingsContext.Provider value={{ settings, setSettings, apply, loaded }}>
       {children}
     </DisplaySettingsContext.Provider>
   );
