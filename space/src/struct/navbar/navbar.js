@@ -13,9 +13,8 @@ import appLogoComplete from '../../assets/logo-comp.png';
 import useNotifications from '../../hooks/useNotifications';
 import { useCreatePostContext } from '../../context/CreatePostContext';
 import { useModeContext } from '../../context/modeContext';
-// import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import { useDevice } from '../../context/DeviceContext';
-import { ChatBubbleLeftRightIcon } from '../../utils/CustomIcons';
+import { ChatIcon } from '../../utils/CustomIcons';
 import { useDisplaySettings } from '../../context/DisplaySettingsContext';
 
 const Navbar = ({
@@ -181,7 +180,7 @@ const themeMode = settings.themeMode;
                             {!isM &&
                                 <li className='messages-page-link'>
                                     <Link to={`/messages/inbox`}>
-                                        <ChatBubbleLeftRightIcon mode={themeMode} style={{ fontSize: 25 }} />
+                                        <ChatIcon mode={themeMode} />
                                     </Link>
                                 </li>
                             }

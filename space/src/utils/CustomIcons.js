@@ -551,7 +551,7 @@ export const NineDotIcon = ({ style = {}, color, mode = null, onClick }) => {
 };
 
 // CHAT BUBBLE
-export const ChatBubbleLeftRightIcon = ({ style = {}, color, mode = null, ...props }) => {
+export const ChatIcon = ({ style = {}, color, mode = null, ...props }) => {
     let resolvedColor = color;
     if (!resolvedColor && mode === 'dark') resolvedColor = '#fff';
     if (!resolvedColor && mode === 'light') resolvedColor = '#23272e';
