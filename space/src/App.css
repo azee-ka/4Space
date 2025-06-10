@@ -6,6 +6,16 @@
   background: radial-gradient(circle at top, rgba(83, 135, 190, 0.157), rgba(14, 14, 14, 0));
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--display-bg);
+  filter: var(--display-filter);
+  z-index: -1;            /* behind everything */
+  pointer-events: none;   /* clicks pass through */
+}
+
 a {
   color: white;
   text-decoration: none;
