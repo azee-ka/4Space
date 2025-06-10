@@ -1,12 +1,14 @@
+// context/DisplaySettingsContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import useApi from '../utils/useApi';
 import { useAuth } from '../hooks/useAuth';
 
-const defaultSettings = {
+// Export this so DisplayMenu can reuse it
+export const defaultSettings = {
   gradient: 'radial',
-  gradientColors: [{ color: '#5387be', alpha: 0.23 }],
+  gradientColors: [{ color: '#5387be', alpha: 0.1 }],   // 0.20 alpha
   fontSize: '1em',
-  themeMode: 'dark',         // 'dark', 'light', or 'system'
+  themeMode: 'dark',         // always dark until backend says otherwise
   backgroundColor: 'black',
   padding: 'medium',
   animations: true,
@@ -28,9 +30,7 @@ const rgba = ({ color, alpha }) => {
     return `rgba(83, 135, 190, ${alpha})`;
   }
   const hex = color.replace('#', '');
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
+  const [r, g, b] = [0,2,4].map(i => parseInt(hex.slice(i, i+2), 16));
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
@@ -51,47 +51,45 @@ export const DisplaySettingsProvider = ({ children }) => {
       backgroundColor,
     } = s;
 
+    // base font & data-theme
     document.documentElement.style.setProperty('--base-font-size', fontSize);
     const theme = getEffectiveTheme(themeMode);
     document.documentElement.setAttribute('data-theme', theme);
     document.body.className = theme;
 
-    const app = document.querySelector('.App');
-    if (!app) return;
-
+    // light mode is just a solid
     if (theme === 'light') {
-      app.style.background = '#eeeeee';
-      app.style.backgroundColor = '#eeeeee';
+      document.body.style.background = '#eeeeee';
+      document.body.style.backgroundColor = '#eeeeee';
       return;
     }
 
-    // build the <color-stop> list + explicit transparent fallback
+    // build gradient
     const stops = gradientColors.map(rgba).join(', ');
     const fullStops = `${stops}, rgba(0,0,0,0)`;
-
     const grad =
       gradient === 'radial'
         ? `radial-gradient(circle at ${radialPosition}, ${fullStops})`
         : `linear-gradient(${linearAngle}, ${fullStops})`;
 
-    app.style.background = `${grad}, ${backgroundColor}`;
-    app.style.backgroundColor = backgroundColor;
+    // apply both gradient layer + solid fallback
+    document.body.style.background = `${grad}, ${backgroundColor}`;
+    document.body.style.backgroundColor = backgroundColor;
   };
 
-  // on mount: set initial
+  // 1) on mount, immediately apply dark defaults and mark loaded
   useEffect(() => {
     apply(defaultSettings);
+    setLoaded(true);
   }, []);
 
-  // load saved
+  // 2) if authenticated, load real settings and re-apply
   useEffect(() => {
+    if (!isAuthenticated) return;
     const load = async () => {
       try {
         const res = await callApi('settings/load/?category=display');
-        const raw = res.data.reduce((acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        }, {});
+        const raw = res.data.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {});
         const merged = {
           ...defaultSettings,
           ...raw,
@@ -99,24 +97,22 @@ export const DisplaySettingsProvider = ({ children }) => {
         };
         setSettings(merged);
         apply(merged);
-      } catch (e) {
+      } catch {
+        // on error, stick with defaults
         setSettings(defaultSettings);
         apply(defaultSettings);
-      } finally {
-        setLoaded(true);
       }
     };
-    if (isAuthenticated) load();
+    load();
   }, [isAuthenticated]);
 
-  // watch for system theme changes
+  // 3) respond to system theme changes if in “system” mode
   useEffect(() => {
-    if (settings.themeMode === 'system') {
-      const mql = window.matchMedia('(prefers-color-scheme: dark)');
-      const handler = () => apply(settings);
-      mql.addEventListener('change', handler);
-      return () => mql.removeEventListener('change', handler);
-    }
+    if (settings.themeMode !== 'system') return;
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => apply(settings);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
   }, [settings]);
 
   return (
