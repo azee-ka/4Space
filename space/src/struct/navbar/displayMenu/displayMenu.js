@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './displayMenu.css';
 import { useDisplaySettings } from '../../../context/DisplaySettingsContext';
 import useApi from '../../../utils/useApi';
@@ -20,7 +20,7 @@ const getNextTheme = (current) => {
 
 const getEffectiveTheme = (themeMode) => {
   if (themeMode === 'system') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return getSystemTheme();
   }
   return themeMode;
 };
@@ -29,10 +29,19 @@ const DisplayMenu = ({ onClose }) => {
   const { settings, setSettings, apply, loaded } = useDisplaySettings();
   const { callApi } = useApi();
   const [savedSettings, setSavedSettings] = useState(null);
+  const [radialCoord, setRadialCoord] = useState({ x: 50, y: 50 });
 
   useEffect(() => {
     if (loaded && settings) {
       setSavedSettings(settings);
+      if (settings.radialPosition?.includes('%')) {
+        const [x, y] = settings.radialPosition
+          .split(' ')
+          .map((val) => parseFloat(val));
+        if (!isNaN(x) && !isNaN(y)) {
+          setRadialCoord({ x, y });
+        }
+      }
     }
   }, [loaded, settings]);
 
@@ -66,14 +75,10 @@ const DisplayMenu = ({ onClose }) => {
   const handleThemeToggle = () => {
     const nextTheme = getNextTheme(settings.themeMode || 'system');
     const updated = { ...settings, themeMode: nextTheme.value };
-
-    if (nextTheme.value === 'system') {
-      const systemTheme = getSystemTheme();
-      document.documentElement.setAttribute('data-theme', systemTheme);
-    } else {
-      document.documentElement.setAttribute('data-theme', nextTheme.value);
-    }
-
+    document.documentElement.setAttribute(
+      'data-theme',
+      getEffectiveTheme(nextTheme.value)
+    );
     setSettings(updated);
     apply(updated);
   };
@@ -94,7 +99,7 @@ const DisplayMenu = ({ onClose }) => {
       padding: 'medium',
       animations: true,
       transparency: 0.15,
-      radialPosition: 'top',
+      radialPosition: '50% 50%',
       linearAngle: '135deg',
     };
     setSettings(defaults);
@@ -127,19 +132,14 @@ const DisplayMenu = ({ onClose }) => {
     themeMode = 'system',
   } = settings;
 
-  // For rendering icon & label
   const { label: themeLabel, icon: ThemeIcon } =
     themeOptions.find((opt) => opt.value === themeMode) || themeOptions[0];
 
-  // Detect if in light mode (even if via system)
   const effectiveTheme = getEffectiveTheme(themeMode);
   const isLight = effectiveTheme === 'light';
 
   return (
-    <div
-      className="display-settings-container"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="display-settings-container" onClick={(e) => e.stopPropagation()}>
       <div className="settings-title-row">
         <h3>Display Settings</h3>
         <button
@@ -147,56 +147,60 @@ const DisplayMenu = ({ onClose }) => {
           onClick={handleThemeToggle}
           aria-label={`Toggle theme (${themeLabel})`}
           title={`Theme: ${themeLabel} (click to change)`}
-          type="button"
         >
           <ThemeIcon filled />
         </button>
       </div>
 
-      {/* Background/gradient controls: Hide if in light mode */}
       {!isLight && (
         <>
-          {/* Gradient Type */}
           <div className="display-setting">
-            <label>Background Style</label>
+            <label>Gradient Style</label>
             <select
               value={gradient}
               onChange={(e) => updateSetting('gradient', e.target.value)}
             >
               <option value="radial">Radial</option>
               <option value="linear">Linear</option>
-              <option value="solid">Solid Color</option>
             </select>
           </div>
 
-          {/* Radial Position */}
           {gradient === 'radial' && (
-            <div className="display-setting">
-              <label>Radial Position</label>
-              <select
-                value={radialPosition}
-                onChange={(e) => updateSetting('radialPosition', e.target.value)}
-              >
-                {[
-                  'top',
-                  'center',
-                  'bottom',
-                  'left',
-                  'right',
-                  'top left',
-                  'top right',
-                  'bottom left',
-                  'bottom right',
-                ].map((pos) => (
-                  <option key={pos} value={pos}>
-                    {pos}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+  <div className="display-setting">
+    <label>Radial Position</label>
+    <div
+      className="radial-pad"
+      onMouseDown={(e) => {
+        const pad = e.currentTarget;
+        const move = (ev) => {
+          const rect = pad.getBoundingClientRect();
+          const x = Math.min(100, Math.max(0, ((ev.clientX - rect.left) / rect.width) * 100));
+          const y = Math.min(100, Math.max(0, ((ev.clientY - rect.top) / rect.height) * 100));
+          setRadialCoord({ x, y });
+          updateSetting('radialPosition', `${x.toFixed(0)}% ${y.toFixed(0)}%`);
+        };
+        const up = () => {
+          document.removeEventListener('mousemove', move);
+          document.removeEventListener('mouseup', up);
+        };
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', up);
+        move(e); // trigger once on initial click
+      }}
+    >
+      <div
+        className="radial-indicator"
+        style={{
+          left: `${radialCoord.x}%`,
+          top: `${radialCoord.y}%`,
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+    </div>
+  </div>
+            )}
 
-          {/* Linear Angle */}
+
           {gradient === 'linear' && (
             <div className="display-setting">
               <label>Linear Angle</label>
@@ -206,9 +210,7 @@ const DisplayMenu = ({ onClose }) => {
                   min="0"
                   max="360"
                   value={parseInt(linearAngle)}
-                  onChange={(e) =>
-                    updateSetting('linearAngle', `${e.target.value}deg`)
-                  }
+                  onChange={(e) => updateSetting('linearAngle', `${e.target.value}deg`)}
                 />
                 <span className="slider-value">{parseInt(linearAngle)}°</span>
               </div>
