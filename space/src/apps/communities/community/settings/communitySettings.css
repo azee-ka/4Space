@@ -565,3 +565,225 @@
 .changed-preview-row {
     grid-template-columns: 1.2fr 0.9fr repeat(3, 0.8fr) 0.7fr;
 }
+
+
+
+
+
+
+
+
+
+
+/* === Community Settings Light Mode === */
+
+[data-theme="light"] .community-settings-wrapper {
+    background: none;
+    color: #252b35;
+}
+
+[data-theme="light"] .settings-header h2 {
+    color: #1a2540;
+}
+
+[data-theme="light"] .back-btn {
+    background: #f0f4f9;
+    color: #3a4c6e;
+    border: 1px solid #d5e6f6;
+}
+[data-theme="light"] .back-btn:hover {
+    background: #e8f1fb;
+    color: #1a63a4;
+}
+
+[data-theme="light"] .tab-btn {
+    background: #f4faff;
+    border: 1px solid #e3eaf3;
+    color: #4d6187;
+}
+[data-theme="light"] .tab-btn:hover {
+    background: #e1f1fb;
+    color: #236ca6;
+}
+[data-theme="light"] .tab-btn.active {
+    background: #c6ebff;
+    border-color: #62c5ff;
+    color: #186c9a;
+    font-weight: 600;
+}
+
+[data-theme="light"] .section-title {
+    color: #1d273c;
+}
+
+[data-theme="light"] .settings-row {
+    background: #f9fcff;
+    border-bottom: 1px solid #e4e9f2;
+    color: #26314b;
+}
+[data-theme="light"] .settings-row.header {
+    background: #eaf4fc;
+    border-bottom: 1px solid #b5d6ef;
+    color: #2b3958;
+}
+
+[data-theme="light"] .settings-row:hover {
+    background: #e8f3ff;
+}
+
+[data-theme="light"] .username-col {
+    color: #1c304f;
+}
+
+[data-theme="light"] .perm-label {
+    color: #789;
+}
+
+[data-theme="light"] .perm-dropdown,
+[data-theme="light"] .dropdown,
+[data-theme="light"] .announcement-box {
+    background: #f9fcff;
+    border: 1px solid #c5d9e8;
+    color: #264169;
+}
+[data-theme="light"] .perm-dropdown:focus,
+[data-theme="light"] .dropdown:focus,
+[data-theme="light"] .announcement-box:focus {
+    border-color: #49b5ff;
+}
+
+[data-theme="light"] .action-col button {
+    background: #d7f2ff;
+    color: #1978a9;
+    border: 1px solid #9ad8f7;
+}
+[data-theme="light"] .action-col button:hover {
+    background: #b5e7fa;
+    border-color: #45c4f7;
+    color: #0d5689;
+}
+
+[data-theme="light"] .toggle-row {
+    color: #22395b;
+}
+
+[data-theme="light"] .toggle-switch {
+    background: #e7f6ff;
+    border: 1px solid #9fdefb;
+}
+[data-theme="light"] .toggle-slider {
+    background: #e3f7fb;
+}
+[data-theme="light"] .toggle-switch input:checked + .toggle-slider {
+    background: #47d8fc;
+    box-shadow: 0 0 6px #5fd9fb;
+}
+
+/* === Select Appearance === */
+[data-theme="light"] .settings-section select.dropdown,
+[data-theme="light"] .settings-section select.perm-dropdown {
+    background: #fcfcfc;
+    border: 1px solid #d5e5ef;
+    color: #223049;
+    background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23707a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+[data-theme="light"] .settings-section select option {
+    background: #f0f6fb;
+    color: #19325a;
+}
+
+/* === Table Scroll === */
+[data-theme="light"] .settings-table-container {
+    border: 1px solid #e5edf5;
+    background: #fcfcfd;
+}
+[data-theme="light"] .settings-table-scroll::-webkit-scrollbar-thumb {
+    background: #ddeefc;
+}
+
+/* === Mini table inside the changed users block === */
+[data-theme="light"] .changed-users-container {
+    border: 1px solid #a2d6f7;
+    background: #f6fcff;
+    box-shadow: inset 0 0 0 1px #c3e3ff;
+}
+
+[data-theme="light"] .changed-users-title {
+    color: #1789ce;
+}
+
+[data-theme="light"] .changed-users-info {
+    color: #627493;
+}
+
+[data-theme="light"] .save-changes-btn {
+    background: #c1f0ff;
+    color: #1779b3;
+    border: 1px solid #77d7f9;
+}
+[data-theme="light"] .save-changes-btn:hover {
+    background: #b5e7fa;
+    color: #0b6da3;
+    border-color: #35a4e8;
+}
+
+[data-theme="light"] .changed-user-row {
+    background: #f3faff;
+    border: 1px solid #c4e5fa;
+    color: #294060;
+}
+[data-theme="light"] .changed-user-row:hover {
+    background: #e0f7ff;
+}
+
+[data-theme="light"] .changed-user-name {
+    color: #1a273a;
+}
+[data-theme="light"] .changed-user-detail {
+    color: #5f6b85;
+}
+[data-theme="light"] .changed-user-changes {
+    color: #386e8a;
+}
+[data-theme="light"] .change-tag {
+    background: #ecf7fa;
+    color: #38779c;
+    border: 1px solid #cbe6f7;
+}
+[data-theme="light"] .change-label {
+    color: #1779b3;
+}
+[data-theme="light"] .change-from {
+    color: #ff4343;
+}
+[data-theme="light"] .change-arrow {
+    color: #7a8a99;
+}
+[data-theme="light"] .change-to {
+    color: #15b96b;
+}
+[data-theme="light"] .changed-preview-row {
+    background: #eefafd;
+    border-left: 3px solid #6fd7ff;
+}
+[data-theme="light"] .change-before {
+    color: #ee5252;
+    background: #fef0f1;
+    border: 1px solid #fcdada;
+}
+[data-theme="light"] .change-after {
+    color: #2ec480;
+    background: #d7faed;
+    border: 1px solid #8cf8c7;
+}
+[data-theme="light"] .revert-btn {
+    background: #ffe9e9;
+    color: #e05252;
+    border: 1px solid #ffbaba;
+}
+[data-theme="light"] .revert-btn:hover {
+    background: #ffd5d5;
+    color: #b31818;
+    border-color: #ff8888;
+}
+

@@ -1,4 +1,80 @@
-/* src/components/repositories.css */
+:root {
+  --repo-text-main: #ecf1f8;
+  --repo-header-color: #ffffff;
+  --repo-card-bg: #1e1e25;
+  --repo-card-border: #2c2c33;
+  --repo-card-highlight: linear-gradient(
+    to bottom,
+    rgba(79, 209, 197, 0.65),
+    rgba(126, 232, 217, 0.85)
+  );
+  --repo-badge-bg: #4fd1c5;
+  --repo-badge-text: #121217;
+  --repo-desc: #bbb;
+  --repo-tag-bg: #333;
+  --repo-tag-color: #ccc;
+  --repo-tag-more-bg: #444;
+  --repo-meta-color: #999;
+  --repo-meta-secondary: #c4c4c4;
+  --repo-meta-secondary-hover-bg: #333;
+  --repo-meta-secondary-hover-color: #fff;
+  --repo-slug-color: #bbb;
+  --repo-btn-primary-bg: #4fd1c4d7;
+  --repo-btn-primary-text: #121217;
+  --repo-btn-primary-hover-bg: #7ee8d9;
+  --repo-btn-secondary-bg: transparent;
+  --repo-btn-secondary-color: #c4c4c4;
+  --repo-btn-secondary-border: #555;
+  --repo-grid-card-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  --repo-modal-backdrop: rgba(0,0,0,0.65);
+  --repo-modal-bg: #1e1e25;
+  --repo-modal-border: #2c2c33;
+  --repo-modal-header: #fff;
+  --repo-modal-label: #ccc;
+  --repo-modal-input-bg: #2c2c33;
+  --repo-modal-input-border: #444;
+  --repo-modal-input-text: #e0e0e0;
+  --repo-modal-input-focus: #4fd1c5;
+}
+
+[data-theme="light"] {
+  --repo-text-main: #15303a;
+  --repo-header-color: #112d44;
+  --repo-card-bg: #fafdff;
+  --repo-card-border: #d3e5eb;
+  --repo-card-highlight: linear-gradient(
+    to bottom,
+    #9dece3,
+    #e6fffd
+  );
+  --repo-badge-bg: #8be3de;
+  --repo-badge-text: #174048;
+  --repo-desc: #40707a;
+  --repo-tag-bg: #e8f8fb;
+  --repo-tag-color: #29809b;
+  --repo-tag-more-bg: #c0eef0;
+  --repo-meta-color: #53899a;
+  --repo-meta-secondary: #547fa7;
+  --repo-meta-secondary-hover-bg: #d2eef2;
+  --repo-meta-secondary-hover-color: #164654;
+  --repo-slug-color: #678ca0;
+  --repo-btn-primary-bg: #8be3de;
+  --repo-btn-primary-text: #174048;
+  --repo-btn-primary-hover-bg: #baf8f0;
+  --repo-btn-secondary-bg: #e8f8fb;
+  --repo-btn-secondary-color: #547fa7;
+  --repo-btn-secondary-border: #b9e0ea;
+  --repo-grid-card-shadow: 0 6px 18px rgba(34, 160, 200, 0.07);
+  --repo-modal-backdrop: rgba(190,220,240,0.15);
+  --repo-modal-bg: #fafdff;
+  --repo-modal-border: #d3e5eb;
+  --repo-modal-header: #178bb6;
+  --repo-modal-label: #5d7897;
+  --repo-modal-input-bg: #f0fcff;
+  --repo-modal-input-border: #b7e6f7;
+  --repo-modal-input-text: #164654;
+  --repo-modal-input-focus: #29c2b5;
+}
 
 /* === PAGE LAYOUT === */
 .repo-page {
@@ -8,7 +84,7 @@
   flex-direction: column;
   gap: 1.2rem;
   font-family: 'Segoe UI', sans-serif;
-  color: #ecf1f8;
+  color: var(--repo-text-main);
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -23,7 +99,7 @@
 .repo-header h1 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--repo-header-color);
   margin-bottom: 0;
 }
 
@@ -38,21 +114,21 @@
   transition: background 0.2s, transform 0.1s;
 }
 .btn-primary {
-  background: #4fd1c4d7;
-  color: #121217;
+  background: var(--repo-btn-primary-bg);
+  color: var(--repo-btn-primary-text);
 }
 .btn-primary:hover {
-  background: #7ee8d9;
+  background: var(--repo-btn-primary-hover-bg);
   transform: translateY(-1px);
 }
 .btn-secondary {
-  background: transparent;
-  color: #c4c4c4;
-  border: 1px solid #555;
+  background: var(--repo-btn-secondary-bg);
+  color: var(--repo-btn-secondary-color);
+  border: 1px solid var(--repo-btn-secondary-border);
 }
 .btn-secondary:hover {
-  background: #333;
-  color: #fff;
+  background: var(--repo-meta-secondary-hover-bg);
+  color: var(--repo-meta-secondary-hover-color);
   transform: translateY(-1px);
 }
 
@@ -68,8 +144,8 @@
 .repo-card {
   position: relative;
   overflow: hidden;
-  background: #1e1e25;
-  border: 1px solid #2c2c33;
+  background: var(--repo-card-bg);
+  border: 1px solid var(--repo-card-border);
   border-radius: 12px;
   padding: 1rem;
   box-sizing: border-box;
@@ -84,7 +160,7 @@
 
 .repo-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--repo-grid-card-shadow);
 }
 .repo-card::before {
   content: '';
@@ -101,11 +177,7 @@
 .repo-card:hover::before {
   width: 4px;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(79, 209, 197, 0.65),
-    rgba(126, 232, 217, 0.85)
-  );
+  background: var(--repo-card-highlight);
 }
 
 /* Top row with title + badge */
@@ -118,7 +190,7 @@
 .repo-card-top h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #fff;
+  color: var(--repo-modal-header);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -126,8 +198,8 @@
   text-overflow: ellipsis;
 }
 .badge {
-  background: #4fd1c5;
-  color: #121217;
+  background: var(--repo-badge-bg);
+  color: var(--repo-badge-text);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.2rem 0.5rem;
@@ -137,7 +209,7 @@
 /* description: clamp to 3 lines */
 .repo-desc {
   font-size: 0.9rem;
-  color: #bbb;
+  color: var(--repo-desc);
   flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -155,8 +227,8 @@
   margin: 0 !important;
 }
 .repo-tags .tag {
-  background: #333;
-  color: #ccc;
+  background: var(--repo-tag-bg);
+  color: var(--repo-tag-color);
   padding: 0.2rem 0.4rem;
   font-size: 0.75rem;
   border-radius: 4px;
@@ -164,7 +236,7 @@
 .repo-tags .tag.more {
   font-size: 0.65rem;
   opacity: 0.8;
-  background: #444;
+  background: var(--repo-tag-more-bg);
 }
 
 /* meta row */
@@ -174,7 +246,7 @@
   gap: 1rem;
   flex-wrap: wrap;
   font-size: 0.75rem;
-  color: #999;
+  color: var(--repo-meta-color);
   z-index: 2;
   margin-top: 1rem !important;
 }
@@ -204,11 +276,11 @@
   gap: 0.25rem;
 }
 
-/* === MODAL OVERLAY & CARD (unchanged) === */
+/* === MODAL OVERLAY & CARD (unchanged except colors) === */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: var(--repo-modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,8 +288,8 @@
   z-index: 1000;
 }
 .modal-card {
-  background: #1e1e25;
-  border: 1px solid #2c2c33;
+  background: var(--repo-modal-bg);
+  border: 1px solid var(--repo-modal-border);
   border-radius: 12px;
   width: 100%;
   max-width: 480px;
@@ -240,29 +312,29 @@
 .modal-card h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.4rem;
-  color: #fff;
+  color: var(--repo-modal-header);
 }
 .modal-card label {
   display: flex;
   flex-direction: column;
   font-size: 0.9rem;
-  color: #ccc;
+  color: var(--repo-modal-label);
 }
 .modal-card input,
 .modal-card textarea {
   margin-top: 0.3rem;
   padding: 0.5rem;
   border-radius: 6px;
-  border: 1px solid #444;
-  background: #2c2c33;
-  color: #e0e0e0;
+  border: 1px solid var(--repo-modal-input-border);
+  background: var(--repo-modal-input-bg);
+  color: var(--repo-modal-input-text);
   font-size: 0.9rem;
   transition: border-color 0.2s;
 }
 .modal-card input:focus,
 .modal-card textarea:focus {
   outline: none;
-  border-color: #4fd1c5;
+  border-color: var(--repo-modal-input-focus);
 }
 .modal-card textarea {
   resize: vertical;

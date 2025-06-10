@@ -1,167 +1,197 @@
+:root {
+  /* Backgrounds & containers */
+  --explore-bg: transparent;
+  --explore-inner-bg: transparent;
+  --posts-bg: transparent;
+
+  /* Text */
+  --explore-title: #fff;
+  --explore-tab: #b7e9ff;
+  --explore-tab-active-bg: #262e39;
+  --explore-tab-active-color: #54dfff;
+  --explore-tab-hover-bg: #22262e;
+  --explore-tab-hover-color: #7dfcff;
+
+  --loading-text: #b5dbe7;
+
+  /* Tab box shadow */
+  --tab-shadow: 0 3px 14px 0 #144b5c22;
+}
+
+[data-theme="light"] {
+  --explore-bg: #f7fafd;
+  --explore-inner-bg: #fff;
+  --posts-bg: transparent;
+
+  --explore-title: #22303a;
+  --explore-tab: #409abf;
+  --explore-tab-active-bg: #eaf4fa;
+  --explore-tab-active-color: #007f99;
+  --explore-tab-hover-bg: #d5ecf4;
+  --explore-tab-hover-color: #189ec4;
+
+  --loading-text: #9ab5c2;
+  --tab-shadow: 0 3px 12px 0 #8fc8e422;
+}
+
 /* --- Main Explore Layout --- */
 .explore-page {
-    background-color: rgba(255, 0, 0, 0);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  /* background-color: var(--explore-bg); */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Inner container with vertical gap */
 .explore-page-inner {
-    background-color: rgba(255, 0, 0, 0);
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-bottom: 20px;
-    box-sizing: border-box;
+  /* background-color: var(--explore-inner-bg); */
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 20px;
+  box-sizing: border-box;
 }
 
 /* --- Header Row: Title Left, Tabs Centered, Filler Right --- */
 .explore-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 48px;
-    padding: 0 24px 0 0;
-    box-sizing: border-box;
-    gap: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 24px 0 0;
+  box-sizing: border-box;
+  gap: 0;
 }
 
 /* Title Left */
 .explore-header-title {
-    flex: 1 0 0;
-    text-align: left;
-    font-size: 1.5em;
-    font-weight: bold;
-    color: white;
-    margin: 0;
-    padding: 0;
-    letter-spacing: 0.01em;
-    line-height: 1.2;
+  flex: 1 0 0;
+  text-align: left;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--explore-title);
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
 /* Tabs Centered */
 .explore-tabs-inline {
-    flex: 1 0 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
+  flex: 1 0 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
 
 .explore-tab-btn {
-    background: none;
-    border: none;
-    color: #b7e9ff;
-    font-size: 1.08em;
-    font-weight: 600;
-    padding: 8px 26px;
-    border-radius: 22px;
-    transition: all 0.17s;
-    cursor: pointer;
-    opacity: 0.7;
-    outline: none;
+  background: none;
+  border: none;
+  color: var(--explore-tab);
+  font-size: 1.08em;
+  font-weight: 600;
+  padding: 8px 26px;
+  border-radius: 22px;
+  transition: all 0.17s;
+  cursor: pointer;
+  opacity: 0.7;
+  outline: none;
 }
-
 .explore-tab-btn.active {
-    background: #262e39;
-    color: #54dfff;
-    box-shadow: 0 3px 14px 0 #144b5c22;
-    /* opacity: 1; */
+  background: var(--explore-tab-active-bg);
+  color: var(--explore-tab-active-color);
+  box-shadow: var(--tab-shadow);
 }
 .explore-tab-btn:hover:not(.active) {
-    background: #22262e;
-    color: #7dfcff;
-    /* opacity: 0.92; */
+  background: var(--explore-tab-hover-bg);
+  color: var(--explore-tab-hover-color);
 }
 
-/* Optional: Right-side filler */
 .explore-header-filler {
-    flex: 1 0 0;
+  flex: 1 0 0;
 }
 
 /* --- Posts Container --- */
 .posts-container {
-    width: 100%;
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    background-color: rgba(255, 0, 0, 0);
-    padding: 0px 25px 0 0;
-    box-sizing: border-box;
-    overflow-y: auto;
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  background-color: var(--posts-bg);
+  padding: 0px 25px 0 0;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 /* --- Masonry Grid --- */
 .explore-masonry-grid {
-    display: flex;
-    margin-left: -12px;
-    width: auto;
+  display: flex;
+  margin-left: -12px;
+  width: auto;
 }
 .explore-masonry-column {
-    padding-left: 12px;
-    background-clip: padding-box;
+  padding-left: 12px;
+  background-clip: padding-box;
 }
-
 
 .thread-posts-list {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
-
 
 /* --- Misc/Loading/No posts --- */
 .loading, .no-posts {
-    width: 100%;
-    text-align: center;
-    color: #b5dbe7;
-    margin: 24px 0;
-    font-size: 1.14em;
-    letter-spacing: 0.01em;
+  width: 100%;
+  text-align: center;
+  color: var(--loading-text);
+  margin: 24px 0;
+  font-size: 1.14em;
+  letter-spacing: 0.01em;
 }
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
-    .explore-masonry-grid {
-        margin-left: -7px;
-    }
-    .explore-masonry-column {
-        padding-left: 7px;
-    }
-    .posts-container {
-        padding-right: 7px;
-    }
+  .explore-masonry-grid {
+    margin-left: -7px;
+  }
+  .explore-masonry-column {
+    padding-left: 7px;
+  }
+  .posts-container {
+    padding-right: 7px;
+  }
 }
 
 @media (max-width: 700px) {
-    .explore-header-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 6px;
-        padding: 0;
-        min-height: unset;
-    }
-    .explore-header-title {
-        text-align: left;
-        font-size: 1.17em;
-        margin-bottom: 2px;
-    }
-    .explore-tabs-inline {
-        justify-content: flex-start;
-        gap: 6px;
-    }
-    .explore-header-filler {
-        display: none;
-    }
-    .posts-container {
-        padding: 0 2px;
-    }
+  .explore-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 0;
+    min-height: unset;
+  }
+  .explore-header-title {
+    text-align: left;
+    font-size: 1.17em;
+    margin-bottom: 2px;
+  }
+  .explore-tabs-inline {
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  .explore-header-filler {
+    display: none;
+  }
+  .posts-container {
+    padding: 0 2px;
+  }
 }

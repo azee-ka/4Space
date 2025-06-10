@@ -1,16 +1,16 @@
 .follow-button {
     padding: 8px 18px;
-    color: white;
+    color: var(--follow-btn-text, #fff);
     font-size: 0.9em;
-    background-color: rgba(0, 128, 255, 0.6);
+    background-color: var(--follow-btn-bg, rgba(0, 128, 255, 0.6));
     border: none;
     border-radius: 20px;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 .follow-button:hover {
-    background-color: rgba(0, 128, 255, 0.8);
-    box-shadow: 0 0 8px rgba(0, 128, 255, 0.6);
+    background-color: var(--follow-btn-hover-bg, rgba(0, 128, 255, 0.8));
+    box-shadow: 0 0 8px var(--follow-btn-shadow, rgba(0, 128, 255, 0.6));
 }
 
 .profile-actions {
@@ -23,15 +23,28 @@
 
 .message-button {
     padding: 8px 18px;
-    color: white;
+    color: var(--message-btn-text, #fff);
     font-size: 0.9em;
-    background-color: rgba(16, 182, 149, 0.672);
+    background-color: var(--message-btn-bg, rgba(16, 182, 149, 0.672));
     border: none;
     border-radius: 20px;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 .message-button:hover {
-    background-color: rgba(16, 182, 149, 0.8);
-    box-shadow: 0 0 8px rgba(16, 182, 149, 0.672);
+    background-color: var(--message-btn-hover-bg, rgba(16, 182, 149, 0.8));
+    box-shadow: 0 0 8px var(--message-btn-shadow, rgba(16, 182, 149, 0.672));
+}
+
+/* === LIGHT MODE OVERRIDES === */
+[data-theme="light"] {
+    --follow-btn-text: #20507d;
+    --follow-btn-bg: rgba(0, 150, 255, 0.18);
+    --follow-btn-hover-bg: rgba(0, 120, 220, 0.22);
+    --follow-btn-shadow: rgba(0, 120, 220, 0.13);
+
+    --message-btn-text: #227254;
+    --message-btn-bg: rgba(42, 180, 159, 0.13);
+    --message-btn-hover-bg: rgba(42, 180, 159, 0.23);
+    --message-btn-shadow: rgba(42, 180, 159, 0.12);
 }

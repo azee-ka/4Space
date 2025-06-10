@@ -12,10 +12,11 @@ import { useModeContext } from '../../../context/modeContext';
 import CreateSpaceTulip from '../../../apps/space/createSpaceTulip/createSpaceTulip';
 import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
 import { useDevice } from '../../../context/DeviceContext';
-import WorkspaceIcon from './WorkspaceIcon';
+// import WorkspaceIcon from './WorkspaceIcon';
 
 
 import {
+    WorkspaceIcon,
   DashboardIcon,
   TimelineIcon,
   ExploreIcon,
@@ -28,13 +29,16 @@ import {
   ToolsIcon,
   SettingsIcon,
   ProfileIcon
-} from './CustomIcons';
+} from '../../../utils/CustomIcons';
+import { useDisplaySettings } from '../../../context/DisplaySettingsContext';
 
 
 
 const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     const { isM } = useDevice();
     const { mode } = useModeContext();
+    const { settings } = useDisplaySettings();
+    const theme = settings.themeMode;
     const { openCreatePostOverlay } = useCreatePostContext();
     const { openCreateCommunityOverlay } = useCreateCommunityContext();
 
@@ -43,34 +47,34 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
 
 
     const homeIcons = [
-        { icon: <FontAwesomeIcon icon={faChartBar} />, label: 'Dasboard', path: '/dashboard', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faStream} />, label: 'Timeline', path: '/timeline', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Explore', path: '/explore', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
-        { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faEdit} />, label: 'Create Post', onClick: () => openCreatePostOverlay(window.location.pathname), type: 'button' },
+        { icon: <DashboardIcon mode={theme}  />, label: 'Dasboard', path: '/dashboard', type: 'link' },
+        { icon: <TimelineIcon mode={theme}  />, label: 'Timeline', path: '/timeline', type: 'link' },
+        { icon: <ExploreIcon mode={theme}  />, label: 'Explore', path: '/explore', type: 'link' },
+        { icon: <SearchIcon mode={theme}  />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <MessagesIcon mode={theme}  />, label: 'Messages', path: '/messages', type: 'link' },
+        { icon: <CreateIcon mode={theme}  />, label: 'Create Post', onClick: () => openCreatePostOverlay(window.location.pathname), type: 'button' },
     ];
     const communitiesIcons = [
-        { icon: <FontAwesomeIcon icon={faChartLine} />, label: 'Communities Dasboard', path: '/communities/dashboard', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faUserGroup} />, label: 'Communities Timeline', path: '/communities/timeline', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
-        { icon: <ChatBubbleLeftRightIcon className='chat-icon' />, label: 'Messages', path: '/messages', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faPenToSquare} />, label: 'Create Community', onClick: () => openCreateCommunityOverlay(window.location.pathname), type: 'button' },
+        { icon: <DashboardIcon mode={theme}  />, label: 'Communities Dasboard', path: '/communities/dashboard', type: 'link' },
+        { icon: <TimelineIcon mode={theme}  />, label: 'Communities Timeline', path: '/communities/timeline', type: 'link' },
+        { icon: <SearchIcon mode={theme}  />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <MessagesIcon mode={theme}  />, label: 'Messages', path: '/messages', type: 'link' },
+        { icon: <CreateIcon mode={theme}  />, label: 'Create Community', onClick: () => openCreateCommunityOverlay(window.location.pathname), type: 'button' },
     ];
     const spaceIcons = [
-        { icon: <WorkspaceIcon size={50} color="#00f0ff" />, label: 'Space', path: '/space/', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faChartLine} />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faDiagramProject} />, label: 'Projects', path: '/space/projects', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faBook} />, label: 'Library', path: '/space/library', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faCodeBranch} />, label: 'Repositories', path: '/space/repositories', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faSearch} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <WorkspaceIcon mode={theme}  />, label: 'Space', path: '/space/', type: 'link' },
+        { icon: <DashboardIcon mode={theme}  />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
+        { icon: <ProjectsIcon mode={theme}  />, label: 'Projects', path: '/space/projects', type: 'link' },
+        { icon: <LibraryIcon mode={theme}  />, label: 'Library', path: '/space/library', type: 'link' },
+        { icon: <RepoIcon mode={theme}  />, label: 'Repositories', path: '/space/repositories', type: 'link' },
+        { icon: <SearchIcon mode={theme}  />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
         {
             type: 'dropdown',
             component: (
                 <DropdownButton
                     toggleContent={
                         <button className="create-space-btn" ref={plusBtnRef}>
-                            <FontAwesomeIcon icon={faPlus} />
+                            <CreateIcon />
                         </button>
                     }
                     placement="right"
@@ -80,20 +84,20 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
             ),
             label: 'Create Space',
         },
-        { icon: <FontAwesomeIcon icon={faTools} />, label: 'Tools', path: '/space/tools', type: 'link' },
+        { icon: <ToolsIcon />, label: 'Tools', path: '/space/tools', type: 'link' },
     ];
 
 
 
     const bottomIcons = [
-        { icon: <FontAwesomeIcon icon={faGear} />, label: 'Settings', path: '/settings', type: 'link' },
+        { icon: <SettingsIcon />, label: 'Settings', path: '/settings', type: 'link' },
         {
             type: 'dropdown',
             component: (
                 <DropdownButton
                     toggleContent={
                         <button className="profile-menu-toggle">
-                            <FontAwesomeIcon icon={faUser} />
+                            <ProfileIcon />
                         </button>
                     }
                     placement="top-start"

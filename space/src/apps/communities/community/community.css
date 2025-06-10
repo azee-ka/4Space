@@ -345,3 +345,142 @@
     justify-content: center;
     align-content: center;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[data-theme="light"] .community-wrapper {
+    color: #202226;
+    background: #ffffff00;
+    box-sizing: border-box;
+}
+
+[data-theme="light"] .community-card {
+    background: #fff;
+    border: 1px solid #e7eaee;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(50,70,110,0.08), 0 1.5px 4px rgba(50,70,110,0.07);
+}
+
+[data-theme="light"] .community-sidebar {
+    background: none;
+}
+
+[data-theme="light"] .community-header-bar {
+    background: none;
+}
+
+[data-theme="light"] .community-header-logo {
+    border: 2px solid #e0e8f1;
+}
+
+[data-theme="light"] .community-header-name {
+    color: #23263b;
+}
+
+[data-theme="light"] .community-header-meta {
+    color: #6a7887;
+}
+
+[data-theme="light"] .community-header-actions button {
+    background: rgba(23,163,208,0.08);
+    border-color: #87d3ee;
+    color: #0a93bc;
+}
+[data-theme="light"] .community-header-actions button:hover {
+    background: rgba(23,163,208,0.13);
+    color: #1976d2;
+}
+[data-theme="light"] .community-join-btn.leave {
+    background: rgba(255,55,88,0.08);
+    border-color: #ffc3cb;
+    color: #d22;
+}
+[data-theme="light"] .community-join-btn.leave:hover {
+    background: #ffebee;
+}
+[data-theme="light"] .community-invite-btn {
+    background: rgba(49,234,183,0.07);
+    border-color: #bff7e3;
+    color: #1ac89a;
+}
+
+[data-theme="light"] .community-tabs-card {
+    background: #fcfcfd;
+    border: 1px solid #e9eef3;
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0,80,180,0.06);
+}
+
+[data-theme="light"] .community-tabs-header {
+    background: none;
+}
+
+[data-theme="light"] .community-tabs-title {
+    color: #213050;
+    text-shadow: none;
+}
+
+[data-theme="light"] .community-add-tab-btn {
+    background: #eef7fb;
+    border: 1px solid #c7e7f4;
+    color: #1197ba;
+}
+[data-theme="light"] .community-add-tab-btn:hover {
+    background: #d4f0fa;
+    color: #0a83a2;
+    box-shadow: 0 1px 4px #a4e4f9;
+}
+
+[data-theme="light"] .community-tabs-list {
+    background: none;
+}
+
+[data-theme="light"] .community-tab-item {
+    background: #f7fafd;
+    color: #274060;
+    border: 1px solid transparent;
+}
+[data-theme="light"] .community-tab-item:hover {
+    background: #e7f6fc;
+    color: #1676b6;
+    border: 1px solid #c8e9fa;
+}
+[data-theme="light"] .community-tab-item.active {
+    background: #e1f5ff;
+    color: #188fba;
+    font-weight: 600;
+    border: 1px solid #77d6ff;
+    box-shadow: 0 0 7px #d5f3ff inset;
+}
+
+[data-theme="light"] .community-card-wrapper {
+    background: none;
+}
+
+[data-theme="light"] .community-content-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(130,170,240,0.07);
+}
+
+[data-theme="light"] .tab-title {
+    color: #234;
+}
+
+[data-theme="light"] .tab-content-placeholder {
+    color: #888;
+    opacity: 0.94;
+}

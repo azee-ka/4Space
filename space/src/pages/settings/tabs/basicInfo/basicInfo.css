@@ -1,5 +1,45 @@
+/* ========== DARK THEME VARS (keep your current look) ========== */
+:root {
+  /* Main backgrounds */
+  --bi-bg: rgba(202, 11, 94, 0);
+  --bi-profile-bg: rgba(255,0,0,0);
+  --bi-profile-img-bg: rgba(13,0,255,0);
+  --bi-form-bg: rgba(147, 147, 147, 0);
+
+  /* Buttons, overlays */
+  --bi-btn-bg: rgb(0,132,127);
+  --bi-btn-bg-hover: rgba(0,132,128,0.24);
+  --bi-btn-shadow: 0 0 4px 3px rgb(0,132,127);
+  --bi-overlay-bg: rgba(11, 11, 11, 0.35);
+
+  /* Texts */
+  --bi-input-text: rgb(157,157,157);
+  --bi-label-text: #999999b6;
+  --bi-form-text: rgb(184,184,184);
+  --bi-form-label-focus: #939393;
+
+  /* Borders */
+  --bi-form-border: 1px solid #cccccc3c;
+  --bi-form-border-focus: 1px solid rgb(0,168,154);
+  --bi-gender-border: 1px solid rgba(204,204,204,0.353);
+  --bi-gender-border-focus: 1px solid rgb(0,187,190);
+
+  /* Select dropdown arrow */
+  --bi-gender-arrow: rgba(255,255,255,0.71);
+
+  /* Icon */
+  --bi-icon: rgb(198,198,198);
+
+  /* Save Button */
+  --bi-save-btn-color: white;
+
+  /* Misc */
+  --bi-gap: 25px;
+}
+
+/* ========== COMPONENTS ========== */
 .basic-info-tab {
-    background-color: rgb(202, 11, 94, 0);
+    background-color: var(--bi-bg);
     width: 70%;
     height: 100%;
     display: flex;
@@ -8,12 +48,12 @@
     align-items: center;
     padding: 15px 10px;
     box-sizing: border-box;
-    gap: 25px;
+    gap: var(--bi-gap);
 }
 
 .basic-info-profile-username {
     width: 100%;
-    background-color: rgba(255, 0, 0, 0);
+    background-color: var(--bi-profile-bg);
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
@@ -23,26 +63,20 @@
 .basic-info-profile-image {
     width: 200px;
     aspect-ratio: 1 / 1;
-    background-color: rgb(13, 0, 255, 0);
+    background-color: var(--bi-profile-img-bg);
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0;
     position: relative;
 }
-
 .profile-image-edit-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; justify-content: center; align-items: center;
     opacity: 0;
-    background-color: rgba(11, 11, 11, 0.35);
+    background-color: var(--bi-overlay-bg);
     transition: opacity 0.3s ease;
 }
 .profile-image-edit-overlay:hover {
@@ -51,20 +85,18 @@
 }
 .profile-image-edit-overlay .icon-style {
     font-size: 1.5em;
-    color: rgb(198, 198, 198);
+    color: var(--bi-icon);
 }
-
 .basic-info-profile-image img {
     width: 100%;
     aspect-ratio: 1 / 1;
     background-color: rgba(176, 176, 176, 0.238);
 }
 
-
 .basic-info-username {
     height: 45px;
     width: 100%;
-    background-color: #00800000;
+    background-color: transparent;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -73,54 +105,30 @@
 }
 .basic-info-username input {
     width: 300px;
-    color: rgb(157, 157, 157);
+    color: var(--bi-input-text);
 }
 
-
-
-.basic-info-names {
+.basic-info-names,
+.basic-info-email,
+.basic-info-about-me {
     width: 100%;
-    background-color: rgba(0, 0, 255, 0);
+    background-color: transparent;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
     gap: 10px;
-}
-
-
-
-.basic-info-email {
-    width: 100%;
-    background-color: rgba(0, 0, 255, 0);
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-
-.basic-info-about-me {
-    width: 100%;
-    background-color: rgba(0, 0, 255, 0);
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
     box-sizing: border-box;
 }
-.basic-info-about-me div label{
-    top: 20px;
-}
+
+.basic-info-about-me div label{ top: 20px; }
 .basic-info-about-me div textarea:focus + label,
 .basic-info-about-me div textarea:not(:placeholder-shown) + label {
     top: 1px;
 }
 
-
-
 .basic-info-save-btn {
-    background-color: rgba(255, 0, 0, 0);
+    background-color: transparent;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -133,32 +141,30 @@
     font-size: 1em;
     border: 0;
     border-radius: 5px;
-    background-color: rgb(0, 132, 127);
-    color: white;
+    background-color: var(--bi-btn-bg);
+    color: var(--bi-save-btn-color);
     transition: background-color 0.3s ease;
 }
 .basic-info-save-btn button:hover {
-    background-color: rgba(0, 132, 128, 0.24);
-    box-shadow: 0 0 4px 3px rgb(0, 132, 127);
+    background-color: var(--bi-btn-bg-hover);
+    box-shadow: var(--bi-btn-shadow);
     cursor: pointer;
 }
-
-
 
 .basic-info-gender {
     width: 50%; 
     position: relative;
-    background-color: rgba(0, 0, 255, 0);
+    background-color: transparent;
     align-self: flex-start;
 }
 .basic-info-gender select {
-    background-color: rgba(255, 0, 0, 0);
+    background-color: transparent;
     width: 100%;
     padding: 10px 8px;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: 1px solid rgba(204, 204, 204, 0.353);
+    border: var(--bi-gender-border);
     outline: none;
     cursor: pointer;
     color: rgb(187, 187, 187);
@@ -166,13 +172,12 @@
 }
 .basic-info-gender select:focus {
     box-shadow: none;
-    border: 1px solid rgb(0, 187, 190);
+    border: var(--bi-gender-border-focus);
 }
-
 .basic-info-gender::after {
     content: "▼";
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.71);
+    color: var(--bi-gender-arrow);
     position: absolute;
     right: 10px;
     top: 50%;
@@ -180,47 +185,29 @@
     pointer-events: none;
 }
 
-
-
-
-
 .form-field {
     position: relative;
     width: 100%;
     height: 100%;
 }
-
-
-.form-field input {
+.form-field input,
+.form-field textarea {
     width: 100%;
     height: 100%;
     padding: 10px;
-    border: 1px solid #cccccc3c;
+    border: var(--bi-form-border);
     border-radius: 4px;
     outline: none;
     font-size: 16px;
     box-sizing: border-box;
-    background-color: rgba(147, 147, 147, 0);
-    color: rgb(184, 184, 184);
+    background-color: var(--bi-form-bg);
+    color: var(--bi-form-text);
 }
-
-
 .form-field textarea {
     min-width: 100%;
     max-width: 100%;
     min-height: 100px;
-    padding: 10px;
-    border: 1px solid #cccccc3c;
-    border-radius: 4px;
-    outline: none;
-    font-size: 16px;
-    box-sizing: border-box;
-    background-color: rgba(147, 147, 147, 0);
-    box-sizing: border-box;
-    outline: none;
-    color: rgb(184, 184, 184);
 }
-
 .form-field label {
     position: absolute;
     top: 50%;
@@ -228,13 +215,11 @@
     transform: translateY(-60%);
     background-color: inherit;
     font-size: 15px;
-    color: #999999b6;
+    color: var(--bi-label-text);
     transition: all 0.3s ease;
     pointer-events: none;
     font-weight: normal;
 }
-
-
 .basic-info-gender .form-field label,
 .form-field textarea:focus + label,
 .form-field textarea:not(:placeholder-shown) + label,
@@ -242,17 +227,38 @@
 .form-field input:not(:placeholder-shown) + label {
     top: 2px;
     font-size: 12px;
-    color: #939393;
+    color: var(--bi-form-label-focus);
     backdrop-filter: blur(2px);
     padding: 0 2px;
 }
-
 .form-field textarea:focus,
 .form-field input:focus {
     box-shadow: 0px 0px 0px 0px gray !important;
-    border: 1px solid rgb(0, 168, 154);
+    border: var(--bi-form-border-focus);
     /* border: 1px solid rgb(24, 0, 39); */
 }
 
 
-
+/* ========== LIGHT THEME VARS ========== */
+[data-theme="light"] {
+  --bi-bg: #f8fafd00;
+  --bi-profile-bg: rgba(0,0,0,0);
+  --bi-profile-img-bg: #f5f8fa00;
+  --bi-form-bg: #ffffff;
+  --bi-btn-bg: #27a2b8;
+  --bi-btn-bg-hover: #66e0ee;
+  --bi-btn-shadow: 0 0 4px 3px #27a2b8;
+  --bi-overlay-bg: rgba(190, 220, 255, 0.13);
+  --bi-input-text: #274353;
+  --bi-label-text: #a3adb7;
+  --bi-form-text: #345;
+  --bi-form-label-focus: #399cb8;
+  --bi-form-border: 1px solid #c4d6e2;
+  --bi-form-border-focus: 1px solid #43c4de;
+  --bi-gender-border: 1px solid #d4e4ef;
+  --bi-gender-border-focus: 1px solid #5bc0e3;
+  --bi-gender-arrow: #78a3b4;
+  --bi-icon: #2686af;
+  --bi-save-btn-color: #fff;
+  --bi-gap: 25px;
+}

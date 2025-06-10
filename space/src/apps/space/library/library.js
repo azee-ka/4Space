@@ -28,9 +28,14 @@ const SpaceLibrary = () => {
 
   useEffect(() => {
     (async () => {
+      try {
+
       const suffix = folder.id ? `?parent=${folder.id}` : "";
       const res = await callApi(`space/library${suffix}`);
       setItems(res.data || []);
+      } catch (err) {
+        console.error('Error fetching items', err)
+      }
     })();
   }, [folder.id]);
 
@@ -55,6 +60,7 @@ const SpaceLibrary = () => {
     setItems(res.data || []);
   };
   const createFolder = async () => {
+    try {
     const name = prompt("New folder name");
     if (!name) return;
     const payload = { title: name };
@@ -63,6 +69,9 @@ const SpaceLibrary = () => {
     const suffix = folder.id ? `?parent=${folder.id}` : "";
     const res = await callApi(`space/library${suffix}`);
     setItems(res.data || []);
+    } catch(err) {
+      console.error('Error creating folder', err);
+    }
   };
 
   const filtered = items.filter(i =>

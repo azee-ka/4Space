@@ -1,237 +1,291 @@
+:root {
+  --timeline-bg: transparent;
+  --timeline-header-bg: transparent;
+  --timeline-header-text: #fff;
+  --timeline-h2-bg: transparent;
+  --timeline-h2-text: #fff;
+  --timeline-filter-bg: transparent;
+  --timeline-filter-btn-bg: transparent;
+  --timeline-filter-btn-hover-bg: rgba(150,150,150,0.5);
+  --timeline-filter-btn-color: #fff;
+
+  --timeline-filters-bg: #242424;
+  --timeline-filters-btn-bg: transparent;
+  --timeline-filters-btn-hover-bg: rgba(119,119,119,0.5);
+  --timeline-filters-btn-color: #fff;
+
+  --timeline-add-btn-bg: transparent;
+  --timeline-add-btn-border: rgba(128,128,128,0.528);
+  --timeline-add-btn-color: #dbdbdb;
+  --timeline-add-btn-hover-bg: rgba(119,119,119,0.5);
+  --timeline-add-btn-hover-color: #fff;
+  --timeline-add-btn-active-bg: rgba(103,109,110,0.5);
+  --timeline-add-btn-active-color: #fff;
+  --timeline-add-btn-active-border: rgba(255,255,255,0);
+
+  --timeline-content-bg: transparent;
+
+  --timeline-side-bg: transparent;
+
+  --timeline-no-posts-bg: transparent;
+  --timeline-no-posts-border: rgba(128,128,128,0.333);
+  --timeline-no-posts-text: #d6d6d6;
+  --timeline-no-posts-h3-2: #c3c3c3;
+  --timeline-no-posts-h3-last: #acacac;
+}
+
+[data-theme="light"] {
+  --timeline-bg: #f6fafd;
+  --timeline-header-bg: transparent;
+  --timeline-header-text: #05477c;
+  --timeline-h2-bg: transparent;
+  --timeline-h2-text: #05477c;
+  --timeline-filter-bg: transparent;
+  --timeline-filter-btn-bg: transparent;
+  --timeline-filter-btn-hover-bg: #d6eaff;
+  --timeline-filter-btn-color: #156aa1;
+
+  --timeline-filters-bg: #eaf4fc;
+  --timeline-filters-btn-bg: transparent;
+  --timeline-filters-btn-hover-bg: #e1edfa;
+  --timeline-filters-btn-color: #05477c;
+
+  --timeline-add-btn-bg: transparent;
+  --timeline-add-btn-border: rgba(100,140,190,0.18);
+  --timeline-add-btn-color: #1882b8;
+  --timeline-add-btn-hover-bg: #cce9ff;
+  --timeline-add-btn-hover-color: #05477c;
+  --timeline-add-btn-active-bg: #bfdffd;
+  --timeline-add-btn-active-color: #05477c;
+  --timeline-add-btn-active-border: rgba(54,170,255,0.08);
+
+  --timeline-content-bg: transparent;
+
+  --timeline-side-bg: transparent;
+
+  --timeline-no-posts-bg: #eaf4fc;
+  --timeline-no-posts-border: #b0d2f8;
+  --timeline-no-posts-text: #436181;
+  --timeline-no-posts-h3-2: #4e7fab;
+  --timeline-no-posts-h3-last: #87b3d8;
+}
+
 .timeline-page {
-    background-color: rgba(255, 0, 0, 0);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 0px 5px;
-    gap: 0px;
-    overflow-y: hidden;
+  /* background-color: var(--timeline-bg); */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0px 5px;
+  gap: 0px;
+  overflow-y: hidden;
 }
 
 .timeline-header {
-    width: 100%;
-    height: 40px;
-    background-color: rgba(0, 0, 0, 0);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-right: 20px;
-    box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  /* background-color: var(--timeline-header-bg); */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 20px;
+  box-sizing: border-box;
 }
 
 .timeline-header-right {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    background-color: rgba(0, 128, 0, 0);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--timeline-side-bg);
 }
 
 .timeline-page h2 {
-    padding: 0;
-    margin: 0;
-    height: 40px;
-    font-size: 1.5em;
-    background-color: rgba(187, 187, 187, 0);
-    display: flex;
-    align-items: flex-end;
+  padding: 0;
+  margin: 0;
+  height: 40px;
+  font-size: 1.5em;
+  background-color: var(--timeline-h2-bg);
+  color: var(--timeline-h2-text);
+  display: flex;
+  align-items: flex-end;
 }
 
 .timeline-filter-row {
-    width: 100%;
-    background-color: rgba(255, 0, 0, 0);
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-content: flex-end;
-    align-items: flex-end;
-    gap: 50px;
-    width: 100%;
+  width: 100%;
+  background-color: var(--timeline-filter-bg);
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 50px;
+  width: 100%;
 }
 
 .timeline-filter-row.second-timeline {
-    grid-template-columns: 1fr 1fr
+  grid-template-columns: 1fr 1fr
 }
 .timeline-filter-row > * {
-    justify-self: end;
-    padding-right: 15px;
+  justify-self: end;
+  padding-right: 15px;
 }
 
 .timeline-page .filter-toggle {
-    background-color: rgba(67, 64, 64, 0);
-    border: 0;
-    color: white;
-    font-size: 1em;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    gap: 10px;
+  background-color: var(--timeline-filter-btn-bg);
+  border: 0;
+  color: var(--timeline-filter-btn-color);
+  font-size: 1em;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  gap: 10px;
 }
 
-
 .timeline-page .filter-toggle:hover {
-    background-color: rgba(150, 150, 150, 0.5);
-    cursor: pointer;
+  background-color: var(--timeline-filter-btn-hover-bg);
+  cursor: pointer;
 }
 
 .timeline-filters {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-width: 150px;
-    /* height: 100%; */
-    background-color: rgb(36, 36, 36);
-    gap: 10px;
-    padding: 8px 13px;
-    gap: 4px;
-    border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 150px;
+  background-color: var(--timeline-filters-bg);
+  gap: 10px;
+  padding: 8px 13px;
+  gap: 4px;
+  border-radius: 8px;
 }
 
 .timeline-filters button {
-    background-color: rgba(173, 35, 35, 0);
-    border: 0;
-    color: white;
-    width: 100%;
-    font-size: 1em;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+  background-color: var(--timeline-filters-btn-bg);
+  border: 0;
+  color: var(--timeline-filters-btn-color);
+  width: 100%;
+  font-size: 1em;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .timeline-filters button:hover {
-    background-color: rgba(119, 119, 119, 0.5);
-    cursor: pointer;
+  background-color: var(--timeline-filters-btn-hover-bg);
+  cursor: pointer;
 }
 
-
 .timeline-add-btn {
-    background-color: rgb(148, 148, 148, 0);
-    border: 0;
-    color: rgb(219, 219, 219);
-    /* width: 100%; */
-    font-size: 1em;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(128, 128, 128, 0.528);
-    font-size: 0.8em;
+  background-color: var(--timeline-add-btn-bg);
+  border: 1px solid var(--timeline-add-btn-border);
+  color: var(--timeline-add-btn-color);
+  font-size: 1em;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 0.8em;
 }
 
 .timeline-add-btn:hover {
-    background-color: rgba(119, 119, 119, 0.5);
-    cursor: pointer;
-    color: white;
-    /* border: 1px solid rgba(255, 255, 255, 0.528); */
+  background-color: var(--timeline-add-btn-hover-bg);
+  cursor: pointer;
+  color: var(--timeline-add-btn-hover-color);
 }
 
 .timeline-add-btn.active {
-    background-color: rgba(103, 109, 110, 0.5);
-    cursor: pointer;
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0);
+  background-color: var(--timeline-add-btn-active-bg);
+  cursor: pointer;
+  color: var(--timeline-add-btn-active-color);
+  border: 1px solid var(--timeline-add-btn-active-border);
 }
 
-
 .timeline-content {
-    background-color: rgba(255, 0, 0, 0);
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 50px;
-    text-align: center;
-    overflow-y: hidden;
-    padding-top: 10px;
-    padding-bottom: 10px;
+  background-color: var(--timeline-content-bg);
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 50px;
+  text-align: center;
+  overflow-y: hidden;
+  padding-top: 10px;
+  padding-bottom: 10px;
 
 }
 
 .timeline-left-side-container {
-    background-color: rgba(0, 128, 0, 0);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 50px;
-    overflow-y: auto;
-    padding-bottom: 10px;
+  background-color: var(--timeline-side-bg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 50px;
+  overflow-y: auto;
+  padding-bottom: 10px;
 }
 
 .timeline-right-side-container {
-    background-color: rgba(0, 128, 0, 0);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 50px;
-    overflow-y: auto;
-    padding-bottom: 10px;
+  background-color: var(--timeline-side-bg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 50px;
+  overflow-y: auto;
+  padding-bottom: 10px;
 }
 .timeline-left-side-container,
 .timeline-right-side-container {
-    flex: 1 1 0%;
-    min-width: 0;
-    max-width: 100%;
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 100%;
 }
 
-
-
 .timeline-no-posts {
-    width: 35%;
-    height: 200px;
-    background-color: rgba(255, 0, 0, 0);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid rgba(128, 128, 128, 0.333);
-    border-radius: 9px;
-    gap: 10px;
-    color: rgb(214, 214, 214);
+  width: 35%;
+  height: 200px;
+  background-color: var(--timeline-no-posts-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid var(--timeline-no-posts-border);
+  border-radius: 9px;
+  gap: 10px;
+  color: var(--timeline-no-posts-text);
 }
 
 .timeline-no-posts h3 {
-    padding: 0;
-    margin: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .timeline-no-posts h3:nth-child(2) {
-    font-size: 1em !important;
-    color: rgb(195, 195, 195);
+  font-size: 1em !important;
+  color: var(--timeline-no-posts-h3-2);
 }
 
 .timeline-no-posts h3:last-child {
-    font-size: 0.8em;
-    color: rgb(172, 172, 172);
+  font-size: 0.8em;
+  color: var(--timeline-no-posts-h3-last);
 }
 
 .timeline-no-posts .icon-style {
-    font-size: 2em;
+  font-size: 2em;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 /* ----- MOBILE (max-width: 600px) ----- */
@@ -278,7 +332,6 @@
     padding-bottom: 8px;
     height: 100%;
   }
-
 
   .timeline-left-side-container {
     gap: 18px;
