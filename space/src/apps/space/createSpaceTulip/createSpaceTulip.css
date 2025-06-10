@@ -1,14 +1,32 @@
+:root {
+  --tulip-menu-bg: #1b1b1b91;
+  --tulip-menu-border: rgba(255, 255, 255, 0.08);
+  --tulip-menu-shadow: 0 4px 20px rgba(8, 8, 8, 0.838);
+  --tulip-tool-color: #e3e3e3;
+  --tulip-tool-hover-bg: rgba(0, 255, 255, 0.08);
+  --tulip-tool-accent: cyan;
+}
+
+[data-theme="light"] {
+  --tulip-menu-bg: #f6fafdcc;
+  --tulip-menu-border: rgba(40, 120, 255, 0.11);
+  --tulip-menu-shadow: 0 4px 20px rgba(100, 150, 255, 0.09);
+  --tulip-tool-color: #2c394a;
+  --tulip-tool-hover-bg: rgba(18, 224, 232, 0.13);
+  --tulip-tool-accent: #00c9e6;
+}
+
 .tulip-menu {
-    background-color: #1b1b1b91;
+    background-color: var(--tulip-menu-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--tulip-menu-border);
     border-radius: 10px;
     padding: 12px;
     width: 260px;
     max-height: 70vh;
     overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(8, 8, 8, 0.838);
+    box-shadow: var(--tulip-menu-shadow);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -29,7 +47,7 @@
   transition: background-color 0.25s ease;
   cursor: pointer;
   font-size: 0.95em;
-  color: #e3e3e3;
+  color: var(--tulip-tool-color);
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -41,32 +59,26 @@
   top: 0;
   width: 4px;
   height: 100%;
-  background-color: cyan;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  /* border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px; */
-  transform: scaleY(0.6);
+  background-color: var(--tulip-tool-accent);
   opacity: 0;
   transition: transform 0.25s ease, opacity 0.25s ease;
+  transform: scaleY(0.6);
 }
-
 
 .tulip-tool-item:hover::before {
-transform: scaleY(1);
+  transform: scaleY(1);
   opacity: 1;
 }
+
 .tulip-tool-item:hover {
-  background-color: rgba(0, 255, 255, 0.08);
+  background-color: var(--tulip-tool-hover-bg);
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
 }
 
-
-
 .tulip-tool-item .icon {
     font-size: 1.3em;
-    color: cyan;
+    color: var(--tulip-tool-accent);
     align-self: center;
     padding: 0;
     margin: 0;

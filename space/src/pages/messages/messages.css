@@ -1,38 +1,96 @@
+:root {
+  /* Layout & card backgrounds */
+  --messages-bg: rgba(131, 131, 131, 0);
+  --messages-fg: #fff;
+  --messages-card-bg: rgba(107, 107, 107, 0.069);
+  --messages-card-border: 1px solid rgba(255,255,255,0.085);
+  --messages-card-shadow: 0 12px 32px rgba(0,0,0,0.35);
+
+  /* Sidebar */
+  --sidebar-bg: transparent;
+  --sidebar-border: 1px solid rgba(255,255,255,0.05);
+  --sidebar-btn-fg: #b8b8b8;
+  --sidebar-btn-hover-bg: rgba(255,255,255,0.07);
+  --sidebar-btn-hover-fg: #fff;
+  --sidebar-btn-active-bg: rgba(60,245,255,0.15);
+  --sidebar-btn-active-fg: #17e5ff;
+  --sidebar-btn-active-border: 1px solid rgba(0,255,255,0.23);
+  --tooltip-bg: #363636;
+  --tooltip-fg: #fff;
+
+  /* Inbox pane */
+  --inbox-bg: rgba(60,60,60,0.172);
+  --inbox-border: 1px solid rgba(255,255,255,0.05);
+
+  /* Header */
+  --header-fg: #eaeaea;
+  --header-border: 1px solid rgba(255,255,255,0.05);
+
+  /* Placeholder */
+  --chat-placeholder-fg: #777;
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --messages-bg: #f5fafc00;
+  --messages-fg: #223047;
+  --messages-card-bg: #fff;
+  --messages-card-border: 1px solid #e7f5fa;
+  --messages-card-shadow: 0 8px 22px rgba(85,110,155,0.07);
+
+  --sidebar-bg: #f5fafc;
+  --sidebar-border: 1px solid #e2effa;
+  --sidebar-btn-fg: #7c8b97;
+  --sidebar-btn-hover-bg: #e8f5fa;
+  --sidebar-btn-hover-fg: #127197;
+  --sidebar-btn-active-bg: #e2faff;
+  --sidebar-btn-active-fg: #1abed8;
+  --sidebar-btn-active-border: 1px solid #97e7ff;
+  --tooltip-bg: #f5fafc;
+  --tooltip-fg: #193a5a;
+
+  --inbox-bg: #f6fcff;
+  --inbox-border: 1px solid #e7f5fa;
+
+  --header-fg: #0e283f;
+  --header-border: 1px solid #d0e6f5;
+
+  --chat-placeholder-fg: #a6b4be;
+}
+
 .messages-layout {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
-  background: rgba(131, 131, 131, 0);          /* transparent dark neutral */
+  background: var(--messages-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   font-family: 'Inter', sans-serif;
-  color: white;
+  color: var(--messages-fg);
   padding: 20px;
   padding-top: 6px;
   box-sizing: border-box;
 }
 
-
 .messages-app-card {
   display: flex;
   width: 100%;
   height: 100%;
-  background: rgba(107, 107, 107, 0.069);           /* slightly richer than layout */
+  background: var(--messages-card-bg);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.085);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  border: var(--messages-card-border);
+  box-shadow: var(--messages-card-shadow);
   overflow: hidden;
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
 }
 
-
 .messages-sidebar-mini.left {
   width: 72px;
-  /* background: rgba(30, 30, 30, 0.5); */
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--sidebar-bg);
+  border-right: var(--sidebar-border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -54,20 +112,20 @@
   height: 42px;
   font-size: 1.2em;
   border-radius: 10px;
-  color: #b8b8b8;
+  color: var(--sidebar-btn-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .messages-sidebar-mini.left button:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: white;
+  background: var(--sidebar-btn-hover-bg);
+  color: var(--sidebar-btn-hover-fg);
 }
 
 .messages-sidebar-mini.left button.active {
-  background: rgba(0, 255, 255, 0.15);
-  color: #00ffff;
-  border: 1px solid rgba(0, 255, 255, 0.25);
+  background: var(--sidebar-btn-active-bg);
+  color: var(--sidebar-btn-active-fg);
+  border: var(--sidebar-btn-active-border);
 }
 
 .tooltip {
@@ -77,14 +135,15 @@
   top: 50%;
   left: 100%;
   transform: translateY(-50%);
-  background: rgb(54, 54, 54);
-  color: white;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
   padding: 8px 12px;
   font-size: 0.85em;
   border-radius: 8px;
   white-space: nowrap;
   margin-left: 12px;
   transition: opacity 0.2s ease;
+  box-shadow: 0 2px 14px 0 rgba(48,58,80,0.12);
 }
 
 .messages-sidebar-item:hover .tooltip {
@@ -102,34 +161,33 @@
 
 .inbox-pane {
   width: 340px;
-  background: rgba(60, 60, 60, 0.172);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--inbox-bg);
+  border-right: var(--inbox-border);
   padding: 20px 12px;
   box-sizing: border-box;
   display: flex;
-    flex-shrink: 0;
+  flex-shrink: 0;
   flex-direction: column;
 }
 
 .messages-header-bar {
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: var(--header-border);
 }
 
 .messages-header-bar h2 {
   margin: 0;
   font-size: 1.1em;
   font-weight: 600;
-  color: #eaeaea;
+  color: var(--header-fg);
 }
-
 
 .chat-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #777;
+  color: var(--chat-placeholder-fg);
   font-size: 0.95em;
   font-style: italic;
   height: 100%;

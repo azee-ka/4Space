@@ -515,3 +515,127 @@
     padding: 0.7em 0 !important;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+/* ================== LIGHT MODE OVERRIDES ================== */
+
+[data-theme="light"] .notification-sidebar {
+    background: #f9fbfd !important;
+    color: #23272e !important;
+    box-shadow: 0 8px 32px 0 rgba(80, 120, 160, 0.11) !important;
+    border-left: 1px solid #e4eaf2 !important;
+}
+
+[data-theme="light"] .notification-sidebar-top-panel {
+    border-bottom: 1px solid #e6e9ef !important;
+    background: none !important;
+}
+[data-theme="light"] .notification-sidebar-top-panel h2 {
+    color: #23304a !important;
+}
+[data-theme="light"] .notification-sidebar-top-panel p {
+    color: #8b97a9 !important;
+}
+[data-theme="light"] .notification-sidebar-top-panel button {
+    color: #23304a !important;
+    background: none !important;
+}
+[data-theme="light"] .notification-sidebar-top-panel button:hover {
+    background: #f2f5fa !important;
+}
+
+[data-theme="light"] .notification-sidebar-main-panel {
+    background: none !important;
+}
+[data-theme="light"] .notification-sidebar-main-panel-inner {
+    background: none !important;
+}
+
+[data-theme="light"] .notification-sidebar-item {
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 10px 0 rgba(182, 200, 222, 0.09) !important;
+    border-bottom: 1px solid #e5e9f0 !important;
+    color: #222 !important;
+    margin-bottom: 10px;
+}
+[data-theme="light"] .notification-sidebar-item:hover {
+    background: #f5f8fb !important;
+    border-radius: 10px !important;
+}
+[data-theme="light"] .notification-sidebar-item h3 {
+    color: #2e3b4e !important;
+}
+[data-theme="light"] .notification-sidebar-item-message-container p,
+[data-theme="light"] .notification-sidebar-item-message-container p span:first-child {
+    color: #344155 !important;
+}
+[data-theme="light"] .notification-sidebar-item-message-container p span:last-child {
+    color: #a3adba !important;
+}
+[data-theme="light"] .notification-sidebar-item-message-container p span:first-child a {
+    color: #4666d0 !important;
+}
+[data-theme="light"] .notification-sidebar-item-actions-container button,
+[data-theme="light"] .notification-sidebar-item-actions-container a {
+    background: #e8f0fe !important;
+    color: #246 !important;
+    box-shadow: none !important;
+}
+[data-theme="light"] .notification-sidebar-item-actions-container button:hover,
+[data-theme="light"] .notification-sidebar-item-actions-container a:hover {
+    background: #d6e4fb !important;
+    color: #223 !important;
+    box-shadow: 0 2px 8px 0 rgba(158, 180, 230, 0.09) !important;
+}
+
+/* --- INDIVIDUAL NOTIFICATION (CARD) --- */
+[data-theme="light"] .notification-sidebar-individual-notification {
+    background: #fff !important;
+    border-top: 1px solid #e5e9f0 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 10px 0 rgba(160,180,210,0.09) !important;
+    color: #1b2028 !important;
+    margin-bottom: 10px;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-top-panel {
+    color: #223 !important;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-top-panel button {
+    color: #223 !important;
+    background: none !important;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-top-panel button:hover {
+    background: #f2f5fa !important;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-item-message-container p,
+[data-theme="light"] .notification-sidebar-individual-notification-item-message-container p span:first-child {
+    color: #344155 !important;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-item-message-container p span:last-child {
+    color: #a3adba !important;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-item-message-container p span:first-child a {
+    color: #4666d0 !important;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-item-actions-container button,
+[data-theme="light"] .notification-sidebar-individual-notification-item-actions-container a {
+    background: #e8f0fe !important;
+    color: #246 !important;
+}
+[data-theme="light"] .notification-sidebar-individual-notification-item-actions-container button:hover,
+[data-theme="light"] .notification-sidebar-individual-notification-item-actions-container a:hover {
+    background: #d6e4fb !important;
+    color: #223 !important;
+    box-shadow: 0 2px 8px 0 rgba(158, 180, 230, 0.09) !important;
+}

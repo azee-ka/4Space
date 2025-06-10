@@ -117,3 +117,66 @@
     font-size: 15px;
     color: #fff;
 }
+
+
+
+
+
+
+
+
+
+
+
+/* ---------------- LIGHT MODE OVERRIDES FOR .app-menu ---------------- */
+
+[data-theme="light"] .app-menu {
+    background: #fff !important;
+    border: 1px solid #e7eaf3 !important;
+    color: #222 !important;
+    box-shadow: 0 8px 22px rgba(44,60,80,0.10) !important;
+}
+
+[data-theme="light"] .app-menu hr {
+    background-color: #e8ecf3 !important;
+}
+
+[data-theme="light"] .app-menu-tabs-header {
+    background-color: transparent !important;
+}
+
+[data-theme="light"] .app-menu-tab {
+    color: #222 !important;
+    background-color: transparent !important;
+}
+
+[data-theme="light"] .app-menu-tab.active,
+[data-theme="light"] .app-menu-tab.active:hover {
+    background-color: #e7f0fa !important;
+    color: rgb(34, 97, 102) !important;
+}
+
+[data-theme="light"] .app-menu-tab:hover {
+    background-color: #f2f7fc !important;
+    color: rgb(34, 49, 51) !important;
+}
+
+[data-theme="light"] .app-item {
+    background-color: transparent !important;
+}
+[data-theme="light"] .app-item:hover {
+    background-color: #f1f6fd !important;
+}
+
+[data-theme="light"] .app-item a {
+    color: rgb(34, 49, 51) !important;
+    background: transparent !important;
+}
+
+[data-theme="light"] .app-icon {
+    color: rgb(13, 54, 67) !important;
+}
+
+[data-theme="light"] .app-label {
+    color: rgb(34, 47, 51) !important;
+}

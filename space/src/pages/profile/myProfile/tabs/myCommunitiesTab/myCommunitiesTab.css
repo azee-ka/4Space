@@ -327,3 +327,29 @@
     padding: 6px 14px;
   }
 }
+
+
+
+
+
+
+/* === LIGHT MODE: Tabs/Header Only === */
+[data-theme="light"] .my-communities-tabs-header {
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+}
+
+[data-theme="light"] .my-communities-tab-btn {
+  color: #2d7fab;
+  background: none;
+}
+
+[data-theme="light"] .my-communities-tab-btn.active {
+  background: #e2f3fe;
+  color: #0572a3;
+  box-shadow: 0 3px 8px rgba(40,160,210,0.12);
+}
+
+[data-theme="light"] .my-communities-tab-btn:hover:not(.active) {
+  background: #cfe6fa;
+  color: #2d7fab;
+}

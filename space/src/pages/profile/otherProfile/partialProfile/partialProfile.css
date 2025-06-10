@@ -122,3 +122,42 @@
 .partial-profile-info a:hover {
     color: white;
 }
+
+/* === LIGHT MODE OVERRIDES ONLY COLORS === */
+[data-theme="light"] .partial-profile-container {
+    background: rgba(255,255,255,0.92);
+}
+[data-theme="light"] .partial-profile-image {
+    background: rgba(0,0,0,0.06);
+}
+[data-theme="light"] .partial-profile-info,
+[data-theme="light"] .stats-grid strong,
+[data-theme="light"] .partial-profile-info h2 {
+    color: #1c2d3a;
+}
+[data-theme="light"] .partial-profile-info .display-name {
+    color: #50708d;
+}
+[data-theme="light"] .private-profile-message {
+    color: #4b6b83;
+}
+[data-theme="light"] .follow-btn {
+    color: #174774;
+    background: rgba(0,150,255,0.14);
+}
+[data-theme="light"] .follow-btn:hover {
+    background: rgba(0,150,255,0.26);
+}
+[data-theme="light"] .message-btn {
+    color: #155a49;
+    background: rgba(32,200,150,0.11);
+}
+[data-theme="light"] .message-btn:hover {
+    background: rgba(32,200,150,0.22);
+}
+[data-theme="light"] .partial-profile-info a {
+    color: #6e7e91;
+}
+[data-theme="light"] .partial-profile-info a:hover {
+    color: #1c2d3a;
+}

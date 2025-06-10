@@ -1,3 +1,72 @@
+:root {
+  /* === Inbox + Requests Panel === */
+  --panel-bg: rgba(24,24,24,0.3);
+  --panel-border: 1px solid rgba(255,255,255,0.05);
+  --panel-header-fg: #eaeaea;
+  --panel-header-border: 1px solid rgba(255,255,255,0.05);
+  --panel-section-gap: 16px;
+
+  --item-bg: rgba(255,255,255,0.02);
+  --item-hover-bg: rgba(255,255,255,0.04);
+  --item-active-bg: rgba(255,255,255,0.06);
+  --item-border: 1px solid transparent;
+  --item-hover-border: 1px solid rgba(255,255,255,0.06);
+  --item-active-border: 1px solid rgba(255,255,255,0.12);
+  --item-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+  --item-shadow-active: 0 0 0 1px rgba(255,255,255,0.12);
+
+  --avatar-bg: rgba(255,255,255,0.06);
+
+  --chat-name-fg: #f0f0f0;
+  --chat-name-span-fg: #aaa;
+  --chat-username-fg: #888;
+
+  --btn-fg: #e0e0e0;
+  --btn-bg: rgba(255,255,255,0.03);
+  --btn-hover-bg: rgba(255,255,255,0.06);
+  --btn-hover-fg: #fff;
+
+  --empty-fg: #999;
+  --placeholder-fg: #777;
+
+  --inbox-bg: transparent;
+
+  font-family: 'Inter', sans-serif;
+}
+
+[data-theme="light"] {
+  --panel-bg: #f8fbfd;
+  --panel-border: 1px solid #e3eaf0;
+  --panel-header-fg: #17354c;
+  --panel-header-border: 1px solid #dbe8ef;
+
+  --item-bg: #fff;
+  --item-hover-bg: #f3f9fa;
+  --item-active-bg: #eafaff;
+  --item-border: 1px solid transparent;
+  --item-hover-border: 1px solid #c9e3ec;
+  --item-active-border: 1px solid #92e2ff;
+  --item-shadow: 0 0 0 1px #d4ecf7;
+  --item-shadow-active: 0 0 0 1px #70daf7;
+
+  --avatar-bg: #e9f6fa;
+
+  --chat-name-fg: #141516;
+  --chat-name-span-fg: #99b4c3;
+  --chat-username-fg: #7b99a2;
+
+  --btn-fg: #157797;
+  --btn-bg: #e7f3fc;
+  --btn-hover-bg: #cce7fb;
+  --btn-hover-fg: #0e243f;
+
+  --empty-fg: #a7b3be;
+  --placeholder-fg: #b5c4cf;
+
+  --inbox-bg: #fcfdff;
+}
+
+/* --- Requests Layout --- */
 .requests-layout {
   display: flex;
   height: 100%;
@@ -10,22 +79,21 @@
   flex-direction: column;
   padding: 20px 12px;
   box-sizing: border-box;
-  background: rgba(24, 24, 24, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--panel-bg);
+  border-right: var(--panel-border);
   backdrop-filter: blur(6px);
 }
 
 .requests-header-bar {
   padding-bottom: 16px;
   margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: var(--panel-header-border);
 }
-
 .requests-header-bar h2 {
   font-size: 1.1em;
   font-weight: 600;
   margin: 0;
-  color: #eaeaea;
+  color: var(--panel-header-fg);
 }
 
 .requests-list {
@@ -36,27 +104,26 @@
   gap: 12px;
 }
 
+/* --- Individual request/chat item --- */
 .chat-request-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--item-bg);
   border-radius: 10px;
-  border: 1px solid transparent;
+  border: var(--item-border);
   transition: all 0.2s ease;
   cursor: pointer;
 }
-
 .chat-request-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--item-hover-bg);
+  border: var(--item-hover-border);
 }
-
 .chat-request-item.active {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  background: var(--item-active-bg);
+  border: var(--item-active-border);
+  box-shadow: var(--item-shadow-active);
 }
 
 .chat-avatar {
@@ -64,7 +131,7 @@
   height: 42px;
   border-radius: 50%;
   object-fit: cover;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--avatar-bg);
 }
 
 .chat-info {
@@ -76,21 +143,20 @@
 .chat-name {
   margin: 0;
   font-size: 0.95em;
-  color: #fff;
+  color: var(--chat-name-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .chat-name span {
   font-size: 0.8em;
-  color: #aaa;
+  color: var(--chat-name-span-fg);
 }
 
 .chat-username {
   margin: 0;
   font-size: 0.85em;
-  color: #888;
+  color: var(--chat-username-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -107,13 +173,13 @@
 
 .requests-placeholder {
   text-align: center;
-  color: #777;
+  color: var(--placeholder-fg);
   font-size: 0.95em;
   font-style: italic;
 }
 
 .requests-empty {
-  color: #aaa;
+  color: var(--empty-fg);
   font-size: 0.9em;
   padding: 1em 0;
   text-align: center;

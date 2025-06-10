@@ -101,3 +101,31 @@
     transform: rotate(90deg) translate(-7px, 10px);
     width: 25px;
   }
+
+
+
+
+
+
+
+  /* ===========================
+   LIGHT MODE OVERRIDES
+   =========================== */
+[data-theme="light"] .navbar-sidebar-icon button,
+[data-theme="light"] .navbar-sidebar-menu-toggle-inner button {
+  color: #22304d !important;
+}
+
+[data-theme="light"] .icon-bar {
+  background-color: #22304d !important;
+  opacity: 0.72 !important;
+}
+
+[data-theme="light"] .navbar-sidebar-menu-toggle-inner button {
+  background-color: transparent !important;
+}
+
+[data-theme="light"] .navbar-sidebar-menu-toggle-inner,
+[data-theme="light"] .navbar-sidebar-menu-toggle-inner-content {
+  background: none !important;
+}

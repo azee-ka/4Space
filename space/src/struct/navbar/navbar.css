@@ -1,3 +1,5 @@
+/* --------- YOUR ORIGINAL BASE & DARK MODE CSS --------- */
+
 .navbar-container {
   width: 100%;
   height: 100%;
@@ -5,14 +7,9 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  /* backdrop-filter: blur(10px); */
-    /* background-color: rgba(30, 30, 30, 0.200);
-  box-shadow: 0px 0px 4px 4px rgba(128, 128, 128, 0.149); */
-  /* box-shadow: 0 7px 15px rgba(0, 0, 0, 0.631); */
   z-index: 49;
   overflow: hidden;
   padding-top: 4px;
-
 }
 
 .navbar-left {
@@ -21,9 +18,6 @@
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-    /* background-color: rgba(70, 70, 70, 0.144); */
-    /* backdrop-filter: blur(20px); */
-    /* box-shadow: 0 0 4px 2px rgba(202, 202, 202, 0.095); */
   border-radius: 10px;
   margin-left: 8px;
 }
@@ -40,8 +34,6 @@
   z-index: 51;
 }
 
-
-
 .navbar-logo-container {
   width: 100%;
   height: 100%;
@@ -54,7 +46,6 @@
 .navbar-logo-container img {
   height: 35px;
   width: 26px;
-  /* aspect-ratio: 1 / 1; */
   margin-right: 8px;
 }
 .navbar-logo-container img:last-child {
@@ -70,9 +61,6 @@
 }
 
 .navbar-logo-container h2 {
-  /* background: linear-gradient(135deg, #7500f9, #ff007b, #f4ff00);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent; */
   color: rgba(255, 255, 255, 0.890);
   font-family: 'Roboto Mono', monospace;
   padding: 0;
@@ -107,18 +95,14 @@
   text-align: end;
 }
 
-
 .navbar-right {
-  /* flex-grow: 1; */
   height: 55px;
   display: flex;
   flex-direction: row;
-  /* align-items: center; */
   justify-content: flex-end;
   gap: 10px;
-
   background-color: rgba(30, 30, 30, 0.200);
-    box-shadow: 0 0 4px 2px rgba(202, 202, 202, 0.159);
+  box-shadow: 0 0 4px 2px rgba(202, 202, 202, 0.159);
   border-radius: 40px;
   margin-right: 8px;
   padding: 0 0px 0 10px;
@@ -126,10 +110,8 @@
 
 .navbar-right.unauthenticated {
   background-color: rgba(30, 30, 30, 0);
-    box-shadow: 0 0 0px 0px rgba(202, 202, 202, 0);
+  box-shadow: 0 0 0px 0px rgba(202, 202, 202, 0);
 }
-
-
 
 .navbar-pages {
   display: flex;
@@ -158,7 +140,6 @@
 .navbar-pages ul li a:hover {
   color: rgb(255, 255, 255);
 }
-
 .navbar-pages ul li a::after {
   content: "";
   position: absolute;
@@ -178,15 +159,12 @@
   transform-origin: right;
 }
 
-
-
 .navbar-items {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
   background-color: rgba(128, 128, 128, 0);
-  /* width: 180px; */
 }
 
 .navbar-items ul {
@@ -197,7 +175,6 @@
   align-items: center;
   justify-content: center;
   margin-right: 15px;
-  /* gap: 10px; */
   background-color: rgba(0, 255, 145, 0);
   padding: 0;
   box-sizing: border-box;
@@ -237,7 +214,6 @@
   cursor: pointer;
 }
 
-
 .navbar-items li:nth-child(2) button {
   height: 38px;
   width: 38px;
@@ -269,11 +245,9 @@
   font-size: 45px !important;
 }
 
-
 .navbar-items li:nth-child(5) button {
   background-color: rgba(244, 244, 244, 0);
   display: flex;
-  /* flex-direction: row; */
   justify-content: center !important;
   align-items: center !important;
   border-radius: 50%;
@@ -292,18 +266,15 @@
   align-self: center;
   height: 100%;
   width: 100%;
-  /* aspect-ratio: 1 / 1; */
   transition: all 0.3 ease;
 }
 .navbar-items li::nth-child(5) button img:hover {
   cursor: pointer;
 }
 
-
 .notification-button {
   position: relative;
 }
-
 .notification-count {
   position: absolute;
   top: -3px;
@@ -315,8 +286,6 @@
   font-size: 11px;
 }
 
-
-
 .navbar-public-btns {
   background-color: rgba(255, 0, 0, 0);
   display: flex;
@@ -324,8 +293,6 @@
   gap: 30px;
   margin-right: 15px;
 }
-
-
 
 /* Display Settings Menu Icon */
 .display-settings-menu {
@@ -336,7 +303,6 @@
   height: 50px;
   position: relative;
 }
-
 .display-settings-menu button {
   height: 40px !important;
   width: 40px !important;
@@ -351,47 +317,28 @@
   align-items: center;
   transition: background-color 0.3s ease;
 }
-
 .display-settings-menu button:hover {
   background-color: rgba(128, 128, 128, 0.551);
   cursor: pointer;
 }
 
-
-
-
-
 .navbar-pages.animation {
   animation: nav-slide 0.5s ease;
 }
-
 @keyframes nav-slide {
   0% {
     transform: translateY(-90%);
   }
-
   100% {
     transform: translateY(0);
   }
 }
-
-
-
-
 
 .navbar-items .chat-icon {
   width: 25px;
   aspect-ratio: 1 / 1;
   color: rgb(255, 255, 255);
 }
-
-
-
-
-
-
-
-
 
 .navbar-search-container {
   flex: 1;
@@ -410,16 +357,10 @@
   border: 2px solid rgba(128, 128, 128, 0);
   transition: all 0.4s ease;
 }
-
 .navbar-search-container:focus-within {
-      border: 2px solid rgba(128, 128, 128, 0.106);
-        width: 370px;
+  border: 2px solid rgba(128, 128, 128, 0.106);
+  width: 370px;
 }
-
-
-
-
-
 
 .navbar-search-field {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -433,13 +374,10 @@
   height: 100%;
   border-radius: 30px;
 }
-
 .navbar-search-field::placeholder {
   color: rgba(255, 255, 255, 0.5);
-    font-style: italic;
+  font-style: italic;
 }
-
-
 .navbar-search-icon {
   position: absolute;
   right: 15px;
@@ -449,14 +387,6 @@
   color: rgba(255, 255, 255, 0.65);
   text-shadow: 0 0 4px rgba(167, 139, 250, 0.3);
 }
-
-
-
-
-
-
-
-
 
 @media (max-width: 800px) {
   .navbar-container {
@@ -493,7 +423,6 @@
     background: none;
     box-shadow: none;
   }
-
   .navbar-items li button,
   .navbar-items li a {
     width: 100%;
@@ -501,21 +430,82 @@
     font-size: 20px;
     color: white;
   }
-    .profile-menu img {
-      height: 30px;
-    }
+  .profile-menu img {
+    height: 30px;
+  }
   .navbar-pages {
     display: none !important;
   }
-
   .notification-count {
-  position: absolute;
-  top: 5px;
-  right: 6px;
-  background-color: rgb(255, 0, 0);
-  color: white;
-  border-radius: 50%;
-  padding: 2px 6px;
-  font-size: 11px;
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    background-color: rgb(255, 0, 0);
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 11px;
+  }
 }
+
+/* --------- LIGHT MODE OVERRIDES ONLY --------- */
+[data-theme="light"] .navbar-container {
+  background: #fff !important;
+  box-shadow: 0 4px 16px 0 rgba(220,230,250,0.10);
 }
+
+[data-theme="light"] .navbar-right {
+  background: #f8fafd !important;
+  color: #23272e;
+  box-shadow: 0 2px 12px 0 rgba(180, 200, 230, 0.10);
+}
+
+[data-theme="light"] .navbar-pages ul li a,
+[data-theme="light"] .navbar-logo-container,
+[data-theme="light"] .navbar-logo-container h2,
+[data-theme="light"] .navbar-items li a,
+[data-theme="light"] .navbar-items li button {
+  color: #23272e !important;
+}
+
+[data-theme="light"] .navbar-logo-container h2,
+[data-theme="light"] .navbar-logo-container:hover h2 {
+  background: none !important;
+  -webkit-text-fill-color: #23272e !important;
+}
+
+[data-theme="light"] .navbar-pages ul li a::after {
+  background: #23272e;
+}
+
+[data-theme="light"] .navbar-search-container {
+  background: #f3f5fa !important;
+  box-shadow: 0 0 2px 0 #dde3ed;
+}
+
+[data-theme="light"] .navbar-search-field {
+  color: #23272e !important;
+}
+[data-theme="light"] .navbar-search-field::placeholder {
+  color: #9297a3 !important;
+}
+
+[data-theme="light"] .navbar-search-icon {
+  color: #9297a3 !important;
+  text-shadow: none;
+}
+
+[data-theme="light"] .notification-count {
+  background: #ef2323 !important;
+  color: #fff !important;
+}
+
+[data-theme="light"] .display-settings-menu button {
+  color: #23272e !important;
+}
+
+[data-theme="light"] .profile-menu img {
+  border: 1.5px solid #e8e8ef;
+}
+
+/* Add more light mode tweaks below if you see any other issues in your UI! */

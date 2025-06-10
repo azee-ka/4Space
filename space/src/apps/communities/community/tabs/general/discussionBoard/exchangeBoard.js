@@ -31,6 +31,7 @@ const Exchange = ({ communityId, community }) => {
   const setSelectedPostId = exchange.setSelectedPostId;
 
   return (
+    <>
     <div className="discussion-wrapper">
       {!selectedPostId && <h3>Exchanges</h3>}
       <div className="discussion-feed">
@@ -86,8 +87,8 @@ const Exchange = ({ communityId, community }) => {
           ))
         )}
       </div>
-
-      {community?.permissions?.can_post_discussions && (
+    </div>
+    {community?.permissions?.can_post_discussions && (
         <>
           <button className="floating-discussion-btn" onClick={() => setShowForm(true)}>
             <FontAwesomeIcon icon={faPlus} />
@@ -101,7 +102,7 @@ const Exchange = ({ communityId, community }) => {
           )}
         </>
       )}
-    </div>
+    </>
   );
 };
 

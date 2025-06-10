@@ -1,30 +1,36 @@
-
-
 .profile-settings {
     position: absolute;
     top: 10px;
     right: 10px;
     font-size: 1.6em;
     cursor: pointer;
-    color: rgba(255,255,255,0.6);
+    color: var(--profile-settings-color, rgba(255,255,255,0.6));
 }
 .profile-settings:hover {
-    color: white;
+    color: var(--profile-settings-hover, #fff);
 }
-
 
 .edit-profile-button {
     margin-top: 15px;
     display: inline-block;
     padding: 8px 16px;
-    border: 1px solid white;
+    border: 1px solid var(--edit-profile-border, #fff);
     border-radius: 20px;
     text-decoration: none;
-    color: white;
+    color: var(--edit-profile-text, #fff);
     font-size: 0.9em;
     transition: all 0.3s ease;
 }
 .edit-profile-button:hover {
-    background: rgba(255,255,255,0.1);
+    background: var(--edit-profile-hover-bg, rgba(255,255,255,0.1));
     cursor: pointer;
+}
+
+/* === LIGHT MODE OVERRIDES === */
+[data-theme="light"] {
+    --profile-settings-color: #27507a;
+    --profile-settings-hover: #005cc1;
+    --edit-profile-border: #20507d;
+    --edit-profile-text: #20507d;
+    --edit-profile-hover-bg: rgba(30,120,220,0.08);
 }

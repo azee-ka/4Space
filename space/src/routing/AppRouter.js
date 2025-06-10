@@ -33,6 +33,7 @@ import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
 import PublicationDetail from '../apps/communities/community/tabs/research/publicationsTab/publicationDetail/publicationDetail';
 import SpaceDashboard from '../apps/space/dashboard/dashboard';
+import Space from '../apps/space/space/space';
 import SpaceTools from '../apps/space/tools/tools';
 import SpaceProjects from '../apps/space/projects/projects';
 import SpacePortfolio from '../apps/space/portfolio/portfolio';
@@ -48,7 +49,6 @@ import { CreateCommunityProvider } from '../context/CreateCommunityContext';
 import SpaceRepositories from '../apps/space/repositories/repositories';
 import RepositoryView from '../apps/space/repositories/repository/repositoryView';
 import CommunityPage from '../apps/communities/community/community';
-import { Space } from 'lucide-react';
 
 
 const AppRouter = () => {

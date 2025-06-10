@@ -1,27 +1,153 @@
-/* library.css */
+:root {
+  --sl-bg-main: rgba(255,255,255,0.02);
+  --sl-text-main: #e0f7fa;
+  --sl-header-bg: rgba(101,101,101,0.1);
+  --sl-header-border: 1px solid rgba(255,255,255,0.2);
+  --sl-logo: #4dd0e1;
+  --sl-breadcrumb-bg-hover: rgba(255,255,255,0.2);
+  --sl-breadcrumb-sep: rgba(255,255,255,0.5);
 
-/* ─── Root ───────────────────────────────────────────────────────── */
+  --sl-search-bg: rgba(97,97,97,0.3);
+  --sl-search-bg-hover: rgba(65,65,65,0.5);
+  --sl-search-icon: #4cdfea;
+  --sl-search-text: #e0f7fa;
+
+  --sl-btn-bg: rgba(0,40,60,0.4);
+  --sl-btn-bg-hover: rgba(109,248,255,0.1);
+  --sl-btn-bg-active: rgba(0,40,60,0.7);
+  --sl-btn-border: 1px solid rgba(76,204,214,0.6);
+  --sl-btn-color: #b2ebf2;
+  --sl-btn-icon: #4cdfea;
+  --sl-btn-upload-border: rgba(76,204,214,0.8);
+
+  --sl-view-toggle-bg: rgba(0,40,60,0.2);
+  --sl-view-toggle-bg-hover: rgba(255,255,255,0.1);
+  --sl-view-toggle-border: 1px solid rgba(76,204,214,0.6);
+  --sl-view-btn-color: #b2ebf2;
+  --sl-view-btn-active-bg: rgba(76,204,214,0.8);
+  --sl-view-btn-active-color: #0a0a0a;
+
+  --sl-content-empty-bg: rgba(255,0,0,0);
+
+  --sl-section-header-color: #b2ebf2;
+
+  --sl-item-bg: rgba(67,67,67,0.125);
+  --sl-item-border: 1px solid rgba(55,56,56,0.5);
+  --sl-item-shadow: 0 6px 18px rgba(12,12,12,0.457);
+  --sl-item-shadow-hover: 0 10px 24px rgba(0,0,0,0.9);
+  --sl-item-border-hover: rgba(255,255,255,0.12);
+
+  --sl-item-highlight: linear-gradient(to bottom,rgba(33,255,255,0.65),rgba(0,255,255,0.85));
+  --sl-item-header: #e2f9ff;
+  --sl-item-header-underline: #00ffe7;
+  --sl-item-icon: #4dd0e1;
+  --sl-item-meta: #a6b5c4;
+
+  --sl-list-row-bg: rgba(255,255,255,0.015);
+  --sl-list-row-bg-hover: rgba(255,255,255,0.106);
+  --sl-list-header-color: #a0a0a0;
+  --sl-list-header-border: 1px solid rgba(255,255,255,0.08);
+
+  --sl-list-row-blur: rgba(0,251,255,0.811);
+
+  --sl-empty-text: rgba(224,247,250,0.6);
+
+  --sl-modal-backdrop: rgba(0,0,0,0.6);
+  --sl-modal-bg: rgba(255,255,255,0.1);
+  --sl-modal-title: #4dd0e1;
+  --sl-modal-close: #e0f7fa;
+  --sl-modal-no-preview-bg: rgba(0,0,0,0.2);
+  --sl-modal-no-preview-text: #b2ebf2;
+  --sl-modal-download-bg: #4dd0e1;
+  --sl-modal-download-bg-hover: #26c6da;
+  --sl-modal-download-text: #000;
+}
+
+[data-theme="light"] {
+  --sl-bg-main: #ffffff00;
+  --sl-text-main: #183247;
+  --sl-header-bg: #f5faff;
+  --sl-header-border: 1px solid #e3e9f0;
+  --sl-logo: #27c5e0;
+  --sl-breadcrumb-bg-hover: #e9f5fc;
+  --sl-breadcrumb-sep: #b2c8db;
+
+  --sl-search-bg: #e4eef9;
+  --sl-search-bg-hover: #d6e9f6;
+  --sl-search-icon: #27c5e0;
+  --sl-search-text: #31445a;
+
+  --sl-btn-bg: #e2f2fa;
+  --sl-btn-bg-hover: #e7fbfd;
+  --sl-btn-bg-active: #beddef;
+  --sl-btn-border: 1px solid #b7e6f7;
+  --sl-btn-color: #2294ab;
+  --sl-btn-icon: #27c5e0;
+  --sl-btn-upload-border: #57dbf6;
+
+  --sl-view-toggle-bg: #eaf8fd;
+  --sl-view-toggle-bg-hover: #c7eefa;
+  --sl-view-toggle-border: 1px solid #a2d6e8;
+  --sl-view-btn-color: #178aa7;
+  --sl-view-btn-active-bg: #9ae6f8;
+  --sl-view-btn-active-color: #00485a;
+
+  --sl-content-empty-bg: transparent;
+
+  --sl-section-header-color: #30a7d8;
+
+  --sl-item-bg: #f7fbfe;
+  --sl-item-border: 1px solid #d1eaf2;
+  --sl-item-shadow: 0 6px 18px rgba(30,120,180,0.08);
+  --sl-item-shadow-hover: 0 10px 24px #b7e6f7;
+  --sl-item-border-hover: #53cffa;
+
+  --sl-item-highlight: linear-gradient(to bottom,#a7ecff,#53cffa);
+  --sl-item-header: #269bb6;
+  --sl-item-header-underline: #30e4ff;
+  --sl-item-icon: #30e4ff;
+  --sl-item-meta: #547fa7;
+
+  --sl-list-row-bg: #f6fcff;
+  --sl-list-row-bg-hover: #e6f6fc;
+  --sl-list-header-color: #73a0b6;
+  --sl-list-header-border: 1px solid #d4ecf7;
+
+  --sl-list-row-blur: #ccf7ff;
+
+  --sl-empty-text: #86bbce;
+
+  --sl-modal-backdrop: rgba(180,220,240,0.25);
+  --sl-modal-bg: #f5fbff;
+  --sl-modal-title: #27c5e0;
+  --sl-modal-close: #269bb6;
+  --sl-modal-no-preview-bg: #e8f6fa;
+  --sl-modal-no-preview-text: #27c5e0;
+  --sl-modal-download-bg: #30e4ff;
+  --sl-modal-download-bg-hover: #18b7e2;
+  --sl-modal-download-text: #fff;
+}
+
 .sl-root {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--sl-bg-main);
   font-family: "Segoe UI", sans-serif;
-  color: #e0f7fa;
+  color: var(--sl-text-main);
   box-sizing: border-box;
 }
 
-/* ─── Header ─────────────────────────────────────────────────────── */
 .sl-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   height: 56px;
-  background: rgba(101, 101, 101, 0.1);
+  background: var(--sl-header-bg);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: var(--sl-header-border);
   flex-shrink: 0;
   border-radius: 12px 0 0 0;
   gap: 5px;
@@ -41,7 +167,7 @@
   gap: 6px;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #4dd0e1;
+  color: var(--sl-logo);
 }
 .sl-breadcrumbs {
   display: flex;
@@ -50,7 +176,7 @@
   align-items: center;
   margin-left: 16px;
   font-size: 0.9rem;
-  flex: 0 1 auto; 
+  flex: 0 1 auto;
   white-space: nowrap;
   overflow-x: auto;
   padding: 15px 0;
@@ -67,7 +193,7 @@
   gap: 4px;
 }
 .sl-crumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--sl-breadcrumb-bg-hover);
 }
 .sl-breadcrumbs > .sl-crumb,
 .sl-breadcrumbs > .sl-crumb-sep {
@@ -75,17 +201,17 @@
 }
 .sl-crumb-sep {
   margin: 0 2px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--sl-breadcrumb-sep);
   font-size: 0.9rem;
 }
 
-/* ─── Search ─────────────────────────────────────────────────────── */
+/* Search */
 .sl-search-bar {
   flex: 1;
   max-width: 200px;
   display: flex;
   align-items: center;
-  background: rgba(97, 97, 97, 0.3);
+  background: var(--sl-search-bg);
   backdrop-filter: blur(10px);
   padding: 10px 8px;
   border-radius: 20px;
@@ -93,10 +219,10 @@
 }
 .sl-search-bar:hover,
 .sl-search-bar:focus-within {
-  background: rgba(65, 65, 65, 0.5);
+  background: var(--sl-search-bg-hover);
   max-width: 360px;
 }
-.sl-search-icon { color: #4cdfea; font-size: 1.1rem; }
+.sl-search-icon { color: var(--sl-search-icon); font-size: 1.1rem; }
 .sl-search-input {
   flex: 1;
   margin-left: 8px;
@@ -104,50 +230,50 @@
   border: none;
   background: transparent;
   outline: none;
-  color: #e0f7fa;
+  color: var(--sl-search-text);
   font-size: 0.95rem;
   transition: width 0.4s ease;
 }
 .sl-search-input:focus { width: 260px; }
 
-/* ─── Actions & View Toggle ─────────────────────────────────────── */
+/* Actions & View Toggle */
 .sl-actions { display: flex; align-items: center; gap: 12px; }
 .sl-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 8px 16px;
-  background: rgba(0, 40, 60, 0.4);
+  background: var(--sl-btn-bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(76, 204, 214, 0.6);
+  border: var(--sl-btn-border);
   border-radius: 50px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #b2ebf2;
+  color: var(--sl-btn-color);
   cursor: pointer;
   transition: all 0.3s;
 }
 .sl-btn svg {
-  color: #4cdfea;
+  color: var(--sl-btn-icon);
 }
 .sl-btn:hover {
-  background: rgba(109, 248, 255, 0.1);
+  background: var(--sl-btn-bg-hover);
 }
 .sl-btn:active {
-  background: rgba(0, 40, 60, 0.7);
+  background: var(--sl-btn-bg-active);
 }
 .sl-upload-btn,
 .sl-new-folder-btn {
-  border-color: rgba(76, 204, 214, 0.8);
+  border-color: var(--sl-btn-upload-border);
 }
 .sl-view-toggle {
   display: inline-flex;
-  border: 1px solid rgba(76, 204, 214, 0.6);
+  border: var(--sl-view-toggle-border);
   border-radius: 50px;
-  background: rgba(0, 40, 60, 0.2);
+  background: var(--sl-view-toggle-bg);
 }
 .sl-view-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--sl-view-toggle-bg-hover);
 }
 .sl-view-btn {
   flex: 1;
@@ -157,7 +283,7 @@
   padding: 6px 12px;
   background: transparent;
   border: none;
-  color: #b2ebf2;
+  color: var(--sl-view-btn-color);
   font-size: 1.1rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
@@ -166,10 +292,9 @@
 .sl-view-btn:first-child { border-radius: 50px 0 0 50px; }
 .sl-view-btn:last-child { border-radius: 0 50px 50px 0; }
 .sl-view-btn.active {
-  background: rgba(76, 204, 214, 0.8);
-  color: #0a0a0a;
+  background: var(--sl-view-btn-active-bg);
+  color: var(--sl-view-btn-active-color);
 }
-
 
 .sl-content {
   width: 75%;
@@ -178,7 +303,7 @@
   width: 100%;
 }
 
-/* ─── Section Content (Grid/List) ───────────────────────────────── */
+/* Section Content (Grid/List) */
 .sl-section-content {
   display: grid;
   gap: 16px;
@@ -188,25 +313,24 @@
   grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
   grid-auto-rows: 210px;
 }
-/* ─── Section Header ───────────────────────────────────────────── */
 .sl-section-header {
   grid-column: 1 / -1;
   margin: 16px 0 8px;
   height: 20px;
   font-size: 1rem;
-  color: #b2ebf2;
+  color: var(--sl-section-header-color);
   text-transform: uppercase;
 }
 
-/* ─── Folder & File Cards (Grid) ───────────────────────────────── */
+/* Folder & File Cards (Grid) */
 .sl-item {
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  background: rgba(67, 67, 67, 0.125);
-  border: 1px solid rgba(55, 56, 56, 0.5);
+  background: var(--sl-item-bg);
+  border: var(--sl-item-border);
   backdrop-filter: blur(24px);
-  box-shadow: 0 6px 18px rgba(12, 12, 12, 0.457);
+  box-shadow: var(--sl-item-shadow);
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
@@ -214,8 +338,8 @@
 }
 .sl-item:hover {
   transform: scale(1.02);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.9);
-  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: var(--sl-item-shadow-hover);
+  border-color: var(--sl-item-border-hover);
 }
 .sl-item::before {
   content: '';
@@ -232,11 +356,7 @@
 .sl-item:hover::before {
   width: 4px;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(33, 255, 255, 0.65),
-    rgba(0, 255, 255, 0.85)
-  );
+  background: var(--sl-item-highlight);
 }
 .sl-item-header {
   position: relative;
@@ -246,7 +366,7 @@
   font-weight: 520;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #e2f9ff;
+  color: var(--sl-item-header);
 }
 .sl-item-header::after {
   content: '';
@@ -255,7 +375,7 @@
   left: 1rem;
   width: 30px;
   height: 2px;
-  background-color: #00ffe7;
+  background-color: var(--sl-item-header-underline);
   border-radius: 999px;
 }
 .sl-item-preview {
@@ -264,7 +384,7 @@
   align-items: center;
   justify-content: center;
   margin: 0.5rem 1rem;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0,0,0,0.05);
   border-radius: 8px;
   overflow: hidden;
   position: relative;
@@ -277,7 +397,7 @@
 }
 .sl-item-preview .sl-item-icon {
   font-size: 3rem;
-  color: #4dd0e1;
+  color: var(--sl-item-icon);
 }
 .sl-item-meta {
   display: flex;
@@ -285,18 +405,17 @@
   align-items: center;
   padding: 0.5rem 1rem 0.75rem;
   font-size: 0.75rem;
-  color: #a6b5c4;
+  color: var(--sl-item-meta);
   z-index: 2;
 }
 
-/* ─── Grid‐View List Adjustments (hide preview/actions) ───────── */
+/* Grid‐View List Adjustments (hide preview/actions) */
 .sl-list .sl-item-preview,
 .sl-list .sl-item-actions {
   display: none;
 }
 
-/* ─── List View Overrides ───────────────────────────────────────── */
-/* List container */
+/* List View Overrides */
 .sl-section-content.sl-list {
   display: flex;
   flex-direction: column;
@@ -318,8 +437,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: #a0a0a0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--sl-list-header-color);
+  border-bottom: var(--sl-list-header-border);
 }
 
 /* Column definitions */
@@ -348,14 +467,14 @@
   align-items: center;
   padding: 0.75em 1rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--sl-list-row-bg);
   transition: all 0.2s ease;
   text-decoration: none;
   color: inherit;
   box-sizing: border-box;
 }
 .sl-item.sl-list-row:hover {
-  background-color: rgba(255, 255, 255, 0.106);
+  background-color: var(--sl-list-row-bg-hover);
   box-shadow: 0 0 8px rgba(0, 200, 255, 0);
   transform: scale(1.01);
 }
@@ -365,7 +484,7 @@
   inset: 0;
   z-index: 1;
   backdrop-filter: blur(10px);
-  background: rgba(0, 251, 255, 0.811);
+  background: var(--sl-list-row-blur);
   border-radius: 14px;
 }
 .sl-item.sl-list-row > * {
@@ -373,14 +492,14 @@
   z-index: 2;
 }
 
-/* ─── Empty State ─────────────────────────────────────────────── */
+/* Empty State */
 .sl-empty {
   grid-column: 1 / -1;
   text-align: center;
-  color: rgba(224, 247, 250, 0.6);
+  color: var(--sl-empty-text);
   padding: 20px;
   box-sizing: border-box;
-  background-color: rgba(255, 0, 0, 0);
+  background-color: var(--sl-content-empty-bg);
   width: 100%;
   flex: 1;
   display: flex;
@@ -388,18 +507,18 @@
   align-items: center;
 }
 
-/* ─── Preview Modal ───────────────────────────────────────────── */
+/* Preview Modal */
 .sl-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--sl-modal-backdrop);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 .sl-modal-content {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--sl-modal-bg);
   backdrop-filter: blur(14px);
   padding: 24px;
   border-radius: 12px;
@@ -415,13 +534,13 @@
   right: 12px;
   background: transparent;
   border: none;
-  color: #e0f7fa;
+  color: var(--sl-modal-close);
   font-size: 1.2rem;
   cursor: pointer;
 }
 .sl-modal-title {
   margin-bottom: 12px;
-  color: #4dd0e1;
+  color: var(--sl-modal-title);
   font-size: 1.1rem;
 }
 .sl-modal-img,
@@ -435,9 +554,9 @@
 }
 .sl-modal-no-preview {
   padding: 12px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--sl-modal-no-preview-bg);
   border-radius: 8px;
-  color: #b2ebf2;
+  color: var(--sl-modal-no-preview-text);
   margin-bottom: 12px;
 }
 .sl-modal-download {
@@ -445,12 +564,12 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  background: #4dd0e1;
-  color: #000;
+  background: var(--sl-modal-download-bg);
+  color: var(--sl-modal-download-text);
   border-radius: 8px;
   text-decoration: none;
   transition: background 0.2s;
 }
 .sl-modal-download:hover {
-  background: #26c6da;
+  background: var(--sl-modal-download-bg-hover);
 }

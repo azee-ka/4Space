@@ -282,3 +282,72 @@
     box-shadow: 0 0 3px 2px rgba(0, 126, 148, 0.888);
     cursor: pointer;
 }
+
+
+
+
+
+
+
+
+
+/* --------- NOTIFICATIONS MENU (POPOVER) --------- */
+[data-theme="light"] .notifications-menu-container {
+    background: #fff !important;
+    color: #23304a !important;
+    border: 1px solid #e4eaf2 !important;
+    box-shadow: 0 6px 22px 0 rgba(44,60,80,0.12) !important;
+}
+[data-theme="light"] .notifications-menu-top-panel h3 {
+    color: #23304a !important;
+}
+[data-theme="light"] .notifications-menu-top-panel button {
+    color: #23304a !important;
+    background: none !important;
+}
+[data-theme="light"] .notifications-menu-top-panel button:hover {
+    background: #e7effa !important;
+}
+[data-theme="light"] .notifications-list-no-notifications {
+    color: #a7adb8 !important;
+}
+[data-theme="light"] .notifications-list {
+    background: none !important;
+}
+
+[data-theme="light"] .notification-item {
+    background: #fff !important;
+    border-radius: 9px !important;
+    border-bottom: 1px solid #e7eaf2 !important;
+    color: #23272e !important;
+    box-shadow: 0 2px 9px 0 rgba(170,190,220,0.09) !important;
+    margin-bottom: 7px;
+}
+[data-theme="light"] .notification-item:hover {
+    background: #f5f8fb !important;
+    border-radius: 9px !important;
+}
+[data-theme="light"] .notification-item h3 {
+    color: #344155 !important;
+}
+[data-theme="light"] .notification-item-message-container p,
+[data-theme="light"] .notification-item-message-container p span:first-child {
+    color: #344155 !important;
+}
+[data-theme="light"] .notification-item-message-container p span:last-child {
+    color: #a3adba !important;
+}
+[data-theme="light"] .notification-item-message-container p span:first-child a {
+    color: #4666d0 !important;
+}
+[data-theme="light"] .notification-item-actions-container button,
+[data-theme="light"] .notification-item-actions-container a {
+    background: #e8f0fe !important;
+    color: #246 !important;
+}
+[data-theme="light"] .notification-item-actions-container button:hover,
+[data-theme="light"] .notification-item-actions-container a:hover {
+    background: #d6e4fb !important;
+    color: #223 !important;
+    box-shadow: 0 2px 8px 0 rgba(158, 180, 230, 0.09) !important;
+}

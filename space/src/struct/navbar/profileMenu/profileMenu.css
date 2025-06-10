@@ -278,3 +278,83 @@
 
 }
 }
+
+
+
+
+
+/* ------------------ LIGHT MODE OVERRIDES ------------------ */
+[data-theme="light"] .profile-menu-container {
+    background: #fff !important;
+    color: #222;
+    border: 1px solid #e7eaf3;
+    box-shadow: 0 6px 22px rgba(44,60,80,0.10);
+}
+
+[data-theme="light"] .profile-section-header,
+[data-theme="light"] .profile-section-subheader {
+    color: #6c7383 !important;
+}
+
+[data-theme="light"] .profile-menu-user-info {
+    background: #f6f8fa !important;
+}
+
+[data-theme="light"] .profile-avatar {
+    border: 1.5px solid #ececec;
+}
+
+[data-theme="light"] .profile-name,
+[data-theme="light"] .account-name {
+    color: #222 !important;
+}
+
+[data-theme="light"] .profile-username,
+[data-theme="light"] .account-username {
+    color: #99a3b6 !important;
+}
+
+[data-theme="light"] .account-item {
+    background: #f9fbfd !important;
+    border: 1px solid #ecf1f8;
+}
+[data-theme="light"] .account-item:hover {
+    background: #e8f1fa !important;
+}
+
+[data-theme="light"] .profile-action-pills button {
+    color: #233;
+    background: #f3f6fa !important;
+    border: 1px solid #dde6ee !important;
+}
+[data-theme="light"] .profile-action-pills button:hover {
+    background: #e6eaf2 !important;
+    color: #233 !important;
+    border-color: #ccd8e4 !important;
+}
+
+[data-theme="light"] .account-button {
+    background: #f6f7fa !important;
+    color: #234 !important;
+    border: 1px solid #e0e8f2 !important;
+}
+[data-theme="light"] .account-button:hover {
+    background: #e5edf7 !important;
+}
+
+[data-theme="light"] .profile-signout button {
+    background: #fbeaea !important;
+    color: #cf2828 !important;
+    border: 1px solid #f2c5c5 !important;
+}
+[data-theme="light"] .profile-signout button:hover {
+    background: #f5caca !important;
+    color: #b51010 !important;
+}
+
+[data-theme="light"] .profile-clickable {
+    background: #f3f6fa !important;
+}
+[data-theme="light"] .profile-clickable:hover {
+    background: #e7eef9 !important;
+}

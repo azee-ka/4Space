@@ -1,25 +1,75 @@
+:root {
+  --modal-bg: rgba(24,24,24,0.80);
+  --modal-blur: blur(14px);
+  --modal-border: 1px solid rgba(255,255,255,0.05);
+  --modal-radius: 12px;
+  --modal-shadow: 0 2px 12px rgba(0,0,0,0.40);
+  --modal-header-fg: #e2e2e2;
+  --modal-header-icon: #aaa;
+  --modal-header-icon-hover: #fff;
+
+  --recipient-bar-bg: rgba(255,255,255,0.03);
+  --recipient-bar-border: 1px solid rgba(255,255,255,0.08);
+  --recipient-bar-pill-bg: rgba(255,255,255,0.10);
+  --recipient-bar-pill-fg: #e2e2e2;
+
+  --results-list-divider: 1px solid rgba(255,255,255,0.05);
+  --results-list-hover-bg: rgba(255,255,255,0.05);
+
+  --results-list-fg: #ddd;
+
+  --submit-btn-bg: rgba(255,255,255,0.08);
+  --submit-btn-hover-bg: rgba(255,255,255,0.12);
+  --submit-btn-fg: #eee;
+  --submit-btn-hover-fg: #fff;
+  --submit-btn-disabled: 0.5;
+}
+
+[data-theme="light"] {
+  --modal-bg: #fafdff;
+  --modal-blur: blur(8px);
+  --modal-border: 1px solid #e3f0fa;
+  --modal-header-fg: #28344e;
+  --modal-header-icon: #8b8c8e;
+  --modal-header-icon-hover: #19253a;
+
+  --recipient-bar-bg: #f2f5f9;
+  --recipient-bar-border: 1px solid #dbeaf6;
+  --recipient-bar-pill-bg: #e4eaf0;
+  --recipient-bar-pill-fg: #22374c;
+
+  --results-list-divider: 1px solid #dde3ea;
+  --results-list-hover-bg: #e7eef9;
+  --results-list-fg: #445069;
+
+  --submit-btn-bg: #e3f4fa;
+  --submit-btn-hover-bg: #caebf7;
+  --submit-btn-fg: #287ab3;
+  --submit-btn-hover-fg: #183459;
+  --submit-btn-disabled: 0.45;
+}
+
 .msg-overlay {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(0, 0, 0, 0.328);
+  background: rgba(0,0,0,0.33);
   backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
-  top: 0;
-    left: 0;
+  top: 0; left: 0;
 }
 
 .msg-prompt {
   width: 420px;
   max-width: 90%;
   padding: 20px;
-  background: rgba(24, 24, 24, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  background: var(--modal-bg);
+  border: var(--modal-border);
+  border-radius: var(--modal-radius);
+  backdrop-filter: var(--modal-blur);
+  box-shadow: var(--modal-shadow);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -31,56 +81,52 @@
   align-items: center;
   font-weight: 500;
   font-size: 1em;
-  color: #e2e2e2;
+  color: var(--modal-header-fg);
 }
-
 .prompt-header button {
   all: unset;
-  color: #aaa;
+  color: var(--modal-header-icon);
   font-size: 1.1em;
   cursor: pointer;
   padding: 4px;
+  transition: color 0.2s;
 }
-
 .prompt-header button:hover {
-  color: white;
+  color: var(--modal-header-icon-hover);
 }
 
 .recipient-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--recipient-bar-bg);
   padding: 8px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: var(--recipient-bar-border);
 }
-
 .recipient-bar input {
   all: unset;
-  color: white;
+  color: inherit;
   font-size: 0.9em;
   flex-grow: 1;
   min-width: 120px;
 }
-
 .recipient-bar .pill {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.1);
-  color: #e2e2e2;
+  background: var(--recipient-bar-pill-bg);
+  color: var(--recipient-bar-pill-fg);
   font-size: 0.85em;
   padding: 4px 10px;
   border-radius: 999px;
   gap: 6px;
 }
-
 .recipient-bar .pill svg {
   cursor: pointer;
   font-size: 0.9em;
   opacity: 0.7;
+  transition: opacity 0.18s;
 }
-
 .recipient-bar .pill svg:hover {
   opacity: 1;
 }
@@ -89,11 +135,10 @@
   list-style: none;
   margin: 0;
   padding: 6px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: var(--results-list-divider);
   max-height: 180px;
   overflow-y: auto;
 }
-
 .results-list li {
   display: flex;
   align-items: center;
@@ -101,14 +146,12 @@
   padding: 8px 6px;
   font-size: 0.9em;
   cursor: pointer;
-  color: #ddd;
-  transition: background 0.2s ease;
+  color: var(--results-list-fg);
+  transition: background 0.2s;
 }
-
 .results-list li:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--results-list-hover-bg);
 }
-
 .results-list li img {
   width: 32px;
   height: 32px;
@@ -122,20 +165,18 @@
   text-align: center;
   font-size: 0.95em;
   font-weight: 500;
-  color: #eee;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--submit-btn-fg);
+  background: var(--submit-btn-bg);
   border-radius: 8px;
   padding: 10px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s, color 0.2s;
 }
-
 .submit-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
+  background: var(--submit-btn-hover-bg);
+  color: var(--submit-btn-hover-fg);
 }
-
 .submit-btn:disabled {
-  opacity: 0.5;
+  opacity: var(--submit-btn-disabled);
   cursor: not-allowed;
 }

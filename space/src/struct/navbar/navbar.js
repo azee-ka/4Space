@@ -13,8 +13,10 @@ import appLogoComplete from '../../assets/logo-comp.png';
 import useNotifications from '../../hooks/useNotifications';
 import { useCreatePostContext } from '../../context/CreatePostContext';
 import { useModeContext } from '../../context/modeContext';
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
+// import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
 import { useDevice } from '../../context/DeviceContext';
+import { ChatBubbleLeftRightIcon } from '../../utils/CustomIcons';
+import { useDisplaySettings } from '../../context/DisplaySettingsContext';
 
 const Navbar = ({
     handleProfileMenuToggle,
@@ -29,6 +31,9 @@ const Navbar = ({
     const { isM, isT } = useDevice();
     const { isAuthenticated } = useAuth();
     const { mode } = useModeContext();
+
+    const { settings } = useDisplaySettings();
+const themeMode = settings.themeMode;
 
     const { count: notificationsCount } = useNotifications();
 
@@ -121,7 +126,7 @@ const Navbar = ({
             <div className='navbar-left'>
                 <div className='navbar-icon-logo-container'>
                     {isAuthenticated &&
-                        <SidebarMenuIcon sidebarOpen={sidebarOpen} handleHighOrderSidebarToggle={handleHighOrderSidebarToggle} />
+                        <SidebarMenuIcon color={themeMode} sidebarOpen={sidebarOpen} handleHighOrderSidebarToggle={handleHighOrderSidebarToggle} />
                     }
                     <div className='navbar-logo-container'>
                         <Link to={`/`}>
@@ -176,7 +181,7 @@ const Navbar = ({
                             {!isM &&
                                 <li className='messages-page-link'>
                                     <Link to={`/messages/inbox`}>
-                                        <ChatBubbleLeftRightIcon className='chat-icon' />
+                                        <ChatBubbleLeftRightIcon mode={themeMode} style={{ fontSize: 25 }} />
                                     </Link>
                                 </li>
                             }
@@ -212,7 +217,7 @@ const Navbar = ({
                             {!isM &&
                                 <li className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
                                     <button onClick={handleAppMenuToggle}>
-                                        <NineDotIcon style={{ color: 'white', background: 'transparent', fontSize: '24px' }} />
+                                        <NineDotIcon mode={themeMode} style={{ fontSize: 24 }} />
                                     </button>
                                 </li>
                             }

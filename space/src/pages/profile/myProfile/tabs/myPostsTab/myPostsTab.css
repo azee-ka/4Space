@@ -174,3 +174,65 @@
     max-width: 100%;
   }
 }
+
+
+
+
+
+
+/* — Title/Tab Buttons (DARK/ORIGINAL) — */
+.my-posts-tabs-header {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.my-posts-tab-btn {
+  background: none;
+  border: none;
+  color: #b7e9ff;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  opacity: 0.7;
+}
+
+.my-posts-tab-btn.active {
+  background: #262e39;
+  color: #54dfff;
+  box-shadow: 0 3px 8px rgba(0, 80, 120, 0.3);
+  opacity: 1;
+}
+
+.my-posts-tab-btn:hover:not(.active) {
+  background: #22262e;
+  color: #7dfcff;
+  opacity: 0.85;
+}
+
+
+/* === LIGHT MODE: Tabs/Header Color Adjustments ONLY === */
+[data-theme="light"] .my-posts-tabs-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .my-posts-tab-btn {
+  color: #3382af;
+  background: none;
+}
+
+[data-theme="light"] .my-posts-tab-btn.active {
+  background: #e4f6fe;
+  color: #05689e;
+  box-shadow: 0 3px 8px rgba(40,160,210,0.14);
+}
+
+[data-theme="light"] .my-posts-tab-btn:hover:not(.active) {
+  background: #cfe8fa;
+  color: #3382af;
+}

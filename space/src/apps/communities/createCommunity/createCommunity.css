@@ -1,36 +1,118 @@
+:root {
+  --overlay-bg-blur: blur(20px);
+
+  --overlay-container-bg: rgba(147,147,147,0.08);
+  --overlay-container-border: rgba(255,255,255,0.07);
+  --overlay-container-shadow: 0 0 28px rgba(180,220,255,0.03);
+  --overlay-container-text: #e1f3fa;
+
+  --overlay-title: #e1f3fa;
+
+  --overlay-label: #b6d8e8;
+  --overlay-input-border: rgba(255,255,255,0.187);
+  --overlay-input-color: #eef9ff;
+  --overlay-input-focus: rgba(0,247,255,0.4);
+  --overlay-select-hover: rgba(160,220,255,0.2);
+  --overlay-file-color: #d1e9f3;
+  --overlay-file-btn-bg: rgba(180,220,255,0.06);
+  --overlay-file-btn-color: #fff;
+  --overlay-file-btn-border: rgba(180,240,255,0.18);
+  --overlay-file-btn-hover-bg: rgba(180,240,255,0.12);
+
+  --overlay-toggle-text: #b5def4;
+  --overlay-toggle-bg: rgba(255,255,255,0.05);
+  --overlay-toggle-border: rgba(209,209,209,0.25);
+  --overlay-toggle-thumb: #eaeaea;
+  --overlay-toggle-thumb-checked: rgb(0,238,255);
+  --overlay-toggle-thumb-shadow: 0 0 3px rgba(0,200,255,0.3);
+
+  --overlay-form-error: #ff5555;
+  --overlay-form-success: #66ffcc;
+
+  --overlay-submit-border: rgba(0,160,220,0.3);
+  --overlay-submit-bg-hover: rgba(0,160,220,0.07);
+  --overlay-submit-shadow-hover: 0 0 6px rgba(0,180,255,0.1);
+  --overlay-submit-color: #fff;
+
+  --overlay-close-color: rgb(194,194,194);
+  --overlay-close-hover: #fff;
+}
+
+[data-theme="light"] {
+  --overlay-bg-blur: blur(12px);
+
+  --overlay-container-bg: #f8fcff;
+  --overlay-container-border: rgba(80,120,180,0.10);
+  --overlay-container-shadow: 0 0 28px rgba(30,90,120,0.06);
+  --overlay-container-text: #274968;
+
+  --overlay-title: #00253d;
+
+  --overlay-label: #223645;
+  --overlay-input-border: rgba(80,120,180,0.14);
+  --overlay-input-color: #116489;
+  --overlay-input-focus: rgba(0,160,220,0.25);
+  --overlay-select-hover: rgba(0,160,220,0.11);
+  --overlay-file-color: #248bbb;
+  --overlay-file-btn-bg: rgba(80,120,180,0.04);
+  --overlay-file-btn-color: #116489;
+  --overlay-file-btn-border: rgba(80,200,255,0.11);
+  --overlay-file-btn-hover-bg: rgba(80,200,255,0.16);
+
+  --overlay-toggle-text: #229ed6;
+  --overlay-toggle-bg: #e7f5fa;
+  --overlay-toggle-border: rgba(80,120,180,0.11);
+  --overlay-toggle-thumb: #d0f0ff;
+  --overlay-toggle-thumb-checked: #29cbe1;
+  --overlay-toggle-thumb-shadow: 0 0 3px rgba(0,190,255,0.18);
+
+  --overlay-form-error: #e34d4d;
+  --overlay-form-success: #36c48d;
+
+  --overlay-submit-border: rgba(0,160,220,0.20);
+  --overlay-submit-bg-hover: rgba(0,160,220,0.09);
+  --overlay-submit-shadow-hover: 0 0 6px rgba(80,200,255,0.10);
+  --overlay-submit-color: #1067a0;
+
+  --overlay-close-color: #7d90a7;
+  --overlay-close-hover: #05477c;
+}
+
 .create-community-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-    padding: 20px 28px;
-    box-sizing: border-box;
-    position: fixed;
+  padding: 20px 28px;
+  box-sizing: border-box;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 100;
-  backdrop-filter: blur(20px);
+  backdrop-filter: var(--overlay-bg-blur);
 }
 .create-community-container {
   width: 60%;
   padding: 20px 28px;
   box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--overlay-container-border);
   border-radius: 14px;
-  box-shadow: 0 0 28px rgba(180, 220, 255, 0.03);
-  background-color: rgba(147, 147, 147, 0.08);
-  color: #e1f3fa;
+  box-shadow: var(--overlay-container-shadow);
+  background-color: var(--overlay-container-bg);
+  color: var(--overlay-container-text);
   font-family: 'Inter', sans-serif;
+  position: relative;
 }
 
 .create-community-title {
   font-size: 1.75rem;
   font-weight: 600;
+  color: var(--overlay-title);
 }
 
 .create-community-form {
-    margin-top: 15px;
+  margin-top: 15px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -56,7 +138,7 @@
 
 .create-community-group label {
   font-size: 0.86rem;
-  color: #b6d8e8;
+  color: var(--overlay-label);
   padding-left: 2px;
 }
 
@@ -64,11 +146,11 @@
 .create-community-group select,
 .create-community-group textarea {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.187);
+  border: 1px solid var(--overlay-input-border);
   border-radius: 9px;
   padding: 10px 14px;
   font-size: 0.9rem;
-  color: #eef9ff;
+  color: var(--overlay-input-color);
   transition: border 0.2s ease, box-shadow 0.2s ease;
   outline: none;
 }
@@ -76,8 +158,7 @@
 .create-community-group input:focus,
 .create-community-group select:focus,
 .create-community-group textarea:focus {
-  border-color: rgba(0, 247, 255, 0.4);
-  /* box-shadow: 0 0 0 2px rgba(0, 160, 255, 0.1); */
+  border-color: var(--overlay-input-focus);
   outline: none;
 }
 
@@ -91,7 +172,7 @@
 }
 
 .create-community-group select:hover {
-  border-color: rgba(160, 220, 255, 0.2);
+  border-color: var(--overlay-select-hover);
 }
 
 .create-community-group input[type="file"] {
@@ -99,13 +180,13 @@
   border-radius: 7px;
   cursor: pointer;
   font-size: 0.88rem;
-  color: #d1e9f3;
+  color: var(--overlay-file-color);
 }
 
 .create-community-group input[type="file"]::file-selector-button {
-  background: rgba(180, 220, 255, 0.06);
-  color: white;
-  border: 1px solid rgba(180, 240, 255, 0.18);
+  background: var(--overlay-file-btn-bg);
+  color: var(--overlay-file-btn-color);
+  border: 1px solid var(--overlay-file-btn-border);
   border-radius: 5px;
   padding: 5px 10px;
   margin-right: 8px;
@@ -114,14 +195,15 @@
 }
 
 .create-community-group input[type="file"]::file-selector-button:hover {
-  background-color: rgba(180, 240, 255, 0.12);
+  background-color: var(--overlay-file-btn-hover-bg);
 }
+
 .create-community-toggle {
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 0.86rem;
-  color: #b5def4;
+  color: var(--overlay-toggle-text);
   user-select: none;
 }
 
@@ -130,8 +212,8 @@
   width: 44px;
   height: 22px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(209, 209, 209, 0.25);
+  background: var(--overlay-toggle-bg);
+  border: 1px solid var(--overlay-toggle-border);
   position: relative;
   transition: all 0.3s ease-in-out, border 0.3s ease-in-out;
   cursor: pointer;
@@ -144,27 +226,25 @@
   height: 16px;
   top: 2px;
   left: 3px;
-  background: #eaeaea;
+  background: var(--overlay-toggle-thumb);
   border-radius: 50%;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 0 3px rgba(0, 200, 255, 0.3);
+  box-shadow: var(--overlay-toggle-thumb-shadow);
 }
-
 
 .create-community-toggle input[type="checkbox"]:checked::after {
   transform: translateX(20px);
-  background: rgb(0, 238, 255);
+  background: var(--overlay-toggle-thumb-checked);
 }
 
-
 .create-community-form-error {
-  color: #ff5555;
+  color: var(--overlay-form-error);
   font-weight: 500;
   font-size: 0.85rem;
 }
 
 .create-community-form-success {
-  color: #66ffcc;
+  color: var(--overlay-form-success);
   font-weight: 500;
   font-size: 0.85rem;
 }
@@ -173,9 +253,9 @@
   align-self: flex-start;
   padding: 10px 20px;
   background: transparent;
-  border: 1px solid rgba(0, 160, 220, 0.3);
+  border: 1px solid var(--overlay-submit-border);
   border-radius: 9px;
-  color: #ffffff;
+  color: var(--overlay-submit-color);
   font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
@@ -183,14 +263,10 @@
 }
 
 .create-community-submit-button:hover {
-  background: rgba(0, 160, 220, 0.07);
-  box-shadow: 0 0 6px rgba(0, 180, 255, 0.1);
+  background: var(--overlay-submit-bg-hover);
+  box-shadow: var(--overlay-submit-shadow-hover);
   transform: translateY(-1px);
 }
-
-
-
-
 
 .create-community-close-btn {
   position: absolute;
@@ -200,13 +276,13 @@
   border: 0;
   padding: 0;
   background-color: transparent;
-  color: rgb(194, 194, 194);
+  color: var(--overlay-close-color);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .create-community-close-btn:hover .icon-style {
-  color: white;
+  color: var(--overlay-close-hover);
   cursor: pointer;
 }

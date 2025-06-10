@@ -1,89 +1,141 @@
-.profile-appearance-tab {
-    background-color: rgb(202, 11, 94, 0);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 15px 10px;
-    box-sizing: border-box;
-    gap: 10px;
+/* ========== DARK THEME (original, now with variables) ========== */
+:root {
+  --appearance-tab-bg: rgb(202, 11, 94, 0);
+  --appearance-tab-padding: 15px 10px;
+  --appearance-tab-gap: 10px;
+
+  --appearance-section-bg: rgba(0, 128, 0, 0);
+  --appearance-section-padding: 18px 0px;
+  --appearance-section-border: 1px solid rgba(128, 128, 128, 0.502);
+
+  --appearance-section-header-color: rgb(199, 199, 199);
+  --appearance-section-header-font: 1.1em;
+
+  --appearance-section-p-color: rgb(229, 229, 229);
+  --appearance-section-p-padding: 10px 0px;
+
+  --appearance-setting-content-bg: rgba(255, 0, 238, 0);
+  --appearance-setting-content-width: 95%;
+  --appearance-setting-content-padding: 0px 10px;
+  --appearance-setting-content-gap: 15px;
+
+  --appearance-setting-desc-bg: rgba(0, 0, 255, 0);
+  --appearance-setting-desc-p-color: rgb(192, 192, 192);
+  --appearance-setting-desc-p-font: 0.9em;
+
+  --appearance-setting-btn-bg: rgba(225, 255, 0, 0);
+  --appearance-setting-btn-width: 300px;
+
+  --appearance-btn-bg: rgb(0, 95, 84);
+  --appearance-btn-color: #fff;
+  --appearance-btn-radius: 6px;
+  --appearance-btn-font: 0.9em;
+  --appearance-btn-hover-bg: rgba(0, 95, 84, 0.106);
+  --appearance-btn-hover-shadow: 0 0 3px 3px rgb(0, 95, 84);
 }
 
+/* ========== COMPONENT CLASSES USING VARS ========== */
+.profile-appearance-tab {
+  background-color: var(--appearance-tab-bg);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: var(--appearance-tab-padding);
+  box-sizing: border-box;
+  gap: var(--appearance-tab-gap);
+}
 
 .profile-appearance-tab section {
-    width: 100%;
-    background-color: rgba(0, 128, 0, 0);
-    padding: 18px 0px;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.502);
+  width: 100%;
+  background-color: var(--appearance-section-bg);
+  padding: var(--appearance-section-padding);
+  border-bottom: var(--appearance-section-border);
 }
 
 .profile-appearance-tab section h3 {
-    margin: 0;
-    padding: 0px 0px 8px 0px;
-    font-size: 1.1em;
-    color: rgb(199, 199, 199);
+  margin: 0;
+  padding: 0px 0px 8px 0px;
+  font-size: var(--appearance-section-header-font);
+  color: var(--appearance-section-header-color);
 }
 
 .profile-appearance-tab section p {
-    margin: 0;
-    padding: 10px 0px;
-    color: rgb(229, 229, 229);
+  margin: 0;
+  padding: var(--appearance-section-p-padding);
+  color: var(--appearance-section-p-color);
 }
 
-
 .profile-appearance-setting-content {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    background-color: rgba(255, 0, 238, 0);
-    width: 95%;
-    /* flex-grow: 1; */
-    padding: 0px 10px;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: var(--appearance-setting-content-gap);
+  background-color: var(--appearance-setting-content-bg);
+  width: var(--appearance-setting-content-width);
+  padding: var(--appearance-setting-content-padding);
+  box-sizing: border-box;
 }
 
 .profile-appearance-setting-content-description { 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    height: 100%;
-    background-color: rgba(0, 0, 255, 0);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  height: 100%;
+  background-color: var(--appearance-setting-desc-bg);
 }
 .profile-appearance-setting-content-description p {
-    color: rgb(192, 192, 192) !important;
-    font-size: 0.9em;
+  color: var(--appearance-setting-desc-p-color) !important;
+  font-size: var(--appearance-setting-desc-p-font);
 }
-
 
 .profile-appearance-setting-content-btn {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 300px;
-    height: 100% !important;
-    flex-shrink: 0;
-    background-color: rgba(225, 255, 0, 0);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: var(--appearance-setting-btn-width);
+  height: 100% !important;
+  flex-shrink: 0;
+  background-color: var(--appearance-setting-btn-bg);
 }
 .profile-appearance-setting-content button {
-    padding: 10px 13px;
-    font-size: 0.9em;
-    color: white;
-    background-color: rgb(0, 95, 84);
-    border: 0;
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
-    z-index: 1;
+  padding: 10px 13px;
+  font-size: var(--appearance-btn-font);
+  color: var(--appearance-btn-color);
+  background-color: var(--appearance-btn-bg);
+  border: 0;
+  border-radius: var(--appearance-btn-radius);
+  transition: background-color 0.3s ease;
+  z-index: 1;
+}
+.profile-appearance-setting-content button:hover {
+  background-color: var(--appearance-btn-hover-bg);
+  box-shadow: var(--appearance-btn-hover-shadow);
+  cursor: pointer;
 }
 
-.profile-appearance-setting-content button:hover {
-    background-color: rgba(0, 95, 84, 0.106);
-    box-shadow: 0 0 3px 3px rgb(0, 95, 84);
-    cursor: pointer;
+/* ========== LIGHT THEME OVERRIDES ========== */
+[data-theme="light"] {
+  --appearance-tab-bg: #f8fcff00;
+  --appearance-section-bg: #fafdff00;
+  --appearance-section-border: 1px solid #d7e6ee;
+
+  --appearance-section-header-color: #27607a;
+  --appearance-section-p-color: #527694;
+
+  --appearance-setting-content-bg: #ffffff08;
+  --appearance-setting-desc-bg: #fafdff00;
+  --appearance-setting-desc-p-color: #466a85;
+
+  --appearance-setting-btn-bg: #e3f9f700;
+  --appearance-btn-bg: #05b3a8;
+  --appearance-btn-color: #fff;
+  --appearance-btn-hover-bg: #a1e9df;
+  --appearance-btn-hover-shadow: 0 0 2px 2px #05b3a8;
 }
