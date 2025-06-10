@@ -584,9 +584,9 @@ export function NotificationsIcon({ size = 36, color, accent, mode = "dark" }) {
         </linearGradient>
       </defs>
       {/* Bell Body */}
-      <g transform="scale(1.25) translate(-5.4 -4.4)">
+      <g transform="scale(1.25) translate(-3.5 -4.4)">
   <path
-    d="M32 6c-13 0-17 10-17 20v9c0 4.5-3.5 9-6.5 10h47c-3-1-6.5-5.5-6.5-10v-9c0-10-4-20-17-20z"
+    d="M28 6c-11 0-14.5 10-14.5 20v9c0 4.5-3 9-5.5 10h41c-2.5-1-5.5-5.5-5.5-10v-9c0-10-3.5-20-15.5-20z"
     fill="url(#notifGrad)"
     stroke={accent}
     strokeWidth="2"
