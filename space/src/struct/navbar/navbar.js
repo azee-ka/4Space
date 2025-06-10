@@ -6,7 +6,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faSearch, faSliders } from '@fortawesome/free-solid-svg-icons';
 import ProfilePicture from '../../utils/profilePicture/getProfilePicture';
-import NineDotIcon from '../../utils/nine-dot';
 import SidebarMenuIcon from './iconMenu';
 import appLogo from '../../assets/logo.png';
 import appLogoComplete from '../../assets/logo-comp.png';
@@ -14,7 +13,7 @@ import useNotifications from '../../hooks/useNotifications';
 import { useCreatePostContext } from '../../context/CreatePostContext';
 import { useModeContext } from '../../context/modeContext';
 import { useDevice } from '../../context/DeviceContext';
-import { ChatIcon } from '../../utils/CustomIcons';
+import { ChatIcon, MessagesIcon, NotificationsIcon, NineDotIcon, ControlCenterIcon } from '../../utils/CustomIcons';
 import { useDisplaySettings } from '../../context/DisplaySettingsContext';
 
 const Navbar = ({
@@ -180,7 +179,7 @@ const themeMode = settings.themeMode;
                             {!isM &&
                                 <li className='messages-page-link'>
                                     <Link to={`/messages/inbox`}>
-                                        <ChatIcon mode={themeMode} />
+                                        <MessagesIcon mode={themeMode} />
                                     </Link>
                                 </li>
                             }
@@ -191,7 +190,7 @@ const themeMode = settings.themeMode;
                             >
                                 {!isM ? (
                                     <button onClick={handleNotificationsMenuToggle} className="notification-button">
-                                        <FontAwesomeIcon icon={faBell} /> {/* Replace text with the bell icon */}
+                                        < NotificationsIcon />
                                         {notificationsCount > 0 && (
                                             <span className="notification-count">
                                                 {notificationsCount > 9 ? '9+' : notificationsCount}
@@ -216,7 +215,7 @@ const themeMode = settings.themeMode;
                             {!isM &&
                                 <li className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
                                     <button onClick={handleAppMenuToggle}>
-                                        <NineDotIcon mode={themeMode} style={{ fontSize: 24 }} />
+                                        <NineDotIcon mode={themeMode} />
                                     </button>
                                 </li>
                             }
@@ -225,7 +224,7 @@ const themeMode = settings.themeMode;
                             {!isM &&
                                 <li className="display-settings-menu" ref={displayMenuRef} onClick={(e) => e.stopPropagation()}>
                                     <button onClick={handleDisplayMenuToggle}>
-                                        <FontAwesomeIcon icon={faSliders} className="display-settings-icon" />
+                                        <ControlCenterIcon mode={themeMode} />
                                     </button>
                                 </li>
                             }
