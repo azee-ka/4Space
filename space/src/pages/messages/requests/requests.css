@@ -1,19 +1,19 @@
 :root {
   /* === Inbox + Requests Panel === */
   --panel-bg: rgba(24,24,24,0.3);
-  --panel-border: 1px solid rgba(255,255,255,0.05);
+  --panel-border: 0.0625rem solid rgba(255,255,255,0.05);
   --panel-header-fg: #eaeaea;
-  --panel-header-border: 1px solid rgba(255,255,255,0.05);
-  --panel-section-gap: 16px;
+  --panel-header-border: 0.0625rem solid rgba(255,255,255,0.05);
+  --panel-section-gap: 1rem;
 
   --item-bg: rgba(255,255,255,0.02);
   --item-hover-bg: rgba(255,255,255,0.04);
   --item-active-bg: rgba(255,255,255,0.06);
-  --item-border: 1px solid transparent;
-  --item-hover-border: 1px solid rgba(255,255,255,0.06);
-  --item-active-border: 1px solid rgba(255,255,255,0.12);
-  --item-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-  --item-shadow-active: 0 0 0 1px rgba(255,255,255,0.12);
+  --item-border: 0.0625rem solid transparent;
+  --item-hover-border: 0.0625rem solid rgba(255,255,255,0.06);
+  --item-active-border: 0.0625rem solid rgba(255,255,255,0.12);
+  --item-shadow: 0 0 0 0.0625rem rgba(255,255,255,0.08);
+  --item-shadow-active: 0 0 0 0.0625rem rgba(255,255,255,0.12);
 
   --avatar-bg: rgba(255,255,255,0.06);
 
@@ -36,18 +36,18 @@
 
 [data-theme="light"] {
   --panel-bg: #f8fbfd;
-  --panel-border: 1px solid #e3eaf0;
+  --panel-border: 0.0625rem solid #e3eaf0;
   --panel-header-fg: #17354c;
-  --panel-header-border: 1px solid #dbe8ef;
+  --panel-header-border: 0.0625rem solid #dbe8ef;
 
   --item-bg: #fff;
   --item-hover-bg: #f3f9fa;
   --item-active-bg: #eafaff;
-  --item-border: 1px solid transparent;
-  --item-hover-border: 1px solid #c9e3ec;
-  --item-active-border: 1px solid #92e2ff;
-  --item-shadow: 0 0 0 1px #d4ecf7;
-  --item-shadow-active: 0 0 0 1px #70daf7;
+  --item-border: 0.0625rem solid transparent;
+  --item-hover-border: 0.0625rem solid #c9e3ec;
+  --item-active-border: 0.0625rem solid #92e2ff;
+  --item-shadow: 0 0 0 0.0625rem #d4ecf7;
+  --item-shadow-active: 0 0 0 0.0625rem #70daf7;
 
   --avatar-bg: #e9f6fa;
 
@@ -74,19 +74,19 @@
 }
 
 .requests-panel {
-  width: 340px;
+  width: 21.25rem;
   display: flex;
   flex-direction: column;
-  padding: 20px 12px;
+  padding: 1.25rem 0.75rem;
   box-sizing: border-box;
   background: var(--panel-bg);
   border-right: var(--panel-border);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(0.375rem);
 }
 
 .requests-header-bar {
-  padding-bottom: 16px;
-  margin-bottom: 12px;
+  padding-bottom: 1rem;
+  margin-bottom: 0.75rem;
   border-bottom: var(--panel-header-border);
 }
 .requests-header-bar h2 {
@@ -101,17 +101,17 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 /* --- Individual request/chat item --- */
 .chat-request-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
   background: var(--item-bg);
-  border-radius: 10px;
+  border-radius: 0.625rem;
   border: var(--item-border);
   transition: all 0.2s ease;
   cursor: pointer;
@@ -127,8 +127,8 @@
 }
 
 .chat-avatar {
-  width: 42px;
-  height: 42px;
+  width: 2.625rem;
+  height: 2.625rem;
   border-radius: 50%;
   object-fit: cover;
   background: var(--avatar-bg);

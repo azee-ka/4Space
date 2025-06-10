@@ -2,9 +2,9 @@
 :root {
   --msg-ctrl-bg: rgba(255, 0, 0, 0);                /* page bg (transparent) */
   --msg-ctrl-section-bg: rgba(0, 128, 0, 0);        /* section bg (transparent) */
-  --msg-ctrl-section-padding: 18px 0px;
-  --msg-ctrl-section-border: 1px solid rgba(128, 128, 128, 0.502);
-  --msg-ctrl-section-border-last: 1px solid rgba(128, 128, 128, 0);
+  --msg-ctrl-section-padding: 1.125rem 0rem;
+  --msg-ctrl-section-border: 0.0625rem solid rgba(128, 128, 128, 0.502);
+  --msg-ctrl-section-border-last: 0.0625rem solid rgba(128, 128, 128, 0);
 
   --msg-ctrl-header-color: rgb(199, 199, 199);
   --msg-ctrl-header-bg: rgba(255, 0, 0, 0);
@@ -15,15 +15,15 @@
   --msg-ctrl-content-bg: rgba(0, 0, 255, 0);
   --msg-ctrl-content-width: 70%;
   --msg-ctrl-content-padding: 1em 1em;
-  --msg-ctrl-content-border: 1px solid rgba(128, 128, 128, 0.21);
-  --msg-ctrl-content-radius: 6px;
+  --msg-ctrl-content-border: 0.0625rem solid rgba(128, 128, 128, 0.21);
+  --msg-ctrl-content-radius: 0.375rem;
 
   --msg-ctrl-item-bg: rgba(255, 0, 0, 0);
   --msg-ctrl-item-color: #fff;
   --msg-ctrl-item-font-size: 0.9em;
 
-  --msg-ctrl-gap-main: 10px;
-  --msg-ctrl-gap-content: 15px;
+  --msg-ctrl-gap-main: 0.625rem;
+  --msg-ctrl-gap-content: 0.9375rem;
 }
 
 /* ===================== COMPONENT CLASSES USING VARS ===================== */
@@ -35,7 +35,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 15px 10px;
+  padding: 0.9375rem 0.625rem;
   box-sizing: border-box;
   gap: var(--msg-ctrl-gap-main);
 }
@@ -55,7 +55,7 @@
 }
 .messages-control-settings section h3 {
   margin: 0;
-  padding: 0px 0px 8px 0px;
+  padding: 0rem 0rem 0.5rem 0rem;
   font-size: 1.1em;
   color: var(--msg-ctrl-header-color);
   background-color: var(--msg-ctrl-header-bg);
@@ -98,9 +98,9 @@
 [data-theme="light"] {
   --msg-ctrl-bg: #f8fcff00;
   --msg-ctrl-section-bg: #f6fcfc00;
-  --msg-ctrl-section-padding: 20px 0px;
-  --msg-ctrl-section-border: 1px solid #d7e6ee;
-  --msg-ctrl-section-border-last: 1px solid #ffffff;
+  --msg-ctrl-section-padding: 1.25rem 0rem;
+  --msg-ctrl-section-border: 0.0625rem solid #d7e6ee;
+  --msg-ctrl-section-border-last: 0.0625rem solid #ffffff;
 
   --msg-ctrl-header-color: #266179;
   --msg-ctrl-header-bg: #fafdff04;
@@ -111,13 +111,13 @@
   --msg-ctrl-content-bg: #ffffff;
   --msg-ctrl-content-width: 70%;
   --msg-ctrl-content-padding: 1em 1em;
-  --msg-ctrl-content-border: 1px solid #d7e6ee;
-  --msg-ctrl-content-radius: 7px;
+  --msg-ctrl-content-border: 0.0625rem solid #d7e6ee;
+  --msg-ctrl-content-radius: 0.4375rem;
 
   --msg-ctrl-item-bg: #f8fcff00;
   --msg-ctrl-item-color: #235168;
   --msg-ctrl-item-font-size: 0.95em;
 
-  --msg-ctrl-gap-main: 12px;
-  --msg-ctrl-gap-content: 18px;
+  --msg-ctrl-gap-main: 0.75rem;
+  --msg-ctrl-gap-content: 1.125rem;
 }

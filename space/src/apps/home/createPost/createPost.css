@@ -6,7 +6,7 @@
     left: 0;
     z-index: 60;
     background-color: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(0.9375rem);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,11 +21,11 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    gap: 12px;
-    backdrop-filter: blur(0px);
+    gap: 0.75rem;
+    backdrop-filter: blur(0rem);
     padding: 1em 0em 0em 1.2em;
-    border: 1px solid rgba(255, 255, 255, 0.146);
-    border-radius: 12px;
+    border: 0.0625rem solid rgba(255, 255, 255, 0.146);
+    border-radius: 0.75rem;
     box-sizing: border-box;
     position: relative;
     color: rgb(217, 217, 217);
@@ -33,8 +33,8 @@
 
 .create-post-overlay-close-btn {
     position: absolute;
-    right: 20px;
-    top: 15px;
+    right: 1.25rem;
+    top: 0.9375rem;
     font-size: 1.5em;
     border: 0;
     padding: 0;
@@ -69,7 +69,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    gap: 5px;
+    gap: 0.3125rem;
     padding: 0em 1.2em 0em 0em;
     box-sizing: border-box;
 }
@@ -80,18 +80,18 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
 }
 
 .create-post-card-content section {
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
     box-sizing: border-box;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.355);
+    border-bottom: 0.0625rem solid rgba(128, 128, 128, 0.355);
     background-color: rgba(213, 48, 48, 0);
 }
 .create-post-card-content section:last-child {
-    border-bottom: 0px solid rgba(128, 128, 128, 0);
+    border-bottom: 0rem solid rgba(128, 128, 128, 0);
 }
 
 
@@ -102,7 +102,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    gap: 20px;
+    gap: 1.25rem;
     background-color: rgba(255, 0, 0, 0);
 }
 
@@ -120,24 +120,24 @@
     width: 100%;
     display: flex;
     flex-direction: row;
-    gap: 13px;
+    gap: 0.8125rem;
     padding: 0 1.2em;
     box-sizing: border-box;
     align-items: flex-end;
     background: none;
-    margin-top: 5px;
-    border-bottom: 1px solid rgba(82, 255, 244, 0.12);
+    margin-top: 0.3125rem;
+    border-bottom: 0.0625rem solid rgba(82, 255, 244, 0.12);
 }
 
 .create-post-type-select-btn {
-    height: 42px;
-    min-width: 110px;
+    height: 2.625rem;
+    min-width: 6.875rem;
     flex: 1;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 9px;
-    border-radius: 11px 11px 0 0;
+    gap: 0.5625rem;
+    border-radius: 0.6875rem 0.6875rem 0 0;
     background: rgba(17,21,23,0.10);
     color: #d2d7d7;
     font-size: 0.99em;
@@ -151,9 +151,9 @@
       border 0.19s;
     justify-content: center;
     position: relative;
-    top: 1.5px;
+    top: 0.0938rem;
     outline: none;
-        border-bottom: 2.5px solid #16fbff00;
+        border-bottom: 0.1563rem solid #16fbff00;
 }
 .create-post-type-select-btn .icon-style {
     font-size: 1.16em;
@@ -164,32 +164,32 @@
 .create-post-type-select-btn.active {
     /* background: linear-gradient(92deg, rgba(0, 148, 126,0.16) 35%, rgba(10,29,36,0.18) 100%); */
     color: #00e3e9;
-    box-shadow: 0 1.5px 12px 0 rgba(2, 255, 250, 0.09), 0 2px 9px rgba(12,255,255,0.06) inset;
-    border-bottom: 2.5px solid #00e3e9;
+    box-shadow: 0 0.0938rem 0.75rem 0 rgba(2, 255, 250, 0.09), 0 0.125rem 0.5625rem rgba(12,255,255,0.06) inset;
+    border-bottom: 0.1563rem solid #00e3e9;
     z-index: 2;
 }
 .create-post-type-select-btn.active .icon-style {
     color: #00e3e9;
-    text-shadow: 0 1.5px 7px #00ffe788;
+    text-shadow: 0 0.0938rem 0.4375rem #00ffe788;
 }
 
 .create-post-type-select-btn:hover:not(.active),
 .create-post-type-select-btn:focus-visible:not(.active) {
     background: linear-gradient(92deg, rgba(0, 225, 233, 0.206) 50%, rgba(35, 49, 53, 0.256) 100%);
     color: #4ef5fa;
-    border-bottom: 2.5px solid #61fcff59;
+    border-bottom: 0.1563rem solid #61fcff59;
     z-index: 2;
 }
 .create-post-type-select-btn:hover:not(.active) .icon-style,
 .create-post-type-select-btn:focus-visible:not(.active) .icon-style {
     color: #00e3e9;
-    text-shadow: 0 1.5px 6px #00ffe799;
+    text-shadow: 0 0.0938rem 0.375rem #00ffe799;
 }
 
 .create-post-type-select-btn:active {
     background: rgba(0, 217, 225, 0.13);
     color: #00e3e9;
-    border-bottom: 2.5px solid #00e1e9d0;
+    border-bottom: 0.1563rem solid #00e1e9d0;
 }
 
 
@@ -211,8 +211,8 @@
 
 .create-post-content-editor {
     width: 100%;
-    min-height: 150px;
-    max-height: 400px;
+    min-height: 9.375rem;
+    max-height: 25rem;
     background-color: rgba(0, 128, 0, 0);
     position: relative;
     padding-bottom: 0.4em;
@@ -222,13 +222,13 @@
     align-items: flex-start;
     justify-content: flex-start;
     box-sizing: border-box;
-    gap: 5px;
+    gap: 0.3125rem;
 }
 .create-post-content-editor.Thread {
-    min-height: 160px;
+    min-height: 10rem;
 }
 .create-post-content-editor.Visual {
-    min-height: 90px;
+    min-height: 5.625rem;
 }
 
 
@@ -243,25 +243,25 @@
 
 .submit-post-btns {
     width: 100%;
-    /* height: 50px; */
+    /* height: 3.125rem; */
     background-color: rgba(0, 255, 255, 0);
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
     padding: 0em 1.2em 0.5em 0em;
     box-sizing: border-box;
 }
 .submit-post-btns button {
-    border: 2px solid transparent;
+    border: 0.125rem solid transparent;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0.6em 1.3em;
     font-size: 1em;
     font-weight: bold;
-    border-radius: 20px;
+    border-radius: 1.25rem;
     color: white;
     background-color: rgba(255, 255, 255, 0.1);
     background: radial-gradient(rgba(0, 153, 255, 0.349), rgba(0, 222, 207, 0.412));
@@ -270,8 +270,8 @@
 .submit-post-btns button:hover {
     cursor: pointer;
     background-color: rgba(0, 94, 94, 0.515);
-    backdrop-filter: blur(0px);
-    box-shadow: 0 0 2px rgba(0, 255, 255, 0.8);
+    backdrop-filter: blur(0rem);
+    box-shadow: 0 0 0.125rem rgba(0, 255, 255, 0.8);
     transform: scale(1.05);
 }
 
@@ -281,7 +281,7 @@
 }
 
 .submit-post-btn:hover {
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+    box-shadow: 0 0 0.9375rem rgba(0, 255, 255, 0.7);
     background-color: rgba(0, 41, 50, 0.5);
     transform: scale(1.05); /* Hover scale effect */
 }
@@ -290,7 +290,7 @@
     color: #fff;
 }
 .save-draft-btn:hover {
-    box-shadow: 0 0 15px rgba(0, 148, 126, 0.8);
+    box-shadow: 0 0 0.9375rem rgba(0, 148, 126, 0.8);
     background-color: rgba(0, 24, 21, 0.4);
     transform: scale(1.05);
 }
@@ -300,7 +300,7 @@
     color: #fff;
 }
 .cancel-post-btn:hover {
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.9);
+    box-shadow: 0 0 0.9375rem rgba(255, 0, 0, 0.9);
     background-color: rgba(37, 0, 0, 0.5);
     transform: scale(1.05);
 }
@@ -333,7 +333,7 @@
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
 }
 .post-sub-setting-header p {
     margin: 0;
@@ -348,8 +348,8 @@
     align-items: center;
     width: 100%;
     background-color: rgba(0, 128, 0, 0);
-    gap: 15px;
-    padding: 0.6em 0px 1em 0px;
+    gap: 0.9375rem;
+    padding: 0.6em 0rem 1em 0rem;
     box-sizing: border-box;
 }
 .post-sub-setting-header.invalid p {
@@ -358,24 +358,24 @@
 
 .post-settings-card-container-btn {
     all: unset;
-    border: 1px solid rgba(255, 255, 255, 0.179);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.179);
     border-radius: 2em;
     padding: 0.7em 1em;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
     transition: all 0.3s ease;
 }
 .post-settings-card-container-btn.active {
     background-color: rgba(0, 225, 255, 0.157);
-    box-shadow: inset 0px 0px 4px 1px rgba(0, 247, 255, 0.596);
+    box-shadow: inset 0rem 0rem 0.25rem 0.0625rem rgba(0, 247, 255, 0.596);
 }
 .post-settings-card-container-btn:hover {
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0);
-    box-shadow: inset 0px 0px 6px 2px rgba(0, 247, 255, 0.596);
+    border: 0.0625rem solid rgba(255, 255, 255, 0);
+    box-shadow: inset 0rem 0rem 0.375rem 0.125rem rgba(0, 247, 255, 0.596);
 }
 .post-settings-card-container-btn p {
     margin: 0;
@@ -389,20 +389,20 @@
 
 .create-post-input {
     background-color: rgba(255, 0, 0, 0);
-    /* width: 50px !important; */
-    height: 40px;
+    /* width: 3.125rem !important; */
+    height: 2.5rem;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.25rem;
     font-size: 0.8em;
     color: rgb(176, 176, 176);
 }
 
 .create-post-input input {
     all: unset;
-    border: 1px solid gray;
-    border-radius: 8px;
+    border: 0.0625rem solid gray;
+    border-radius: 0.5rem;
     font-size: 0.9em;
     padding: 0em 0.5em;
     margin: 0;

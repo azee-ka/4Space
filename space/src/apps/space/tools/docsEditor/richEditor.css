@@ -9,7 +9,7 @@
   --text-dark: #222;
   --text-muted: #666;
   --border: #ddd;
-  --shadow-light: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-light: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.06);
 }
 
 
@@ -27,7 +27,7 @@
   align-items: center;
   padding: 1rem 1.5rem;
   background: #fff;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0.0625rem solid var(--border);
   box-shadow: var(--shadow-light);
   z-index: 5;
 }
@@ -36,15 +36,15 @@
   font-size: 1.4rem;
   font-weight: 600;
   padding: 0.4rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.5rem;
   background: #f5f5f5;
   outline: none;
   transition: box-shadow 0.2s ease;
 }
 
 .doc-title:focus {
-  box-shadow: 0 0 0 2px var(--accent);
+  box-shadow: 0 0 0 0.125rem var(--accent);
 }
 
 .doc-actions {
@@ -58,10 +58,10 @@
   align-items: center;
   gap: 0.4rem;
   background: linear-gradient(90deg, #007cff 0%, #00b0ff 100%);
-  box-shadow: 0 0 8px rgba(0, 124, 255, 0.2);
+  box-shadow: 0 0 0.5rem rgba(0, 124, 255, 0.2);
   color: white;
   font-weight: 600;
-  border-radius: 30px;
+  border-radius: 1.875rem;
   padding: 0.5rem 1.2rem;
   border: none;
   text-transform: uppercase;
@@ -72,7 +72,7 @@
 .save-btn:hover,
 .share-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 124, 255, 0.35);
+  box-shadow: 0 0 0.9375rem rgba(0, 124, 255, 0.35);
 }
 
 .editor-menubar {
@@ -80,7 +80,7 @@
   gap: 1rem;
   padding: 0.6rem 1.5rem;
   background: #fafafa;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0.0625rem solid var(--border);
   font-size: 0.88rem;
   font-weight: 500;
   position: relative;
@@ -90,7 +90,7 @@
 .menu-item {
   position: relative;
   padding: 0.3rem 0.6rem;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   cursor: pointer;
   transition: background 0.15s ease;
 }
@@ -104,9 +104,9 @@
   top: 2rem;
   left: 0;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-  min-width: 160px;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.625rem 1.5rem rgba(0, 0, 0, 0.08);
+  min-width: 10rem;
   overflow: hidden;
   z-index: 10;
 }
@@ -129,14 +129,14 @@
   gap: 0.75rem;
   padding: 0.8rem 1.5rem;
   background: #fff;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0.0625rem solid var(--border);
 }
 
 .editor-toolbar select {
   font-size: 0.9rem;
   padding: 0.35rem 0.6rem;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  border: 0.0625rem solid #d1d5db;
   background: #f1f5f9;
   color: var(--text-dark);
   transition: border-color 0.2s ease;
@@ -151,8 +151,8 @@
   align-items: center;
   justify-content: center;
   background: var(--btn-bg);
-  border: 1px solid transparent;
-  border-radius: 6px;
+  border: 0.0625rem solid transparent;
+  border-radius: 0.375rem;
   padding: 0.4rem;
   font-size: 1rem;
   color: var(--text-dark);
@@ -167,22 +167,22 @@
 
 .toolbar-btn.active {
   background: var(--btn-active);
-  border: 1px solid var(--accent);
+  border: 0.0625rem solid var(--accent);
   color: var(--accent-dark);
-  box-shadow: 0 0 0 2px rgba(0, 124, 255, 0.25);
+  box-shadow: 0 0 0 0.125rem rgba(0, 124, 255, 0.25);
 }
 
 .ruler {
   width: 100%;
-  height: 30px;
+  height: 1.875rem;
   background: repeating-linear-gradient(
     to right,
     #ccc,
-    #ccc 1px,
-    transparent 1px,
-    transparent 10px
+    #ccc 0.0625rem,
+    transparent 0.0625rem,
+    transparent 0.625rem
   );
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0.0625rem solid var(--border);
 }
 
 .page-container {
@@ -203,18 +203,18 @@
 }
 
 .editor-content {
-  width: 816px;
-  min-height: 1056px;
+  width: 51rem;
+  min-height: 66rem;
   padding: 1in;
   background: var(--bg-paper);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   box-shadow: var(--shadow-light);
   outline: none;
   font-size: 1rem;
   line-height: 1.5;
   color: var(--text-dark);
   box-sizing: border-box;
-  column-width: 816px;
+  column-width: 51rem;
   column-gap: 0;
   column-fill: auto;
 }
@@ -222,7 +222,7 @@
 .editor-content::after {
   content: "";
   display: block;
-  height: 1056px;
+  height: 66rem;
   break-after: page;
 }
 
@@ -237,7 +237,7 @@
   background: #ffffffdd;
   font-size: 0.85rem;
   color: var(--text-muted);
-  border-top: 1px solid var(--border);
+  border-top: 0.0625rem solid var(--border);
 }
 
 

@@ -35,7 +35,7 @@ a {
 .ql-code-block-container {
     background-color: rgba(23, 32, 45, 0.59);
     padding: 0.8em 0.5em;
-    border-radius: 4px;
+    border-radius: 0.25rem;
 }
 
 

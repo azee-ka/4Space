@@ -25,7 +25,7 @@
   --repo-btn-secondary-bg: transparent;
   --repo-btn-secondary-color: #c4c4c4;
   --repo-btn-secondary-border: #555;
-  --repo-grid-card-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  --repo-grid-card-shadow: 0 0.375rem 1.125rem rgba(0,0,0,0.6);
   --repo-modal-backdrop: rgba(0,0,0,0.65);
   --repo-modal-bg: #1e1e25;
   --repo-modal-border: #2c2c33;
@@ -64,7 +64,7 @@
   --repo-btn-secondary-bg: #e8f8fb;
   --repo-btn-secondary-color: #547fa7;
   --repo-btn-secondary-border: #b9e0ea;
-  --repo-grid-card-shadow: 0 6px 18px rgba(34, 160, 200, 0.07);
+  --repo-grid-card-shadow: 0 0.375rem 1.125rem rgba(34, 160, 200, 0.07);
   --repo-modal-backdrop: rgba(190,220,240,0.15);
   --repo-modal-bg: #fafdff;
   --repo-modal-border: #d3e5eb;
@@ -109,7 +109,7 @@
   padding: 0.5rem 1rem;
   border: none;
   font-size: 0.95rem;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
 }
@@ -119,25 +119,25 @@
 }
 .btn-primary:hover {
   background: var(--repo-btn-primary-hover-bg);
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 .btn-secondary {
   background: var(--repo-btn-secondary-bg);
   color: var(--repo-btn-secondary-color);
-  border: 1px solid var(--repo-btn-secondary-border);
+  border: 0.0625rem solid var(--repo-btn-secondary-border);
 }
 .btn-secondary:hover {
   background: var(--repo-meta-secondary-hover-bg);
   color: var(--repo-meta-secondary-hover-color);
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 
 /* === GRID OF CARDS === */
 .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
   gap: 1.5rem;
-  grid-auto-rows: 225px;
+  grid-auto-rows: 14.0625rem;
 }
 
 /* === REPO CARD === */
@@ -145,21 +145,21 @@
   position: relative;
   overflow: hidden;
   background: var(--repo-card-bg);
-  border: 1px solid var(--repo-card-border);
-  border-radius: 12px;
+  border: 0.0625rem solid var(--repo-card-border);
+  border-radius: 0.75rem;
   padding: 1rem;
   box-sizing: border-box;
   cursor: pointer;
 
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   height: 100%;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .repo-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-0.25rem);
   box-shadow: var(--repo-grid-card-shadow);
 }
 .repo-card::before {
@@ -169,13 +169,13 @@
   left: 0;
   width: 0;
   height: 0;
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
+  border-top-left-radius: 0.75rem;
+  border-bottom-left-radius: 0.75rem;
   transition: all 0.3s ease;
   z-index: 1;
 }
 .repo-card:hover::before {
-  width: 4px;
+  width: 0.25rem;
   height: 100%;
   background: var(--repo-card-highlight);
 }
@@ -185,7 +185,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  height: 46px;
+  height: 2.875rem;
 }
 .repo-card-top h2 {
   margin: 0;
@@ -203,7 +203,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 0.25rem;
 }
 
 /* description: clamp to 3 lines */
@@ -231,7 +231,7 @@
   color: var(--repo-tag-color);
   padding: 0.2rem 0.4rem;
   font-size: 0.75rem;
-  border-radius: 4px;
+  border-radius: 0.25rem;
 }
 .repo-tags .tag.more {
   font-size: 0.65rem;
@@ -289,10 +289,10 @@
 }
 .modal-card {
   background: var(--repo-modal-bg);
-  border: 1px solid var(--repo-modal-border);
-  border-radius: 12px;
+  border: 0.0625rem solid var(--repo-modal-border);
+  border-radius: 0.75rem;
   width: 100%;
-  max-width: 480px;
+  max-width: 30rem;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -302,7 +302,7 @@
 @keyframes popIn {
   from {
     opacity: 0;
-    transform: translateY(-12px);
+    transform: translateY(-0.75rem);
   }
   to {
     opacity: 1;
@@ -324,8 +324,8 @@
 .modal-card textarea {
   margin-top: 0.3rem;
   padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid var(--repo-modal-input-border);
+  border-radius: 0.375rem;
+  border: 0.0625rem solid var(--repo-modal-input-border);
   background: var(--repo-modal-input-bg);
   color: var(--repo-modal-input-text);
   font-size: 0.9rem;
@@ -338,7 +338,7 @@
 }
 .modal-card textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 5rem;
 }
 .checkbox {
   flex-direction: row;

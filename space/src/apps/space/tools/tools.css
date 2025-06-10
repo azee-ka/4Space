@@ -3,8 +3,8 @@
   --tools-color: #ecf1f8;
   --tools-header-color: #ffffff;
   --tools-card-bg: rgba(255, 255, 255, 0.04);
-  --tools-card-border: 1px solid rgba(255, 255, 255, 0.08);
-  --tools-card-hover-shadow: 0 0 0 1px rgba(0, 200, 255, 0.1), 0 12px 24px rgba(0, 200, 255, 0.08);
+  --tools-card-border: 0.0625rem solid rgba(255, 255, 255, 0.08);
+  --tools-card-hover-shadow: 0 0 0 0.0625rem rgba(0, 200, 255, 0.1), 0 0.75rem 1.5rem rgba(0, 200, 255, 0.08);
   --tools-card-blur: rgba(255, 255, 255, 0.03);
   --tools-card-accent: linear-gradient(to bottom, #00fff7, #00bfff);
   --tools-icon: #00ffe1;
@@ -13,7 +13,7 @@
   --tools-desc: #c8c8c8;
   --tools-feature-bg: rgba(0, 255, 255, 0.05);
   --tools-feature-color: #aefcff;
-  --tools-feature-border: 1px solid rgba(0, 255, 255, 0.2);
+  --tools-feature-border: 0.0625rem solid rgba(0, 255, 255, 0.2);
 }
 
 [data-theme="light"] {
@@ -21,8 +21,8 @@
   --tools-color: #233b49;
   --tools-header-color: #222f3a;
   --tools-card-bg: rgb(255, 255, 255);
-  --tools-card-border: 1px solid rgba(30, 50, 60, 0.11);
-  --tools-card-hover-shadow: 0 0 0 1px rgba(18, 224, 232, 0.13), 0 12px 24px rgba(16, 164, 232, 0.11);
+  --tools-card-border: 0.0625rem solid rgba(30, 50, 60, 0.11);
+  --tools-card-hover-shadow: 0 0 0 0.0625rem rgba(18, 224, 232, 0.13), 0 0.75rem 1.5rem rgba(16, 164, 232, 0.11);
   --tools-card-blur: rgba(30, 60, 120, 0.03);
   --tools-card-accent: linear-gradient(to bottom, #00e3ef, #62d8ff);
   --tools-icon: #00d7f2;
@@ -31,7 +31,7 @@
   --tools-desc: #5d7383;
   --tools-feature-bg: rgba(0, 224, 255, 0.07);
   --tools-feature-color: #07b0cc;
-  --tools-feature-border: 1px solid rgba(0, 224, 255, 0.13);
+  --tools-feature-border: 0.0625rem solid rgba(0, 224, 255, 0.13);
 }
 
 .space-tools-page {
@@ -63,7 +63,7 @@
 
 .space-tools-content {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(16.25rem, 1fr));
   gap: 2rem;
   padding-right: 2em;
   padding-bottom: 1em;
@@ -74,7 +74,7 @@
 .tool-card {
   position: relative;
   display: block;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   background: var(--tools-card-bg);
   border: var(--tools-card-border);
   overflow: hidden;
@@ -92,7 +92,7 @@
   position: absolute;
   inset: 0;
   background: var(--tools-card-blur);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(0.875rem);
   z-index: 1;
 }
 
@@ -102,9 +102,9 @@
   left: 0;
   bottom: 0;
   height: 100%;
-  width: 5px;
+  width: 0.3125rem;
   background: var(--tools-card-accent);
-  border-radius: 2px;
+  border-radius: 0.125rem;
   z-index: 3;
   opacity: 0;
   transform: scaleY(0);
@@ -139,13 +139,13 @@
   font-weight: 500;
   color: var(--tools-card-title);
   margin: 0;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.0187rem;
 }
 
 .tool-type {
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.0625rem;
   color: var(--tools-type);
   font-weight: 600;
   margin-top: -0.5rem;
@@ -175,5 +175,5 @@
   padding: 0.2rem 0.6rem;
   border-radius: 1rem;
   border: var(--tools-feature-border);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(0.25rem);
 }

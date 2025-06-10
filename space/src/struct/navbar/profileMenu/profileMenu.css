@@ -1,19 +1,19 @@
 .profile-menu-container {
     position: absolute;
-    top: 64px;
-    right: 20px;
-    width: 300px;
-    padding: 16px;
-    border-radius: 16px;
+    top: 4rem;
+    right: 1.25rem;
+    width: 18.75rem;
+    padding: 1rem;
+    border-radius: 1rem;
     background: rgba(60, 60, 60, 0.247);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(1.25rem);
+    -webkit-backdrop-filter: blur(1.25rem);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0.625rem 1.25rem rgba(0, 0, 0, 0.3);
     color: #eaeaea;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 0.9375rem;
     z-index: 1000;
 }
 
@@ -23,31 +23,31 @@
     font-weight: 700;
     color: #ccc;
     text-transform: uppercase;
-    margin-bottom: 10px;
-    letter-spacing: 0.5px;
+    margin-bottom: 0.625rem;
+    letter-spacing: 0.0313rem;
 }
 
 .profile-section-subheader {
     font-size: 0.75rem;
     font-weight: 600;
     color: #999;
-    margin-bottom: 6px;
-    padding-top: 4px;
+    margin-bottom: 0.375rem;
+    padding-top: 0.25rem;
 }
 
 /* CURRENT ACCOUNT */
 .profile-menu-user-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     background: rgba(255, 255, 255, 0.08);
-    padding: 8px;
-    border-radius: 12px;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
 }
 
 .profile-avatar {
-    width: 46px;
-    height: 46px;
+    width: 2.875rem;
+    height: 2.875rem;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
@@ -81,25 +81,25 @@
 
 /* OTHER ACCOUNTS */
 .profile-other-accounts {
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 10px;
+    border-top: 0.0625rem solid rgba(255, 255, 255, 0.05);
+    padding-top: 0.625rem;
 }
 
 .account-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    max-height: 160px;
+    gap: 0.375rem;
+    max-height: 10rem;
     overflow-y: auto;
-    padding-right: 2px;
+    padding-right: 0.125rem;
 }
 
 .account-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 6px 8px;
-    border-radius: 8px;
+    gap: 0.625rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.5rem;
     background: rgba(255, 255, 255, 0.03);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -110,8 +110,8 @@
 }
 
 .account-avatar {
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
@@ -151,11 +151,11 @@
 }
 
 .account-button {
-    padding: 8px 12px;
+    padding: 0.5rem 0.75rem;
     background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 0.0625rem solid rgba(255, 255, 255, 0.12);
     color: #eee;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     cursor: pointer;
     font-size: 0.85rem;
     transition: all 0.3s;
@@ -170,17 +170,17 @@
 .profile-signout {
     display: flex;
     justify-content: center;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1rem;
+    border-top: 0.0625rem solid rgba(255, 255, 255, 0.05);
 }
 
 .profile-signout button {
     background: rgba(255, 70, 70, 0.12);
-    border: 1px solid rgba(255, 70, 70, 0.2);
+    border: 0.0625rem solid rgba(255, 70, 70, 0.2);
     color: #f88;
     font-weight: 500;
-    padding: 8px 14px;
-    border-radius: 10px;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.625rem;
     cursor: pointer;
     transition: all 0.3s;
     width: 80%;
@@ -206,20 +206,20 @@
 
 /* Manage account button */
 .profile-manage-account {
-    margin-left: 58px; /* aligns under text beside avatar */
-    margin-top: 6px;
+    margin-left: 3.625rem; /* aligns under text beside avatar */
+    margin-top: 0.375rem;
     display: flex;
     justify-content: flex-start;
 }
 
 .profile-manage-account button {
-    padding: 4px 10px;
+    padding: 0.25rem 0.625rem;
     font-size: 0.72rem;
     font-weight: 500;
     color: #ccc;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 14px;
+    border: 0.0625rem solid rgba(255, 255, 255, 0.07);
+    border-radius: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -240,22 +240,22 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    gap: 10px;
-    margin-top: 8px;
-    margin-bottom: -10px;
+    gap: 0.625rem;
+    margin-top: 0.5rem;
+    margin-bottom: -0.625rem;
     background-color: rgba(0, 128, 0, 0);
     overflow-x: auto;
-    padding: 0px 0px 15px 0px;
+    padding: 0rem 0rem 0.9375rem 0rem;
 }
 
 .profile-action-pills button {
-    padding: 8px 15px;
+    padding: 0.5rem 0.9375rem;
     font-size: 0.7rem;
     font-weight: 500;
     color: #ccc;
     background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 16px;
+    border: 0.0625rem solid rgba(255, 255, 255, 0.09);
+    border-radius: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -270,10 +270,10 @@
 
 
 
-@media (max-width: 800px) {
+@media (max-width: 50rem) {
 .profile-menu-container {
-    top: 50px;
-    backdrop-filter: blur(50px);
+    top: 3.125rem;
+    backdrop-filter: blur(3.125rem);
     background: rgba(65, 65, 65, 0.155);
 
 }
@@ -287,8 +287,8 @@
 [data-theme="light"] .profile-menu-container {
     background: #fff !important;
     color: #222;
-    border: 1px solid #e7eaf3;
-    box-shadow: 0 6px 22px rgba(44,60,80,0.10);
+    border: 0.0625rem solid #e7eaf3;
+    box-shadow: 0 0.375rem 1.375rem rgba(44,60,80,0.10);
 }
 
 [data-theme="light"] .profile-section-header,
@@ -301,7 +301,7 @@
 }
 
 [data-theme="light"] .profile-avatar {
-    border: 1.5px solid #ececec;
+    border: 0.0938rem solid #ececec;
 }
 
 [data-theme="light"] .profile-name,
@@ -316,7 +316,7 @@
 
 [data-theme="light"] .account-item {
     background: #f9fbfd !important;
-    border: 1px solid #ecf1f8;
+    border: 0.0625rem solid #ecf1f8;
 }
 [data-theme="light"] .account-item:hover {
     background: #e8f1fa !important;
@@ -325,7 +325,7 @@
 [data-theme="light"] .profile-action-pills button {
     color: #233;
     background: #f3f6fa !important;
-    border: 1px solid #dde6ee !important;
+    border: 0.0625rem solid #dde6ee !important;
 }
 [data-theme="light"] .profile-action-pills button:hover {
     background: #e6eaf2 !important;
@@ -336,7 +336,7 @@
 [data-theme="light"] .account-button {
     background: #f6f7fa !important;
     color: #234 !important;
-    border: 1px solid #e0e8f2 !important;
+    border: 0.0625rem solid #e0e8f2 !important;
 }
 [data-theme="light"] .account-button:hover {
     background: #e5edf7 !important;
@@ -345,7 +345,7 @@
 [data-theme="light"] .profile-signout button {
     background: #fbeaea !important;
     color: #cf2828 !important;
-    border: 1px solid #f2c5c5 !important;
+    border: 0.0625rem solid #f2c5c5 !important;
 }
 [data-theme="light"] .profile-signout button:hover {
     background: #f5caca !important;

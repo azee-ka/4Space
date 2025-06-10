@@ -1,9 +1,9 @@
 /* loadingBar.css */
 .loading-bar {
     position: fixed;
-    top: 60px;
+    top: 3.75rem;
     left: 0;
-    height: 3px;
+    height: 0.1875rem;
     background-color: #4caf50; /* Adjust this to your desired color */
     transition: width 0.1s ease-out;
 }

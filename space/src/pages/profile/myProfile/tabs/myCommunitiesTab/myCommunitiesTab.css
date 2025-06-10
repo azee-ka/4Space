@@ -4,17 +4,17 @@
 .my-communities-tab-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
   width: 100%;
-  padding: 0 12px;
+  padding: 0 0.75rem;
   box-sizing: border-box;
 }
 
 .my-communities-tabs-header {
   display: flex;
-  gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  padding-bottom: 8px;
+  gap: 0.75rem;
+  border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 0.5rem;
   box-sizing: border-box;
 }
 
@@ -24,8 +24,8 @@
   color: #b7e9ff;
   font-size: 1.1em;
   font-weight: 600;
-  padding: 8px 20px;
-  border-radius: 20px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 1.25rem;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
   opacity: 0.7;
@@ -34,7 +34,7 @@
 .my-communities-tab-btn.active {
   background: #262e39;
   color: #54dfff;
-  box-shadow: 0 3px 8px rgba(0, 80, 120, 0.3);
+  box-shadow: 0 0.1875rem 0.5rem rgba(0, 80, 120, 0.3);
   opacity: 1;
 }
 
@@ -50,7 +50,7 @@
   width: 100%;
   text-align: center;
   color: #b5dbe7;
-  margin: 24px 0;
+  margin: 1.5rem 0;
   font-size: 1.2em;
   letter-spacing: 0.01em;
 }
@@ -64,19 +64,19 @@
 .my-exchanges-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .my-discussion-card {
   display: flex;
   flex-direction: row;
-  gap: 20px;
-  border-radius: 18px;
-  padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
+  gap: 1.25rem;
+  border-radius: 1.125rem;
+  padding: 1.125rem;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(0.875rem);
   background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -90,9 +90,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 4px;
-  padding-top: 6px;
-  min-width: 32px;
+  gap: 0.25rem;
+  padding-top: 0.375rem;
+  min-width: 2rem;
   color: #7be5ec;
 }
 
@@ -116,18 +116,18 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .discussion-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .user-icon {
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.02);
@@ -161,7 +161,7 @@
 .discussion-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .discussion-title {
@@ -185,7 +185,7 @@
 
 .discussion-footer {
   display: flex;
-  gap: 6px;
+  gap: 0.375rem;
   font-size: 0.85rem;
   color: #b0b0b0;
   align-items: center;
@@ -193,12 +193,12 @@
 
 .comment-icon {
   font-size: 1.2rem;
-  margin-right: 4px;
+  margin-right: 0.25rem;
 }
 
 /* Sentinel */
 .my-communities-sentinel {
-  height: 1px;
+  height: 0.0625rem;
   width: 100%;
 }
 
@@ -206,7 +206,7 @@
 .my-communities-end-of-list {
   text-align: center;
   color: #b7e9ff;
-  margin: 12px 0;
+  margin: 0.75rem 0;
   font-size: 1em;
 }
 
@@ -215,21 +215,21 @@
 .my-communities-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .my-community-lane {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
   background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.06);
   color: white;
   text-decoration: none;
   transition: background 0.2s ease;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(0.875rem);
   cursor: pointer;
 }
 
@@ -238,24 +238,24 @@
 }
 
 .lane-logo img {
-  width: 56px;
-  height: 56px;
-  border-radius: 15px;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.9375rem;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.1);
 }
 
 .lane-details {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .lane-title-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   flex-wrap: wrap;
 }
 
@@ -270,31 +270,31 @@
   font-size: 0.75rem;
   color: #88f0ff;
   background-color: rgba(255, 255, 255, 0.05);
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
 }
 
 .lane-description {
   font-size: 0.9rem;
   color: #ccc;
-  margin-top: 2px;
+  margin-top: 0.125rem;
 }
 
 .lane-meta {
   font-size: 0.75rem;
   color: #aaa;
   display: flex;
-  gap: 14px;
+  gap: 0.875rem;
   flex-wrap: wrap;
 }
 
 .lane-meta span {
   font-size: 0.75rem;
   color: #12ebffd0;
-  border: 1px solid rgba(186, 186, 186, 0.279);
+  border: 0.0625rem solid rgba(186, 186, 186, 0.279);
   background-color: rgba(255, 255, 255, 0.05);
-  padding: 2px 10px;
-  border-radius: 12px;
+  padding: 0.125rem 0.625rem;
+  border-radius: 0.75rem;
 }
 
 .lane-actions {
@@ -304,9 +304,9 @@
 
 .lane-action-btn {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 6px 14px;
-  border-radius: 6px;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.08);
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.375rem;
   color: white;
   font-size: 0.8rem;
   transition: background 0.2s ease;
@@ -318,13 +318,13 @@
 }
 
 /* ── Responsive Adjustments ── */
-@media (max-width: 900px) {
+@media (max-width: 56.25rem) {
   .my-communities-tab-container {
-    padding: 0 8px;
+    padding: 0 0.5rem;
   }
   .my-communities-tab-btn {
     font-size: 1em;
-    padding: 6px 14px;
+    padding: 0.375rem 0.875rem;
   }
 }
 
@@ -335,7 +335,7 @@
 
 /* === LIGHT MODE: Tabs/Header Only === */
 [data-theme="light"] .my-communities-tabs-header {
-  border-bottom: 1px solid rgba(0,0,0,0.09);
+  border-bottom: 0.0625rem solid rgba(0,0,0,0.09);
 }
 
 [data-theme="light"] .my-communities-tab-btn {
@@ -346,7 +346,7 @@
 [data-theme="light"] .my-communities-tab-btn.active {
   background: #e2f3fe;
   color: #0572a3;
-  box-shadow: 0 3px 8px rgba(40,160,210,0.12);
+  box-shadow: 0 0.1875rem 0.5rem rgba(40,160,210,0.12);
 }
 
 [data-theme="light"] .my-communities-tab-btn:hover:not(.active) {

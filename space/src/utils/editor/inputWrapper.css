@@ -2,10 +2,10 @@
     position: absolute;
     width: 0;
     height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid #ccc;
-    top: -5px;
+    border-left: 0.3125rem solid transparent;
+    border-right: 0.3125rem solid transparent;
+    border-top: 0.3125rem solid #ccc;
+    top: -0.3125rem;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -13,18 +13,18 @@
 .suggestions-list {
     position: absolute;
     background: rgb(10, 10, 10);
-    border: 1px solid #cccccc29;
-    border-radius: 0px;
-    max-height: 200px;
+    border: 0.0625rem solid #cccccc29;
+    border-radius: 0rem;
+    max-height: 12.5rem;
     overflow-y: auto;
     z-index: 10;
-    min-width: 250px;
+    min-width: 15.625rem;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-content: center;
-    gap: 0px;
+    gap: 0rem;
 }
 
 .suggestion-item {
@@ -34,13 +34,13 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    gap: 8px;
-    height: 53px;
+    gap: 0.5rem;
+    height: 3.3125rem;
     box-sizing: border-box;
     background-color: rgba(128, 128, 128, 0);
-    border-radius: 0px;
+    border-radius: 0rem;
     transition: background-color 0.3s ease;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.287);
+    border-bottom: 0.0625rem solid rgba(128, 128, 128, 0.287);
 }
 .suggestion-item:last-child {
     border: 0;
