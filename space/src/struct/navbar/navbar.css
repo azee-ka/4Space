@@ -337,7 +337,7 @@
 .navbar-items .chat-icon {
   width: 25px;
   aspect-ratio: 1 / 1;
-  color: rgb(255, 255, 255);
+  /* color: rgb(255, 255, 255); */
 }
 
 .navbar-search-container {

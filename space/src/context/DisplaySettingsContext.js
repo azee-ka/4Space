@@ -7,6 +7,7 @@ const defaultSettings = {
     color: '#5387be',
     fontSize: '1em',
     themeMode: 'dark',    // 'dark', 'light', or 'system'
+    backgroundColor: 'black', // for solid background, fallback, and dark mode base
     padding: 'medium',
     animations: true,
     transparency: 0.15,
@@ -23,20 +24,38 @@ const getEffectiveTheme = (themeMode) => {
     return themeMode;
 };
 
+const colorToRgba = (hex, alpha) => {
+    if (!hex || typeof hex !== 'string' || hex.length !== 7) hex = '#5387be';
+    const r = parseInt(hex.substr(1, 2), 16);
+    const g = parseInt(hex.substr(3, 2), 16);
+    const b = parseInt(hex.substr(5, 2), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 export const DisplaySettingsProvider = ({ children }) => {
     const { isAuthenticated } = useAuth();
     const [settings, setSettings] = useState(defaultSettings);
     const [loaded, setLoaded] = useState(false);
     const { callApi } = useApi();
 
-    // Convert hex color to rgba string with alpha
-    const colorToRgba = (hex, alpha) => {
-        if (!hex || typeof hex !== 'string' || hex.length !== 7) hex = '#5387be';
-        const r = parseInt(hex.substr(1, 2), 16);
-        const g = parseInt(hex.substr(3, 2), 16);
-        const b = parseInt(hex.substr(5, 2), 16);
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
+    // On mount: set default gradient + black background (covers pre-login, loading, etc.)
+    useEffect(() => {
+        const app = document.querySelector('.App');
+        if (!app) return;
+        const { gradient, color, transparency, radialPosition, linearAngle, backgroundColor } = defaultSettings;
+
+        let background = backgroundColor || 'black';
+        if (gradient === 'radial' || gradient === 'linear') {
+            const rgba = colorToRgba(color, transparency);
+            const gradientCss =
+                gradient === 'radial'
+                    ? `radial-gradient(circle at ${radialPosition}, ${rgba}, rgba(0,0,0,0))`
+                    : `linear-gradient(${linearAngle}, ${rgba}, rgba(0,0,0,0))`;
+            background = `${gradientCss}, ${backgroundColor || 'black'}`;
+        }
+        app.style.background = background;
+        app.style.backgroundColor = backgroundColor || 'black';
+    }, []);
 
     // Apply display settings to DOM/CSS variables
     const apply = (s = settings) => {
@@ -48,6 +67,7 @@ export const DisplaySettingsProvider = ({ children }) => {
             transparency,
             radialPosition,
             linearAngle,
+            backgroundColor,
         } = s;
 
         document.documentElement.style.setProperty('--base-font-size', fontSize);
@@ -58,21 +78,30 @@ export const DisplaySettingsProvider = ({ children }) => {
         document.body.className = actualTheme;
 
         const app = document.querySelector('.App');
+        if (!app) return;
 
-        // For light mode: just a plain white background
+        // Light mode: solid gray/white only
         if (actualTheme === 'light') {
-            if (app) app.style.background = 'rgb(238, 238, 238)';
+            app.style.background = 'rgb(238, 238, 238)';
+            app.style.backgroundColor = 'rgb(238, 238, 238)';
             return;
         }
-        // For dark mode: use gradient/color as normal
-        const rgba = colorToRgba(color, transparency);
-        const gradientCss =
-            gradient === 'radial'
-                ? `radial-gradient(circle at ${radialPosition}, ${rgba}, rgba(0, 0, 0, 0))`
-                : gradient === 'linear'
-                    ? `linear-gradient(${linearAngle}, ${rgba}, rgba(0, 0, 0, 0))`
-                    : color;
-        if (app) app.style.background = `${gradientCss}, black`;
+
+        // Dark mode: always have fallback solid color
+        app.style.backgroundColor = backgroundColor || 'black';
+
+        // If gradient is specified, use it on top of background color
+        if (gradient === 'radial' || gradient === 'linear') {
+            const rgba = colorToRgba(color, transparency);
+            const gradientCss =
+                gradient === 'radial'
+                    ? `radial-gradient(circle at ${radialPosition}, ${rgba}, rgba(0,0,0,0))`
+                    : `linear-gradient(${linearAngle}, ${rgba}, rgba(0,0,0,0))`;
+            app.style.background = `${gradientCss}, ${backgroundColor || 'black'}`;
+        } else {
+            // No gradient: just solid background color
+            app.style.background = backgroundColor || 'black';
+        }
     };
 
     // Load from backend or use default on fail
