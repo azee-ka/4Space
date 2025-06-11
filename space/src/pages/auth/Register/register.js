@@ -1,4 +1,4 @@
-// RegisterPage.js
+// src/pages/Auth/Register/register.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -17,14 +17,12 @@ const RegisterPage = () => {
   const { login } = useAuth();
 
   const [step, setStep] = useState(1);
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [dob, setDob] = useState('');
-
   const [showPassword, setShowPassword] = useState(false);
   const [registerError, setRegisterError] = useState(null);
 
@@ -43,6 +41,8 @@ const RegisterPage = () => {
     if (username && password) setStep(2);
   };
 
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -56,7 +56,7 @@ const RegisterPage = () => {
         last_name: capitalize(lastName),
         dob: dob || null,
       };
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}api/register/`, data, config);
+      const response = await axios.post(`${API_BASE_URL}api/register/`, data, config);
       login(response.data, { switchTo: !isAddAccount });
       navigate('/timeline');
     } catch (error) {
@@ -64,110 +64,121 @@ const RegisterPage = () => {
     }
   };
 
-  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
+        token: credentialResponse.credential,
+      });
+      login(res.data, { switchTo: !isAddAccount });
+      navigate('/timeline');
+    } catch (err) {
+      console.error(err);
+      setRegisterError('Google registration failed.');
+    }
+  };
+
+  const handleGitHubLogin = () => {
+    window.location.href = `${API_BASE_URL}api/auth/github/login/`;
+  };
 
   return (
     <div className="register-auth-container">
       {isOrganizationRegisterPage ? (
         <OrganizationalRegister />
       ) : (
-        <div className="register-auth-container-inner">
-          <div className="register-auth-card">
-            <h2>Create Account</h2>
-            <form onSubmit={step === 1 ? handleContinue : handleSubmit}>
-              {step === 1 ? (
-                <>
+        <div className="register-auth-card">
+          <h1 className="register-title">Create Account</h1>
+          <form onSubmit={step === 1 ? handleContinue : handleSubmit}>
+            {step === 1 ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                <div className="register-password-field-container">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-button"
+                    onClick={handlePasswordToggle}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                <button type="submit" className="step-button">Continue</button>
+              </>
+            ) : (
+              <>
+                <div className="register-card-full-name">
                   <input
                     type="text"
-                    placeholder="Username"
+                    placeholder="First Name"
                     required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                  <div className="register-password-field-container">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle-button"
-                      onClick={handlePasswordToggle}
-                    >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
-
-                  <button type="submit" className="step-button">Continue</button>
-                </>
-              ) : (
-                <>
-                  <div className="register-card-full-name">
-                    <input
-                      type="text"
-                      placeholder="First Name"
-                      required
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Last Name"
-                      required
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                    />
-                  </div>
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                   />
                   <input
-                    type="date"
-                    placeholder="Date of Birth (optional)"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
+                    type="text"
+                    placeholder="Last Name"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                   />
-
-                  <button type="submit" className="step-button">Create Account</button>
-                </>
-              )}
-            </form>
-
-            <div className="register-oauth-divider">OR</div>
-            <div className="register-oauth-buttons">
-              <div className="oauth-btn-wrapper">
-                <GoogleLogin
-                  onSuccess={(res) => console.log(res)}
-                  onError={() => console.log('Google Login Failed')}
+                </div>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
-              </div>
-              <div className="oauth-btn-wrapper">
-                <GitHubButton onClick={() => window.location.href = '/api/auth/github'} />
-              </div>
-              <div className="oauth-btn-wrapper">
-                <AppleLogin
-                  clientId="com.your.bundle.id"
-                  redirectURI="https://yourdomain.com/callback"
-                  usePopup={true}
-                  responseType="code"
-                  disabled={true}
+                <input
+                  type="date"
+                  placeholder="Date of Birth (optional)"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
                 />
-              </div>
-            </div>
+                <button type="submit" className="step-button">Create Account</button>
+              </>
+            )}
+          </form>
 
-            <div className="redirect-to-login">
-              <Link to="/login">Already have an account? Login</Link>
+          <div className="register-oauth-divider">OR</div>
+          <div className="register-oauth-buttons">
+            <div className="oauth-btn-wrapper">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setRegisterError('Google registration failed.')}
+              />
             </div>
-
-            {registerError && <p className="register-error-display">{registerError}</p>}
+            <div className="oauth-btn-wrapper">
+              <GitHubButton onClick={handleGitHubLogin} />
+            </div>
+            <div className="oauth-btn-wrapper">
+              <AppleLogin
+                clientId="com.your.bundle.id"
+                redirectURI="https://yourdomain.com/callback"
+                usePopup={true}
+                responseType="code"
+                disabled={true}
+              />
+            </div>
           </div>
+
+          <div className="redirect-to-login">
+            <Link to="/login">Already have an account? Login</Link>
+          </div>
+
+          {registerError && <p className="register-error-display">{registerError}</p>}
         </div>
       )}
     </div>

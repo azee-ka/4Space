@@ -1,4 +1,4 @@
-// LoginPage.js
+// src/pages/Auth/LoginPage.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { GoogleLogin } from '@react-oauth/google';
 import GitHubButton from 'react-github-login-button';
 import AppleLogin from 'react-apple-login';
-import './login.css'; // 🔄 Import the CSS
+import './login.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -25,7 +25,7 @@ const LoginPage = () => {
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}api/login/`, {
+            const response = await axios.post(`${API_BASE_URL}api/login/`, {
                 username,
                 password,
             });
@@ -34,6 +34,36 @@ const LoginPage = () => {
         } catch (error) {
             setLoginError(error?.response?.data?.message || 'Login failed.');
         }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
+                token: credentialResponse.credential,
+            });
+            login(res.data, { switchTo: !isAddAccount });
+            const handleGoogleSuccess = async (credentialResponse) => {
+                try {
+                    const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
+                        token: credentialResponse.credential,
+                    });
+                    login(res.data, { switchTo: !isAddAccount });
+                    navigate('/timeline');
+                } catch (err) {
+                    console.error(err);
+                    setLoginError('Google login failed.');
+                }
+            };
+
+            navigate('/timeline');
+        } catch (err) {
+            console.error(err);
+            setLoginError('Google login failed.');
+        }
+    };
+
+    const handleGitHubLogin = () => {
+        window.location.href = `${API_BASE_URL}api/auth/github/login/`;
     };
 
     return (
@@ -75,13 +105,13 @@ const LoginPage = () => {
                 <div className="login-oauth-buttons">
                     <div className="oauth-btn-wrapper">
                         <GoogleLogin
-                            onSuccess={(credentialResponse) => console.log(credentialResponse)}
-                            onError={() => console.log('Google Login Failed')}
+                            onSuccess={handleGoogleSuccess}
+                            onError={() => setLoginError('Google login failed.')}
                         />
                     </div>
 
                     <div className="oauth-btn-wrapper">
-                        <GitHubButton onClick={() => window.location.href = '/api/auth/github'} />
+                        <GitHubButton onClick={handleGitHubLogin} />
                     </div>
 
                     <div className="oauth-btn-wrapper">
@@ -90,12 +120,10 @@ const LoginPage = () => {
                             redirectURI="https://yourdomain.com/callback"
                             usePopup={true}
                             responseType="code"
-                            disabled={true} // <- for now, since you're not enabling it yet
+                            disabled={true}
                         />
                     </div>
                 </div>
-
-
 
                 <div className="login-redirect">
                     <Link to="/register">Don't have an account? Sign up</Link>

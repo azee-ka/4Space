@@ -49,6 +49,7 @@ import { CreateCommunityProvider } from '../context/CreateCommunityContext';
 import SpaceRepositories from '../apps/space/repositories/repositories';
 import RepositoryView from '../apps/space/repositories/repository/repositoryView';
 import CommunityPage from '../apps/communities/community/community';
+import OauthCallback from '../pages/auth/OauthCallback';
 
 
 const AppRouter = () => {
@@ -109,7 +110,11 @@ const AppRouter = () => {
         { name: 'Register', path: '/register', component: <RegisterPage />, key: 'Register' },
         { name: 'Home', path: '/', component: <FrontPage />, key: 'FrontPage' },
         { name: 'Home', path: '/home', component: <FrontPage />, key: 'FrontPage' },
+        { name: 'OAuth Callback', path: '/oauth/callback', component: <OauthCallback />, key: 'OauthCallback' }, // 🆕
     ];
+
+    console.log("Authenticated?", isAuthenticated);
+console.log("Loading?", isLoading);
 
 
     if (isLoading) {

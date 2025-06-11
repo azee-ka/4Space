@@ -9,38 +9,31 @@
   box-sizing: border-box;
 }
 
-.register-auth-container-inner {
-  max-width: 500px;
-  width: 100%;
+
+.register-auth-card {
   background: rgba(154, 154, 154, 0.08);
-  backdrop-filter: blur(23px);
-  border-radius: 1rem;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(23px);
   padding: 2rem;
+  border-radius: 1rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  box-sizing: border-box;
 }
 
-.register-auth-card {
-  display: flex;
-  flex-direction: column;
+.register-title {
   color: white;
-  width: 100%;
-  gap: 1rem;
-}
-
-.register-auth-card h2 {
   font-size: 1.75rem;
   text-align: center;
   margin-bottom: 0.5rem;
 }
 
-form {
+.register-auth-card form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
   width: 100%;
 }
 
@@ -49,6 +42,7 @@ form {
   border-radius: 2rem;
   border: 1px solid #33333324;
   background: rgba(113, 113, 113, 0.22);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   color: #fff;
   font-size: 1rem;
   outline: none;
@@ -70,17 +64,15 @@ form {
 }
 
 .password-toggle-button {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-40%);
   background: none;
   border: none;
   color: #ccc;
   font-size: 1.2rem;
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  transform: translateY(-50%);
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
 }
 
 .register-card-full-name {
@@ -93,11 +85,10 @@ form {
 }
 
 .step-button {
-  margin-top: 0.5rem;
   align-self: center;
   padding: 0.65rem 2.5rem;
   border-radius: 1.8rem;
-  background-color: #1e5f74;
+  background-color: #1e5f74; /* cooler, darker steel-teal */
   color: #f0f4f8;
   border: 1px solid #183d4a;
   font-weight: 500;
@@ -110,7 +101,7 @@ form {
 }
 
 .step-button:hover {
-  background-color: #194c5c;
+  background-color: #194c5c; /* subtly darker */
   transform: translateY(-1px);
 }
 
@@ -128,7 +119,7 @@ form {
   width: 100%;
 }
 
-.oauth-btn-wrapper {
+/* .oauth-btn-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -152,17 +143,17 @@ form {
   display: flex;
   align-items: center;
   justify-content: center;
-}
+} */
 
 .redirect-to-login {
-  width: 100%;
+  margin-top: 0.5rem;
   text-align: center;
-  font-size: 0.85rem;
 }
 
 .redirect-to-login a {
   color: #bbb;
   text-decoration: none;
+  font-size: 0.9rem;
 }
 
 .register-error-display {

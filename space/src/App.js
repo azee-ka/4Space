@@ -13,7 +13,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <Provider store={store}>
-        <GoogleOAuthProvider clientId="YOUR_CLIENT_ID">
+        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
         <DeviceProvider>
           <div className="App">
             <AppRouter />
