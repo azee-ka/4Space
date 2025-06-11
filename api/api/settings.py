@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,8 +24,26 @@ from .config import DJANGO_SECRET_KEY
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = DJANGO_SECRET_KEY
 
+from .config import (
+    GOOGLE_CLIENT_ID,
+    GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET,
+    GITHUB_REDIRECT_URI,
+    FRONTEND_REDIRECT_URI
+)
+# === OAuth Configuration ===
+OAUTH_CONFIG = {
+    "GOOGLE_CLIENT_ID": GOOGLE_CLIENT_ID,
+    "GITHUB_CLIENT_ID": GITHUB_CLIENT_ID,
+    "GITHUB_CLIENT_SECRET": GITHUB_CLIENT_SECRET,
+    "GITHUB_REDIRECT_URI": GITHUB_REDIRECT_URI,
+    "FRONTEND_REDIRECT_URI": FRONTEND_REDIRECT_URI,
+}
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+# DEBUG = False
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -187,6 +206,7 @@ DATA_UPLOAD_MAX_NUMBER_FILES = 2000
 
 
 AUTH_USER_MODEL = 'user.BaseUser'
+
 
 import os
 os.environ["IMAGEIO_FFMPEG_EXE"] = '/opt/homebrew/bin/ffmpeg'

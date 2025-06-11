@@ -2,7 +2,7 @@
 
 .login-wrapper {
   height: 100%;
-  width: 100%;
+  width: 100vw;
   background: #7b7b7b00;
   display: flex;
   justify-content: center;
@@ -180,7 +180,7 @@
     padding-bottom: 0 !important;
 }
 .oauth-btn-wrapper:first-child > div > div > div:last-child {
-    width: 0%;
+    width: 0% !important;
     padding: 0 !important;
 }
 .oauth-btn-wrapper:first-child > div > div > div > div {

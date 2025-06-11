@@ -8,6 +8,23 @@ import {
 } from '../state/actions/authActions';
 import useTabSessionSync from './useTabSessionSync';  // adjust path if needed
 
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return {};
+  }
+}
+
+
 const AUTH_KEY = 'authAccounts';     // persistent all logged-in accounts
 const CURRENT_KEY = 'authCurrent';   // current session for this tab only
 
@@ -75,23 +92,36 @@ const useAuth = () => {
   }, [dispatch, isAddAccountMode]);
 
   // Login or add account, with optional immediate switch
-  const login = (responseData, { switchTo = true } = {}) => {
-    const { user, token } = responseData;
+const login = (responseData, { switchTo = true } = {}) => {
+  let { user, token } = responseData;
 
-    dispatch(addAccountAction(user, token));
-
-    const existingAccounts = JSON.parse(localStorage.getItem(AUTH_KEY)) || [];
-    const updatedAccounts = [
-      ...existingAccounts.filter((acc) => acc.user.username !== user.username),
-      { user, token },
-    ];
-    localStorage.setItem(AUTH_KEY, JSON.stringify(updatedAccounts));
-
-    if (switchTo) {
-      dispatch(switchAccountAction(user, token));
-      sessionStorage.setItem(CURRENT_KEY, JSON.stringify({ user, token }));
+  // If only token is provided (e.g., GitHub redirect), fetch user info
+  if (!user && token) {
+    try {
+      const payload = parseJwt(token); // extract user info from token (if it's a JWT)
+      user = { username: payload?.username || 'unknown' }; // fallback
+    } catch {
+      user = { username: 'unknown' };
     }
-  };
+  }
+
+  if (!user || !token) return;
+
+  dispatch(addAccountAction(user, token));
+
+  const existingAccounts = JSON.parse(localStorage.getItem(AUTH_KEY)) || [];
+  const updatedAccounts = [
+    ...existingAccounts.filter((acc) => acc.user.username !== user.username),
+    { user, token },
+  ];
+  localStorage.setItem(AUTH_KEY, JSON.stringify(updatedAccounts));
+
+  if (switchTo) {
+    dispatch(switchAccountAction(user, token));
+    sessionStorage.setItem(CURRENT_KEY, JSON.stringify({ user, token }));
+  }
+};
+
 
   // Switch profile in same tab only
   const switchProfile = (account) => {
