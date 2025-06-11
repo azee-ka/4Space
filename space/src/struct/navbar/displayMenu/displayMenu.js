@@ -290,16 +290,21 @@ export default function DisplayMenu({ onClose }) {
         </>
       )}
 
-      {/* Font Size */}
+      {/* Font Size (SMOOTH SLIDER!) */}
       <div className="display-setting">
         <label>Font Size</label>
         <div className="slider-wrapper">
           <input
-            type="range" min="0.8" max="1.5" step="0.1"
+            type="range"
+            min="0.8"
+            max="1.5"
+            step="0.01"
             value={parseFloat(fontSize)}
             onChange={e => update('fontSize', `${e.target.value}em`)}
           />
-          <span className="slider-value">{parseFloat(fontSize).toFixed(1)}em</span>
+          <span className="slider-value">
+            {parseFloat(fontSize).toFixed(2)} em
+          </span>
         </div>
       </div>
 
@@ -312,7 +317,7 @@ export default function DisplayMenu({ onClose }) {
           <option value="large">Large</option>
         </select>
       </div>
-
+      
       {/* Animations */}
       <div className="display-setting toggle-group">
         <label>Enable Animations</label>

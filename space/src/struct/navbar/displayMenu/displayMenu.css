@@ -12,7 +12,7 @@
   color: #e4e4e4;
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.6rem;
   z-index: 60;
   overflow-y: auto;
   max-height: 40.625rem;
@@ -298,7 +298,6 @@ justify-content: space-between;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-top: 0.75rem;
 }
 
 .inline-buttons {

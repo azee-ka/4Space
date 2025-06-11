@@ -1,134 +1,106 @@
-// LoginForm.js
-import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Import Axios
+// LoginPage.js
+import React, { useState } from 'react';
+import axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
-import './login.css';
 import API_BASE_URL from '../../../utils/apiUrl';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { GoogleLogin } from '@react-oauth/google';
+import GitHubButton from 'react-github-login-button';
+import AppleLogin from 'react-apple-login';
+import './login.css'; // 🔄 Import the CSS
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
-
     const location = useLocation();
+    const { login } = useAuth();
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
     const [showPassword, setShowPassword] = useState(false);
-
     const [loginError, setLoginError] = useState('');
 
-const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
+    const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
-const handleLoginSuccess = () => {
-  if (isAddAccount) {
-    // 🔁 Notify original tab
-    window.opener?.postMessage({ type: 'ACCOUNT_ADDED' }, window.location.origin);
-
-    // ✅ Reset suppress flag after adding account
-    localStorage.removeItem('suppressAutoRedirect');
-
-    // Keep this tab open and redirect to home
-    navigate('/timeline');
-  } else {
-    // Regular login
-    navigate('/timeline');
-  }
-};
-
-
-
-useEffect(() => {
-  const isFromAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
-  if (isFromAddAccount) {
-    sessionStorage.setItem('addAccountMode', 'true');
-  }
-  return () => {
-    sessionStorage.removeItem('addAccountMode');
-  };
-}, [location.search]);
-
-
-
-
-
-    const handlePasswordToggle = () => {
-        setShowPassword(!showPassword);
-    };
-
-
-    
-    // Handle form submission
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
-
         try {
             const response = await axios.post(`${API_BASE_URL}api/login/`, {
                 username,
                 password,
             });
-            console.log(response.data)
             login(response.data, { switchTo: !isAddAccount });
-            handleLoginSuccess(response.data);
-            // Handle successful login here, for example, update state or redirect
+            navigate('/timeline');
         } catch (error) {
-            console.error('Error logging in:', error.message);
-            // Handle the error as needed
-            setLoginError((error && error.response && error.response.data && error.response.data.message) || (error.message));
+            setLoginError(error?.response?.data?.message || 'Login failed.');
         }
     };
 
     return (
-        <div className="login-auth-container">
-            <div className="login-auth-container-inner">
-                <div className="login-auth-card">
-                    <h2>Login</h2>
-                    <form onSubmit={handleLoginSubmit}>
-                        <div className='login-username-field-container'>
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                placeholder="Username"
-                                required
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </div>
-                        <div className='login-password-field-container'>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                id="password"
-                                name="password"
-                                placeholder="Password"
-                                required
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                            <div className='password-toggle-button-container'>
-                                <button
-                                    type="button"
-                                    className="password-toggle-button"
-                                    onClick={handlePasswordToggle}
-                                >
-                                    <div className="eye-icon-container">
-                                        {showPassword ? <FaEyeSlash className="eye-icon" /> : <FaEye className="eye-icon" />}
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
+        <div className="login-wrapper">
+            <form onSubmit={handleLoginSubmit} className="login-form">
+                <h1 className="login-title">Welcome Back</h1>
 
-                        <div className='redirect-to-register'>
-                            <Link to="/register">Don't have an account? Sign Up</Link>
-                        </div>
+                <input
+                    type="text"
+                    placeholder="Username"
+                    required
+                    className="login-input"
+                    onChange={(e) => setUsername(e.target.value)}
+                />
 
-                        <button type="submit">Login</button>
-                    </form>
-                    <div className='login-error-display'>
-                        <p>{loginError}</p>
+                <div className="login-password-wrapper">
+                    <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Password"
+                        required
+                        className="login-input password-input"
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="login-eye-button"
+                    >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                </div>
+
+                {loginError && <div className="login-error">{loginError}</div>}
+
+                <button type="submit" className="login-primary-button">Login</button>
+
+                <div className="login-oauth-divider">OR</div>
+
+                <div className="login-oauth-buttons">
+                    <div className="oauth-btn-wrapper">
+                        <GoogleLogin
+                            onSuccess={(credentialResponse) => console.log(credentialResponse)}
+                            onError={() => console.log('Google Login Failed')}
+                        />
+                    </div>
+
+                    <div className="oauth-btn-wrapper">
+                        <GitHubButton onClick={() => window.location.href = '/api/auth/github'} />
+                    </div>
+
+                    <div className="oauth-btn-wrapper">
+                        <AppleLogin
+                            clientId="com.your.bundle.id"
+                            redirectURI="https://yourdomain.com/callback"
+                            usePopup={true}
+                            responseType="code"
+                            disabled={true} // <- for now, since you're not enabling it yet
+                        />
                     </div>
                 </div>
-            </div>
+
+
+
+                <div className="login-redirect">
+                    <Link to="/register">Don't have an account? Sign up</Link>
+                </div>
+            </form>
         </div>
     );
 };

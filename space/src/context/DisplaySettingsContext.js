@@ -1,4 +1,3 @@
-// context/DisplaySettingsContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import useApi from '../utils/useApi';
 import { useAuth } from '../hooks/useAuth';
@@ -6,18 +5,16 @@ import { useAuth } from '../hooks/useAuth';
 export const defaultSettings = {
   gradient: 'radial',
   gradientColors: [{ color: '#5387be', alpha: 0.15 }],
-  fontSize: '1em',
+  fontSize: '1em',          // ← slider’s default
   themeMode: 'dark',
   backgroundColor: 'black',
   padding: 'medium',
   animations: true,
   radialPosition: '50% 0%',
   linearAngle: '135deg',
-  // Filters
   brightness: 1,
   contrast:   1,
   saturation: 1,
-  // Radial ellipse sizes
   radialSizeX: 100,
   radialSizeY: 100,
 };
@@ -62,41 +59,32 @@ export const DisplaySettingsProvider = ({ children }) => {
       radialSizeY,
     } = s;
 
-    // Font size & theme attribute
+    // 1) Drive the root CSS variable for font-size
     document.documentElement.style.setProperty('--base-font-size', fontSize);
+
+    // 2) Theme attribute
     const theme = getEffectiveTheme(themeMode);
     document.documentElement.setAttribute('data-theme', theme);
     document.body.className = theme;
 
-    // Light mode: solid background, clear filters
+    // 3) If light mode, set solid background & clear filters
     if (theme === 'light') {
       document.documentElement.style.setProperty('--display-bg', '#eeeeee');
       document.documentElement.style.setProperty('--display-filter', '');
       return;
     }
 
-    // Build gradient stops
-    const stops = gradientColors.map(rgba).join(', ');
+    // 4) Otherwise build your gradient and filters...
+    const stops     = gradientColors.map(rgba).join(', ');
     const fullStops = `${stops}, rgba(0,0,0,0)`;
-    let grad;
-    if (gradient === 'radial') {
-      const shape = `ellipse ${radialSizeX}% ${radialSizeY}%`;
-      grad = `radial-gradient(${shape} at ${radialPosition}, ${fullStops})`;
-    } else {
-      grad = `linear-gradient(${linearAngle}, ${fullStops})`;
-    }
+    const grad = gradient === 'radial'
+      ? `radial-gradient(ellipse ${radialSizeX}% ${radialSizeY}% at ${radialPosition}, ${fullStops})`
+      : `linear-gradient(${linearAngle}, ${fullStops})`;
 
-    document.documentElement.style.setProperty(
-      '--display-bg',
-      `${grad}, ${backgroundColor}`
-    );
+    document.documentElement.style.setProperty('--display-bg', `${grad}, ${backgroundColor}`);
     document.documentElement.style.setProperty(
       '--display-filter',
-      [
-        `brightness(${brightness})`,
-        `contrast(${contrast})`,
-        `saturate(${saturation})`
-      ].join(' ')
+      `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`
     );
   };
 

@@ -1,247 +1,183 @@
 .register-auth-container {
-    width: 100vw;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: rgba(255,0,0,0);
-    box-sizing: border-box;
-    padding: 0;
+  width: 100vw;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .register-auth-container-inner {
-    width: 50rem;
-    max-width: 95vw;
-    min-width: 16.875rem;
-    height: 31.25rem;
-    max-height: 95vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 0.625rem;
-    background: linear-gradient(100deg, #05060874, #44476930);
-    backdrop-filter: blur(2.5rem);
-    border: 0.0625rem solid rgba(57,57,57,0.495);
-    border-radius: 0.625rem;
-    box-sizing: border-box;
-    padding: 0em 2em;
-    transition: background-color 0.3s, transform 0.4s;
-    overflow: hidden;
-    transform: scale(1.03);
+  max-width: 500px;
+  width: 100%;
+  background: rgba(154, 154, 154, 0.08);
+  backdrop-filter: blur(23px);
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  box-sizing: border-box;
 }
 
-.register-auth-container .register-auth-card {
-    width: 25rem;
-    max-width: 97vw;
-    min-width: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    color: white !important;
-    background-color: rgba(171, 50, 50, 0);
-    gap: 1.875rem;
+.register-auth-card {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  width: 100%;
+  gap: 1rem;
 }
 
 .register-auth-card h2 {
-    margin: 0;
-    padding: 0;
-    font-size: 1.4em;
-    color: white;
-    background: rgba(255,0,0,0);
-    height: 6.875rem;
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-end;
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
 }
 
 .register-auth-container input {
-    box-shadow: 0 0 0.3125rem rgba(0,245,196,0.389);
-    border: 0;
-    border-radius: 0.5rem;
-    background: black;
-    color: white;
-    font-size: 1rem;
-    width: 100%;
-    height: 2.5rem;
-    padding: 0 0.625rem;
-    box-sizing: border-box;
+  padding: 0.9rem 1rem;
+  border-radius: 2rem;
+  border: 1px solid #33333324;
+  background: rgba(113, 113, 113, 0.22);
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
 }
 
-.register-auth-container input:focus,
-.register-auth-container input:hover {
-    outline: none;
-    border-color: lightgray;
-    background: rgba(0,241,245,0.022);
-    box-shadow: 0 0 0.3125rem rgb(0,154,181);
+.register-auth-container input:focus {
+  border-color: #5e5e5e33;
 }
 
-.register-auth-container form {
-    background: transparent;
-    width: 90%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.9375rem;
-    box-sizing: border-box;
+.register-password-field-container {
+  position: relative;
+}
+
+.register-password-field-container input {
+  padding-right: 2.5rem;
+}
+
+.password-toggle-button {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 1.2rem;
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
 }
 
 .register-card-full-name {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    width: 100%;
-    background: transparent;
+  display: flex;
+  gap: 0.75rem;
 }
+
 .register-card-full-name input {
-    width: 50%;
+  flex: 1;
 }
-.register-card-other-fields {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 0.8125rem;
-    width: 100%;
-    background: transparent;
-    box-sizing: border-box;
+
+.step-button {
+  margin-top: 0.5rem;
+  align-self: center;
+  padding: 0.65rem 2.5rem;
+  border-radius: 1.8rem;
+  background-color: #1e5f74;
+  color: #f0f4f8;
+  border: 1px solid #183d4a;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  min-width: 220px;
+  text-align: center;
 }
-.register-password-field-container input {
-    padding-right: 2rem;
+
+.step-button:hover {
+  background-color: #194c5c;
+  transform: translateY(-1px);
 }
-.register-password-field-container {
-    width: 100%;
-    background: transparent;
-    position: relative;
+
+.register-oauth-divider {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
 }
-.register-password-field-container .password-toggle-button-container {
-    position: absolute;
-    top: 50%;
-    right: 0.3125rem;
-    transform: translateY(-50%);
-    transition: right 0.25s ease;
+
+.register-oauth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
 }
-.register-password-field-container .password-toggle-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: white;
-    width: 1.5625rem !important;
-    height: 1.5625rem !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem !important;
+
+.oauth-btn-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 3rem;
+  box-sizing: border-box;
+  border-radius: 2rem;
 }
-.register-password-field-container .password-toggle-button-container button:hover {
-    color: white;
+
+.oauth-btn-wrapper iframe {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 2rem !important;
 }
-.register-password-field-container .eye-icon-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+.oauth-btn-wrapper > div {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 2rem !important;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .redirect-to-login {
-    width: 100%;
-    text-align: left;
-    margin-top: -2%;
-    margin-bottom: -1%;
+  width: 100%;
+  text-align: center;
+  font-size: 0.85rem;
 }
+
 .redirect-to-login a {
-    color: rgba(255,255,255,0.7);
-    font-size: 0.75rem;
-    text-decoration: none;
-}
-
-.register-auth-container button {
-    padding: 0.625rem;
-    background-color: #004e61;
-    color: #fff;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    font-size: 1rem;
-    width: 100%;
-    transition: all 0.3s;
-}
-
-.register-auth-container button:hover {
-    background-color: #00100b;
-    box-shadow: 0 0 0.3125rem 0.125rem #004e61;
+  color: #bbb;
+  text-decoration: none;
 }
 
 .register-error-display {
-    height: 1.25rem;
-    color: red;
-    font-size: 1rem;
-    font-family: Arial, Helvetica, sans-serif;
+  color: red;
+  font-size: 0.9rem;
+  text-align: center;
 }
+
 .register-card-organization {
-    font-size: 0.7em;
-    color: gray;
-    background: rgba(255,0,0,0);
-    padding: 0;
-    margin: 0;
+  font-size: 0.8rem;
+  text-align: center;
+  color: #aaa;
 }
+
 .register-card-organization a {
-    text-decoration: none;
-    color: rgb(0,255,255);
-}
-
-/* --------- Responsive breakpoints ---------- */
-@media (max-width: 37.5rem) {
-    .register-auth-container-inner {
-        min-width: 0;
-        max-width: 85vw;
-        border-radius: 0;
-        padding: 0.7em 0.1em;
-        box-shadow: none;
-        background: none;
-        backdrop-filter: none;
-        border: 0rem;
-        box-sizing: border-box;
-                height: 100%;
-
-    }
-    .register-auth-container .register-auth-card {
-        max-width: 90vw;
-        min-width: 0;
-        gap: 1.125rem;
-        padding: 0;
-        background: none;
-        backdrop-filter: none;
-        border: 0rem;
-    }
-    .register-auth-card h2 {
-        font-size: 1.1em;
-        height: 3.375rem;
-    }
-    .register-error-display {
-        font-size: 0.8125rem;
-        height: auto;
-    }
-    .register-card-full-name {
-        flex-direction: column;
-        gap: 0.625rem;
-    }
-    .register-card-full-name input {
-        width: 100%;
-    }
-    .register-auth-container input {
-        font-size: 0.9375rem;
-        height: 2.375rem;
-        padding: 0 0.5625rem;
-    }
-    .password-toggle-button,
-    .password-toggle-button-container button {
-        width: 2.125rem !important;
-        height: 2.125rem !important;
-        font-size: 1.25rem !important;
-    }
+  color: cyan;
+  text-decoration: none;
 }
