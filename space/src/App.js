@@ -6,16 +6,19 @@ import store from './state/store';
 import AppRouter from './routing/AppRouter';
 import ErrorBoundary from './ErrorBoundary';
 import { DeviceProvider } from './context/DeviceContext';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const App = () => {
   return (
     <ErrorBoundary>
       <Provider store={store}>
+        <GoogleOAuthProvider clientId="YOUR_CLIENT_ID">
         <DeviceProvider>
           <div className="App">
             <AppRouter />
           </div>
         </DeviceProvider>
+        </GoogleOAuthProvider>
       </Provider>
     </ErrorBoundary>
   );

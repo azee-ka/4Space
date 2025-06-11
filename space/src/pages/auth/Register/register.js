@@ -1,145 +1,177 @@
-// RegisterForm.js
+// RegisterPage.js
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Import Axios
+import axios from 'axios';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import API_BASE_URL from '../../../utils/apiUrl';
-import './register.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { GoogleLogin } from '@react-oauth/google';
+import GitHubButton from 'react-github-login-button';
+import AppleLogin from 'react-apple-login';
 import OrganizationalRegister from './organization/organization';
+import './register.css';
 
 const RegisterPage = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
+  const [step, setStep] = useState(1);
 
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [dob, setDob] = useState('');
 
-    const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [registerError, setRegisterError] = useState(null);
 
-    const [registerError, setRegisterError] = useState(null);
+  const isOrganizationRegister = location.hash === '#organization';
+  const [isOrganizationRegisterPage, setIsOrganizationRegisterPage] = useState(isOrganizationRegister);
+  const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
-    const isOrganizationRegister = location.hash === '#organization';
-    const [isOrganizationRegisterPage, setIsOrganizationRegisterPage] = useState(isOrganizationRegister);
+  useEffect(() => {
+    setIsOrganizationRegisterPage(location.hash === '#organization');
+  }, [location.hash]);
 
+  const handlePasswordToggle = () => setShowPassword(!showPassword);
 
-    const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
+  const handleContinue = (e) => {
+    e.preventDefault();
+    if (username && password) setStep(2);
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const config = { headers: { 'Content-Type': 'application/json' } };
+      const data = {
+        type: 'individual',
+        username,
+        password,
+        email,
+        first_name: capitalize(firstName),
+        last_name: capitalize(lastName),
+        dob: dob || null,
+      };
+      const response = await axios.post(`${API_BASE_URL}api/register/`, data, config);
+      login(response.data, { switchTo: !isAddAccount });
+      navigate('/timeline');
+    } catch (error) {
+      setRegisterError(error?.response?.data?.message || 'Registration failed.');
+    }
+  };
 
-    const capitalizeFirstLetter = (string) => {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    };
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-    const handlePasswordToggle = () => {
-        setShowPassword(!showPassword);
-    };
+  return (
+    <div className="register-auth-container">
+      {isOrganizationRegisterPage ? (
+        <OrganizationalRegister />
+      ) : (
+        <div className="register-auth-container-inner">
+          <div className="register-auth-card">
+            <h2>Create Account</h2>
+            <form onSubmit={step === 1 ? handleContinue : handleSubmit}>
+              {step === 1 ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                  <div className="register-password-field-container">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle-button"
+                      onClick={handlePasswordToggle}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
 
-    // Handle form submission
-    const handleRegisterSubmit = async (e) => {
-        e.preventDefault();
+                  <button type="submit" className="step-button">Continue</button>
+                </>
+              ) : (
+                <>
+                  <div className="register-card-full-name">
+                    <input
+                      type="text"
+                      placeholder="First Name"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Last Name"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    placeholder="Date of Birth (optional)"
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                  />
 
-        try {
-            const config = {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            };
+                  <button type="submit" className="step-button">Create Account</button>
+                </>
+              )}
+            </form>
 
-            // Capitalize first letter of first and last names
-            const capitalizedFirstName = capitalizeFirstLetter(firstName);
-            const capitalizedLastName = capitalizeFirstLetter(lastName);
+            <div className="register-oauth-divider">OR</div>
+            <div className="register-oauth-buttons">
+              <div className="oauth-btn-wrapper">
+                <GoogleLogin
+                  onSuccess={(res) => console.log(res)}
+                  onError={() => console.log('Google Login Failed')}
+                />
+              </div>
+              <div className="oauth-btn-wrapper">
+                <GitHubButton onClick={() => window.location.href = '/api/auth/github'} />
+              </div>
+              <div className="oauth-btn-wrapper">
+                <AppleLogin
+                  clientId="com.your.bundle.id"
+                  redirectURI="https://yourdomain.com/callback"
+                  usePopup={true}
+                  responseType="code"
+                  disabled={true}
+                />
+              </div>
+            </div>
 
-            const data = {
-                type: 'individual',
-                username: username,
-                password: password,
-                email: email,
-                first_name: capitalizedFirstName,
-                last_name: capitalizedLastName,
-            };
-            // Send registration data to the backend
-            const response = await axios.post(`${API_BASE_URL}api/register/`, data, config);
+            <div className="redirect-to-login">
+              <Link to="/login">Already have an account? Login</Link>
+            </div>
 
-            // Handle the response from the backend as needed
-            console.log(response.data);
-            login(response.data, { switchTo: !isAddAccount });
-            navigate('/timeline');
-
-        } catch (error) {
-            // Handle registration error
-            console.error('Registration failed:', error);
-            // setRegisterError((error.response.data && error.response.data.message) || (error.message));
-        }
-    };
-
-    useEffect(() => {
-        setIsOrganizationRegisterPage(location.hash === '#organization');
-    }, [location.hash]);
-
-
-    return (
-        <div className="register-auth-container">
-            {isOrganizationRegisterPage ? (
-                <OrganizationalRegister />
-            ) : (
-                <div className="register-auth-container-inner">
-                    <div className="register-auth-card">
-                        <h2>Create Account</h2>
-                        <form onSubmit={handleRegisterSubmit}>
-                            <div className='register-card-full-name'>
-                                <input type="text" id="firstName" name='firstName' placeholder="First Name" required
-                                    onChange={(e) => setFirstName(e.target.value)} />
-
-                                <input type="text" id="lastName" name="lastName" placeholder="Last Name" required
-                                    onChange={(e) => setLastName(e.target.value)} />
-                            </div>
-                            <div className='register-card-other-fields'>
-                                <input type="text" id="username" name="username" placeholder="Username" required
-                                    onChange={(e) => setUsername(e.target.value)} />
-
-                                <input type="email" id="email" name="email" placeholder="Email" required
-                                    onChange={(e) => setEmail(e.target.value)} />
-
-
-                                <div className='register-password-field-container'>
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        id="password" name="password" placeholder="Password" required
-                                        onChange={(e) => setPassword(e.target.value)} />
-                                    <div className='password-toggle-button-container'>
-                                        <button
-                                            type="button"
-                                            className="password-toggle-button"
-                                            onClick={handlePasswordToggle}
-                                        >
-                                            <div className="eye-icon-container">
-                                                {showPassword ? <FaEyeSlash className="eye-icon" /> : <FaEye className="eye-icon" />}
-                                            </div>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='redirect-to-login'>
-                                <Link to="/login">Already have an account? Login</Link>
-                            </div>
-                            <button type="submit">Create Account</button>
-                            <p className='register-card-organization'>
-                                Create an organizational account? <Link to="/register#organization">Register here</Link>
-                            </p>
-                        </form>
-                        {registerError && <p className="error-message">{registerError}</p>}
-                    </div>
-                    <div className=''>
-                    </div>
-                </div>
-            )}
+            {registerError && <p className="register-error-display">{registerError}</p>}
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default RegisterPage;
