@@ -44,6 +44,10 @@ space/node_modules/
 *.pyc
 
 # Ignore all migrations folders
-**/migrations/
+!*/migrations/
+!*/migrations/*.py
+*/migrations/__pycache__/
+
+
 space/.env
 space/.env.production
