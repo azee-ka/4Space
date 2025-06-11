@@ -26,7 +26,7 @@ yarn-error.log*
 
 # .gitignore
 api/.env
-api/api/config.py
+# api/api/config.py
 # api/api/settings.py
 
 api/media
