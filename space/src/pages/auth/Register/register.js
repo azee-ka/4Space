@@ -56,7 +56,7 @@ const RegisterPage = () => {
         last_name: capitalize(lastName),
         dob: dob || null,
       };
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/register/`, data, config);
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}api/register/`, data, config);
       login(response.data, { switchTo: !isAddAccount });
       navigate('/timeline');
     } catch (error) {
