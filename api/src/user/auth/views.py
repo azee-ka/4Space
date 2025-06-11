@@ -10,42 +10,48 @@ from rest_framework.authtoken.models import Token
 
 from ...organization.models import OrganizationMembership
 
+import traceback
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
-    data = request.data.copy()
-    acc_type = data.get("type")  # "organization" or "individual"
-    org_role = data.get("org_role")  # "admin" or "member"
+    try:
+        data = request.data.copy()
+        acc_type = data.get("type")
+        org_role = data.get("org_role")
 
-    if acc_type not in ['organization', 'individual']:
-        return Response({"error": "Invalid account type."}, status=400)
+        if acc_type not in ['organization', 'individual']:
+            return Response({"error": "Invalid account type."}, status=400)
 
-    # Keep base role for visibility mode — not for org logic
-    data['role'] = 'professional'  # Default profile role (your feature)
+        data['role'] = 'professional'
 
-    serializer = UserCreateSerializer(data=data)
-    if serializer.is_valid():
-        user = serializer.save()
-        user.set_password(request.data['password'])
-        user.save()
+        serializer = UserCreateSerializer(data=data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user.set_password(request.data['password'])
+            user.save()
 
-        token, _ = Token.objects.get_or_create(user=user)
-        response_data = {
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'role': user.role,
-                'account_type': acc_type,
-            },
-            'token': token.key,
-        }
+            token, _ = Token.objects.get_or_create(user=user)
+            response_data = {
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'role': user.role,
+                    'account_type': acc_type,
+                },
+                'token': token.key,
+            }
+            if acc_type == 'organization' and org_role:
+                response_data['user']['org_role'] = org_role
 
-        # Only include org_role if it's an org-related account
-        if acc_type == 'organization' and org_role:
-            response_data['user']['org_role'] = org_role
+            return Response(response_data, status=201)
+        return Response(serializer.errors, status=400)
 
-        return Response(response_data, status=201)
-    return Response(serializer.errors, status=400)
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(traceback_str)  # will appear in Render Logs
+        return Response({"error": str(e)}, status=500)
+
 
 
 @csrf_exempt
