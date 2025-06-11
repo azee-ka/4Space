@@ -45,3 +45,5 @@ space/node_modules/
 
 # Ignore all migrations folders
 **/migrations/
+space/.env
+space/.env.production
