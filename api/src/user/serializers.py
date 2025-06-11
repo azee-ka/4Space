@@ -134,17 +134,21 @@ class EditUserInfoSerializer(serializers.ModelSerializer):
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    username = serializers.CharField(write_only=True)  # Frontend sends 'username'
+    username = serializers.CharField(write_only=True)
     org_role = serializers.CharField(write_only=True, required=False)
+    date_of_birth = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = BaseUser
-        fields = ['email', 'password', 'username', 'first_name', 'last_name', 'org_role']
+        fields = [
+            'email', 'password', 'username',
+            'first_name', 'last_name', 'org_role', 'date_of_birth'
+        ]
 
     def create(self, validated_data):
-        validated_data.pop('org_role', None)  # Don't store it on BaseUser
-        user = BaseUser.objects.create_user(**validated_data)
-        return user
+        validated_data.pop('org_role', None)
+        return BaseUser.objects.create_user(**validated_data)
+
 
 
 
