@@ -32,6 +32,7 @@ ALLOWED_HOSTS = [
     "10.0.0.6",
     "10.0.0.85",
     "4space-pi.vercel.app",
+    "fourspace-ybgm.onrender.com"
 ]
 
 
@@ -206,7 +207,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://10.0.0.85:3000",
     "http://10.0.0.6:8000",
     "http://10.0.0.6:3000",
-    "https://4space-pi.vercel.app"
+    "https://4space-pi.vercel.app",
+    "https://fourspace-ybgm.onrender.com"
 ]
 
 # CORS_ALLOW_ALL_ORIGINS = True
