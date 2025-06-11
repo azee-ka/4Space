@@ -7,6 +7,7 @@ import AppRouter from './routing/AppRouter';
 import ErrorBoundary from './ErrorBoundary';
 import { DeviceProvider } from './context/DeviceContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Analytics } from "@vercel/analytics/react"
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         <DeviceProvider>
           <div className="App">
             <AppRouter />
+            <Analytics />
           </div>
         </DeviceProvider>
         </GoogleOAuthProvider>
