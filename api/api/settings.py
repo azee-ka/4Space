@@ -24,13 +24,14 @@ from .config import DJANGO_SECRET_KEY
 SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "10.0.0.6",
     "10.0.0.85",
+    "4space-pi.vercel.app",
 ]
 
 
@@ -205,6 +206,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://10.0.0.85:3000",
     "http://10.0.0.6:8000",
     "http://10.0.0.6:3000",
+    "https://4space-pi.vercel.app"
 ]
 
 # CORS_ALLOW_ALL_ORIGINS = True
