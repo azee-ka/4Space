@@ -113,9 +113,6 @@ const AppRouter = () => {
         { name: 'OAuth Callback', path: '/oauth/callback', component: <OauthCallback />, key: 'OauthCallback' }, // 🆕
     ];
 
-    console.log("Authenticated?", isAuthenticated);
-console.log("Loading?", isLoading);
-
 
     if (isLoading) {
         return <div>Loading...</div>;
