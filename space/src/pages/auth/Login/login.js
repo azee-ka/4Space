@@ -1,31 +1,24 @@
-// src/pages/Auth/LoginPage.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import API_BASE_URL from '../../../utils/apiUrl';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { GoogleLogin } from '@react-oauth/google';
-import GitHubButton from 'react-github-login-button';
-import AppleLogin from 'react-apple-login';
 import './login.css';
+import GoogleCustomButton from '../third_party_buttons/GoogleCustomButton';
+import GitHubLoginButton from '../third_party_buttons/GitHubLoginButton';
+import AppleSignInButton from '../third_party_buttons/AppleSignInButton';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
 
+    const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loginError, setLoginError] = useState('');
-
-    const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
-
-const isProduction = process.env.NODE_ENV === 'production';
-
-    const [isClient, setIsClient] = useState(false);
-useEffect(() => setIsClient(true), []);
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -39,36 +32,6 @@ useEffect(() => setIsClient(true), []);
         } catch (error) {
             setLoginError(error?.response?.data?.message || 'Login failed.');
         }
-    };
-
-    const handleGoogleSuccess = async (credentialResponse) => {
-        try {
-            const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
-                token: credentialResponse.credential,
-            });
-            login(res.data, { switchTo: !isAddAccount });
-            const handleGoogleSuccess = async (credentialResponse) => {
-                try {
-                    const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
-                        token: credentialResponse.credential,
-                    });
-                    login(res.data, { switchTo: !isAddAccount });
-                    navigate('/timeline');
-                } catch (err) {
-                    console.error(err);
-                    setLoginError('Google login failed.');
-                }
-            };
-
-            navigate('/timeline');
-        } catch (err) {
-            console.error(err);
-            setLoginError('Google login failed.');
-        }
-    };
-
-    const handleGitHubLogin = () => {
-        window.location.href = `${API_BASE_URL}api/auth/github/login/`;
     };
 
     return (
@@ -108,27 +71,16 @@ useEffect(() => setIsClient(true), []);
                 <div className="login-oauth-divider">OR</div>
 
                 <div className="login-oauth-buttons">
-                    {isClient && (
-                    <div className={`oauth-btn-wrapper ${isProduction ? 'prod-env' : 'dev-env'}`}>
-                                <GoogleLogin
-                            onSuccess={handleGoogleSuccess}
-                            onError={() => setLoginError('Google login failed.')}
-                            />
-                        </div>
-                    )}
-
                     <div className="oauth-btn-wrapper">
-                        <GitHubButton onClick={handleGitHubLogin} />
+                        <GoogleCustomButton />
                     </div>
 
                     <div className="oauth-btn-wrapper">
-                        <AppleLogin
-                            clientId="com.your.bundle.id"
-                            redirectURI="https://yourdomain.com/callback"
-                            usePopup={true}
-                            responseType="code"
-                            disabled={true}
-                        />
+                        <GitHubLoginButton />
+                    </div>
+
+                    <div className="oauth-btn-wrapper">
+                        <AppleSignInButton />
                     </div>
                 </div>
 

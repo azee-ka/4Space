@@ -10,6 +10,9 @@ import GitHubButton from 'react-github-login-button';
 import AppleLogin from 'react-apple-login';
 import OrganizationalRegister from './organization/organization';
 import './register.css';
+import GitHubLoginButton from '../third_party_buttons/GitHubLoginButton';
+import GoogleCustomButton from '../third_party_buttons/GoogleCustomButton';
+import AppleSignInButton from '../third_party_buttons/AppleSignInButton';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -62,23 +65,6 @@ const RegisterPage = () => {
     } catch (error) {
       setRegisterError(error?.response?.data?.message || 'Registration failed.');
     }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
-        token: credentialResponse.credential,
-      });
-      login(res.data, { switchTo: !isAddAccount });
-      navigate('/timeline');
-    } catch (err) {
-      console.error(err);
-      setRegisterError('Google registration failed.');
-    }
-  };
-
-  const handleGitHubLogin = () => {
-    window.location.href = `${API_BASE_URL}api/auth/github/login/`;
   };
 
   return (
@@ -155,22 +141,13 @@ const RegisterPage = () => {
           <div className="register-oauth-divider">OR</div>
           <div className="register-oauth-buttons">
             <div className="oauth-btn-wrapper">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setRegisterError('Google registration failed.')}
-              />
+              <GoogleCustomButton />
             </div>
             <div className="oauth-btn-wrapper">
-              <GitHubButton onClick={handleGitHubLogin} />
+              <GitHubLoginButton />
             </div>
             <div className="oauth-btn-wrapper">
-              <AppleLogin
-                clientId="com.your.bundle.id"
-                redirectURI="https://yourdomain.com/callback"
-                usePopup={true}
-                responseType="code"
-                disabled={true}
-              />
+              <AppleSignInButton />
             </div>
           </div>
 
