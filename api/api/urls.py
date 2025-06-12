@@ -24,5 +24,5 @@ urlpatterns = [
     path('api/', include('src.urls')),
 ] 
 
-if settings.DEBUG and not settings.USE_CLOUDINARY:
+if settings.DEBUG and not settings.USE_AZURE_STORAGE:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
