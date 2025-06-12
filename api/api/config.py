@@ -43,3 +43,18 @@ else:
     GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET_DEV")
     FRONTEND_REDIRECT_URI = os.getenv("FRONTEND_URL_DEV") + "/oauth/callback"
     GITHUB_REDIRECT_URI = os.getenv("BACKEND_URL_DEV") + "/api/auth/github/callback/"
+
+
+
+# === Media Storage Configuration ===
+USE_CLOUDINARY = os.getenv("USE_CLOUDINARY", "false").lower() == "true"
+
+if USE_CLOUDINARY:
+    CLOUDINARY_CONFIG = {
+        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
+    }
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(os.path.dirname(__file__), '..', 'media')

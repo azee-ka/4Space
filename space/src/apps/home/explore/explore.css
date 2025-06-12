@@ -135,7 +135,7 @@
 .explore-masonry-grid {
   display: flex;
   margin-left: -0.75rem;
-  width: auto;
+  width: 100%;
 }
 .explore-masonry-column {
   padding-left: 0.75rem;

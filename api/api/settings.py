@@ -86,6 +86,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken', 
     'api',
+    
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 REST_FRAMEWORK = {
@@ -157,6 +160,7 @@ DATABASES = {
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
+
 
 
 
@@ -237,6 +241,18 @@ CORS_ALLOWED_ORIGINS = [
 # import pymysql
 
 # pymysql.install_as_MySQLdb()
+
+
+
+from .config import USE_CLOUDINARY
+
+if USE_CLOUDINARY:
+    from .config import CLOUDINARY_CONFIG
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = CLOUDINARY_CONFIG
+else:
+    from .config import MEDIA_URL, MEDIA_ROOT
+
 
 
 
