@@ -152,3 +152,9 @@
   justify-content: center !important;
 }
 
+
+
+
+.oauth-btn-wrapper > div > div > div:last-child iframe {
+  width: 100% !important;
+}
