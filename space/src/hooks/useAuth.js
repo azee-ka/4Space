@@ -136,6 +136,12 @@ const login = (responseData, { switchTo = true } = {}) => {
     dispatch(logoutAction());
     localStorage.removeItem(AUTH_KEY);
     sessionStorage.removeItem(CURRENT_KEY);
+
+    // Google: disable auto-select to prevent re-sign-in loop
+    if (window.google && window.google.accounts?.id) {
+      window.google.accounts.id.disableAutoSelect();
+    }
+
     window.location.href = '/login';
   };
 

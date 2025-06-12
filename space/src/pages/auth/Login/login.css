@@ -130,118 +130,25 @@
   width: 100%;
 }
 
-/* Optional wrapper to align things, no overflow here */
 .oauth-btn-wrapper {
   width: 100%;
+  height: 40px !important;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 2rem;
-  /* remove height & overflow */
   margin: 0 auto;
   padding: 0 3rem;
   box-sizing: border-box;
 }
 
-
-.oauth-btn-wrapper iframe {
-  width: 100% !important;
-  height: 44px !important;
-  border-radius: 2rem !important;
-}
-
 /* GitHub button styling tweak */
 .oauth-btn-wrapper > div {
   width: 100% !important;
-  height: 44px !important;
+  height: 40px !important;
   border-radius: 2rem !important;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.oauth-btn-wrapper:first-child > div > div {
-  width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
   align-items: center !important;
-    height: 100% !important;
-  padding: 0 !important;
-}
-
-.oauth-btn-wrapper.dev-env:first-child > div > div > div:first-child {
-    width: 100% !important;
-    height: 100% !important;
-    padding: 0 !important;
-}
-.oauth-btn-wrapper.prod-env:first-child > div > div > div:first-child {
-    width: 0% !important;
-    padding: 0 !important;
-}
-.oauth-btn-wrapper:first-child > div > div > div:first-child > div {
-    height: 100% !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-.oauth-btn-wrapper.dev-env:first-child > div > div > div:last-child {
-    width: 0% !important;
-    padding: 0 !important;
-}
-.oauth-btn-wrapper.prod-env:first-child > div > div > div:last-child {
-    width: 100% !important;
-    padding: 0 !important;
-}
-
-.oauth-btn-wrapper:first-child > div > div > div > div {
-  border-radius: 2rem !important;
-}
-
-
-.oauth-btn-wrapper:nth-child(2) > div > div {
-  display: flex !important;
   justify-content: center !important;
-  align-items: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-}
-.oauth-btn-wrapper:nth-child(2) > div:hover {
-  box-shadow: none !important;
-}
-.oauth-btn-wrapper:nth-child(2) > div > div svg {
-  margin-top: -5px !important;
 }
 
-
-
-
-
-
-#appleid-signin {
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-}
-#appleid-signin > div {
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    height: 100% !important;
-}
-#appleid-signin > div > div {
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    height: 100% !important;
-}
-#appleid-signin > div > div svg {
-    padding: 0 !important;
-    margin: 0 !important;
-    height: 100% !important;
-}

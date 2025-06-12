@@ -119,31 +119,6 @@
   width: 100%;
 }
 
-/* .oauth-btn-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0 3rem;
-  box-sizing: border-box;
-  border-radius: 2rem;
-}
-
-.oauth-btn-wrapper iframe {
-  width: 100% !important;
-  height: 44px !important;
-  border-radius: 2rem !important;
-}
-
-.oauth-btn-wrapper > div {
-  width: 100% !important;
-  height: 44px !important;
-  border-radius: 2rem !important;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-} */
 
 .redirect-to-login {
   margin-top: 0.5rem;
