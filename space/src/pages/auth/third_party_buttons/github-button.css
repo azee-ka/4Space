@@ -1,20 +1,54 @@
-.github-btn {
+.oauth-btn {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  height: 40px;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 12px;
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  overflow: hidden;
+}
+
+.oauth-btn-content-wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  width: 100%;
+  gap: 12px;
+}
+
+.oauth-btn-icon {
+  height: 20px;
+  width: 20px;
+  min-width: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #000;
-  color: white;
-  font-weight: 500;
-  font-size: 1rem;
-  border: none;
-  border-radius: 999px;
-  padding: 0.75rem 1.5rem;
-  cursor: pointer;
-  width: 100%;
-  transition: background 0.3s ease;
-  gap: 0.75rem;
 }
 
-.github-icon {
-  font-size: 1.25rem;
+.oauth-icon-svg {
+  font-size: 20px;
 }
+
+.oauth-btn-text {
+  flex-grow: 1;
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
