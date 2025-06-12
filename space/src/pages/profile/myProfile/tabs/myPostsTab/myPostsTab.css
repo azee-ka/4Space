@@ -70,14 +70,14 @@
 
 .my-posts-masonry-grid {
   display: flex;
-  width: 100%;
+  width: auto
 }
 
 
 .my-posts-masonry-column {
   padding-left: 0.75rem;
   background-clip: padding-box;
-  flex: 1;
+  /* flex: 1; */
   box-sizing: border-box;
 }
 .my-posts-masonry-grid > .my-posts-masonry-column:first-child {

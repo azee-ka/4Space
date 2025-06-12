@@ -10,11 +10,11 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
-  console.log('cli id', process.env.REACT_APP_GOOGLE_CLIENT_ID);
+
   return (
     <ErrorBoundary>
       <Provider store={store}>
-        <GoogleOAuthProvider clientId='730423473719-9iue15ul369sug76897n96nj9msrjici.apps.googleusercontent.com'>
+        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
         <DeviceProvider>
           <div className="App">
             <AppRouter />

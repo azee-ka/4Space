@@ -23,7 +23,7 @@ const LoginPage = () => {
     const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
     const [isClient, setIsClient] = useState(false);
-    useEffect(() => setIsClient(true), []);
+useEffect(() => setIsClient(true), []);
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -45,6 +45,19 @@ const LoginPage = () => {
                 token: credentialResponse.credential,
             });
             login(res.data, { switchTo: !isAddAccount });
+            const handleGoogleSuccess = async (credentialResponse) => {
+                try {
+                    const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
+                        token: credentialResponse.credential,
+                    });
+                    login(res.data, { switchTo: !isAddAccount });
+                    navigate('/timeline');
+                } catch (err) {
+                    console.error(err);
+                    setLoginError('Google login failed.');
+                }
+            };
+
             navigate('/timeline');
         } catch (err) {
             console.error(err);
@@ -94,11 +107,14 @@ const LoginPage = () => {
 
                 <div className="login-oauth-buttons">
                     {isClient && (
+                        <div className="oauth-btn-wrapper">
                             <GoogleLogin
-                                onSuccess={handleGoogleSuccess}
-                                onError={() => setLoginError('Google login failed.')}
+                            onSuccess={handleGoogleSuccess}
+                            onError={() => setLoginError('Google login failed.')}
                             />
-                        )}
+                        </div>
+                    )}
+
                     <div className="oauth-btn-wrapper">
                         <GitHubButton onClick={handleGitHubLogin} />
                     </div>

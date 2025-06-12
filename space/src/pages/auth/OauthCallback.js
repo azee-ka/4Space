@@ -2,36 +2,34 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import axios from 'axios';
-import API_BASE_URL from '../../utils/apiUrl';
 
 const OauthCallback = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
-    useEffect(() => {
-        const code = new URLSearchParams(location.search).get('code');
-        if (!code) {
-            navigate('/login');
-            return;
-        }
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const user = {
+      id: params.get('id'),
+      username: params.get('username'),
+      email: params.get('email'),
+      first_name: params.get('first_name'),
+      last_name: params.get('last_name'),
+      role: params.get('role'),
+      profile_image: params.get('profile_image'),
+    };
 
-        const exchangeCode = async () => {
-            try {
-                const res = await axios.get(`${API_BASE_URL}api/auth/github/callback/?code=${code}`);
-                login(res.data, { switchTo: true }); // full token + user object
-                navigate('/timeline');
-            } catch (err) {
-                console.error('GitHub OAuth failed:', err);
-                navigate('/login');
-            }
-        };
+    if (token) {
+      login({ token, user });
+      navigate('/timeline');
+    } else {
+      navigate('/login');
+    }
+  }, []);
 
-        exchangeCode();
-    }, []);
-
-    return <div>Logging in with GitHub...</div>;
+  return <div>Logging in with GitHub...</div>;
 };
 
 export default OauthCallback;
