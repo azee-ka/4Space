@@ -22,6 +22,8 @@ const LoginPage = () => {
 
     const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
     const [isClient, setIsClient] = useState(false);
 useEffect(() => setIsClient(true), []);
 
@@ -107,8 +109,8 @@ useEffect(() => setIsClient(true), []);
 
                 <div className="login-oauth-buttons">
                     {isClient && (
-                        <div className="oauth-btn-wrapper">
-                            <GoogleLogin
+                    <div className={`oauth-btn-wrapper ${isProduction ? 'prod-env' : 'dev-env'}`}>
+                                <GoogleLogin
                             onSuccess={handleGoogleSuccess}
                             onError={() => setLoginError('Google login failed.')}
                             />
