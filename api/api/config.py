@@ -22,6 +22,8 @@ else:
             'PORT': os.environ.get('POSTGRES_PORT', '5432'),
         }
     }
+    
+
 
 # === Django Secret Key ===
 DJANGO_SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'default-secret-key')
@@ -46,15 +48,17 @@ else:
 
 
 
-# === Media Storage Configuration ===
-USE_CLOUDINARY = os.getenv("USE_CLOUDINARY", "false").lower() == "true"
+# ===  Storage Configuration ===
+USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE", "false").lower() == "true"
 
-if USE_CLOUDINARY:
-    CLOUDINARY_CONFIG = {
-        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
-    }
+if USE_AZURE_STORAGE:
+    AZURE_ACCOUNT_NAME = os.getenv("AZURE_ACCOUNT_NAME")
+    AZURE_ACCOUNT_KEY = os.getenv("AZURE_ACCOUNT_KEY")
+    AZURE_MEDIA_CONTAINER = os.getenv("AZURE_MEDIA_CONTAINER", "media")
+
+    AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_MEDIA_CONTAINER}"
+    MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/"
+
 else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(os.path.dirname(__file__), '..', 'media')
