@@ -23,6 +23,9 @@ from django.core.files.base import ContentFile
 from urllib.request import urlopen
 from django.core.files.temp import NamedTemporaryFile
 
+
+    
+    
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def google_login_view(request):
@@ -46,10 +49,12 @@ def google_login_view(request):
         if not email:
             return Response({"error": "Email not found in token."}, status=400)
 
+        username = email.split('@')[0]
+
         user, created = User.objects.get_or_create(
             email=email,
             defaults={
-                "username": email.split('@')[0],
+                "username": username,
                 "first_name": first_name,
                 "last_name": last_name,
                 "role": "professional",
@@ -57,12 +62,11 @@ def google_login_view(request):
             }
         )
 
-        # Only save profile image if newly created and picture is available
         if created and picture_url:
             try:
                 img_temp = urlopen(picture_url)
                 image_content = ContentFile(img_temp.read())
-                user.profile_image.save(f"{user.username}_google.jpg", image_content, save=True)
+                user.profile_image.save(f"{username}_google.jpg", image_content, save=True)
             except Exception as e:
                 print("Failed to download profile image:", e)
 
@@ -74,7 +78,10 @@ def google_login_view(request):
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
                 "role": user.role,
+                "profile_image": user.profile_image.url if user.profile_image else None
             }
         })
 
@@ -82,6 +89,7 @@ def google_login_view(request):
         return Response({"error": "Invalid token"}, status=400)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
 
 
 
@@ -165,7 +173,19 @@ def github_callback(request):
 
     token, _ = Token.objects.get_or_create(user=user)
 
-    return redirect(f"{settings.FRONTEND_REDIRECT_URI}?token={token.key}")
+    return Response({
+        "token": token.key,
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": user.role,
+            "profile_image": user.profile_image.url if user.profile_image else None
+        }
+    })
+
 
 
 
