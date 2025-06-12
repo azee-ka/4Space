@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect
 import requests
+from urllib.parse import urlencode
 
 User = get_user_model()
 
@@ -173,18 +174,19 @@ def github_callback(request):
 
     token, _ = Token.objects.get_or_create(user=user)
 
-    return Response({
+    user_data = {
         "token": token.key,
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "role": user.role,
-            "profile_image": user.profile_image.url if user.profile_image else None
-        }
-    })
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "role": user.role,
+        "profile_image": user.profile_image.url if user.profile_image else '',
+    }
+
+    query_string = urlencode(user_data)
+    return redirect(f"{settings.FRONTEND_REDIRECT_URI}?{query_string}")
 
 
 
