@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import API_BASE_URL from '../../../utils/apiUrl';
+import './google-button.css';
 
 const GoogleCustomButton = () => {
     const buttonDiv = useRef(null);
