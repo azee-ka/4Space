@@ -103,12 +103,14 @@ const LoginPage = () => {
                 <div className="login-oauth-divider">OR</div>
 
                 <div className="login-oauth-buttons">
-                    <div className="oauth-btn-wrapper">
-                        <GoogleLogin
+                    {process.env.REACT_APP_GOOGLE_CLIENT_ID && (
+                        <div className="oauth-btn-wrapper">
+                            <GoogleLogin
                             onSuccess={handleGoogleSuccess}
                             onError={() => setLoginError('Google login failed.')}
-                        />
-                    </div>
+                            />
+                        </div>
+                    )}
 
                     <div className="oauth-btn-wrapper">
                         <GitHubButton onClick={handleGitHubLogin} />
