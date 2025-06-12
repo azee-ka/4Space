@@ -87,8 +87,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken', 
     'api',
     
-    'cloudinary',
-    'cloudinary_storage',
 ]
 
 REST_FRAMEWORK = {
@@ -244,14 +242,19 @@ CORS_ALLOWED_ORIGINS = [
 
 
 
-from .config import USE_CLOUDINARY
+from .config import USE_AZURE_STORAGE
 
-if USE_CLOUDINARY:
-    from .config import CLOUDINARY_CONFIG
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    CLOUDINARY_STORAGE = CLOUDINARY_CONFIG
+if USE_AZURE_STORAGE:
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    AZURE_ACCOUNT_NAME = os.getenv("AZURE_ACCOUNT_NAME")
+    AZURE_ACCOUNT_KEY = os.getenv("AZURE_ACCOUNT_KEY")
+    AZURE_CONTAINER = os.getenv("AZURE_MEDIA_CONTAINER", "media")
+    AZURE_CUSTOM_DOMAIN = f"{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}"
+    MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/"
 else:
     from .config import MEDIA_URL, MEDIA_ROOT
+
+
 
 
 
