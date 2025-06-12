@@ -1,4 +1,3 @@
-// components/GitHubLoginButton.js
 import React from 'react';
 import { FaGithub } from 'react-icons/fa';
 import API_BASE_URL from '../../../utils/apiUrl';
@@ -10,10 +9,16 @@ const GitHubLoginButton = () => {
   };
 
   return (
-    <button className="github-btn" onClick={handleLogin}>
-      <FaGithub className="github-icon" />
-      <span>Continue with GitHub</span>
-    </button>
+    <button className="oauth-btn github-btn" onClick={handleLogin}>
+  <div className="oauth-btn-state"></div>
+  <div className="oauth-btn-content-wrapper">
+    <div className="oauth-btn-icon">
+      <FaGithub className="oauth-icon-svg" />
+    </div>
+    <span className="oauth-btn-text">Continue with GitHub</span>
+  </div>
+</button>
+
   );
 };
 

@@ -8,6 +8,7 @@ import './login.css';
 import GoogleCustomButton from '../third_party_buttons/GoogleCustomButton';
 import GitHubLoginButton from '../third_party_buttons/GitHubLoginButton';
 import AppleSignInButton from '../third_party_buttons/AppleSignInButton';
+import { OAuthButtons } from '../third_party_buttons/authButtons';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -70,19 +71,7 @@ const LoginPage = () => {
 
                 <div className="login-oauth-divider">OR</div>
 
-                <div className="login-oauth-buttons">
-                    <div className="oauth-btn-wrapper">
-                        <GoogleCustomButton />
-                    </div>
-
-                    <div className="oauth-btn-wrapper">
-                        <GitHubLoginButton />
-                    </div>
-
-                    <div className="oauth-btn-wrapper">
-                        <AppleSignInButton />
-                    </div>
-                </div>
+                <OAuthButtons />
 
                 <div className="login-redirect">
                     <Link to="/register">Don't have an account? Sign up</Link>

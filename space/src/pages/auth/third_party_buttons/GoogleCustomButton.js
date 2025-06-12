@@ -23,7 +23,7 @@ const GoogleCustomButton = () => {
             if (window.google) {
                 window.google.accounts.id.initialize({
                     client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-                    callback: handleCredentialResponse,
+                    callback: handlePopupResponse,
                 });
             }
         };
@@ -33,23 +33,28 @@ const GoogleCustomButton = () => {
         };
     }, []);
 
-    const handleCredentialResponse = async (response) => {
-        try {
-            const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
-                token: response.credential,
-            });
-            login(res.data, { switchTo: !isAddAccount });
-            navigate('/timeline');
-        } catch (err) {
-            console.error('Google sign-in failed:', err);
-        }
-    };
-
     const handleGoogleClick = () => {
-        if (window.google) {
-            window.google.accounts.id.prompt(); // Triggers One Tap or popup sign-in
-        }
-    };
+    const client = window.google.accounts.oauth2.initTokenClient({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        scope: 'openid profile email',
+        callback: handlePopupResponse,
+    });
+
+    client.requestAccessToken();
+};
+
+const handlePopupResponse = async (tokenResponse) => {
+    try {
+        const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
+            token: tokenResponse.access_token,
+        });
+        login(res.data, { switchTo: !isAddAccount });
+        navigate('/timeline');
+    } catch (err) {
+        console.error('Google popup sign-in failed:', err);
+    }
+};
+
 
     return (
         <button className="gsi-material-button" onClick={handleGoogleClick}>
