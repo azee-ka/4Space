@@ -159,9 +159,9 @@
 .oauth-btn-wrapper > div > div > div:last-child iframe {
   width: 100% !important;
   margin: 0 !important;
-  height: 40px !important;
+  /* height: 40px !important; */
 }
-.qJTHM {
+/* .qJTHM {
   width: 100% !important;
   display: flex !important;
 }
@@ -170,4 +170,4 @@
   margin: 0 !important;
   flex: 1 !important;
   padding: 0 !important;
-}
+} */
