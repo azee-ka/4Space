@@ -145,7 +145,7 @@
 /* GitHub button styling tweak */
 .oauth-btn-wrapper > div {
   width: 100% !important;
-  height: 44px !important;
+  height: 40px !important;
   border-radius: 2rem !important;
   overflow: hidden;
   align-items: center !important;
@@ -155,21 +155,19 @@
 
 
 
+
 .oauth-btn-wrapper > div > div > div:last-child iframe {
   width: 100% !important;
   margin: 0 !important;
-  display: flex !important;
+  height: 40px !important;
 }
-
-
-.oauth-btn-wrapper > div > div > div:last-child iframe {
+.qJTHM {
   width: 100% !important;
-  margin: 0 !important;
   display: flex !important;
 }
 .haAclf {
   width: 100% !important;
   margin: 0 !important;
-  display: flex !important;
+  flex: 1 !important;
   padding: 0 !important;
 }
