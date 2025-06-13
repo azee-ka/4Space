@@ -6,7 +6,7 @@ const useWebSocket = (url, options = {}) => {
     const socketRef = useRef(null);
 
     useEffect(() => {
-        const socket = new WebSocket(`${WS_BASE_URL}/ws/${url}`);
+        const socket = new WebSocket(`${WS_BASE_URL}ws/${url}`);
         socketRef.current = socket;
 
         socket.onopen = () => {
