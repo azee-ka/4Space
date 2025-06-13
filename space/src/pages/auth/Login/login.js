@@ -68,66 +68,63 @@ const LoginPage = () => {
 
     return (
         <div className="login-wrapper">
-            <form onSubmit={handleLoginSubmit} className="login-form">
-                <h1 className="login-title">Welcome Back</h1>
 
-                <input
-                    type="text"
-                    placeholder="Username"
-                    required
-                    className="login-input"
-                    onChange={(e) => setUsername(e.target.value)}
-                />
+<div className='login-card'>
+  <form onSubmit={handleLoginSubmit} className="login-form">
+    <h1 className="login-title">Welcome Back</h1>
+    
+    <input
+      type="text"
+      placeholder="Username"
+      required
+      className="login-input"
+      onChange={(e) => setUsername(e.target.value)}
+    />
 
-                <div className="login-password-wrapper">
-                    <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Password"
-                        required
-                        className="login-input password-input"
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="login-eye-button"
-                    >
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                </div>
+    <div className="login-password-wrapper">
+      <input
+        type={showPassword ? 'text' : 'password'}
+        placeholder="Password"
+        required
+        className="login-input password-input"
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button type="button" onClick={() => setShowPassword(!showPassword)} className="login-eye-button">
+        {showPassword ? <FaEyeSlash /> : <FaEye />}
+      </button>
+    </div>
 
-                {loginError && <div className="login-error">{loginError}</div>}
+    {loginError && <div className="login-error">{loginError}</div>}
 
-                <button type="submit" className="login-primary-button">Login</button>
+    <button type="submit" className="login-primary-button">Login</button>
+  </form>
 
-                <div className="login-oauth-divider">OR</div>
+  <div className="login-oauth-divider">OR</div>
 
-                <div className="oauth-button-group">
-                {/* <div className="oauth-btn-wrapper"> */}
-                        <GoogleCustomButton />
-                    {/* </div> */}
+  <div className="oauth-button-group">
+    <GoogleCustomButton />
+    <button className="oauth-btn oauth-microsoft" onClick={handleMicrosoft}>
+      <MicrosoftIcon />
+      Continue with Microsoft Account
+    </button>
 
-                      <button className="oauth-btn oauth-microsoft" onClick={handleMicrosoft}>
-                        <MicrosoftIcon />
-                        Continue with Microsoft Account
-                      </button>
-                
-                      <button className="oauth-btn oauth-apple" onClick={handleApple}>
-                        <FaApple className="oauth-icon" />
-                        Continue with Apple
-                      </button>
-                
-                      <button className="oauth-btn oauth-github" onClick={handleGitHub}>
-                        <FaGithub className="oauth-icon" />
-                        Continue with GitHub
-                      </button>
-                    </div>
+    <button className="oauth-btn oauth-apple" onClick={handleApple}>
+      <FaApple className="oauth-icon" />
+      Continue with Apple
+    </button>
 
-                <div className="login-redirect">
-                    <Link to="/register">Don't have an account? Sign up</Link>
-                </div>
-            </form>
-        </div>
+    <button className="oauth-btn oauth-github" onClick={handleGitHub}>
+      <FaGithub className="oauth-icon" />
+      Continue with GitHub
+    </button>
+  </div>
+
+  <div className="login-redirect">
+    <Link to="/register">Don't have an account? Sign up</Link>
+  </div>
+  </div>
+</div>
+
     );
 };
 
