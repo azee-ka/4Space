@@ -249,7 +249,7 @@ const ChatContainer = ({ conversationId }) => {
     if (!isReady) {
         setItems(prev => [optimisticMessage, ...prev]);
         try {
-            const response = await callApi("messages/create/", "POST", {
+            const response = await callApi("messages/create_message/", "POST", {
                 text: safe,
                 conversation: conversationId,
             });
