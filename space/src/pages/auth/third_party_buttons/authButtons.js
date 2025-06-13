@@ -22,46 +22,41 @@ export const OAuthButtons = () => {
   const { login } = useAuth();
   const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
-  // Load Google Identity script
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-          callback: handleGoogleResponse,
-        });
-      }
-    };
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
-  const handleGoogle = () => {
-    const client = window.google.accounts.oauth2.initTokenClient({
+useEffect(() => {
+  const script = document.createElement('script');
+  script.src = 'https://accounts.google.com/gsi/client';
+  script.async = true;
+  script.defer = true;
+  script.onload = () => {
+    window.google.accounts.id.initialize({
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-      scope: 'openid profile email',
-      callback: handleGoogleResponse,
+      callback: handleGoogleCredentialResponse, // Receives ID token
     });
-    client.requestAccessToken();
   };
+  document.body.appendChild(script);
+  return () => {
+    document.body.removeChild(script);
+  };
+}, []);
 
-  const handleGoogleResponse = async (tokenResponse) => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
-        token: tokenResponse.access_token,
-      });
-      login(res.data, { switchTo: !isAddAccount });
-      navigate('/timeline');
-    } catch (err) {
-      console.error('Google login failed:', err);
-    }
-  };
+
+const handleGoogle = () => {
+  window.google.accounts.id.prompt(); // Triggers Google's popup login
+};
+const handleGoogleCredentialResponse = async (response) => {
+  try {
+    const res = await axios.post(`${API_BASE_URL}api/auth/google/`, {
+      token: response.credential, // this is the ID token
+    });
+    login(res.data, { switchTo: !isAddAccount });
+    navigate('/timeline');
+  } catch (err) {
+    console.error('Google login failed:', err);
+  }
+};
+
+
 
   const handleGitHub = () => {
     window.location.href = `${API_BASE_URL}api/auth/github/login/`;
