@@ -2,7 +2,7 @@ def send_push_to_user(user, title: str, body: str, data: dict):
     """
     Look up any DeviceToken for `user`, then call your push‐service (FCM/APNs).
     """
-    from ...messaging.models import DeviceToken
+    from ..models import DeviceToken
     tokens = DeviceToken.objects.filter(user=user).values_list("token", flat=True)
 
     if not tokens:

@@ -99,5 +99,8 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
         """
         return self.following.filter(id=user.id).exists()
     
+    def get_full_name(self):
+        return f"{self.first_name or ''} {self.last_name or ''}".strip()
+    
     def __str__(self):
         return self.username
