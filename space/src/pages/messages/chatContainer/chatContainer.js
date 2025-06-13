@@ -211,7 +211,7 @@ const ChatContainer = ({ conversationId }) => {
 
 
     // 5. WebSocket for incoming messages
-    const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
+    const { sendMessage, isReady } = useWebSocket(`messages/inbox/${conversationId}/`, {
         onMessage: (data) => {
             // Now that server wraps every new message in { type: "chat_message", message: { … } },
             // we must unwrap it here:
@@ -227,17 +227,51 @@ const ChatContainer = ({ conversationId }) => {
     });
 
 
-    const handleSend = () => {
-        const trimmed = input.trim();
-        if (!trimmed) return;
-        const safe = DOMPurify.sanitize(trimmed);
-        sendMessage({
-            text: safe,
-            sender_username: authState?.current?.user?.username,
-        });
-        setInput("");
-        setJustSent(true);
+    const handleSend = async () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    const safe = DOMPurify.sanitize(trimmed);
+    const messageData = {
+        text: safe,
+        sender_username: authState?.current?.user?.username,
     };
+
+    const optimisticMessage = {
+        uuid: `temp-${Date.now()}`,
+        sender_username: messageData.sender_username,
+        text: messageData.text,
+        sent_at: new Date().toISOString(),
+        optimistic: true,
+    };
+
+    // Fallback to HTTP if WebSocket isn't ready
+    if (!isReady) {
+        setItems(prev => [optimisticMessage, ...prev]);
+        try {
+            const response = await callApi("messages/create/", "POST", {
+                text: safe,
+                conversation: conversationId,
+            });
+            // Optionally replace optimistic with real one
+            setItems(prev => {
+                return prev.map(m =>
+                    m.uuid === optimisticMessage.uuid ? response.data : m
+                );
+            });
+        } catch (err) {
+            console.error("Failed to send message via API", err);
+            // Optionally mark it as failed
+        }
+    } else {
+        // If WebSocket is working, don't show optimistic
+        sendMessage(messageData);
+    }
+
+    setInput("");
+    setJustSent(true);
+};
+
 
     const handleAcceptRequest = async () => {
         try {
