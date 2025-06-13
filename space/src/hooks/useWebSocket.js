@@ -1,11 +1,12 @@
 import { useEffect, useRef, useCallback } from "react";
+import { WS_BASE_URL } from "../utils/apiUrl";
 
 const useWebSocket = (url, options = {}) => {
     const { onMessage, onOpen, onClose, onError, dependencies = [] } = options;
     const socketRef = useRef(null);
 
     useEffect(() => {
-        const socket = new WebSocket(`ws://127.0.0.1:8000/ws/${url}`);
+        const socket = new WebSocket(`${WS_BASE_URL}/ws/${url}`);
         socketRef.current = socket;
 
         socket.onopen = () => {
