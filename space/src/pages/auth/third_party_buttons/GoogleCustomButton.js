@@ -24,7 +24,6 @@ const GoogleCustomButton = () => {
                 window.google.accounts.id.initialize({
                     client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
                     callback: handleCredentialResponse,
-                    ux_mode: 'popup', // forces popup
                 });
             }
         };
