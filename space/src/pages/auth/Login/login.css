@@ -11,14 +11,20 @@
   box-sizing: border-box;
 }
 
-.login-form {
-  background: rgba(154, 154, 154, 0.08);
+.login-card {
+    background: rgba(154, 154, 154, 0.08);
     backdrop-filter: blur(23px);
   padding: 2rem;
   border-radius: 1rem;
   max-width: 400px;
   width: 100%;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.login-form {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
