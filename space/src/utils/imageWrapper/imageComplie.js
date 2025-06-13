@@ -4,7 +4,7 @@ export const imageCompile = (src) => {
     let imageSource = null;
 
     if (src) {
-        if (typeof src === 'string' && src.includes('http://')) {
+        if (typeof src === 'string' && (src.startsWith('http://') || src.startsWith('https://'))) {
             imageSource = src;
         }
         else if (typeof src === 'string' && src.charAt(0) === '/') {
