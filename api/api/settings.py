@@ -245,7 +245,7 @@ CORS_ALLOWED_ORIGINS = [
 from .config import USE_AZURE_STORAGE
 
 if USE_AZURE_STORAGE:
-    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    DEFAULT_FILE_STORAGE = 'api.storage_backends.AzureMediaStorage'
     AZURE_ACCOUNT_NAME = os.getenv("AZURE_ACCOUNT_NAME")
     AZURE_ACCOUNT_KEY = os.getenv("AZURE_ACCOUNT_KEY")
     AZURE_CONTAINER = os.getenv("AZURE_MEDIA_CONTAINER", "media")
@@ -255,6 +255,7 @@ else:
     from .config import MEDIA_URL, MEDIA_ROOT
 
 
+print("📦 Using file storage backend:", DEFAULT_FILE_STORAGE)
 
 
 
