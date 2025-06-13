@@ -8,6 +8,7 @@ import ErrorBoundary from './ErrorBoundary';
 import { DeviceProvider } from './context/DeviceContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 const App = () => {
 
@@ -19,6 +20,7 @@ const App = () => {
           <div className="App">
             <AppRouter />
             <Analytics />
+            <SpeedInsights />
           </div>
         </DeviceProvider>
         </GoogleOAuthProvider>
