@@ -50,7 +50,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "10.0.0.6",
     "10.0.0.85",
-    "4space-pi.vercel.app",
+    "4spacez.vercel.app",
     "fourspace-ybgm.onrender.com"
 ]
 
@@ -229,7 +229,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://10.0.0.85:3000",
     "http://10.0.0.6:8000",
     "http://10.0.0.6:3000",
-    "https://4space-pi.vercel.app",
+    "https://4spacez.vercel.app",
     "https://fourspace-ybgm.onrender.com"
 ]
 
@@ -253,9 +253,6 @@ if USE_AZURE_STORAGE:
     MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/"
 else:
     from .config import MEDIA_URL, MEDIA_ROOT
-
-
-print("📦 Using file storage backend:", DEFAULT_FILE_STORAGE)
 
 
 
