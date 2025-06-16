@@ -26,4 +26,3 @@ export const formatDateTime = (dateTimeString, includeTime) => {
   
     return formattedDate;
   };
-  

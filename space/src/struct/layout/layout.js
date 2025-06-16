@@ -121,6 +121,7 @@ function Layout({ children }) {
     if(isD || isT) {
     return (
         <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
+            {!(!isAuthenticated && window.location.pathname === '/') &&
             <div className='layout-navbar'>
                 <Navbar
                     handleProfileMenuToggle={handleProfileMenuToggle}
@@ -132,8 +133,9 @@ function Layout({ children }) {
                     profileData={profileData}
                 />
             </div>
+            }
 
-            <div className='layout-page'>
+            <div className={`layout-page ${(!isAuthenticated && window.location.pathname === '/') ? 'no-nav': ''}`}>
                 {isAuthenticated &&
 
                     <div className='layout-small-sidebar'>

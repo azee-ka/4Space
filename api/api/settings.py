@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'src.space.projects',
     'src.space.library',
     'src.space.repos',
+    'src.space.space',
     
     'src.settings',
     
