@@ -1,0 +1,238 @@
+/* myPostsTab.css */
+
+/* — Container & Tabs Header — */
+.other-posts-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
+}
+
+/* Tab Buttons (Visual / Thread) */
+.other-posts-tabs-header {
+  display: flex;
+  gap: 0.75rem;
+  border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.other-posts-tab-btn {
+  background: none;
+  border: none;
+  color: #b7e9ff;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  opacity: 0.7;
+}
+
+.other-posts-tab-btn.active {
+  background: #262e39;
+  color: #54dfff;
+  box-shadow: 0 0.1875rem 0.5rem rgba(0, 80, 120, 0.3);
+  opacity: 1;
+}
+
+.other-posts-tab-btn:hover:not(.active) {
+  background: #22262e;
+  color: #7dfcff;
+  opacity: 0.85;
+}
+
+.other-posts-loading,
+.other-posts-no-posts {
+  width: 100%;
+  text-align: center;
+  color: #b5dbe7;
+  margin: 1.5rem 0;
+  font-size: 1.2em;
+  letter-spacing: 0.01em;
+}
+
+.other-posts-no-posts {
+  color: #d3d3d3;
+}
+
+.other-posts-masonry-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.other-posts-masonry-grid {
+  display: flex;
+  width: auto
+}
+
+
+.other-posts-masonry-column {
+  padding-left: 0.75rem;
+  background-clip: padding-box;
+  /* flex: 1; */
+  box-sizing: border-box;
+}
+.other-posts-masonry-grid > .other-posts-masonry-column:first-child {
+  padding-left: 0;
+}
+
+
+.visual-masonry-img {
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0.5rem;
+  background: #212227;
+}
+
+.visual-grid-tile {
+  width: 100%;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  position: relative;
+  padding: 0;
+  background: #17191d;
+  box-shadow: 0 0.0625rem 0.5rem rgba(20, 22, 25, 0.07);
+  margin-bottom: 0.625rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.visual-grid-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.22s;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.visual-grid-tile:hover::after {
+  opacity: 0.5;
+}
+
+.visual-multi-stack-icon {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.other-posts-sentinel {
+  height: 0.0625rem;
+  width: 100%;
+}
+
+.other-posts-loading-more,
+.other-posts-end-of-list {
+  text-align: center;
+  color: #b7e9ff;
+  margin: 0.75rem 0;
+  font-size: 1em;
+}
+
+
+.my-thread-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5625rem;
+}
+
+
+
+@media (max-width: 56.25rem) {
+  .other-posts-masonry-grid {
+    margin-left: -0.5rem;
+  }
+  .other-posts-masonry-column {
+    padding-left: 0.5rem;
+    max-width: 15rem;
+  }
+}
+
+@media (max-width: 37.5rem) {
+  .other-posts-tabs-header {
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .other-posts-tab-btn {
+    font-size: 1em;
+    padding: 0.375rem 0.875rem;
+  }
+  .other-posts-masonry-column {
+    max-width: 100%;
+  }
+}
+
+
+
+
+
+
+/* — Title/Tab Buttons (DARK/ORIGINAL) — */
+.other-posts-tabs-header {
+  display: flex;
+  gap: 0.75rem;
+  border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+
+.other-posts-tab-btn {
+  background: none;
+  border: none;
+  color: #b7e9ff;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  opacity: 0.7;
+}
+
+.other-posts-tab-btn.active {
+  background: #262e39;
+  color: #54dfff;
+  box-shadow: 0 0.1875rem 0.5rem rgba(0, 80, 120, 0.3);
+  opacity: 1;
+}
+
+.other-posts-tab-btn:hover:not(.active) {
+  background: #22262e;
+  color: #7dfcff;
+  opacity: 0.85;
+}
+
+
+/* === LIGHT MODE: Tabs/Header Color Adjustments ONLY === */
+[data-theme="light"] .other-posts-tabs-header {
+  border-bottom: 0.0625rem solid rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .other-posts-tab-btn {
+  color: #3382af;
+  background: none;
+}
+
+[data-theme="light"] .other-posts-tab-btn.active {
+  background: #e4f6fe;
+  color: #05689e;
+  box-shadow: 0 0.1875rem 0.5rem rgba(40,160,210,0.14);
+}
+
+[data-theme="light"] .other-posts-tab-btn:hover:not(.active) {
+  background: #cfe8fa;
+  color: #3382af;
+}

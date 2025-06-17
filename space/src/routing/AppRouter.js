@@ -110,7 +110,8 @@ const AppRouter = () => {
         { name: 'Register', path: '/register', component: <RegisterPage />, key: 'Register' },
         { name: 'Home', path: '/', component: <FrontPage />, key: 'FrontPage' },
         { name: 'Home', path: '/home', component: <FrontPage />, key: 'FrontPage' },
-        { name: 'OAuth Callback', path: '/oauth/callback', component: <OauthCallback />, key: 'OauthCallback' }, // 🆕
+        { name: 'OAuth Callback', path: '/oauth/callback', component: <OauthCallback />, key: 'OauthCallback' },
+        { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
     ];
 
 

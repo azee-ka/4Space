@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { faGear, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faLayerGroup, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import './profileMenuSidebar.css';
 
 const ProfileMenuSidebar = () => {
     const menuBtns = [
+        { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Collections', path: '/profile?tab=collections', type: 'link' },
         { icon: <FontAwesomeIcon icon={faGear} />, label: 'Settings', path: '/settings#account-settings-restrictions', type: 'link' },
-        { icon: <FontAwesomeIcon icon={faUser} />, label: 'Profile', path: '/settings#profile-basic-info', type: 'link' },
+        { icon: <FontAwesomeIcon icon={faUser} />, label: 'Profile', path: '/profile', type: 'link' },
     ];
 
     return (

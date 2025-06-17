@@ -1,7 +1,7 @@
 # File: src/post/profile/views.py
 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
@@ -10,24 +10,6 @@ from ...user.models import BaseUser
 from ...post.models import ThreadPost, VisualPost
 from ...post.serializers import PostRetrieveSerializer
 
-
-
-
-
-
-
-
-
-
-# File: src/post/profile/views_communities.py
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from rest_framework.pagination import LimitOffsetPagination
-from django.shortcuts import get_object_or_404
-
-from ...user.models import BaseUser
 from ...community.models import Community, CommunityMembership
 from ...community.serializers import CommunityDetailSerializer
 from ...community.general.models import ExchangePost

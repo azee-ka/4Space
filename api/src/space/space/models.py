@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 
-
 class Workflow(models.Model):
     prompt = models.TextField()
     project = models.ForeignKey('Project', null=True, on_delete=models.CASCADE, related_name='workflows')
@@ -17,7 +16,7 @@ class AgentTask(models.Model):
 
 class Project(models.Model):
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        settings.AUTH_PROFILE_MODEL,
         on_delete=models.CASCADE,
         related_name='space_projects'
     )

@@ -15,8 +15,6 @@ from moviepy import VideoFileClip
 from django.conf import settings
 from ..utils.parser import TextFieldMixin
 from django.contrib.contenttypes.fields import GenericRelation
-
-
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 

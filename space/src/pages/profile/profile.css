@@ -11,6 +11,10 @@
     background: var(--profile-bg, transparent);
 }
 
+.profile-page.no-auth {
+    padding: 0 2rem;
+}
+
 .profile-top-panel {
     width: 100%;
     height: 2.5rem;

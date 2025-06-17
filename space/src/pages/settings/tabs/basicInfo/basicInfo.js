@@ -7,6 +7,7 @@ import EditProfileImageOverlay from "./editProfileImageOverlay/editProfileImageO
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaChartBar, FaFlag, FaUsers, FaInfoCircle, FaArrowUp, FaArrowCircleUp, FaArrowCircleDown, FaEdit } from "react-icons/fa";
+import useAppTriggers from "../../../../hooks/useAppTriggers";
 
 const BasicInfo = () => {
     const { callApi } = useApi();
@@ -25,6 +26,10 @@ const BasicInfo = () => {
             console.error(err);
         }
     };
+
+    useAppTriggers({
+        userHandleChanged: fetchEditInfo
+    });
 
     const handleEditInfoSave = async () => {
         try {

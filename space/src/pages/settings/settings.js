@@ -6,6 +6,7 @@ import ProfileAppearance from "./tabs/profileAppearance/profileAppearance";
 import BasicInfo from "./tabs/basicInfo/basicInfo";
 import NotificationsTab from "./tabs/notifications/notifications";
 import MessagesControl from "./tabs/messagesControl/messagesControl";
+import UsernameHandleTab from "./tabs/usernameHandle/usernameHandle";
 
 
 const Placeholder = () => <div style={{ padding: "20px", color: "#ccc" }}>Coming soon...</div>;
@@ -28,7 +29,7 @@ const Settings = () => {
     const tabs = {
         'Account & Identity': [
             { label: 'Basic Info', component: <BasicInfo /> },
-            { label: 'Username & Handle', component: <Placeholder /> },
+            { label: 'Username & Handle', component: <UsernameHandleTab /> },
             { label: 'Profile Appearance', component: <ProfileAppearance handleStartCustomization={handleStartCustomization} /> },
             { label: 'Status / Mood', component: <Placeholder /> },
         ],
