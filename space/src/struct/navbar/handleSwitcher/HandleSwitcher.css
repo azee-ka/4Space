@@ -1,0 +1,81 @@
+/* HandleSwitcher.css */
+
+/* The toggle “chip” */
+.hs-toggle {
+width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(195, 195, 195, 0.08);
+  backdrop-filter: blur(1px);
+  border: 1px solid rgba(195, 195, 195, 0.12);
+  color: #eaeaea;
+  padding: 0.7rem 1.3rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.hs-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* The dropdown container */
+.hs-list {
+  background: rgba(60, 60, 60, 0.247);
+  backdrop-filter: blur(1.25rem);
+  -webkit-backdrop-filter: blur(1.25rem);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 0.625rem 1.25rem rgba(0, 0, 0, 0.3);
+  padding: 0.9rem 0rem;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Each handle row */
+.hs-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 0px;
+}
+.hs-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.hs-item.active {
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+/* Username & label */
+.hs-username {
+  font-size: 0.9rem;
+  color: #eaeaea;
+}
+.hs-label {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-left: 1rem;
+}
+
+/* Checkmark on active */
+.hs-check {
+  color: #0f0;
+  margin-left: -1rem;
+  font-size: 1rem;
+}
+
+/* Loading state */
+.hs-loading {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: #ccc;
+}

@@ -3,6 +3,7 @@ from google.auth.transport import requests as google_requests
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import authenticate, login as django_login
 from rest_framework.authentication import TokenAuthentication
 from ..serializers import UserCreateSerializer
 from django.contrib.auth import authenticate, login
@@ -212,11 +213,14 @@ def register_view(request):
             user.save()
 
             token, _ = Token.objects.get_or_create(user=user)
+            handle = user.active_handle
             response_data = {
                 'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'role': user.role,
+                    'id': user.id,                           # AuthUser ID
+                    'handle_id': handle.id,                  # BaseUser handle ID
+                    'username': handle.username,
+                    'label': handle.label,
+                    'role': handle.role,                     # now comes from the handle
                     'account_type': acc_type,
                 },
                 'token': token.key,
@@ -241,23 +245,42 @@ def register_view(request):
 def login_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    user = authenticate(username=username, password=password)
-    if user:
-        # Check all memberships for approval
-        unapproved_memberships = OrganizationMembership.objects.filter(user=user, is_approved=False)
-        if unapproved_memberships.exists():
-            return Response(
-                {"message": "Your account is pending approval by an organization."},
-                status=403
-            )
 
-        # Login the user and generate a new token
-        login(request, user)
-        token, created = Token.objects.get_or_create(user=user)
-        response_data = {'user': {'id': user.id, 'username': user.username, 'role': user.role}, 'token': token.key}
-        return Response(response_data, status=200)
-    else:
+    # authenticate returns an AuthUser instance
+    auth_user = authenticate(username=username, password=password)
+    if not auth_user:
         return Response({"message": "Invalid credentials"}, status=401)
+
+    # get the active BaseUser handle
+    handle = auth_user.active_handle
+
+    # check memberships on the BaseUser, not the AuthUser
+    unapproved = OrganizationMembership.objects.filter(
+        user=handle,
+        is_approved=False
+    )
+    if unapproved.exists():
+        return Response(
+            {"message": "Your account is pending approval by an organization."},
+            status=403
+        )
+
+    # log in and issue token
+    django_login(request, auth_user)
+    token, _ = Token.objects.get_or_create(user=auth_user)
+
+    response_data = {
+        'user': {
+            'id':        auth_user.id,          # AuthUser ID
+            'handle_id': handle.id,             # BaseUser handle ID
+            'username':  handle.username,       # the handle's username
+            'label':     handle.label,
+            'role':      handle.role,
+        },
+        'token': token.key
+    }
+    return Response(response_data, status=200)
+
     
     
     

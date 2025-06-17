@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import './messagesControl.css';
 import useApi from "../../../../utils/useApi";
+import useAppTriggers from "../../../../hooks/useAppTriggers";
 
 const MessagesControl = () => {
     const { callApi } = useApi();
@@ -31,13 +32,17 @@ const MessagesControl = () => {
         fetchSettings();
     }, []);
 
+    useAppTriggers({
+        userHandleChanged: fetchSettings
+    });
+
     const options = [
         { value: 'allow', label: 'Allow Messages' },
         { value: 'requests', label: 'Requests Only' },
         { value: 'no-requests', label: 'No Requests' },
     ];
 
-        // Save the settings when the user selects a new option, directly passing the values
+    // Save the settings when the user selects a new option, directly passing the values
     const handleSaveSettings = async (followers, others) => {
         try {
             const data = {
@@ -84,20 +89,20 @@ const MessagesControl = () => {
         <div className="messages-control-settings">
             <section>
                 <h3>Your Followers</h3>
-                <p>Select whether to allow your followers to send direct messages, 
+                <p>Select whether to allow your followers to send direct messages,
                     permit message requests that require your approval in the Requests tab, or block all messages entirely.
                 </p>
                 <div className="messages-control-content">
-                {renderOptions(settings.followers, (value) => handleSettingChange('followers', value), 'followers')}
+                    {renderOptions(settings.followers, (value) => handleSettingChange('followers', value), 'followers')}
                 </div>
             </section>
             <section>
                 <h3>Others</h3>
-                <p>Select whether to allow others to send direct messages, 
+                <p>Select whether to allow others to send direct messages,
                     permit message requests that appear in the Requests tab for your approval, or block all messages from non-followers.
                 </p>
                 <div className="messages-control-content">
-                {renderOptions(settings.others, (value) => handleSettingChange('others', value), 'others')}
+                    {renderOptions(settings.others, (value) => handleSettingChange('others', value), 'others')}
                 </div>
             </section>
         </div>

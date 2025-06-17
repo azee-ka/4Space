@@ -6,6 +6,10 @@ import getConfig from '../config';
 const apiCall = async (endpoint, method = 'GET', data = null, contentType, authState, customConfig = {}) => {
     const config = getConfig(authState?.current?.token, contentType);
 
+    if (!authState?.current?.token && config.headers) {
+     delete config.headers['Authorization'];
+   }
+   
     try {
         const response = await axios({
             method,

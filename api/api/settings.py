@@ -92,8 +92,8 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'src.user.authentication.HandleTokenAuthentication',
+        'src.user.authentication.HandleSessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -105,18 +105,16 @@ REST_FRAMEWORK = {
     ),
 }
 
-MIDDLEWARE = [
+MIDDLEWARE = [    
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    
+        
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",    
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -208,7 +206,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DATA_UPLOAD_MAX_NUMBER_FILES = 2000
 
 
-AUTH_USER_MODEL = 'user.BaseUser'
+AUTH_USER_MODEL = 'user.AuthUser'
+AUTH_PROFILE_MODEL = 'user.BaseUser'
 
 
 import os

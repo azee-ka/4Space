@@ -19,3 +19,8 @@ export const switchAccountAction = (user, token) => ({
 export const logoutAction = () => ({
   type: authActionTypes.LOGOUT,
 });
+
+export const switchHandleAction = (handle) => ({
+  type: authActionTypes.SWITCH_HANDLE,
+  payload: handle,     // { username, handle_id }
+});

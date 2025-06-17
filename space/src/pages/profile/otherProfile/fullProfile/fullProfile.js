@@ -6,12 +6,15 @@ import useApi from "../../../../utils/useApi";
 import UserListOverlay from "../../../../components/userListOverlay/userListOverlay";
 
 // Tabs (same as your MyProfile)
-import MyPostsTab from "../../myProfile/tabs/myPostsTab/myPostsTab";
-import MyCommunitiesTab from "../../myProfile/tabs/myCommunitiesTab/myCommunitiesTab";
-import CollectionsPostsTab from "../../myProfile/tabs/bookmarkedPostsTab/collectionsTab";
+
 import { formatDateTime } from "../../../../utils/formatDateTime";
+import { useAuth } from "../../../../hooks/useAuth";
+import PostsTab from "../tabs/myPostsTab/postsTab";
+import CommunitiesTab from "../tabs/communitiesTab/communitiesTab";
+import CollectionsPostsTab from "../tabs/bookmarkedPostsTab/collectionsTab";
 
 const FullProfile = ({ profileInfo, handleStartChat }) => {
+    const { authState } = useAuth();
     const { callApi } = useApi();
     const navigate = useNavigate();
 
@@ -42,9 +45,8 @@ const FullProfile = ({ profileInfo, handleStartChat }) => {
             setIsFollowing(prev => !prev);
         }
     };
-
     return (
-        <div className="profile-page">
+        <div className={`profile-page ${(authState?.current) ? '' : 'no-auth' }`}>
             <div className="profile-top-panel">
                 <h2>
                     <Link to={`/profile/${profileInfo?.basicInfo?.username}`}>
@@ -110,8 +112,8 @@ const FullProfile = ({ profileInfo, handleStartChat }) => {
                     </section>
 
                     <section className="tab-section">
-                        {activeTab === 'posts' && <MyPostsTab />}
-                        {activeTab === 'communities' && <MyCommunitiesTab />}
+                        {activeTab === 'posts' && <PostsTab />}
+                        {activeTab === 'communities' && <CommunitiesTab />}
                         {activeTab === 'collections' && <CollectionsPostsTab />}
                     </section>
                 </main>

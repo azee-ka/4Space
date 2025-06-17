@@ -10,11 +10,13 @@ import './register.css';
 import GitHubLoginButton from '../third_party_buttons/GitHubLoginButton';
 import GoogleCustomButton from '../third_party_buttons/GoogleCustomButton';
 import AppleSignInButton from '../third_party_buttons/AppleSignInButton';
+import useRedirector from '../../../hooks/useRedirector';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const { goBack } = useRedirector();
 
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState('');
@@ -28,6 +30,7 @@ const RegisterPage = () => {
 
   const isOrganizationRegister = location.hash === '#organization';
   const [isOrganizationRegisterPage, setIsOrganizationRegisterPage] = useState(isOrganizationRegister);
+
   const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
   useEffect(() => {
@@ -58,7 +61,8 @@ const RegisterPage = () => {
       };
       const response = await axios.post(`${API_BASE_URL}api/register/`, data, config);
       login(response.data, { switchTo: !isAddAccount });
-      navigate('/timeline');
+      goBack('/timeline');
+      
     } catch (error) {
       setRegisterError(error?.response?.data?.message || 'Registration failed.');
     }

@@ -256,9 +256,11 @@ export default function Space() {
                 }}
                 rows={1}
               />
+              <div className='space-input-toolbar'>
               <button className="space-send-btn" onClick={sendChat}>
                 <Send />
               </button>
+              </div>
             </div>
           </div>
         ) : (

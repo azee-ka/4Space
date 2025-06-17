@@ -19,7 +19,7 @@ class LibraryItem(models.Model):
     parent = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.CASCADE, related_name="children"
     )
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_PROFILE_MODEL, on_delete=models.CASCADE)
     is_shared = models.BooleanField(default=False)
     share_token = models.UUIDField(null=True, blank=True, unique=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -16,7 +16,7 @@ class Project(models.Model):
     ]
 
     title = models.CharField(max_length=255)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_PROFILE_MODEL, on_delete=models.CASCADE)
     tool_type = models.CharField(max_length=50, choices=TOOL_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

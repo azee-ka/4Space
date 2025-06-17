@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router';
-import { Link, useLocation } from 'react-router-dom';
+// File: src/components/navbar/Navbar.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './navbar.css';
 import { useAuth } from '../../hooks/useAuth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,237 +15,236 @@ import { useModeContext } from '../../context/modeContext';
 import { useDevice } from '../../context/DeviceContext';
 import { ChatIcon, MessagesIcon, NotificationsIcon, NineDotIcon, ControlCenterIcon } from '../../utils/CustomIcons';
 import { useDisplaySettings } from '../../context/DisplaySettingsContext';
+import useRedirector from '../../hooks/useRedirector';
+import HandleSwitcher from './handleSwitcher/HandleSwitcher';
 
 const Navbar = ({
-    handleProfileMenuToggle,
-    handleAppMenuToggle,
-    handleNotificationsMenuToggle,
-    handleDisplayMenuToggle,
-    sidebarOpen,
-    setSidebarOpen,
-    profileData,
-    handleNotificationSidebarOpen = null,
+  handleProfileMenuToggle,
+  handleAppMenuToggle,
+  handleNotificationsMenuToggle,
+  handleDisplayMenuToggle,
+  sidebarOpen,
+  setSidebarOpen,
+  profileData,
+  handleNotificationSidebarOpen = null,
 }) => {
-    const { isM, isT } = useDevice();
-    const { isAuthenticated } = useAuth();
-    const { mode } = useModeContext();
+  const { isM, isT } = useDevice();
+  const { isAuthenticated } = useAuth();
+  const { mode } = useModeContext();
 
-    const { settings } = useDisplaySettings();
-const themeMode = settings.themeMode;
+  const { settings } = useDisplaySettings();
+  const themeMode = settings.themeMode;
 
-    const { count: notificationsCount } = useNotifications();
+  const { count: notificationsCount } = useNotifications();
+  const { openCreatePostOverlay } = useCreatePostContext();
 
-    const { openCreatePostOverlay } = useCreatePostContext();
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [notificationsMenuVisible, setNotificationsMenuVisible] = useState(false);
+  const [appMenuVisible, setAppMenuVisible] = useState(false);
+  const [displayMenuVisible, setDisplayMenuVisible] = useState(false);
 
-    const [profileMenuVisible, setProfileMenuVisible] = useState(false);
-    const [notificationsMenuVisible, setNotificationsMenuVisible] = useState(false);
-    const [appMenuVisible, setAppMenuVisible] = useState(false)
-    const [displayMenuVisible, setDisplayMenuVisible] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  const profileMenuRef = useRef(null);
+  const notificationsMenuRef = useRef(null);
+  const appMenuRef = useRef(null);
+  const displayMenuRef = useRef(null);
 
-    const location = useLocation();
-    const navigate = useNavigate();
+  const [navbarSearchValue, setNavbarSearchValue] = useState('');
 
-    const profileMenuRef = useRef(null);
-    const notificationsMenuRef = useRef(null);
-    const appMenuRef = useRef(null);
-    const displayMenuRef = useRef(null);
+  const { buildLink } = useRedirector();
 
-    const [navbarSearchValue, setNavbarSearchValue] = useState('');
-
-
-    useEffect(() => {
-        const handleOutsideClick = (event) => {
-            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-                setProfileMenuVisible(false);
-            }
-            if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
-                setNotificationsMenuVisible(false);
-            }
-            if (appMenuRef.current && !appMenuRef.current.contains(event.target)) {
-                setAppMenuVisible(false);
-            }
-            if (displayMenuRef.current && !displayMenuRef.current.contains(event.target)) {
-                setDisplayMenuVisible(false);
-            }
-
-        };
-
-        document.addEventListener('click', handleOutsideClick);
-
-        return () => {
-            document.removeEventListener('click', handleOutsideClick);
-        };
-    }, []);
-
-
-
-    const publicPagesNavbar = [
-        { path: '/login', label: 'Sign In', id: 'navbar-access', role: 'public' },
-        { path: '/register', label: 'Sign Up', id: 'navbar-access', role: 'public' },
-    ];
-
-    const homePagesNavbar = [
-        // Home
-        { label: "Home", path: "/home" },
-        { label: "Dashboard", path: "/dashboard" },
-        { label: "Explore", path: "/explore" },
-        { label: "Create Post", action: () => openCreatePostOverlay(window.location.pathname) },
-    ];
-    const communitiesPagesNavbar = [
-        // Communities
-        { label: "Dashboard", path: "/communities/dashboard" },
-        { label: "Timeline", path: "/communities/timeline" },
-    ];
-    const spacePagesNavbar = [
-        // Space
-        { label: "Dashboard", path: "/space/dashboard" },
-        { label: "Timeline", path: "/space/timeline" },
-        { label: "Tools", path: "/space/tools" },
-    ];
-    const privatePagesNavbar = mode === 'communities' ? communitiesPagesNavbar : mode === 'space' ? spacePagesNavbar : homePagesNavbar;
-
-    const handleMenuClick = (path, action) => {
-        if (action) {
-            action();
-        } else {
-            navigate(path);
-        }
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuVisible(false);
+      }
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
+        setNotificationsMenuVisible(false);
+      }
+      if (appMenuRef.current && !appMenuRef.current.contains(event.target)) {
+        setAppMenuVisible(false);
+      }
+      if (displayMenuRef.current && !displayMenuRef.current.contains(event.target)) {
+        setDisplayMenuVisible(false);
+      }
     };
 
-    const handleHighOrderSidebarToggle = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
 
-    const pagesNavbar = isAuthenticated ? privatePagesNavbar : publicPagesNavbar;
+  const publicPagesNavbar = [
+    { path: buildLink('/login'), label: 'Sign In', id: 'navbar-access' },
+    { path: buildLink('/register'), label: 'Sign Up', id: 'navbar-access' },
+  ];
 
-    return (
-        <div className='navbar-container'>
-            <div className='navbar-left'>
-                <div className='navbar-icon-logo-container'>
-                    {isAuthenticated &&
-                        <SidebarMenuIcon color={themeMode} sidebarOpen={sidebarOpen} handleHighOrderSidebarToggle={handleHighOrderSidebarToggle} />
-                    }
-                    <div className='navbar-logo-container'>
-                        <Link to={`/`}>
-                            <img src={appLogo} />
-                            <h2 className='neon-text'>
-                                4Space
-                            </h2>
-                            <img src={appLogoComplete} className='fade-image' />
-                        </Link>
-                    </div>
-                </div>
-            </div>
-            {isAuthenticated && !isM && !isT &&
-                <div className='navbar-center'>
-                    <div className='navbar-search-container'>
-                        <span className='navbar-search-icon'>
-                            <FontAwesomeIcon icon={faSearch} />
-                        </span>
-                        <input
-                            className='navbar-search-field'
-                            value={navbarSearchValue}
-                            onChange={(e) => setNavbarSearchValue(e.target.value)}
-                            placeholder='Search'
-                        />
-                    </div>
-                </div>
-            }
+  const homePagesNavbar = [
+    { label: "Home", path: "/home" },
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Explore", path: "/explore" },
+    { label: "Create Post", action: () => openCreatePostOverlay(window.location.pathname) },
+  ];
+  const communitiesPagesNavbar = [
+    { label: "Dashboard", path: "/communities/dashboard" },
+    { label: "Timeline", path: "/communities/timeline" },
+  ];
+  const spacePagesNavbar = [
+    { label: "Dashboard", path: "/space/dashboard" },
+    { label: "Timeline", path: "/space/timeline" },
+    { label: "Tools", path: "/space/tools" },
+  ];
+  const privatePagesNavbar = mode === 'communities'
+    ? communitiesPagesNavbar
+    : mode === 'space'
+      ? spacePagesNavbar
+      : homePagesNavbar;
 
+  const handleMenuClick = (path, action) => {
+    if (action) action();
+    else navigate(path);
+  };
 
-            <div className={`navbar-right ${isAuthenticated ? '' : 'unauthenticated'}`}>
-                {!isAuthenticated &&
-                    <div className='navbar-pages'>
-                        <ul>
-                            {publicPagesNavbar?.map((item, index) => (
-                                <li
-                                    key={index}
-                                    className={location.pathname === item.path ? 'active' : ''}
-                                    id={item.id}
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <Link to={item.path} onClick={() => handleMenuClick(item.path, item.action)}>
-                                        {item.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                }
-                <div className='navbar-items'>
-                    {isAuthenticated && (
-                        <ul>
-                            {!isM &&
-                                <li className='messages-page-link'>
-                                    <Link to={`/messages/inbox`}>
-                                        <MessagesIcon mode={themeMode} />
-                                    </Link>
-                                </li>
-                            }
-                            {/* Notifications Menu */}
-                            <li
-                                className={`notifications-menu ${notificationsMenuVisible ? 'active' : ''}`}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {!isM ? (
-                                    <button onClick={handleNotificationsMenuToggle} className="notification-button">
-                                        < NotificationsIcon />
-                                        {notificationsCount > 0 && (
-                                            <span className="notification-count">
-                                                {notificationsCount > 9 ? '9+' : notificationsCount}
-                                            </span>
-                                        )}
-                                    </button>
-                                ) : (
-                                    <button onClick={handleNotificationSidebarOpen} className="notification-button">
-                                        <FontAwesomeIcon icon={faBell} /> {/* Replace text with the bell icon */}
-                                        {notificationsCount > 0 && (
-                                            <span className="notification-count">
-                                                {notificationsCount > 9 ? '9+' : notificationsCount}
-                                            </span>
-                                        )}
-                                    </button>
-                                )
+  const handleHighOrderSidebarToggle = () => setSidebarOpen(!sidebarOpen);
 
-                                }
-                            </li>
+  const pagesNavbar = isAuthenticated ? privatePagesNavbar : publicPagesNavbar;
 
-                            {/* App Menu */}
-                            {!isM &&
-                                <li className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={handleAppMenuToggle}>
-                                        <NineDotIcon mode={themeMode} />
-                                    </button>
-                                </li>
-                            }
-
-                            {/* Display Settings Menu */}
-                            {!isM &&
-                                <li className="display-settings-menu" ref={displayMenuRef} onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={handleDisplayMenuToggle}>
-                                        <ControlCenterIcon mode={themeMode} />
-                                    </button>
-                                </li>
-                            }
-
-                            {/* Profile Menu */}
-                            <li
-                                className={`profile-menu ${profileMenuVisible ? 'active' : ''}`}
-                                ref={profileMenuRef}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <button onClick={handleProfileMenuToggle}>
-                                    <ProfilePicture src={profileData?.profile_image} />
-                                </button>
-                            </li>
-
-                        </ul>
-                    )}
-                </div>
-            </div>
+  return (
+    <div className='navbar-container'>
+      <div className='navbar-left'>
+        <div className='navbar-icon-logo-container'>
+          {isAuthenticated && (
+            <SidebarMenuIcon
+              color={themeMode}
+              sidebarOpen={sidebarOpen}
+              handleHighOrderSidebarToggle={handleHighOrderSidebarToggle}
+            />
+          )}
+          <div className='navbar-logo-container'>
+            <Link to={`/`}>
+              <img src={appLogo} alt="Logo" />
+              <h2 className='neon-text'>4Space</h2>
+              <img src={appLogoComplete} className='fade-image' alt="Logo complete" />
+            </Link>
+          </div>
         </div>
-    );
+      </div>
+
+      {isAuthenticated && !isM && !isT && (
+        <div className='navbar-center'>
+          <div className='navbar-search-container'>
+            <span className='navbar-search-icon'>
+              <FontAwesomeIcon icon={faSearch} />
+            </span>
+            <input
+              className='navbar-search-field'
+              value={navbarSearchValue}
+              onChange={(e) => setNavbarSearchValue(e.target.value)}
+              placeholder='Search'
+            />
+          </div>
+        </div>
+      )}
+
+
+      <div className="navbar-right-group">
+
+        {!isM && (
+          <div className="handle-switcher">
+            <HandleSwitcher />
+          </div>
+        )}
+
+
+        <div className={`navbar-right ${isAuthenticated ? '' : 'unauthenticated'}`}>
+          {!isAuthenticated && (
+            <div className='navbar-pages'>
+              <ul>
+                {publicPagesNavbar.map((item, index) => (
+                  <li
+                    key={index}
+                    className={location.pathname === item.path ? 'active' : ''}
+                    id={item.id}
+                  >
+                    <Link to={item.path}>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+
+          <div className='navbar-items'>
+            {isAuthenticated && (
+              <ul>
+                {!isM && (
+                  <li className='messages-page-link'>
+                    <Link to={`/messages/inbox`}>
+                      <MessagesIcon mode={themeMode} />
+                    </Link>
+                  </li>
+                )}
+
+                <li
+                  className={`notifications-menu ${notificationsMenuVisible ? 'active' : ''}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {!isM ? (
+                    <button onClick={handleNotificationsMenuToggle} className="notification-button">
+                      <NotificationsIcon />
+                      {notificationsCount > 0 && (
+                        <span className="notification-count">
+                          {notificationsCount > 9 ? '9+' : notificationsCount}
+                        </span>
+                      )}
+                    </button>
+                  ) : (
+                    <button onClick={handleNotificationSidebarOpen} className="notification-button">
+                      <FontAwesomeIcon icon={faBell} />
+                      {notificationsCount > 0 && (
+                        <span className="notification-count">
+                          {notificationsCount > 9 ? '9+' : notificationsCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </li>
+
+                {!isM && (
+                  <li className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
+                    <button onClick={handleAppMenuToggle}>
+                      <NineDotIcon mode={themeMode} />
+                    </button>
+                  </li>
+                )}
+
+                {!isM && (
+                  <li className="display-settings-menu" ref={displayMenuRef} onClick={(e) => e.stopPropagation()}>
+                    <button onClick={handleDisplayMenuToggle}>
+                      <ControlCenterIcon mode={themeMode} />
+                    </button>
+                  </li>
+                )}
+
+                <li
+                  className={`profile-menu ${profileMenuVisible ? 'active' : ''}`}
+                  ref={profileMenuRef}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button onClick={handleProfileMenuToggle}>
+                    <ProfilePicture src={profileData?.profile_image} />
+                  </button>
+                </li>
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Navbar;

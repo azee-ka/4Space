@@ -44,7 +44,7 @@ class Organization(models.Model):
     is_verified = models.BooleanField(default=False)
 
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        settings.AUTH_PROFILE_MODEL,
         on_delete=models.CASCADE,
         related_name='organizations_created',
         null=True,
@@ -61,7 +61,7 @@ class Organization(models.Model):
 
 
 class OrganizationMembership(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_PROFILE_MODEL, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='memberships')
 
     role = models.CharField(max_length=50, choices=[
@@ -78,7 +78,7 @@ class OrganizationMembership(models.Model):
         help_text="Indicates if this user has been approved by the organization admin."
     )
     invited_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        settings.AUTH_PROFILE_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

@@ -1,7 +1,8 @@
 .sidebar-profile-menu {
-    background-color: #1e1d1d;
+    background-color: rgba(76, 76, 76, 0.312);
+    backdrop-filter: blur(20px);
     border-radius: 0.5rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
     padding: 0.625rem 0.75rem;
     min-width: 14.375rem;
     display: flex;
@@ -10,7 +11,7 @@
     color: white;
     font-size: 0.95rem;
     animation: fadeIn 0.15s ease-out;
-    bottom: 0.625rem;
+    bottom: 0.325rem;
     position: absolute;
 }
 
@@ -30,7 +31,46 @@
 }
 
 .sidebar-profile-menu-item a:hover {
-    background-color: #404040;
+    background-color: #a8a8a855;
     cursor: pointer;
     color: white;
 }
+
+
+
+
+[data-theme="light"] .sidebar-profile-menu {
+    background-color: rgb(255, 255, 255);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    padding: 0.625rem 0.75rem;
+    min-width: 14.375rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    color: white;
+    font-size: 0.95rem;
+    animation: fadeIn 0.15s ease-out;
+    bottom: 0.625rem;
+    position: absolute;
+}
+
+[data-theme="light"] .sidebar-profile-menu-item a {
+    text-decoration: none;
+    color: rgb(81, 81, 81);
+    background-color: rgba(0, 128, 0, 0);
+    padding: 0.625rem 1rem;
+    font-size: 1.1em;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+[data-theme="light"] .sidebar-profile-menu-item a:hover {
+    background-color: #9b9b9b45;
+    cursor: pointer;
+}
+
