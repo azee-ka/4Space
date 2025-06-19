@@ -18,6 +18,8 @@ const presetColors = [
   '#00b4d8','#ff61a6','picker'
 ];
 
+const MAX_COLOR_COUNT = 4;
+
 const getSystemTheme = () =>
   window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 const getNextTheme = (current) => {
@@ -38,7 +40,7 @@ function DisplayMenuPanel({ onClose }) {
   useEffect(() => {
     if (!loaded) return;
     setSavedSettings(settings);
-    setColorCount(Math.min(4, Math.max(1, settings.gradientColors.length)));
+    setColorCount(Math.min(MAX_COLOR_COUNT, Math.max(1, settings.gradientColors.length)));
     const [x, y] = settings.radialPosition.split(' ').map(parseFloat);
     if (!isNaN(x) && !isNaN(y)) setRadialCoord({ x, y });
   }, [loaded, settings]);
@@ -57,7 +59,7 @@ function DisplayMenuPanel({ onClose }) {
   };
 
   const handleCount = e => {
-    let n = Math.min(4, Math.max(1, parseInt(e.target.value, 10) || 1));
+    let n = Math.min(MAX_COLOR_COUNT, Math.max(1, parseInt(e.target.value, 10) || 1));
     setColorCount(n);
     const arr = settings.gradientColors.slice(0, n);
     while (arr.length < n) arr.push({ ...defaultSettings.gradientColors[0] });
@@ -135,7 +137,7 @@ function DisplayMenuPanel({ onClose }) {
             <div className="field">
               <label>Color Count</label>
               <input
-                type="number" min="1" max="4"
+                type="number" min="1" max={MAX_COLOR_COUNT}
                 value={colorCount}
                 onChange={handleCount}
                 className="count-input"
@@ -179,7 +181,7 @@ function DisplayMenuPanel({ onClose }) {
                 <label>Radial Size X</label>
                 <div className="slider-wrapper">
                   <input
-                    type="range" min="50" max="200" step="1"
+                    type="range" min="0" max="200" step="1"
                     value={radialSizeX}
                     onChange={e => update('radialSizeX', parseFloat(e.target.value))}
                   />
@@ -191,7 +193,7 @@ function DisplayMenuPanel({ onClose }) {
                 <label>Radial Size Y</label>
                 <div className="slider-wrapper">
                   <input
-                    type="range" min="50" max="200" step="1"
+                    type="range" min="0" max="200" step="1"
                     value={radialSizeY}
                     onChange={e => update('radialSizeY', parseFloat(e.target.value))}
                   />

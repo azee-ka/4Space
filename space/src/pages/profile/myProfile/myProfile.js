@@ -6,13 +6,16 @@ import { useAuth } from "../../../hooks/useAuth";
 import './myProfile.css';
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaCog } from "react-icons/fa";
+import { FaCog, FaEdit } from "react-icons/fa";
 import UserListOverlay from "../../../components/userListOverlay/userListOverlay";
 import MyPostsTab from "./tabs/myPostsTab/myPostsTab";
 import MyCommunitiesTab from "./tabs/myCommunitiesTab/myCommunitiesTab";
 import CollectionsPostsTab from "./tabs/bookmarkedPostsTab/collectionsTab";
 import { formatDateTime } from "../../../utils/formatDateTime";
 import React, { useState } from "react";
+import DropdownButton from '../../../utils/popperButton/DropdownButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 const MyProfile = ({ username: usernameProp, isCustomizing }) => {
   const { authState } = useAuth();
@@ -86,8 +89,39 @@ const MyProfile = ({ username: usernameProp, isCustomizing }) => {
         {/* Left Sidebar */}
         <aside className="profile-left">
           <div className="profile-card">
-            <div className="profile-settings">
-              <FaCog onClick={() => navigate('/settings#profile-basic-info')} />
+            <div className="profile-action-btns">
+              <button onClick={() => navigate('/settings#profile-basic-info')} >
+                <FaCog />
+              </button> 
+                <DropdownButton
+                  toggleContent={
+                    <button>
+                      <FaEdit />
+                    </button>
+                  }
+                  >
+                  <div className='profile-views-edit-menu'>
+                    <Link
+                              to="/settings#account-&-identity-profile-appearance"
+                              className="hs-ext-link"
+                              title="Go to profile view settings"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+                            </Link>
+                            <h3 className='profile-views-edit-menu-title'>
+                              Profile View
+                            </h3>
+                            <div className='profile-views-edit-menu-list'>
+                    <button>
+                      Edit Public View
+                    </button>
+                    <button>
+                      Edit Private View
+                    </button>
+                    </div>
+                  </div>
+                </DropdownButton>
             </div>
             <div className="profile-profile-image">
               <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />

@@ -21,6 +21,10 @@ width: 100%;
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.14);
 }
+.hs-toggle.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.14);
+}
 
 .hs-list-title {
     color: white;
@@ -75,7 +79,7 @@ width: 100%;
 
 /* Checkmark on active */
 .hs-check {
-  color: #0f0;
+  color: rgb(0, 255, 0);
   margin-left: -1rem;
   font-size: 1rem;
 }

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faPlus, faStream, faLayerGroup, faSearch, faChartBar, faGear, faUser, faChartLine, faUserGroup, faPenToSquare, faTools, faBook, faCodeBranch, faDiagramProject, faNetworkWired, faProjectDiagram, faDna, faSitemap, faSatellite, faSatelliteDish, faBraille, faNeuter } from '@fortawesome/free-solid-svg-icons';
@@ -17,18 +17,18 @@ import { useDevice } from '../../../context/DeviceContext';
 
 import {
     WorkspaceIcon,
-  DashboardIcon,
-  TimelineIcon,
-  ExploreIcon,
-  SearchIcon,
-  MessagesIcon,
-  CreateIcon,
-  ProjectsIcon,
-  LibraryIcon,
-  RepoIcon,
-  ToolsIcon,
-  SettingsIcon,
-  ProfileIcon
+    DashboardIcon,
+    TimelineIcon,
+    ExploreIcon,
+    SearchIcon,
+    MessagesIcon,
+    CreateIcon,
+    ProjectsIcon,
+    LibraryIcon,
+    RepoIcon,
+    ToolsIcon,
+    SettingsIcon,
+    ProfileIcon
 } from '../../../utils/CustomIcons';
 import { useDisplaySettings } from '../../../context/DisplaySettingsContext';
 
@@ -47,27 +47,27 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
 
 
     const homeIcons = [
-        { icon: <DashboardIcon mode={theme}  />, label: 'Dasboard', path: '/dashboard', type: 'link' },
-        { icon: <TimelineIcon mode={theme}  />, label: 'Timeline', path: '/timeline', type: 'link' },
-        { icon: <ExploreIcon mode={theme}  />, label: 'Explore', path: '/explore', type: 'link' },
-        { icon: <SearchIcon mode={theme}  />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
-        { icon: <MessagesIcon mode={theme}  />, label: 'Messages', path: '/messages', type: 'link' },
-        { icon: <CreateIcon mode={theme}  />, label: 'Create Post', onClick: () => openCreatePostOverlay(window.location.pathname), type: 'button' },
+        { icon: <DashboardIcon mode={theme} />, label: 'Dasboard', path: '/dashboard', type: 'link' },
+        { icon: <TimelineIcon mode={theme} />, label: 'Timeline', path: '/timeline', type: 'link' },
+        { icon: <ExploreIcon mode={theme} />, label: 'Explore', path: '/explore', type: 'link' },
+        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <MessagesIcon mode={theme} />, label: 'Messages', path: '/messages', type: 'link' },
+        { icon: <CreateIcon mode={theme} />, label: 'Create Post', onClick: () => openCreatePostOverlay(window.location.pathname), type: 'button' },
     ];
     const communitiesIcons = [
-        { icon: <DashboardIcon mode={theme}  />, label: 'Communities Dasboard', path: '/communities/dashboard', type: 'link' },
-        { icon: <TimelineIcon mode={theme}  />, label: 'Communities Timeline', path: '/communities/timeline', type: 'link' },
-        { icon: <SearchIcon mode={theme}  />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
-        { icon: <MessagesIcon mode={theme}  />, label: 'Messages', path: '/messages', type: 'link' },
-        { icon: <CreateIcon mode={theme}  />, label: 'Create Community', onClick: () => openCreateCommunityOverlay(window.location.pathname), type: 'button' },
+        { icon: <DashboardIcon mode={theme} />, label: 'Communities Dasboard', path: '/communities/dashboard', type: 'link' },
+        { icon: <TimelineIcon mode={theme} />, label: 'Communities Timeline', path: '/communities/timeline', type: 'link' },
+        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <MessagesIcon mode={theme} />, label: 'Messages', path: '/messages', type: 'link' },
+        { icon: <CreateIcon mode={theme} />, label: 'Create Community', onClick: () => openCreateCommunityOverlay(window.location.pathname), type: 'button' },
     ];
     const spaceIcons = [
-        { icon: <WorkspaceIcon mode={theme}  />, label: 'Space', path: '/space/', type: 'link' },
-        { icon: <DashboardIcon mode={theme}  />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
-        { icon: <ProjectsIcon mode={theme}  />, label: 'Projects', path: '/space/projects', type: 'link' },
-        { icon: <LibraryIcon mode={theme}  />, label: 'Library', path: '/space/library', type: 'link' },
-        { icon: <RepoIcon mode={theme}  />, label: 'Repositories', path: '/space/repositories', type: 'link' },
-        { icon: <SearchIcon mode={theme}  />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <WorkspaceIcon mode={theme} />, label: 'Space', path: '/space/', type: 'link' },
+        { icon: <DashboardIcon mode={theme} />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
+        { icon: <ProjectsIcon mode={theme} />, label: 'Projects', path: '/space/projects', type: 'link' },
+        { icon: <LibraryIcon mode={theme} />, label: 'Library', path: '/space/library', type: 'link' },
+        { icon: <RepoIcon mode={theme} />, label: 'Repositories', path: '/space/repositories', type: 'link' },
+        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
         {
             type: 'dropdown',
             component: (
@@ -125,8 +125,8 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
 
 
     const filteredSidebarBtns = isM
-    ? sidebarBtns.filter(item => item.label !== "Search")
-    : sidebarBtns;
+        ? sidebarBtns.filter(item => item.label !== "Search")
+        : sidebarBtns;
 
 
     return (
@@ -148,38 +148,55 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                                     <button>{item.icon}</button>
                                 )
                             ) : (
-                                <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
+                                // This is the change: use NavLink for links!
+                                <NavLink
+                                    to={item.path}
+                                    className={({ isActive }) =>
+                                        isActive ? "sidebar-link active" : "sidebar-link"
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    end={item.path === "/" || item.path === "/space/"}
+                                >
+                                    {item.icon}
+                                </NavLink>
                             )}
                             <div className="tooltip">{item.label}</div>
                         </div>
                     ))}
                 </div>
-                
-                {!isM &&
+
+                {!isM && (
                     <div className="small-sidebar-bottom">
-                    {bottomIcons?.map((item, index) => (
-                        <div
-                            key={index}
-                            className="small-sidebar-item"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {item.type === 'dropdown' ? (
-                                item.component
-                            ) : item.type === 'button' ? (
-                                <button onClick={item.onClick}>{item.icon}</button>
-                            ) : (
-                                <Link to={item.path} onClick={(e) => e.stopPropagation()}>{item.icon}</Link>
-                            )}
-                            <div className="tooltip">{item.label}</div>
-                        </div>
-                    ))}
-                </div>
-                }
+                        {bottomIcons?.map((item, index) => (
+                            <div
+                                key={index}
+                                className="small-sidebar-item"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {item.type === 'dropdown' ? (
+                                    item.component
+                                ) : item.type === 'button' ? (
+                                    <button onClick={item.onClick}>{item.icon}</button>
+                                ) : (
+                                    <NavLink
+                                        to={item.path}
+                                        className={({ isActive }) =>
+                                            isActive ? "sidebar-link active" : "sidebar-link"
+                                        }
+                                        onClick={(e) => e.stopPropagation()}
+                                        end={item.path === "/" || item.path === "/space/"}
+                                    >
+                                        {item.icon}
+                                    </NavLink>
+                                )}
+                                <div className="tooltip">{item.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-
-
-            {<SearchSidebar isOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />}
+            <SearchSidebar isOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />
 
             {createMenuOpen && (
                 <CreateSpaceTulip
@@ -187,10 +204,8 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                     onClose={() => setCreateMenuOpen(false)}
                 />
             )}
-
         </div>
     );
-
 };
 
 export default SmallSidebar;
