@@ -17,6 +17,10 @@ import { ChatIcon, MessagesIcon, NotificationsIcon, NineDotIcon, ControlCenterIc
 import { useDisplaySettings } from '../../context/DisplaySettingsContext';
 import useRedirector from '../../hooks/useRedirector';
 import HandleSwitcher from './handleSwitcher/HandleSwitcher';
+import ProfileMenu from './profileMenu/profileMenu';
+import NotificationsMenu from './notificationsMenu/notificationsMenu';
+import DisplayMenu from './displayMenu/displayMenu';
+import AppMenu from './appMenu/appMenu';
 
 const Navbar = ({
   handleProfileMenuToggle,
@@ -189,18 +193,23 @@ const Navbar = ({
                 )}
 
                 <li
-                  className={`notifications-menu ${notificationsMenuVisible ? 'active' : ''}`}
+                  className={`notifications-menu`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {!isM ? (
-                    <button onClick={handleNotificationsMenuToggle} className="notification-button">
-                      <NotificationsIcon />
-                      {notificationsCount > 0 && (
-                        <span className="notification-count">
-                          {notificationsCount > 9 ? '9+' : notificationsCount}
-                        </span>
-                      )}
-                    </button>
+                    <NotificationsMenu
+                      handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+                      toggleContent={
+                        <button className="notification-button" aria-label="Open notifications menu">
+                          <NotificationsIcon />
+                          {notificationsCount > 0 && (
+                            <span className="notification-count">
+                              {notificationsCount > 9 ? '9+' : notificationsCount}
+                            </span>
+                          )}
+                        </button>
+                      }
+                    />
                   ) : (
                     <button onClick={handleNotificationSidebarOpen} className="notification-button">
                       <FontAwesomeIcon icon={faBell} />
@@ -214,29 +223,41 @@ const Navbar = ({
                 </li>
 
                 {!isM && (
-                  <li className="navigation-bar-menubar-icon" ref={appMenuRef} onClick={(e) => e.stopPropagation()}>
-                    <button onClick={handleAppMenuToggle}>
-                      <NineDotIcon mode={themeMode} />
-                    </button>
+                  <li className="navigation-bar-menubar-icon" onClick={(e) => e.stopPropagation()}>
+                    <AppMenu
+                        toggleContent={
+                          <button aria-label="Open app menu">
+                            <NineDotIcon mode={themeMode} />
+                          </button>
+                        }
+                      />
                   </li>
                 )}
 
                 {!isM && (
-                  <li className="display-settings-menu" ref={displayMenuRef} onClick={(e) => e.stopPropagation()}>
-                    <button onClick={handleDisplayMenuToggle}>
-                      <ControlCenterIcon mode={themeMode} />
-                    </button>
+                  <li className="display-settings-menu" onClick={(e) => e.stopPropagation()}>
+                    <DisplayMenu
+                    toggleContent={
+                      <button aria-label="Display settings">
+                        <ControlCenterIcon />
+                      </button>
+                    }
+                  />
                   </li>
                 )}
 
                 <li
-                  className={`profile-menu ${profileMenuVisible ? 'active' : ''}`}
-                  ref={profileMenuRef}
+                  className={`profile-menu`}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button onClick={handleProfileMenuToggle}>
-                    <ProfilePicture src={profileData?.profile_image} />
-                  </button>
+                  <ProfileMenu
+                    profileData={profileData}
+                    toggleContent={
+                      <button aria-label="Open profile menu">
+                        <ProfilePicture src={profileData?.profile_image} />
+                      </button>
+                    }
+                  />
                 </li>
               </ul>
             )}

@@ -7,9 +7,8 @@ const DropdownButton = ({
     toggleContent,
     placement = 'bottom-start',
     boundaryRef,
-    anchorEl, // <-- Optional DOM node or ref for custom anchor
+    anchorEl,
 }) => {
-    // Pass anchorEl into hook
     const { buttonRef, dropdownRef, showDropdown, toggleDropdown, setShowDropdown } = usePopperDropdown(false, placement, boundaryRef, anchorEl);
 
     useEffect(() => {
@@ -30,9 +29,6 @@ const DropdownButton = ({
         };
     }, [dropdownRef, buttonRef, setShowDropdown]);
 
-    // If using anchorEl (for example, a span inside the text), do not render the toggleContent
-    // (It's only for those uses that want a button trigger)
-    // So: only clone the button if anchorEl is not set (fallback)
     const renderToggle =
         !anchorEl ? React.cloneElement(toggleContent, {
             ref: buttonRef,
@@ -43,17 +39,27 @@ const DropdownButton = ({
             className: `${toggleContent.props.className || ''} ${showDropdown ? 'active' : ''}`.trim(),
         }) : null;
 
+    const closeDropdown = () => setShowDropdown(false);
+
+    let content;
+    if (typeof children === "function") {
+        // Render prop: call with closeDropdown
+        content = children({ closeDropdown });
+    } else {
+        // Normal JSX element(s)
+        content = children;
+    }
+
     return (
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             {renderToggle}
             {showDropdown &&
                 ReactDOM.createPortal(
-                    <div 
+                    <div
                         ref={dropdownRef}
                         style={{ zIndex: 60 }}
-                        // Optionally: you could animate, style, etc.
                     >
-                        {children}
+                        {content}
                     </div>,
                     document.body
                 )
