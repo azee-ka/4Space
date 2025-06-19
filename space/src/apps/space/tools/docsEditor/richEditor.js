@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -38,7 +39,11 @@ import {
   Share2
 } from "lucide-react";
 
-import useApi from "../../../../utils/useApi";
+import {
+  fetchRichTextContent,
+  saveRichTextContent
+} from "../../../../services/space";
+import { RICH_TEXT_CONTENT } from "../../../../services/queryKeys";
 import "./richEditor.css";
 import { timeAgo } from "../../../../utils/convertDateTIme";
 
@@ -51,15 +56,32 @@ lowlight.register("python", python);
 
 const RichTextEditor = () => {
   const { projectId } = useParams();
-  const { callApi } = useApi();
-  const [initialContent, setInitialContent] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [lastSaved, setLastSaved] = useState(null);
-  const autoSaveRef = useRef(null);
+  const queryClient = useQueryClient();
   const prevContentRef = useRef("");
+  const autoSaveRef = useRef(null);
+
+  const [lastSaved, setLastSaved] = useState(null);
   const [activeMenu, setActiveMenu] = useState(null);
   const [margin, setMargin] = useState("1in");
 
+  // Query: load content
+  const { data: initialContent = "", isLoading } = useQuery({
+    queryKey: RICH_TEXT_CONTENT(projectId),
+    queryFn: () => fetchRichTextContent(projectId),
+    enabled: !!projectId
+  });
+
+  // Mutation: save content
+  const saveMutation = useMutation({
+    mutationFn: ({ content }) => saveRichTextContent({ projectId, content }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(RICH_TEXT_CONTENT(projectId));
+      setLastSaved(new Date());
+    }
+  });
+
+  // Editor instance
+  const [content, setContent] = useState(initialContent);
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -88,41 +110,32 @@ const RichTextEditor = () => {
       attributes: { class: "editor-content" },
     },
     onUpdate: ({ editor }) => {
-      setInitialContent(editor.getHTML());
+      setContent(editor.getHTML());
     },
   });
 
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const res = await callApi(`space/projects/tools/${projectId}/richtext/`, "GET");
-        setInitialContent(res.data.content || "");
-        prevContentRef.current = res.data.content || "";
-      } catch (err) {
-        console.error("Failed to load content:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchContent();
-  }, [projectId]);
+  // Sync content from query into editor after load
+  React.useEffect(() => {
+    if (editor && initialContent !== editor.getHTML()) {
+      editor.commands.setContent(initialContent, false);
+      setContent(initialContent);
+      prevContentRef.current = initialContent;
+    }
+    // eslint-disable-next-line
+  }, [editor, initialContent]);
 
-  useEffect(() => {
+  // Autosave logic (every 5s if dirty)
+  React.useEffect(() => {
     if (!editor) return;
     autoSaveRef.current = setInterval(() => {
       const currentContent = editor.getHTML();
       if (currentContent !== prevContentRef.current) {
-        callApi(`space/projects/tools/${projectId}/richtext/`, "PUT", {
-          content: currentContent,
-        }).then(() => {
-          prevContentRef.current = currentContent;
-          setLastSaved(new Date());
-        }).catch(err => {
-          console.error("Auto-save failed:", err);
-        });
+        saveMutation.mutate({ content: currentContent });
+        prevContentRef.current = currentContent;
       }
     }, 5000);
     return () => clearInterval(autoSaveRef.current);
+    // eslint-disable-next-line
   }, [editor, projectId]);
 
   const menus = {
@@ -170,7 +183,7 @@ const RichTextEditor = () => {
     }, null],
   ];
 
-  if (loading || !editor) return <p>Loading editor...</p>;
+  if (isLoading || !editor) return <p>Loading editor...</p>;
 
   return (
     <div className="doc-editor-container">

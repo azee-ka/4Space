@@ -1,18 +1,15 @@
-// src/components/SpaceRepositories.js
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./repositories.css";
 import { useNavigate } from "react-router-dom";
-import useApi from "../../../utils/useApi";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchRepositories, createRepository } from "../../../services/space";
+  import { SPACE_REPOSITORIES } from "../../../services/queryKeys";
 import {
-  FiUsers,
-  FiLink,
-  FiCalendar,
-  FiClock,
+  FiUsers, FiLink, FiCalendar, FiClock,
 } from "react-icons/fi";
 
 export default function SpaceRepositories() {
-  const { callApi } = useApi();
-  const [repos, setRepos] = useState([]);
+  const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -23,33 +20,30 @@ export default function SpaceRepositories() {
   });
   const navigate = useNavigate();
 
-  const fmt = (dt) => new Date(dt).toLocaleDateString();
+  const { data: repos = [], isLoading } = useQuery({
+    queryKey: SPACE_REPOSITORIES,
+    queryFn: fetchRepositories,
+  });
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const resp = await callApi("space/repositories/");
-        setRepos(resp.data || []);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, []);
+  const createMutation = useMutation({
+    mutationFn: createRepository,
+    onSuccess: (newRepo) => {
+      queryClient.invalidateQueries(SPACE_REPOSITORIES);
+      setShowModal(false);
+      navigate(`/space/repositories/r/${newRepo.id}`);
+    }
+  });
 
   const handleChange = (e) => {
     const { name, type, value, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
-  const handleCreate = async () => {
-    try {
-      const resp = await callApi("space/repositories/", "POST", form);
-      setRepos((r) => [resp.data, ...r]);
-      navigate(`/space/repositories/r/${resp.data.id}`);
-    } catch (e) {
-      console.error(e);
-    }
+  const handleCreate = () => {
+    createMutation.mutate(form);
   };
+
+  const fmt = (dt) => new Date(dt).toLocaleDateString();
 
   return (
     <div className="repo-page">
@@ -61,7 +55,9 @@ export default function SpaceRepositories() {
       </header>
 
       <section className="repo-grid">
-        {repos.map((r) => {
+        {isLoading ? (
+          <div>Loading…</div>
+        ) : repos.map((r) => {
           const tagsArray = r.tags
             ? r.tags.split(",").map((t) => t.trim()).filter(Boolean)
             : [];
@@ -83,24 +79,17 @@ export default function SpaceRepositories() {
                   <span className="badge">Private</span>
                 )}
               </div>
-
-              <p className="repo-desc">
-                {r.description || "No description provided."}
-              </p>
-
+              <p className="repo-desc">{r.description || "No description provided."}</p>
               {tagsArray.length > 0 && (
                 <div className="repo-tags">
                   {visible.map((t) => (
-                    <span key={t} className="tag">
-                      {t}
-                    </span>
+                    <span key={t} className="tag">{t}</span>
                   ))}
                   {extraCount > 0 && (
                     <span className="tag more">+{extraCount}</span>
                   )}
                 </div>
               )}
-
               <div className="repo-meta">
                 <span className="repo-slug">
                   <FiLink className='icon-style' />
@@ -134,7 +123,6 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
-
             <label>
               Slug
               <input
@@ -143,7 +131,6 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
-
             <label>
               Description
               <textarea
@@ -152,7 +139,6 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
-
             <label className="checkbox">
               <input
                 type="checkbox"
@@ -162,7 +148,6 @@ export default function SpaceRepositories() {
               />
               Make Public
             </label>
-
             <label>
               Tags
               <input
@@ -172,10 +157,9 @@ export default function SpaceRepositories() {
                 onChange={handleChange}
               />
             </label>
-
             <footer className="modal-actions">
-              <button className="btn-primary" onClick={handleCreate}>
-                Create
+              <button className="btn-primary" onClick={handleCreate} disabled={createMutation.isLoading}>
+                {createMutation.isLoading ? "Creating…" : "Create"}
               </button>
               <button
                 className="btn-secondary"

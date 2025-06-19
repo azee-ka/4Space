@@ -2,34 +2,49 @@ import React from 'react';
 import './notificationsMenu.css';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { markAsRead } from '../../../state/reducers/notificationsSlice';
 import { markAsRead as updateState } from '../../../state/reducers/notificationsSlice';
-import useApi from '../../../utils/useApi';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { markNotificationAsRead, notificationTakeAction } from '../../../services/notifications';
 import { timeAgo } from '../../../utils/convertDateTIme';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { FaChevronRight } from "react-icons/fa";
+import { NOTIFICATIONS } from '../../../services/queryKeys';
 
 const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
     const dispatch = useDispatch();
-    const { callApi } = useApi();
+    const queryClient = useQueryClient();
 
-    const handleMarkAsRead = async () => {
-        try {
-            await markAsRead(notification.id);
+    // Mutation: mark as read
+    const markAsReadMutation = useMutation({
+        mutationFn: () => markNotificationAsRead(notification.id),
+        onSuccess: () => {
             dispatch(updateState(notification.id));
-        } catch (error) {
-            console.error('Failed to mark as read:', error);
+            // Optionally invalidate or refetch notifications
+            queryClient.invalidateQueries(NOTIFICATIONS);
+        },
+    });
+
+    // Mutation: action on notification (approve/reject etc)
+    const takeActionMutation = useMutation({
+        mutationFn: (action) => notificationTakeAction({ url: notification.action_url, action }),
+        onSuccess: (data) => {
+            // Could add any logic here to update the UI
+            queryClient.invalidateQueries(NOTIFICATIONS);
+        },
+    });
+
+    const handleMarkAsRead = (e) => {
+        e.stopPropagation();
+        if (!notification.is_read && !markAsReadMutation.isPending) {
+            markAsReadMutation.mutate();
         }
     };
 
-    const handleTakeAction = async (action) => {
-        try {
-            const response = await callApi(notification.action_url, 'POST', { action: action });
-            console.log(response.data);
-        } catch (err) {
-            console.error('Error taking action', err);
+    const handleTakeAction = (action) => {
+        if (!takeActionMutation.isPending) {
+            takeActionMutation.mutate(action);
         }
-    }
+    };
 
     return (
         <div
@@ -37,10 +52,10 @@ const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
             onClick={() => handleNotificationSidebarOpen(notification.id)}
         >
             <div className='notification-item-top-panel'>
-            <h3>{notification.title}</h3>
-            <button onClick={() => handleNotificationSidebarOpen(notification.id)}>
-                <FaChevronRight className='icon-style' />
-            </button>
+                <h3>{notification.title}</h3>
+                <button onClick={() => handleNotificationSidebarOpen(notification.id)}>
+                    <FaChevronRight className='icon-style' />
+                </button>
             </div>
             <div className='notification-item-content'>
                 <div className='notification-item-message-container'>
@@ -48,25 +63,44 @@ const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
                         <ProfilePicture src={notification.sender.profile_image} />
                     </div>
                     <p>
-                        <span><Link to={`/profile/${notification.sender.username}`}>{notification.sender.username}</Link></span>
+                        <span>
+                            <Link to={`/profile/${notification.sender.username}`}>
+                                {notification.sender.username}
+                            </Link>
+                        </span>
                         {notification.message}
                         <span>{timeAgo(notification.created_at, true)}</span>
                     </p>
+                    {!notification.is_read && (
+                        <button 
+                            className="mark-as-read-btn"
+                            onClick={handleMarkAsRead}
+                            disabled={markAsReadMutation.isPending}
+                        >
+                            Mark as read
+                        </button>
+                    )}
                 </div>
                 {notification.type === 'action' && (
                     <div className='notification-item-actions-container'>
-                        <button onClick={(e) => {
-                            e.stopPropagation();
-                            handleTakeAction('approve');
-                            }} 
-                            className="action-button">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleTakeAction('approve');
+                            }}
+                            className="action-button"
+                            disabled={takeActionMutation.isPending}
+                        >
                             Approve
                         </button>
-                        <button onClick={(e) => {
-                            e.stopPropagation();
-                            handleTakeAction('reject')
-                            }} 
-                            className="action-button">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleTakeAction('reject');
+                            }}
+                            className="action-button"
+                            disabled={takeActionMutation.isPending}
+                        >
                             Reject
                         </button>
                     </div>

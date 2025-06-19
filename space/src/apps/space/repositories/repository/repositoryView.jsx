@@ -1,10 +1,19 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import useApi from "../../../../utils/useApi";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import "./repositoryView.css";
 import { formatDateTime } from "../../../../utils/formatDateTime";
 import UploadModal from "./UploadModal";
 import FileExplorer from "./FileExplorer";
+import {
+  fetchRepository,
+  patchRepository,
+  deleteRepository,
+  uploadRepoFiles,
+  inviteCollaborator,
+  postRepoItem,
+} from "../../../../services/space";
+import { SPACE_REPOSITORY } from "../../../../services/queryKeys";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -20,9 +29,8 @@ const TABS = [
 export default function RepositoryView() {
   const { repositoryId } = useParams();
   const navigate = useNavigate();
-  const { callApi } = useApi();
+  const queryClient = useQueryClient();
 
-  const [repo, setRepo] = useState(null);
   const [tab, setTab] = useState("overview");
   const [form, setForm] = useState({
     taskInput: "",
@@ -30,92 +38,84 @@ export default function RepositoryView() {
     discussionInput: "",
     inviteEmail: "",
   });
-
   const [showUploadModal, setShowUploadModal] = useState(false);
-
   const [explorerPath, setExplorerPath] = useState(null);
-  // track which file we just clicked
-  const [initialFile, setInitialFile] = useState(null);
 
-  const fetchRepo = async () => {
-    try {
-      const res = await callApi(
-        `space/repositories/repository/${repositoryId}/`
-      );
-      setRepo(res.data);
-    } catch (err) {
-      console.error("Failed to fetch repository:", err);
+  // Fetch repository details
+  const { data: repo, isLoading } = useQuery({
+    queryKey: SPACE_REPOSITORY(repositoryId),
+    queryFn: () => fetchRepository(repositoryId),
+  });
+
+  const patchMutation = useMutation({
+    mutationFn: (data) => patchRepository({ id: repositoryId, ...data }),
+    onSuccess: () => queryClient.invalidateQueries(SPACE_REPOSITORY(repositoryId)),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteRepository(repositoryId),
+    onSuccess: () => navigate("/space/repositories"),
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: ({ files }) => {
+      const fd = new FormData();
+      files.forEach((file) => {
+        fd.append("files", file, file.webkitRelativePath || file.name);
+        fd.append("paths", file.webkitRelativePath || file.name);
+      });
+      return uploadRepoFiles({ repositoryId, formData: fd });
+    },
+    onSuccess: () => {
+      setShowUploadModal(false);
+      queryClient.invalidateQueries(SPACE_REPOSITORY(repositoryId));
     }
-  };
+  });
 
-  useEffect(() => {
-    fetchRepo();
-  }, [repositoryId]);
+  const inviteMutation = useMutation({
+    mutationFn: ({ email }) => inviteCollaborator({ repositoryId, email }),
+    onSuccess: () => queryClient.invalidateQueries(SPACE_REPOSITORY(repositoryId)),
+  });
+
+  const itemMutation = useMutation({
+    mutationFn: ({ tab, data }) => postRepoItem({ repositoryId, tab, data }),
+    onSuccess: () => queryClient.invalidateQueries(SPACE_REPOSITORY(repositoryId)),
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (url, data, resetKeys = []) => {
-    try {
-      await callApi(url, "POST", data);
-      const updatedForm = { ...form };
-      resetKeys.forEach((k) => (updatedForm[k] = ""));
-      setForm(updatedForm);
-      fetchRepo();
-    } catch (err) {
-      console.error("Submit error:", err);
-    }
+  const handleSubmit = (tab, fieldName) => {
+    itemMutation.mutate({
+      tab,
+      data: {
+        [tab === "discussions" ? "content" : "title"]: form[fieldName]
+      }
+    });
+    setForm((prev) => ({ ...prev, [fieldName]: "" }));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this repository?")) {
-      await callApi(`space/repositories/${repositoryId}/`, "DELETE");
-      navigate("/space/repositories");
+      deleteMutation.mutate();
     }
   };
 
-  const handleVisibilityChange = async (e) => {
-    try {
-      await callApi(`space/repositories/${repositoryId}/`, "PATCH", {
-        is_public: e.target.value === "public",
-      });
-      fetchRepo();
-    } catch (err) {
-      console.error("Visibility update failed", err);
-    }
+  const handleVisibilityChange = (e) => {
+    patchMutation.mutate({ is_public: e.target.value === "public" });
   };
 
-  async function handleUpload(files) {
-    try {
-      const fd = new FormData();
-      files.forEach((file) => {
-        // 1) append the actual file
-        fd.append("files", file, file.webkitRelativePath || file.name);
-        // 2) append its path in the same order
-        fd.append("paths", file.webkitRelativePath || file.name);
-      });
+  const handleUpload = (files) => {
+    uploadMutation.mutate({ files });
+  };
 
-      const res = await callApi(
-        `space/repositories/repository/${repositoryId}/upload-structure/`,
-        "POST",
-        fd,
-        "multipart/form-data"
-      );
-      console.log("res", res.data);
-      fetchRepo();
-      setShowUploadModal(false);
-    } catch (err) {
-      console.error("Error uploadinf struct", err);
-    }
-  }
-
-  // build a single, memoized file-tree at top level
+  // Memoized file tree
   const fileTree = useMemo(() => {
     if (!repo) return { children: [] };
     const root = { name: "/", type: "folder", children: [] };
-    repo.files.forEach((f) => {
+    (repo.files || []).forEach((f) => {
       const parts = f.path.split("/");
       let node = root;
       parts.forEach((seg, i) => {
@@ -136,11 +136,10 @@ export default function RepositoryView() {
     });
     return root;
   }, [repo?.files]);
-
   const rootEntries = fileTree.children;
 
   function renderTab() {
-    if (!repo) {
+    if (isLoading || !repo) {
       return <div className="repo-view__loading">Loading…</div>;
     }
 
@@ -149,9 +148,7 @@ export default function RepositoryView() {
         return (
           <section className="repo-card">
             <h2 className="repo-card__title">Overview</h2>
-            <p className="repo-card__desc">
-              {repo.description || "No description provided."}
-            </p>
+            <p className="repo-card__desc">{repo.description || "No description provided."}</p>
             <div className="repo-card__meta">
               <span>
                 <strong>Slug:</strong> {repo.slug}
@@ -161,28 +158,21 @@ export default function RepositoryView() {
                 {repo.is_public ? "Public" : "Private"}
               </span>
               <span>
-                <strong>Created:</strong>{" "}
-                {new Date(repo.created_at).toLocaleString()}
+                <strong>Created:</strong> {new Date(repo.created_at).toLocaleString()}
               </span>
             </div>
           </section>
         );
-
       case "library":
-        // if we’re drilled in, show explorer
         if (explorerPath !== null) {
           return (
             <FileExplorer
               files={repo.files}
               initialPath={explorerPath}
-              onClose={() => {
-                setExplorerPath(null);
-              }}
+              onClose={() => setExplorerPath(null)}
             />
           );
         }
-
-        // otherwise show root listing
         return (
           <div className="repo-card">
             <div className="repo-card__header-row">
@@ -194,23 +184,17 @@ export default function RepositoryView() {
                 Add Files
               </button>
             </div>
-
             <ul className="repo-root-list">
               {rootEntries.map((e) => (
                 <li
                   key={e.name}
                   className={`repo-root-item ${e.type}`}
                   onClick={() => {
-                    if (e.type === "folder") {
-                      setExplorerPath([e.name]);
-                    } else {
-                      setExplorerPath([]);
-                    }
+                    if (e.type === "folder") setExplorerPath([e.name]);
+                    else setExplorerPath([]);
                   }}
                 >
-                  <span className="file-icon">
-                    {e.type === "folder" ? "📁" : "📄"}
-                  </span>
+                  <span className="file-icon">{e.type === "folder" ? "📁" : "📄"}</span>
                   <span>{e.name}</span>
                 </li>
               ))}
@@ -218,10 +202,9 @@ export default function RepositoryView() {
             </ul>
           </div>
         );
-
       case "boards":
       case "issues":
-      case "discussions":
+      case "discussions": {
         const fieldName =
           tab === "boards"
             ? "taskInput"
@@ -229,7 +212,6 @@ export default function RepositoryView() {
             ? "issueInput"
             : "discussionInput";
         const label = tab[0].toUpperCase() + tab.slice(1);
-
         return (
           <section className="repo-card">
             <h2 className="repo-card__title">{label}</h2>
@@ -249,18 +231,10 @@ export default function RepositoryView() {
               />
             )}
             <button
-              onClick={() =>
-                handleSubmit(
-                  `space/repositories/${repositoryId}/${tab}/`,
-                  {
-                    [tab === "discussions" ? "content" : "title"]:
-                      form[fieldName],
-                  },
-                  [fieldName]
-                )
-              }
+              onClick={() => handleSubmit(tab, fieldName)}
+              disabled={itemMutation.isLoading}
             >
-              {tab === "discussions" ? "Post" : "Add"}
+              {itemMutation.isLoading ? "Saving…" : tab === "discussions" ? "Post" : "Add"}
             </button>
             <ul className="repo-list">
               {repo[tab]?.length ? (
@@ -275,7 +249,7 @@ export default function RepositoryView() {
             </ul>
           </section>
         );
-
+      }
       case "wiki":
         return (
           <section className="repo-card">
@@ -293,7 +267,6 @@ export default function RepositoryView() {
             </ul>
           </section>
         );
-
       case "insights":
         return (
           <section className="repo-card">
@@ -309,7 +282,6 @@ export default function RepositoryView() {
             </p>
           </section>
         );
-
       case "settings":
         return (
           <section className="repo-card">
@@ -320,12 +292,12 @@ export default function RepositoryView() {
                 id="visibility"
                 value={repo.is_public ? "public" : "private"}
                 onChange={handleVisibilityChange}
+                disabled={patchMutation.isLoading}
               >
                 <option value="public">Public</option>
                 <option value="private">Private</option>
               </select>
             </div>
-
             <div className="repo-card__group">
               <h3>Collaborators</h3>
               <input
@@ -335,27 +307,20 @@ export default function RepositoryView() {
                 onChange={handleInputChange}
               />
               <button
-                onClick={() =>
-                  handleSubmit(
-                    `space/repositories/${repositoryId}/invite/`,
-                    { email: form.inviteEmail },
-                    ["inviteEmail"]
-                  )
-                }
+                onClick={() => inviteMutation.mutate({ email: form.inviteEmail })}
+                disabled={inviteMutation.isLoading}
               >
                 Invite
               </button>
             </div>
-
             <div className="repo-card__group">
               <h3>Danger Zone</h3>
-              <button className="repo-view__btn--danger" onClick={handleDelete}>
+              <button className="repo-view__btn--danger" onClick={handleDelete} disabled={deleteMutation.isLoading}>
                 Delete Repository
               </button>
             </div>
           </section>
         );
-
       default:
         return null;
     }
@@ -363,14 +328,11 @@ export default function RepositoryView() {
 
   return (
     <div className="repo-view__shell">
-      {/* === HEADER === */}
       <div className="repo-view__header-bar">
         <div className="repo-view__title-block">
           <div className="repo-view__title-row">
             <h1 className="repo-view__title">{repo?.title || "Repository"}</h1>
-            <span className="repo-view__visibility">
-              {repo?.is_public ? "Public" : "Private"}
-            </span>
+            <span className="repo-view__visibility">{repo?.is_public ? "Public" : "Private"}</span>
           </div>
           <div className="repo-view__slug-chip">{repo?.slug}</div>
         </div>
@@ -378,34 +340,25 @@ export default function RepositoryView() {
           Created on {formatDateTime(repo?.created_at)}
         </div>
       </div>
-
-      {/* === NAV === */}
       <div className="repo-view__tab-bar">
         {TABS.map((t) => (
           <button
             key={t.key}
-            className={`repo-view__tab ${
-              tab === t.key ? "repo-view__tab--active" : ""
-            }`}
+            className={`repo-view__tab ${tab === t.key ? "repo-view__tab--active" : ""}`}
             onClick={() => setTab(t.key)}
           >
             {t.label}
           </button>
         ))}
       </div>
-
-      {/* === BODY === */}
-      <div
-        className={`repo-view__layout ${tab === "library" ? "no-sidebar" : ""}`}
-      >
-        {" "}
+      <div className={`repo-view__layout ${tab === "library" ? "no-sidebar" : ""}`}>
         <main className="repo-view__main">{renderTab()}</main>
-        {tab !== "library" && (
+        {tab !== "library" && repo && (
           <aside className="repo-view__sidebar">
             <div className="repo-card">
               <h4 className="repo-card__title">Collaborators</h4>
               <ul className="repo-list">
-                {repo?.collaborators?.length ? (
+                {repo.collaborators?.length ? (
                   repo.collaborators.map((c) => (
                     <li key={c.email}>
                       <strong>{c.username}</strong> — {c.email}
@@ -418,18 +371,17 @@ export default function RepositoryView() {
             </div>
             <div className="repo-card">
               <h4 className="repo-card__title">Tags</h4>
-              <p>{repo?.tags || "None"}</p>
+              <p>{repo.tags || "None"}</p>
             </div>
             <div className="repo-card">
               <h4 className="repo-card__title">Actions</h4>
-              <button className="repo-view__btn--danger" onClick={handleDelete}>
+              <button className="repo-view__btn--danger" onClick={handleDelete} disabled={deleteMutation.isLoading}>
                 Delete Repository
               </button>
             </div>
           </aside>
         )}
       </div>
-
       {showUploadModal && (
         <UploadModal
           onUpload={handleUpload}

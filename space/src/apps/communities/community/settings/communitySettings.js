@@ -1,4 +1,3 @@
-// CommunitySettings.js
 import React, { useEffect, useState, useMemo } from 'react';
 import './communitySettings.css';
 import { useCommunity } from '../../../../context/CommunityContext';
@@ -11,12 +10,33 @@ const TABS = [
     'Security',
     'Announcements',
 ];
-const ROLES = ['Admin', 'Moderator', 'Member', 'Guest'];
+
+const ROLES = {
+    admin: 'Admin',
+    moderator: 'Moderator',
+    member: 'Member',
+    guest: 'Guest'
+};
+
+
 const permissionOptions = [
     { value: 'Allowed', label: 'Allowed' },
     { value: 'Blocked', label: 'Blocked' },
     { value: 'Limited', label: 'Limited' },
 ];
+
+// Ensure all permission keys are handled
+const PERMISSION_KEYS = [
+    'can_post_discussions',
+    'can_invite_members',
+    'can_manage_settings',
+    // add any more as needed...
+];
+
+// Helper to safely read permissions, default to false if undefined
+function getPermission(perms, key) {
+    return !!(perms && perms[key]);
+}
 
 const CommunitySettings = ({ onBack, initialTab }) => {
     const { community, settings } = useCommunity();
@@ -36,7 +56,6 @@ const CommunitySettings = ({ onBack, initialTab }) => {
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
 
-    // Fetch members when tab is selected (from context)
     useEffect(() => {
         if (activeTab === 'Manage Members' && community?.id) {
             settings.fetchMembers();
@@ -57,29 +76,36 @@ const CommunitySettings = ({ onBack, initialTab }) => {
     const updateUserRole = (userId, newRole) => {
         setRoleChanges(prev => ({
             ...prev,
-            [userId]: newRole
+            [String(userId)]: newRole
         }));
-        settings.setMembers(prev =>
-            prev.map(user =>
-                user.id === userId ? { ...user, role: newRole } : user
-            )
-        );
     };
 
     const handleRevertChange = (userId) => {
         setRoles(prev => {
             const updated = { ...prev };
-            delete updated[userId];
+            delete updated[String(userId)];
             return updated;
         });
         setRoleChanges(prev => {
             const updated = { ...prev };
-            delete updated[userId];
+            delete updated[String(userId)];
             return updated;
         });
     };
 
-    // Users with unsaved changes
+const saveAllChanges = async () => {
+  try {
+    await settings.bulkUpdate(roleChanges, roles, () => {
+      setRoles({});
+      setRoleChanges({});
+    });
+    // You can call fetchMembers here too if you want (for extra safety), but it's already in bulkUpdate
+  } catch (err) {
+    console.error('Failed to save changes', err);
+  }
+};
+
+
     const changedUserIds = useMemo(() => {
         const permissionIds = Object.keys(roles);
         const roleIds = Object.keys(roleChanges);
@@ -88,23 +114,10 @@ const CommunitySettings = ({ onBack, initialTab }) => {
 
     const changedUsers = useMemo(() => {
         return changedUserIds
-            .map(id => settings.members.find(u => u.id === parseInt(id)))
+            .map(id => settings.members.find(u => String(u.id) === String(id)))
             .filter(Boolean);
     }, [changedUserIds, settings.members]);
 
-    // ----- SAVE -----
-    const saveAllChanges = async () => {
-        try {
-            await settings.bulkUpdate(roleChanges, roles);
-            setRoles({});
-            setRoleChanges({});
-            settings.fetchMembers();
-        } catch (err) {
-            console.error('Failed to save changes', err);
-        }
-    };
-
-    // ----- FILTER -----
     const filteredMembers = useMemo(() => {
         return settings.members.filter(user =>
             user.username.toLowerCase().includes(search.toLowerCase()) &&
@@ -112,60 +125,78 @@ const CommunitySettings = ({ onBack, initialTab }) => {
         );
     }, [settings.members, search, roleFilter]);
 
-    // ----- RENDERING -----
-    const renderPermissionsRow = (user) => (
-        <div key={user.id} className="settings-row">
-            <span className="username-col">{user.username}</span>
-            <span className="role-col">
-                <select
-                    className="perm-dropdown"
-                    value={user.role}
-                    onChange={e => updateUserRole(user.id, e.target.value)}
-                >
-                    {ROLES.map(role => (
-                        <option key={role} value={role}>{role}</option>
-                    ))}
-                </select>
-            </span>
-            <span className="perm-col">
-                <select
-                    className="perm-dropdown"
-                    value={roles[user.id]?.can_post_discussions ? 'Allowed' : 'Blocked'}
-                    onChange={e => updatePermission(user.id, 'can_post_discussions', e.target.value)}
-                >
-                    {permissionOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
-            </span>
-            <span className="perm-col">
-                <select
-                    className="perm-dropdown"
-                    value={roles[user.id]?.can_invite_members ? 'Allowed' : 'Blocked'}
-                    onChange={e => updatePermission(user.id, 'can_invite_members', e.target.value)}
-                >
-                    {permissionOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
-            </span>
-            <span className="perm-col">
-                <select
-                    className="perm-dropdown"
-                    value={roles[user.id]?.can_manage_settings ? 'Allowed' : 'Blocked'}
-                    onChange={e => updatePermission(user.id, 'can_manage_settings', e.target.value)}
-                >
-                    {permissionOptions.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                </select>
-            </span>
-        </div>
-    );
+    // ------ UI ROWS ------
+    const renderPermissionsRow = (user) => {
+        const stagedPerms = roles[String(user.id)] || {};
+        const currentPerms = user.permissions || {};
+        return (
+            <div key={user.id} className="settings-row">
+                <span className="username-col">{user.username}</span>
+                <span className="role-col">
+                    <select
+                        className="perm-dropdown"
+                        value={roleChanges[String(user.id)] || user.role}
+                        onChange={e => updateUserRole(user.id, e.target.value)}
+                    >
+                        {Object.entries(ROLES).map(([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                        ))}
 
+                    </select>
+                </span>
+                <span className="perm-col">
+                    <select
+                        className="perm-dropdown"
+                        value={
+                            stagedPerms.can_post_discussions !== undefined
+                                ? (stagedPerms.can_post_discussions ? 'Allowed' : 'Blocked')
+                                : (getPermission(currentPerms, 'can_post_discussions') ? 'Allowed' : 'Blocked')
+                        }
+                        onChange={e => updatePermission(user.id, 'can_post_discussions', e.target.value)}
+                    >
+                        {permissionOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                </span>
+                <span className="perm-col">
+                    <select
+                        className="perm-dropdown"
+                        value={
+                            stagedPerms.can_invite_members !== undefined
+                                ? (stagedPerms.can_invite_members ? 'Allowed' : 'Blocked')
+                                : (getPermission(currentPerms, 'can_invite_members') ? 'Allowed' : 'Blocked')
+                        }
+                        onChange={e => updatePermission(user.id, 'can_invite_members', e.target.value)}
+                    >
+                        {permissionOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                </span>
+                <span className="perm-col">
+                    <select
+                        className="perm-dropdown"
+                        value={
+                            stagedPerms.can_manage_settings !== undefined
+                                ? (stagedPerms.can_manage_settings ? 'Allowed' : 'Blocked')
+                                : (getPermission(currentPerms, 'can_manage_settings') ? 'Allowed' : 'Blocked')
+                        }
+                        onChange={e => updatePermission(user.id, 'can_manage_settings', e.target.value)}
+                    >
+                        {permissionOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                </span>
+            </div>
+        );
+    };
+
+    // ------ PREVIEW BLOCK ------
     const renderChangedUsersPreview = () => (
         <div className="changed-users-container">
-            <div className="changed-users-title">📝 Unsaved Changes Preview</div>
+            <div className="changed-users-title">Unsaved Changes Preview</div>
             <div className="changed-users-info">
                 {changedUsers.length} user{changedUsers.length > 1 ? 's' : ''} modified
             </div>
@@ -179,13 +210,13 @@ const CommunitySettings = ({ onBack, initialTab }) => {
                 </div>
                 <div className="settings-table-scroll mini-scroll">
                     {changedUsers.map(user => {
-                        const uid = user.id;
+                        const uid = String(user.id);
                         const roleBefore = user.originalRole || user.role;
                         const roleAfter = roleChanges[uid] ?? roleBefore;
                         const permsBefore = {
-                            can_post_discussions: !!user.permissions?.can_post_discussions,
-                            can_invite_members: !!user.permissions?.can_invite_members,
-                            can_manage_settings: !!user.permissions?.can_manage_settings,
+                            can_post_discussions: getPermission(user.permissions, 'can_post_discussions'),
+                            can_invite_members: getPermission(user.permissions, 'can_invite_members'),
+                            can_manage_settings: getPermission(user.permissions, 'can_manage_settings'),
                         };
                         const permsAfter = {
                             ...permsBefore,
@@ -229,7 +260,7 @@ const CommunitySettings = ({ onBack, initialTab }) => {
                 </div>
             </div>
             <button className="save-changes-btn" onClick={saveAllChanges}>
-                💾 Save {changedUsers.length} Change{changedUsers.length > 1 ? 's' : ''}
+                Save {changedUsers.length} Change{changedUsers.length > 1 ? 's' : ''}
             </button>
         </div>
     );
@@ -248,7 +279,9 @@ const CommunitySettings = ({ onBack, initialTab }) => {
                 />
                 <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="dropdown">
                     <option value="all">All Roles</option>
-                    {ROLES.map(role => <option key={role} value={role}>{role}</option>)}
+                    {Object.entries(ROLES).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                    ))}
                 </select>
             </div>
             {changedUsers.length > 0 && renderChangedUsersPreview()}
@@ -267,6 +300,8 @@ const CommunitySettings = ({ onBack, initialTab }) => {
             </div>
         </div>
     );
+
+    // --- other tabs below (unchanged) ---
     const renderAppearanceTab = () => (
         <div className="settings-section">
             <h3 className="section-title">Appearance Settings</h3>

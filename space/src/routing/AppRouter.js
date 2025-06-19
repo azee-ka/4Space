@@ -50,9 +50,12 @@ import SpaceRepositories from '../apps/space/repositories/repositories';
 import RepositoryView from '../apps/space/repositories/repository/repositoryView';
 import CommunityPage from '../apps/communities/community/community';
 import OauthCallback from '../pages/auth/OauthCallback';
+import useAppDataRefetcher from '../hooks/useAppDataRefetcher';
+import { HandlesProvider } from '../context/HandlesContext';
 
 
 const AppRouter = () => {
+    useAppDataRefetcher();
     const { isLoading, isAuthenticated, isAddingAccount } = useAuth();
 
     const privateRoutes = [
@@ -144,56 +147,58 @@ const AppRouter = () => {
         <Router>
             <DndProvider backend={HTML5Backend}>
                 <DisplaySettingsProvider>
-            <ModeProvider>
-                <ReportOverlayProvider>
-                    <EditorProvider>
-                        <PostProvider>
-                            <CreateCommunityProvider>
-                            <CreatePostProvider>
-                                <React.Suspense fallback={<div>Loading...</div>}>
-                                    <Routes>
-                                        {/* Public Routes (Accessible by everyone) */}
-                                        {!isAuthenticated && publicRoutes.map((route, index) => {
-                                            const Component = route.component;
-                                            return (
-                                                <Route
-                                                    key={`${index}-${route.path}`}
-                                                    path={route.path}
-                                                    element={
-                                                        <Layout
-                                                            key={`${index}-${route.path}`}
-                                                            className={`${route.path.substring(1)}`}
-                                                            pageName={route.pageName}
-                                                        >
-                                                            {Component}
-                                                        </Layout>
-                                                    }
-                                                />
-                                            );
-                                        })}
+                    <ModeProvider>
+                        <HandlesProvider>
+                            <ReportOverlayProvider>
+                                <EditorProvider>
+                                    <PostProvider>
+                                        <CreateCommunityProvider>
+                                            <CreatePostProvider>
+                                                <React.Suspense fallback={<div>Loading...</div>}>
+                                                    <Routes>
+                                                        {/* Public Routes (Accessible by everyone) */}
+                                                        {!isAuthenticated && publicRoutes.map((route, index) => {
+                                                            const Component = route.component;
+                                                            return (
+                                                                <Route
+                                                                    key={`${index}-${route.path}`}
+                                                                    path={route.path}
+                                                                    element={
+                                                                        <Layout
+                                                                            key={`${index}-${route.path}`}
+                                                                            className={`${route.path.substring(1)}`}
+                                                                            pageName={route.pageName}
+                                                                        >
+                                                                            {Component}
+                                                                        </Layout>
+                                                                    }
+                                                                />
+                                                            );
+                                                        })}
 
-                                        {/* Private Routes (Accessible only by authenticated users) */}
-                                        {isAuthenticated && renderPrivateRoutes()}
+                                                        {/* Private Routes (Accessible only by authenticated users) */}
+                                                        {isAuthenticated && renderPrivateRoutes()}
 
 
-                                        {/* If not authenticated, redirect to login page */}
-                                        {!isAuthenticated && !isAddingAccount && (
-                                            <Route path="/*" element={<Navigate to="/login" />} />
-                                        )}
+                                                        {/* If not authenticated, redirect to login page */}
+                                                        {!isAuthenticated && !isAddingAccount && (
+                                                            <Route path="/*" element={<Navigate to="/login" />} />
+                                                        )}
 
-                                        {/* If authenticated, allow access to private routes */}
-                                        {isAuthenticated && (
-                                            <Route path="/*" element={<Navigate to="/" />} />
-                                        )}
-                                    </Routes>
-                                </React.Suspense>
-                            </CreatePostProvider>
-                            </CreateCommunityProvider>
-                        </PostProvider>
-                    </EditorProvider>
-                </ReportOverlayProvider>
-                </ModeProvider>
-            </DisplaySettingsProvider>
+                                                        {/* If authenticated, allow access to private routes */}
+                                                        {isAuthenticated && (
+                                                            <Route path="/*" element={<Navigate to="/" />} />
+                                                        )}
+                                                    </Routes>
+                                                </React.Suspense>
+                                            </CreatePostProvider>
+                                        </CreateCommunityProvider>
+                                    </PostProvider>
+                                </EditorProvider>
+                            </ReportOverlayProvider>
+                        </HandlesProvider>
+                    </ModeProvider>
+                </DisplaySettingsProvider>
             </DndProvider>
         </Router>
     );

@@ -1,101 +1,77 @@
-/* ===================== DARK THEME VARIABLES ===================== */
+/* ===================== DARK THEME (original, just with variables) ===================== */
 :root {
-  --msg-ctrl-bg:                 rgba(255, 0, 0, 0);
-  --msg-ctrl-section-bg:         rgba(0, 128, 0, 0);
-  --msg-ctrl-section-padding:    1.125rem 0;
-  --msg-ctrl-section-border:     0.0625rem solid rgba(128, 128, 128, 0.502);
-  --msg-ctrl-section-border-last:0.0625rem solid rgba(128, 128, 128, 0);
+  --msg-ctrl-bg: rgba(255, 0, 0, 0);                /* page bg (transparent) */
+  --msg-ctrl-section-bg: rgba(0, 128, 0, 0);        /* section bg (transparent) */
+  --msg-ctrl-section-padding: 1.125rem 0rem;
+  --msg-ctrl-section-border: 0.0625rem solid rgba(128, 128, 128, 0.502);
+  --msg-ctrl-section-border-last: 0.0625rem solid rgba(128, 128, 128, 0);
 
-  --msg-ctrl-header-color:       rgb(199, 199, 199);
-  --msg-ctrl-header-bg:          rgba(255, 0, 0, 0);
+  --msg-ctrl-header-color: rgb(199, 199, 199);
+  --msg-ctrl-header-bg: rgba(255, 0, 0, 0);
 
-  --msg-ctrl-desc-bg:            rgba(0, 128, 0, 0);
-  --msg-ctrl-desc-color:         gray;
+  --msg-ctrl-desc-bg: rgba(0, 128, 0, 0);
+  --msg-ctrl-desc-color: gray;
 
-  --msg-ctrl-content-bg:         rgba(0, 0, 255, 0);
-  --msg-ctrl-content-width:      70%;
-  --msg-ctrl-content-padding:    1rem 1rem;
-  --msg-ctrl-content-border:     0.0625rem solid rgba(128, 128, 128, 0.21);
-  --msg-ctrl-content-radius:     0.375rem;
+  --msg-ctrl-content-bg: rgba(0, 0, 255, 0);
+  --msg-ctrl-content-width: 70%;
+  --msg-ctrl-content-padding: 1em 1em;
+  --msg-ctrl-content-border: 0.0625rem solid rgba(128, 128, 128, 0.21);
+  --msg-ctrl-content-radius: 0.375rem;
 
-  --msg-ctrl-gap-main:           0.625rem;
-  --msg-ctrl-gap-content:        0.9375rem;
-  --msg-ctrl-item-font-size:     0.9em;
-  --msg-ctrl-item-color:         #fff;
+  --msg-ctrl-item-bg: rgba(255, 0, 0, 0);
+  --msg-ctrl-item-color: #fff;
+  --msg-ctrl-item-font-size: 0.9em;
+
+  --msg-ctrl-gap-main: 0.625rem;
+  --msg-ctrl-gap-content: 0.9375rem;
 }
 
-/* ===================== LIGHT THEME OVERRIDES ===================== */
-[data-theme="light"] {
-  --msg-ctrl-bg:                 #f8fcff00;
-  --msg-ctrl-section-bg:         #f6fcfc00;
-  --msg-ctrl-section-padding:    1.25rem 0;
-  --msg-ctrl-section-border:     0.0625rem solid #d7e6ee;
-  --msg-ctrl-section-border-last:0.0625rem solid #ffffff;
-
-  --msg-ctrl-header-color:       #266179;
-  --msg-ctrl-header-bg:          #fafdff04;
-
-  --msg-ctrl-desc-bg:            #fafdff00;
-  --msg-ctrl-desc-color:         #6b8494;
-
-  --msg-ctrl-content-bg:         #ffffff;
-  --msg-ctrl-content-width:      70%;
-  --msg-ctrl-content-padding:    1rem 1rem;
-  --msg-ctrl-content-border:     0.0625rem solid #d7e6ee;
-  --msg-ctrl-content-radius:     0.4375rem;
-
-  --msg-ctrl-gap-main:           0.75rem;
-  --msg-ctrl-gap-content:        1.125rem;
-  --msg-ctrl-item-color:         #235168;
-  --msg-ctrl-item-font-size:     0.95em;
-}
-
-/* ===================== CONTAINER ===================== */
-.username-handle-tab {
+/* ===================== COMPONENT CLASSES USING VARS ===================== */
+.messages-control-settings {
   width: 100%;
+  height: 100%;
   background-color: var(--msg-ctrl-bg);
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
   padding: 0.9375rem 0.625rem;
   box-sizing: border-box;
   gap: var(--msg-ctrl-gap-main);
 }
-
-/* ===================== SECTION WRAPPER ===================== */
-.username-handle-tab section {
-  width: 70%;
+.messages-control-settings section {
+  width: 80%;
   background-color: var(--msg-ctrl-section-bg);
   padding: var(--msg-ctrl-section-padding);
   border-bottom: var(--msg-ctrl-section-border);
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
   gap: var(--msg-ctrl-gap-main);
 }
-.username-handle-tab section:last-child {
+.messages-control-settings section:last-child {
   border-bottom: var(--msg-ctrl-section-border-last);
 }
-
-/* ===================== HEADER ===================== */
-.username-handle-tab section h3 {
+.messages-control-settings section h3 {
   margin: 0;
-  padding: 0 0 0.5rem 0;
+  padding: 0rem 0rem 0.5rem 0rem;
   font-size: 1.1em;
   color: var(--msg-ctrl-header-color);
   background-color: var(--msg-ctrl-header-bg);
 }
-
-/* ===================== DESCRIPTION ===================== */
-.username-handle-tab section p {
-  margin: 0 0 var(--msg-ctrl-gap-content) 0;
+.messages-control-settings section p {
+  background-color: var(--msg-ctrl-desc-bg);
+  padding: 0;
+  margin: 0;
   font-size: 0.8em;
   color: var(--msg-ctrl-desc-color);
-  background-color: var(--msg-ctrl-desc-bg);
 }
-
-/* ===================== CONTENT WRAPPER ===================== */
-.username-handle-setting-content {
+.messages-control-content {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: var(--msg-ctrl-gap-content);
   background-color: var(--msg-ctrl-content-bg);
   width: var(--msg-ctrl-content-width);
@@ -104,105 +80,44 @@
   border: var(--msg-ctrl-content-border);
   border-radius: var(--msg-ctrl-content-radius);
 }
-
-/* ===================== HANDLES LIST / FALLBACK ===================== */
-.username-handle-setting-content-handles {
-  display: flex;
-  flex-direction: column;
-  gap: var(--msg-ctrl-gap-content);
-}
-.username-handle-setting-content .no-handles {
-  padding: 1rem;
-  font-size: var(--msg-ctrl-item-font-size);
-  color: var(--msg-ctrl-item-color);
-  border: var(--msg-ctrl-content-border);
-  border-radius: var(--msg-ctrl-content-radius);
-  background: var(--msg-ctrl-content-bg);
-  text-align: center;
-}
-
-/* ===================== HANDLE ROW ===================== */
-.handle-row {
+.control-settings-item {
   width: 100%;
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  gap: var(--msg-ctrl-gap-content);
-  padding: 0.75rem;
-  background-color: var(--msg-ctrl-content-bg);
-  border: var(--msg-ctrl-content-border);
-  border-radius: var(--msg-ctrl-content-radius);
-  box-sizing: border-box;
-  transition: background-color 0.2s;
-}
-.handle-row:hover {
-  background-color: rgba(0,0,0,0.03);
-}
-
-/* Inputs */
-.handle-row input {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  border-bottom: var(--msg-ctrl-content-border);
-  background: transparent;
+  background-color: var(--msg-ctrl-item-bg);
   color: var(--msg-ctrl-item-color);
-  font-size: 1rem;
-  transition: border-color 0.2s;
-}
-.handle-row input:focus {
-  outline: none;
-  border-bottom-color: var(--msg-ctrl-header-color);
-}
-
-/* Set Active button */
-.handle-row .set-btn {
-  padding: 0.4rem 0.8rem;
   font-size: var(--msg-ctrl-item-font-size);
-  border: var(--msg-ctrl-content-border);
-  border-radius: 0.25rem;
-  background: var(--msg-ctrl-content-bg);
-  color: var(--msg-ctrl-item-color);
-  cursor: pointer;
-  transition: background 0.2s;
 }
-.handle-row .set-btn.active,
-.handle-row .set-btn:hover {
-  background: var(--msg-ctrl-btn-bg-hover, rgba(0,132,128,0.24));
+.control-settings-item:hover {
+  cursor: pointer;
 }
 
-/* Remove button */
-.handle-row .remove-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  color: #f55;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.handle-row .remove-btn:hover {
-  color: #d33;
-}
+/* ===================== LIGHT THEME OVERRIDES ===================== */
+[data-theme="light"] {
+  --msg-ctrl-bg: #f8fcff00;
+  --msg-ctrl-section-bg: #f6fcfc00;
+  --msg-ctrl-section-padding: 1.25rem 0rem;
+  --msg-ctrl-section-border: 0.0625rem solid #d7e6ee;
+  --msg-ctrl-section-border-last: 0.0625rem solid #ffffff;
 
-/* ===================== CONTROLS (Save / Reset) ===================== */
-.username-handle-setting-content-btn {
-  display: flex;
-  gap: var(--msg-ctrl-gap-content);
-}
-.username-handle-setting-content-btn button {
-  flex: 1;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: var(--msg-ctrl-content-border);
-  border-radius: 0.25rem;
-  background: var(--msg-ctrl-content-bg);
-  color: var(--msg-ctrl-item-color);
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.username-handle-setting-content-btn button:hover:not(:disabled) {
-  background-color: rgba(0,0,0,0.03);
-}
-.username-handle-setting-content-btn button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  --msg-ctrl-header-color: #266179;
+  --msg-ctrl-header-bg: #fafdff04;
+
+  --msg-ctrl-desc-bg: #fafdff00;
+  --msg-ctrl-desc-color: #6b8494;
+
+  --msg-ctrl-content-bg: #ffffff;
+  --msg-ctrl-content-width: 70%;
+  --msg-ctrl-content-padding: 1em 1em;
+  --msg-ctrl-content-border: 0.0625rem solid #d7e6ee;
+  --msg-ctrl-content-radius: 0.4375rem;
+
+  --msg-ctrl-item-bg: #f8fcff00;
+  --msg-ctrl-item-color: #235168;
+  --msg-ctrl-item-font-size: 0.95em;
+
+  --msg-ctrl-gap-main: 0.75rem;
+  --msg-ctrl-gap-content: 1.125rem;
 }

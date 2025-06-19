@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './displayMenu.css';
 import { useDisplaySettings, defaultSettings } from '../../../context/DisplaySettingsContext';
-import useApi from '../../../utils/useApi';
 import { SystemIcon, SunIcon, MoonIcon } from '../../../utils/CustomIcons';
 import { HexColorPicker } from 'react-colorful';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
@@ -27,8 +26,7 @@ const getNextTheme = (current) => {
 };
 
 export default function DisplayMenu({ onClose }) {
-  const { settings, setSettings, apply, loaded } = useDisplaySettings();
-  const { callApi } = useApi();
+  const { settings, setSettings, apply, loaded, saveSettings } = useDisplaySettings();
 
   const [savedSettings, setSavedSettings] = useState(defaultSettings);
   const [radialCoord, setRadialCoord]   = useState({ x: 50, y: 0 });
@@ -67,12 +65,22 @@ export default function DisplayMenu({ onClose }) {
 
   const reset  = () => { setSettings(savedSettings); apply(savedSettings); };
   const revert = () => { setColorCount(defaultSettings.gradientColors.length); setSettings(defaultSettings); apply(defaultSettings); };
-  const save   = async () => {
+
+  // ---- UPDATED: Use abstracted saveSettings ----
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
+  const save = async () => {
+    setSaving(true);
+    setSaveError(null);
     try {
-      await callApi('settings/save/', 'POST', { category: 'display', settings });
+      await saveSettings(settings);
       onClose();
     } catch (err) {
-      console.error('Failed to save display settings', err);
+      setSaveError('Failed to save display settings');
+      // Optionally: Show toast here
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -107,6 +115,12 @@ export default function DisplayMenu({ onClose }) {
           <ThemeIcon filled />
         </button>
       </div>
+
+      {saveError && (
+        <div className="display-error-msg">
+          {saveError}
+        </div>
+      )}
 
       {!isLight && (
         <>
@@ -334,10 +348,12 @@ export default function DisplayMenu({ onClose }) {
       {/* Buttons */}
       <div className="button-row">
         <div className="inline-buttons">
-          <button onClick={reset}>Reset</button>
-          <button onClick={revert}>Revert to Default</button>
+          <button onClick={reset} disabled={saving}>Reset</button>
+          <button onClick={revert} disabled={saving}>Revert to Default</button>
         </div>
-        <button className="save-button" onClick={save}>Save</button>
+        <button className="save-button" onClick={save} disabled={saving}>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
       </div>
     </div>
   );

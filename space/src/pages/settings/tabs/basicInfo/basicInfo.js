@@ -1,62 +1,60 @@
-import React, { useEffect, useState } from "react";
+// src/pages/settings/tabs/basicInfo/basicInfo.js
+
+import React, { useState } from "react";
 import './basicInfo.css';
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
-import useApi from "../../../../utils/useApi";
-import API_BASE_URL from "../../../../utils/apiUrl";
 import EditProfileImageOverlay from "./editProfileImageOverlay/editProfileImageOverlay";
-import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FaChartBar, FaFlag, FaUsers, FaInfoCircle, FaArrowUp, FaArrowCircleUp, FaArrowCircleDown, FaEdit } from "react-icons/fa";
-import useAppTriggers from "../../../../hooks/useAppTriggers";
+import { FaEdit } from "react-icons/fa";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchBasicInfo, updateBasicInfo } from "../../../../services/settings";
+import { BASIC_INFO } from "../../../../services/queryKeys";
+import useAppDataRefetcher from "../../../../hooks/useAppDataRefetcher";
 
 const BasicInfo = () => {
-    const { callApi } = useApi();
-    const [basicInfo, setBasicInfo] = useState({});
-    const [initialData, setInitialData] = useState({});
+    const queryClient = useQueryClient();
+    useAppDataRefetcher(); // For global events/invalidations
 
-    const [isEditingImage, setIsEditingImage] = useState(false);
-
-    const fetchEditInfo = async () => {
-        try {
-            const response = await callApi('settings/edit-basic-info/');
-            // console.log(response.data);
-            setBasicInfo(response.data);
-            setInitialData(response.data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    useAppTriggers({
-        userHandleChanged: fetchEditInfo
+    // Load info
+    const { data, isLoading, isError } = useQuery({
+        queryKey: BASIC_INFO,
+        queryFn: fetchBasicInfo,
+        staleTime: Infinity,
+        cacheTime: Infinity,
+        refetchOnWindowFocus: false,
     });
 
-    const handleEditInfoSave = async () => {
-        try {
-            const response = await callApi('settings/edit-basic-info/', 'POST', basicInfo);
-            setBasicInfo(response.data);
-            setInitialData(response.data);
-            console.log(response.data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    const [basicInfo, setBasicInfo] = useState({});
+    const [isEditingImage, setIsEditingImage] = useState(false);
 
+    // Keep form in sync when data loads (or after save)
+    React.useEffect(() => {
+        if (data) setBasicInfo(data);
+    }, [data]);
 
-    useEffect(() => {
-        fetchEditInfo();
-    }, []);
-
-    const handleReset = () => {
-        setBasicInfo(initialData); // Reset changes
-    };
-
+    // Save mutation
+    const mutation = useMutation({
+        mutationFn: updateBasicInfo,
+        onSuccess: (saved) => {
+            setBasicInfo(saved);
+            queryClient.setQueryData(BASIC_INFO, saved); // update cache
+        },
+    });
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setBasicInfo({ ...basicInfo, [name]: value });
+        setBasicInfo((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleReset = () => {
+        if (data) setBasicInfo(data);
+    };
+
+    const handleEditInfoSave = () => {
+        mutation.mutate(basicInfo);
+    };
+
+    if (isLoading) return <div>Loading…</div>;
+    if (isError)  return <div style={{ color: "red" }}>Could not load info.</div>;
 
     return (
         <div className="basic-info-tab">
@@ -147,8 +145,11 @@ const BasicInfo = () => {
                 </div>
             </div>
             <div className="basic-info-save-btn">
-                <button onClick={handleEditInfoSave}>Save Changes</button>
-                <button onClick={handleReset}>Reset Changes</button>
+                <button onClick={handleEditInfoSave} disabled={mutation.isLoading}>Save Changes</button>
+                <button onClick={handleReset} disabled={mutation.isLoading}>Reset Changes</button>
+                {mutation.isLoading && <span>Saving…</span>}
+                {mutation.isError && <span style={{ color: 'red' }}>Save failed!</span>}
+                {mutation.isSuccess && <span style={{ color: 'green' }}>Saved!</span>}
             </div>
 
             {/* Overlay for editing profile image */}

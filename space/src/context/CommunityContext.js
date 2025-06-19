@@ -1,222 +1,232 @@
-import React, { createContext, useContext, useCallback, useState } from 'react';
-import useApi from '../utils/useApi';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+import {
+  COMMUNITY, COMMUNITY_MEMBERS, COMMUNITY_EXCHANGES
+} from '../services/queryKeys';
+import {
+  fetchCommunity, fetchCommunityMembers, updateRole, updatePermissions,
+  fetchExchanges, createDiscussion, voteDiscussion,
+  addCommunityTabs, joinCommunity, leaveCommunity,
+  searchUsersApi, inviteUserApi,
+} from '../services/communities';
 
-
-
-function useSettingsLogic(communityId) {
-  const { callApi } = useApi();
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // Fetch members list
-  const fetchMembers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await callApi(`community/${communityId}/members/`);
-      setMembers(res.data);
-      setLoading(false);
-      return res.data;
-    } catch (err) {
-      setLoading(false);
-      throw err;
-    }
-  }, [communityId, callApi]);
-
-  // Update member role
-  const updateRole = useCallback(async (userId, newRole) => {
-    await callApi(`community/${communityId}/role/${userId}/`, 'PUT', { role: newRole });
-    setMembers(prev =>
-      prev.map(user =>
-        user.id === userId ? { ...user, role: newRole } : user
-      )
-    );
-  }, [communityId, callApi]);
-
-  // Update member permissions
-  const updatePermissions = useCallback(async (userId, perms) => {
-    await callApi(`community/${communityId}/permissions/${userId}/`, 'PUT', { permissions: perms });
-    setMembers(prev =>
-      prev.map(user =>
-        user.id === userId
-          ? { ...user, permissions: { ...user.permissions, ...perms } }
-          : user
-      )
-    );
-  }, [communityId, callApi]);
-
-  // Bulk Save
-  const bulkUpdate = useCallback(async (roleChanges, permsChanges) => {
-    await Promise.all([
-      ...Object.entries(permsChanges).map(([userId, perms]) =>
-        updatePermissions(userId, perms)
-      ),
-      ...Object.entries(roleChanges).map(([userId, role]) =>
-        updateRole(userId, role)
-      ),
-    ]);
-  }, [updatePermissions, updateRole]);
-
-  // Optionally, update appearance, posting rules, security, announcements...
-  // (Create similar functions for those settings if you want API-backed storage)
-
-  return {
-    members, setMembers, loading, fetchMembers, updateRole, updatePermissions, bulkUpdate,
-    // you can add more settings methods here
-  };
-}
-
-function useExchangeLogic(communityId) {
-  const { callApi } = useApi();
-  const [posts, setPosts] = useState([]);
-  const [selectedPostId, setSelectedPostId] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  // Fetch all exchanges for the community
-  const fetchExchanges = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await callApi(`community/${communityId}/exchanges/list/`);
-      setPosts(response.data);
-    } catch (err) {
-      // handle error
-    }
-    setLoading(false);
-  }, [communityId, callApi]);
-
-  // Create a new discussion post
-  const createDiscussion = useCallback(async (data) => {
-    const res = await callApi(`community/${communityId}/exchanges/create/`, 'POST', data);
-    setPosts(prev => [res.data, ...prev]);
-    return res.data;
-  }, [communityId, callApi]);
-
-  // Upvote/downvote
-  const voteDiscussion = useCallback(async (postId, direction) => {
-    const res = await callApi(`community/${communityId}/exchanges/${postId}/vote/`, 'POST', { direction });
-    setPosts(prev => prev.map(post =>
-      post.id === postId
-        ? { ...post, upvotes: res.data.upvotes, downvotes: res.data.downvotes }
-        : post
-    ));
-    return res.data;
-  }, [communityId, callApi]);
-
-  // ... any more methods (delete, comment, etc.) ...
-
-  return {
-    posts, setPosts,
-    loading,
-    selectedPostId, setSelectedPostId,
-    fetchExchanges,
-    createDiscussion,
-    voteDiscussion,
-    // ... etc
-  };
-}
-
-
-
-// Context & hook
 const CommunityContext = createContext();
 export const useCommunity = () => useContext(CommunityContext);
 
+// ---- Settings logic with react-query, API-compatible signature ----
+function useSettingsLogic(communityId) {
+  const queryClient = useQueryClient();
+
+  const {
+    data: members = [],
+    isLoading: loading,
+    refetch: fetchMembers,
+  } = useQuery({
+    queryKey: COMMUNITY_MEMBERS(communityId),
+    queryFn: () => fetchCommunityMembers(communityId),
+    enabled: !!communityId,
+    staleTime: 30_000,
+  });
+
+const updateRoleMutation = useMutation({
+  mutationFn: ({ userId, newRole }) => updateRole({ communityId, userId, newRole }),
+  onSuccess: () => queryClient.invalidateQueries(COMMUNITY_MEMBERS(communityId)),
+});
+
+const updatePermissionsMutation = useMutation({
+  mutationFn: ({ userId, perms }) => updatePermissions({ communityId, userId, perms }),
+  onSuccess: () => {
+    queryClient.invalidateQueries(COMMUNITY_MEMBERS(communityId))
+  },
+});
+
+
+  const setMembers = () => {};
+
+  // Accept a callback to clear UI state after update
+  const bulkUpdate = useCallback(
+    async (roleChanges, permsChanges, onFinish) => {
+      await Promise.all([
+        ...Object.entries(permsChanges).map(([userId, perms]) =>
+          updatePermissionsMutation.mutateAsync({ userId, perms })
+        ),
+        ...Object.entries(roleChanges).map(([userId, newRole]) =>
+          updateRoleMutation.mutateAsync({ userId, newRole })
+        ),
+      ]);
+      // This will always run after all mutations finish
+      if (typeof onFinish === 'function') onFinish();
+      fetchMembers();
+    },
+    [fetchMembers, updatePermissionsMutation, updateRoleMutation]
+  );
+
+  return {
+    members,
+    setMembers,
+    loading,
+    fetchMembers,
+    updateRole: ({ userId, newRole }) => updateRoleMutation.mutateAsync({ userId, newRole }),
+    updatePermissions: ({ userId, perms }) => updatePermissionsMutation.mutateAsync({ userId, perms }),
+    bulkUpdate,
+  };
+}
+
+
+// ---- Exchange logic with react-query, API-compatible signature ----
+function useExchangeLogic(communityId) {
+  const queryClient = useQueryClient();
+
+  const {
+    data: posts = [],
+    isLoading: loading,
+    refetch: fetchExchanges,
+  } = useQuery({
+    queryKey: COMMUNITY_EXCHANGES(communityId),
+    queryFn: () => fetchExchanges(communityId),
+    enabled: !!communityId,
+    staleTime: 30_000,
+  });
+
+  // UI state for detail view
+  const [selectedPostId, setSelectedPostId] = useState(null);
+
+  // This lets the UI still force-set a post list for instant UI update
+  const setPosts = useCallback((newPosts) => {
+    queryClient.setQueryData(COMMUNITY_EXCHANGES(communityId), newPosts);
+  }, [queryClient, communityId]);
+
+  const createDiscussionMutation = useMutation({
+    // Accepts: { title, content }
+    mutationFn: ({ title, content }) => createDiscussion({ communityId, title, content }),
+    onSuccess: (data) => {
+      // Optionally, you can insert data into posts immediately if you want, else rely on refetch.
+      queryClient.invalidateQueries(COMMUNITY_EXCHANGES(communityId));
+    }
+  });
+
+  const voteDiscussionMutation = useMutation({
+    mutationFn: ({ postId, direction }) => voteDiscussion({ communityId, postId, direction }),
+    onSuccess: () => queryClient.invalidateQueries(COMMUNITY_EXCHANGES(communityId)),
+  });
+
+  return {
+    posts,
+    setPosts,
+    loading,
+    selectedPostId,
+    setSelectedPostId,
+    fetchExchanges,
+    createDiscussion: ({ title, content }) => createDiscussionMutation.mutateAsync({ title, content }),
+    voteDiscussion: ({ postId, direction }) => voteDiscussionMutation.mutateAsync({ postId, direction }),
+  };
+}
+
+// ---- CommunityProvider ----
 export const CommunityProvider = ({ communityId, children }) => {
-  const { callApi } = useApi();
-  const [community, setCommunity] = useState(null);
+  const queryClient = useQueryClient();
+  const [communityState, setCommunity] = useState(null);
   const [selectedTab, setSelectedTab] = useState(null);
 
-
-   const exchange = useExchangeLogic(communityId);
-  const settings = useSettingsLogic(communityId);
-
-  // Fetch data for the community
-  const fetchCommunityData = useCallback(async () => {
-    try {
-      const response = await callApi(`community/c/${communityId}/`);
-      setCommunity(response.data);
-      setSelectedTab(response.data?.tabs[0]);
-    } catch (error) {
-      console.error('Error retrieving community data:', error);
+  // COMMUNITY
+  const { data: community, refetch: fetchCommunityData } = useQuery({
+    queryKey: COMMUNITY(communityId),
+    queryFn: () => fetchCommunity(communityId),
+    enabled: !!communityId,
+    staleTime: 30_000,
+    onSuccess: (data) => {
+      setSelectedTab(data?.tabs?.[0]);
     }
-  }, [communityId, callApi]);
+  });
 
-  // Join/leave actions
+  // JOIN/LEAVE
   const handleJoinLeave = useCallback(async () => {
-    if (!community) return;
-    const wasMember = community.is_member;
+    const current = communityState || community;
+    if (!current) return;
+    const wasMember = current.is_member;
     const newMemberStatus = !wasMember;
     const newMemberCount = wasMember
-      ? Math.max(0, (community.members_count || 1) - 1)
-      : (community.members_count || 0) + 1;
+      ? Math.max(0, (current.members_count || 1) - 1)
+      : (current.members_count || 0) + 1;
 
     setCommunity({
-      ...community,
+      ...current,
       is_member: newMemberStatus,
       members_count: newMemberCount
     });
 
     try {
       if (wasMember) {
-        await callApi(`community/${communityId}/leave/`, 'DELETE');
+        await leaveCommunity(communityId);
       } else {
-        await callApi(`community/${communityId}/join/`, 'POST');
+        await joinCommunity(communityId);
       }
+      await queryClient.invalidateQueries(COMMUNITY(communityId));
     } catch (error) {
-      // revert on error
-      setCommunity({
-        ...community,
-        is_member: wasMember,
-        members_count: community.members_count
-      });
-      console.error('Error updating membership:', error);
+      setCommunity(current); // revert on error
     }
-  }, [community, setCommunity, communityId, callApi]);
+  }, [community, communityState, communityId, queryClient]);
 
-  // Add tabs
-  const addTabs = useCallback(async (tabsToAdd) => {
-    // tabsToAdd: [{ key, label }]
+const addTabsMutation = useMutation({
+  mutationFn: ({ communityId, tabs }) => addCommunityTabs({ communityId, tabs }),
+  onSuccess: () => {
+    queryClient.invalidateQueries(COMMUNITY(communityId));
+  }
+});
+
+const addTabs = useCallback((tabsToAdd) => {
+  // tabsToAdd: [{ key, label }]
     if (!tabsToAdd?.length) return;
-    setCommunity(prev => ({
-      ...prev,
-      tabs: [...(prev.tabs || []), ...tabsToAdd]
-    }));
+    setCommunity(prev => {
+  const base = prev ?? community ?? {}; // fall back to actual community data!
+  return {
+    ...base,
+    tabs: [...((base.tabs) || []), ...tabsToAdd]
+  };
+});
 
-    try {
-      await callApi(`community/c/${communityId}/tabs/`, 'POST', {
-        tabs: tabsToAdd
-      });
-    } catch (error) {
-      // You may want to revert on error or show a toast
-      console.error('Error submitting new tabs:', error);
+
+
+  addTabsMutation.mutate(
+    { communityId: communityId, tabs: tabsToAdd },
+    {
+      onError: () => {
+        // Revert on error
+        setCommunity(community || communityState);
+      }
     }
-  }, [communityId, setCommunity, callApi]);
-
+  );
+}, [addTabsMutation, communityId, community, communityState]);
 
   // Search users
-const searchUsers = useCallback(async (query) => {
-  if (!query.trim()) return [];
-  const response = await callApi(`search/user-search/?query=${query}`);
-  return response.data;
-}, [callApi]);
+  const searchUsers = useCallback(async (query) => {
+    if (!query.trim()) return [];
+    const response = await searchUsersApi(query);
+    return response.data;
+  }, []);
 
-// Invite user
-const inviteUser = useCallback(async (userId) => {
-  await callApi(`community/${communityId}/invite/`, 'POST', { user_id: userId });
-}, [callApi, communityId]);
+  // Invite user
+  const inviteUser = useCallback(async (userId) => {
+    await inviteUserApi({ communityId, userId });
+  }, [communityId]);
 
+  // ---- Sub-hooks ----
+  const exchange = useExchangeLogic(communityId);
+  const settings = useSettingsLogic(communityId);
 
   return (
     <CommunityContext.Provider value={{
-      community, setCommunity,
-      selectedTab, setSelectedTab,
+      community: communityState || community,
+      setCommunity,
+      selectedTab,
+      setSelectedTab,
       fetchCommunityData,
       handleJoinLeave,
       addTabs,
       communityId,
       searchUsers,
-    inviteUser,
-
+      inviteUser,
       exchange,
       settings,
     }}>

@@ -1,25 +1,27 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import "./latexEditor.css";
-import useApi from "../../../../utils/useApi";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import CodeMirror from "@uiw/react-codemirror";
 import { EditorView } from "@codemirror/view";
 import { StreamLanguage } from "@codemirror/language";
 import { stex } from "@codemirror/legacy-modes/mode/stex";
 import { linter, lintGutter } from "@codemirror/lint";
 import { autocompletion, completeFromList } from "@codemirror/autocomplete";
-import { useParams } from "react-router-dom";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+import {  fetchLatexContent,
+  saveLatexContent,
+  compileLatexPDF
+ } from "../../../../services/space";
+import { LATEX_CONTENT } from "../../../../services/queryKeys";
+import fullCommands from './complete-latex-commands.json';
 import {
   FaBold, FaItalic, FaUnderline, FaHeading, FaListUl,
   FaSuperscript, FaDollarSign, FaFilePdf, FaCog
 } from "react-icons/fa";
 import { MdFunctions } from "react-icons/md";
-import fullCommands from './complete-latex-commands.json';
-import { keymap } from "@codemirror/view";
-import { insertText } from "@codemirror/commands";
-import katex from "katex";
-import "katex/dist/katex.min.css";
 
-
+// Utility functions
 const extractUserMacros = (text) => {
   const macros = [];
   const macroRegex = /\\newcommand\{(\\\w+)\}/g;
@@ -56,17 +58,14 @@ const latexLinter = () => (view) => {
   return diagnostics;
 };
 
-
 const customLatexInputHandler = EditorView.inputHandler.of((view, from, to, text) => {
   const state = view.state;
   const selection = state.selection.main;
 
-  // Only allow if it's a single character insert
   if (selection.empty && from === to && (text === "$" || text === "\\")) {
     const before = state.sliceDoc(0, selection.from);
     const after = state.sliceDoc(selection.from);
 
-    // Check for single "$"
     if (text === "$") {
       view.dispatch({
         changes: { from, insert: "$$" },
@@ -74,8 +73,6 @@ const customLatexInputHandler = EditorView.inputHandler.of((view, from, to, text
       });
       return true;
     }
-
-    // Check if user is typing \[
     if (text === "\\" && after.startsWith("[")) {
       view.dispatch({
         changes: { from, to: from + 2, insert: "\\[\\]" },
@@ -84,102 +81,101 @@ const customLatexInputHandler = EditorView.inputHandler.of((view, from, to, text
       return true;
     }
   }
-
   return false;
 });
 
+// AUTOSAVE delay (ms)
+const PAGE_AUTOSAVE_DELAY = 2000;
 
-
-const LaTeXEditor = ({ projectId : projectIdProp }) => {
+const LaTeXEditor = ({ projectId: projectIdProp }) => {
   const { projectId: projectIdUrl } = useParams();
-  const { callApi } = useApi();
-  const [latex, setLatex] = useState("");
+  const projectId = projectIdProp || projectIdUrl;
+  const queryClient = useQueryClient();
+  const editorRef = useRef(null);
+
+  const [localLatex, setLocalLatex] = useState("");
   const [saved, setSaved] = useState(true);
-  const [pdfURL, setPdfURL] = useState(null);
   const [customFiles, setCustomFiles] = useState([]);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [viewMode, setViewMode] = useState("compiled");
   const [showConfig, setShowConfig] = useState(false);
   const [lintErrors, setLintErrors] = useState([]);
   const [dynamicMacros, setDynamicMacros] = useState([]);
-  const editorRef = useRef(null);
+  const [pdfURL, setPdfURL] = useState(null);
 
-  const [viewMode, setViewMode] = useState("compiled"); // or "raw"
+  // Query: Fetch LaTeX content
+  const { data: latex = "", isLoading: isLatexLoading } = useQuery({
+    queryKey: LATEX_CONTENT(projectId),
+    queryFn: () => fetchLatexContent(projectId),
+    enabled: !!projectId,
+  });
 
-  const projectId = projectIdProp || projectIdUrl;
-
+  // On load, set to local state
   useEffect(() => {
-    const fetchLatex = async () => {
-      try {
-        const response = await callApi(`space/projects/tools/${projectId}/latex/`);
-        setLatex(response.data.content || "");
-        setErrorMsg(null);
-      } catch {
-        setErrorMsg("Failed to load LaTeX content.");
+    setLocalLatex(latex);
+    setSaved(true);
+  }, [latex]);
+
+  // Save mutation
+  const saveMutation = useMutation({
+    mutationFn: (content) => saveLatexContent({ projectId, content }),
+    onSuccess: () => {
+      setSaved(true);
+      queryClient.invalidateQueries(LATEX_CONTENT(projectId));
+    }
+  });
+
+  // Compile PDF mutation
+  const compileMutation = useMutation({
+    mutationFn: () => compileLatexPDF({ projectId, latex: localLatex, customFiles }),
+    onSuccess: (data) => {
+      const blob = data instanceof Blob ? data : new Blob([data]);
+      setPdfURL(URL.createObjectURL(blob));
+    }
+  });
+
+  // Local: Autosave after editing (debounced)
+  useEffect(() => {
+    if (!saved) {
+      const timer = setTimeout(() => {
+        saveMutation.mutate(localLatex);
+      }, PAGE_AUTOSAVE_DELAY);
+      return () => clearTimeout(timer);
+    }
+  }, [localLatex, saved]);
+
+  // Keyboard shortcut for manual save
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+        saveMutation.mutate(localLatex);
       }
     };
-    if (projectId) fetchLatex();
-  }, [projectId]);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [localLatex]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!saved) {
-        save();
-        compileLatex();
-      }
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [latex, saved]);
-
+  // Lint + macros
   useEffect(() => {
     const view = editorRef.current?.view;
     if (!view) return;
-    const diagnostics = latexLinter()(view);
-    setLintErrors(diagnostics);
+    setLintErrors(latexLinter()(view));
     setDynamicMacros(extractUserMacros(view.state.doc.toString()));
-  }, [latex]);
+  }, [localLatex]);
 
-
-  const save = useCallback(() => {
-    if (!projectId) return;
-    callApi(`space/projects/tools/${projectId}/latex/`, "PUT", { content: latex })
-      .then(() => setSaved(true))
-      .catch(() => setErrorMsg("Save failed."));
-  }, [latex, projectId]);
-
-  useEffect(() => {
-    const handleSaveShortcut = (e) => {
-      if (e.ctrlKey && e.key === "s") {
-        e.preventDefault();
-        save();
-      }
-    };
-    window.addEventListener("keydown", handleSaveShortcut);
-    return () => window.removeEventListener("keydown", handleSaveShortcut);
-  }, [save]);
-
-  const compileLatex = async () => {
-    setErrorMsg(null);
-    try {
-      const blob = new Blob([latex], { type: "text/plain" });
-      const file = new File([blob], "document.tex");
-      const formData = new FormData();
-      formData.append("tex", file);
-      customFiles.forEach(f => formData.append("files", f));
-      const response = await callApi(`space/projects/tools/${projectId}/latex/render/`, "POST", formData, "multipart/form-data", null, { responseType: "blob" });
-      setPdfURL(URL.createObjectURL(response.data));
-    } catch (error) {
-      setErrorMsg(error.message);
-    }
+  // Compile PDF (button click)
+  const handleCompile = () => {
+    compileMutation.mutate();
   };
 
   const insertAtCursor = (snippet) => {
-    if (!editorRef.current) return;
-    const view = editorRef.current.view;
-    const { from } = view.state.selection.main;
-    view.dispatch({ changes: { from, insert: snippet }, selection: { anchor: from + snippet.length } });
-    view.focus();
+    const view = editorRef.current?.view;
+    if (view) {
+      const { from } = view.state.selection.main;
+      view.dispatch({ changes: { from, insert: snippet }, selection: { anchor: from + snippet.length } });
+      view.focus();
+    }
   };
-
 
   return (
     <div className="latex-editor-root">
@@ -201,15 +197,11 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
         {viewMode === "compiled" &&
           <>
             <button className="tooltip-btn" onClick={() => insertAtCursor("\\section{}")}><FaHeading /><span className="tooltip-text">Section</span></button>
-
             <button className="tooltip-btn" onClick={() => insertAtCursor("\n\\begin{itemize}\n  \\item \n\\end{itemize}\n")}><FaListUl /><span className="tooltip-text">Itemize</span></button>
-
-
             <button className="tooltip-btn" onClick={() => insertAtCursor("\n\\begin{equation}\n\n\\end{equation}\n")}><MdFunctions /><span className="tooltip-text">Equation</span></button>
-
             <button className="tooltip-btn" onClick={() => insertAtCursor("\\[  \\]")}><FaSuperscript /><span className="tooltip-text">Display Math</span></button>
             <button className="tooltip-btn" onClick={() => insertAtCursor("$  $")}><FaDollarSign /><span className="tooltip-text">Inline Math</span></button>
-            <button className={`tooltip-btn compile-btn ${lintErrors.length > 0 ? "has-errors" : ""}`} onClick={compileLatex}>
+            <button className={`tooltip-btn compile-btn ${lintErrors.length > 0 ? "has-errors" : ""}`} onClick={handleCompile}>
               <FaFilePdf /><span className="tooltip-text">{lintErrors.length > 0 ? `⚠ ${lintErrors.length} error(s)` : "Compile PDF"}</span>
               Compile
             </button>
@@ -229,14 +221,12 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
             {viewMode === "compiled" ? "PDF" : "Math"}
           </span>
         </div>
-
-
       </div>
 
       <div className="latex-editor-split">
         <div className="latex-editor-pane">
           <CodeMirror
-            value={latex}
+            value={localLatex}
             height="100%"
             extensions={[
               StreamLanguage.define(stex),
@@ -249,28 +239,29 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
             theme="dark"
             onCreateEditor={(view) => (editorRef.current = { view })}
             onChange={(value) => {
-              setLatex(value);
+              setLocalLatex(value);
               setSaved(false);
             }}
             className="latex-editor-codemirror"
           />
-          {errorMsg && (
+          {saveMutation.isError && (
             <div className="latex-error-box">
-              ⚠ LaTeX Error:<br />
-              <pre>{errorMsg}</pre>
+              ⚠ Save failed.<br />
             </div>
           )}
         </div>
         <div className="latex-preview-pane">
           {viewMode === "compiled" ? (
-            pdfURL ? (
+            compileMutation.isLoading ? (
+              <div className="preview-placeholder">Compiling…</div>
+            ) : pdfURL ? (
               <iframe src={pdfURL} title="PDF Preview" width="100%" height="100%" style={{ border: "none" }} />
             ) : (
               <div className="preview-placeholder">Compile to view PDF</div>
             )
           ) : (
             <div className="katex-preview">
-              {latex.split("\n").map((line, i) => (
+              {localLatex.split("\n").map((line, i) => (
                 <div key={i} className="math-line">
                   <span
                     dangerouslySetInnerHTML={{
@@ -283,7 +274,6 @@ const LaTeXEditor = ({ projectId : projectIdProp }) => {
                 </div>
               ))}
             </div>
-
           )}
         </div>
       </div>

@@ -1,27 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import useApi from "../../../utils/useApi";
+import { useQuery } from "@tanstack/react-query";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import ChatContainer from "../chatContainer/chatContainer";
+import { fetchRequestConversations } from "../../../services/messages";
+import { REQUEST_CONVERSATIONS } from "../../../services/queryKeys";
 import "./requests.css";
 
 const MessageRequests = () => {
   const navigate = useNavigate();
   const { conversationId } = useParams();
-  const { callApi } = useApi();
-  const [requests, setRequests] = useState([]);
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const res = await callApi("messages/list_conversations_requests/");
-        setRequests(res.data);
-      } catch (err) {
-        console.error("Failed to fetch requests", err);
-      }
-    };
-    fetchRequests();
-  }, []);
+  const { data: requests, isLoading } = useQuery({
+    queryKey: REQUEST_CONVERSATIONS,
+    queryFn: fetchRequestConversations,
+  });
 
   return (
     <div className="requests-layout">
@@ -31,7 +24,9 @@ const MessageRequests = () => {
         </div>
 
         <div className="requests-list">
-          {requests.length > 0 ? (
+          {isLoading ? (
+            <div className="requests-empty">Loading…</div>
+          ) : requests?.length > 0 ? (
             requests.map((chat) => (
               <div
                 key={chat.uuid}

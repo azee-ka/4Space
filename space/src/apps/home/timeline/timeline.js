@@ -1,73 +1,86 @@
-import React, { useEffect, useState } from 'react';
-import './timeline.css';
-import useApi from '../../../utils/useApi';
+import React, { useState, useMemo } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { fetchTimelineFeed } from '../../../services/home';
+import { TIMELINE_FEED } from '../../../services/queryKeys';
 import TimelinePerPost from './timelinePerPost/timelinePerPost';
 import { FaImages } from "react-icons/fa";
 import { ExpandPostProvider } from '../../../components/postUI/expandPost/expandPostContext';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { usePaginatedList } from '../../../hooks/usePaginatedList';
 import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigger';
 import { useDevice } from '../../../context/DeviceContext';
+import './timeline.css';
+
+const PAGE_SIZE = 20;
 
 const Timeline = () => {
-    const { callApi } = useApi();
+    const { isM, isT } = useDevice();
 
-const { isM, isT } = useDevice();
-
-    const fetchPageFn = async ({ page, pageSize }) => {
-        const offset = page * pageSize;
-        const resp = await callApi(
-            `posts/timeline/get-posts/?limit=${pageSize}&offset=${offset}`
-        );
-        return {
-            results: resp.data.results,
-            next: resp.data.next,
-            count: resp.data.count
-        };
-    };
-
-    // Use paginated list hook
-    const {
-        items: posts,
-        loadMore,
-        hasMore,
-        loading,
-        error,
-        totalCount,
-        reset
-    } = usePaginatedList(fetchPageFn, { pageSize: 20 });
-
-    // Your other state: filters, etc...
-
-    // Infinite scroll trigger: use your useInfiniteScrollTrigger hook at the end of each feed
-    const infiniteScrollRef = useInfiniteScrollTrigger(loadMore, hasMore, loading);
-
-    // Two independent filters for each feed
+    // Filters
+    const filters = ['All', 'Thread', 'Visual'];
     const [leftFilter, setLeftFilter] = useState('All');
     const [rightFilter, setRightFilter] = useState('Visual');
     const [secondTimelineAdd, setSecondTimelineAdd] = useState(true);
 
-
-    const filters = ['All', 'Thread', 'Visual'];
-
-    const leftFilteredPosts = posts.filter(post => {
-        if (leftFilter === 'All') return true;
-        return post.post_type === leftFilter;
+    // Infinite query (pagination)
+    const {
+        data,
+        isLoading,
+        isError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
+        queryKey: TIMELINE_FEED(),
+        queryFn: ({ pageParam = 0 }) => fetchTimelineFeed({ pageParam, pageSize: PAGE_SIZE }),
+        getNextPageParam: (lastPage, allPages) => {
+            // If the backend returns a `next` URL, parse the offset, else compute manually:
+            if (lastPage.next) {
+                const url = new URL(lastPage.next, window.location.origin);
+                return parseInt(url.searchParams.get("offset"), 10);
+            }
+            // Or: if no `next`, no more data
+            return undefined;
+        },
+        refetchOnWindowFocus: false,
     });
 
-    const rightFilteredPosts = posts.filter(post => {
-        if (rightFilter === 'All') return true;
-        return post.post_type === rightFilter;
-    });
+    // Flatten posts from all pages
+    const posts = useMemo(() => (
+        data?.pages?.flatMap(page => page.results) ?? []
+    ), [data]);
 
-    return posts ? (
+    // Infinite scroll
+    const infiniteScrollRef = useInfiniteScrollTrigger(
+        () => {
+            if (!isFetchingNextPage && hasNextPage) fetchNextPage();
+        },
+        hasNextPage,
+        isFetchingNextPage
+    );
+
+    // Filtering logic
+    const leftFilteredPosts = useMemo(
+        () => posts.filter(post => leftFilter === 'All' || post.post_type === leftFilter),
+        [posts, leftFilter]
+    );
+    const rightFilteredPosts = useMemo(
+        () => posts.filter(post => rightFilter === 'All' || post.post_type === rightFilter),
+        [posts, rightFilter]
+    );
+
+    // UI
+    if (isLoading) return <div>Loading…</div>;
+    if (isError) return <div>Error loading timeline.</div>;
+
+    return (
         <div className="timeline-page">
-            {/* Header (Title & Toggle) */}
+            {/* Header */}
             <div className="timeline-header">
                 <h2>Timeline</h2>
-                {(isM || isT) && <DropdownButton
+                {(isM || isT) && (
+                    <DropdownButton
                         toggleContent={
                             <button className="filter-toggle">
                                 <span>Filter by: {leftFilter}</span>
@@ -86,23 +99,21 @@ const { isM, isT } = useDevice();
                                 </button>
                             ))}
                         </div>
-                    </DropdownButton>}
-                {!isM && !isT &&
+                    </DropdownButton>
+                )}
+                {!isM && !isT && (
                     <button
-                    onClick={() => setSecondTimelineAdd(!secondTimelineAdd)}
-                    className={`timeline-add-btn ${secondTimelineAdd ? 'active' : ''}`}>
-                    Toggle Timeline
-                </button>
-                }
+                        onClick={() => setSecondTimelineAdd(!secondTimelineAdd)}
+                        className={`timeline-add-btn ${secondTimelineAdd ? 'active' : ''}`}>
+                        Toggle Timeline
+                    </button>
+                )}
             </div>
 
             {/* Filter Row */}
-            <div
-                className={`timeline-filter-row ${secondTimelineAdd ? 'second-timeline' : ''}`}
-            >
-                {/* Left Filter */}
-                {/* <div> */}
-                    {!isM && !isT && <DropdownButton
+            <div className={`timeline-filter-row ${secondTimelineAdd ? 'second-timeline' : ''}`}>
+                {!isM && !isT && (
+                    <DropdownButton
                         toggleContent={
                             <button className="filter-toggle">
                                 <span>Filter by: {leftFilter}</span>
@@ -121,36 +132,33 @@ const { isM, isT } = useDevice();
                                 </button>
                             ))}
                         </div>
-                    </DropdownButton>}
-                {/* </div> */}
-                {/* Right Filter */}
-                {secondTimelineAdd && !isM && !isT &&
-                    // <div>
-                        <DropdownButton
-                            toggleContent={
-                                <button className="filter-toggle">
-                                    <span>Filter by: {rightFilter}</span>
-                                    <FontAwesomeIcon icon={faChevronDown} />
+                    </DropdownButton>
+                )}
+                {secondTimelineAdd && !isM && !isT && (
+                    <DropdownButton
+                        toggleContent={
+                            <button className="filter-toggle">
+                                <span>Filter by: {rightFilter}</span>
+                                <FontAwesomeIcon icon={faChevronDown} />
+                            </button>
+                        }
+                    >
+                        <div className="timeline-filters">
+                            {filters.map((filter) => (
+                                <button
+                                    key={filter}
+                                    className={`filter-btn ${rightFilter === filter ? 'active' : ''}`}
+                                    onClick={() => setRightFilter(filter)}
+                                >
+                                    {filter}
                                 </button>
-                            }
-                        >
-                            <div className="timeline-filters">
-                                {filters.map((filter) => (
-                                    <button
-                                        key={filter}
-                                        className={`filter-btn ${rightFilter === filter ? 'active' : ''}`}
-                                        onClick={() => setRightFilter(filter)}
-                                    >
-                                        {filter}
-                                    </button>
-                                ))}
-                            </div>
-                        </DropdownButton>
-                    // </div>
-                }
+                            ))}
+                        </div>
+                    </DropdownButton>
+                )}
             </div>
 
-            {/* Feeds */}
+            {/* Timeline Feeds */}
             {posts.length > 0 ? (
                 <div className='timeline-content'>
                     {/* Left Feed */}
@@ -191,9 +199,8 @@ const { isM, isT } = useDevice();
                     <h3>You're caught up!</h3>
                 </div>
             )}
+            {isFetchingNextPage && <div>Loading more…</div>}
         </div>
-    ) : (
-        <div>Loading...</div>
     );
 };
 

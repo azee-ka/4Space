@@ -1,15 +1,17 @@
+// src/communities/community/tabs/research/publicationsTab
 import React, { useEffect, useState } from 'react';
 import './publicationsTab.css';
-import useApi from '../../../../../../utils/useApi';
 import PublicationDetail from './publicationDetail/publicationDetail';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchMyPublications, uploadPublication } from '../../../../../../services/communities';
+import { MY_PUBLICATIONS } from '../../../../../../services/queryKeys';
 
 const PublicationsTab = ({ communityId }) => {
-  const { callApi } = useApi();
-  const [publications, setPublications] = useState([]);
+  const queryClient = useQueryClient();
+
   const [title, setTitle] = useState('');
   const [abstract, setAbstract] = useState('');
   const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash;
@@ -19,76 +21,72 @@ const PublicationsTab = ({ communityId }) => {
     return 'upload'; // fallback default
   });
 
-
   const [selected, setSelected] = useState(null);
 
-  const fetchPublications = async () => {
-    try {
-      const response = await callApi(`community/research/${communityId}/my-publications/`);
-      setPublications(response.data);
-    } catch (err) {
-      console.error('Error fetching publications', err);
-    }
-  };
+  // Fetch publications (React Query)
+  const { data: publications = [], refetch, isLoading } = useQuery({
+    queryKey: MY_PUBLICATIONS(communityId),
+    queryFn: () => fetchMyPublications(communityId),
+    enabled: activeTab === 'my-publications',
+  });
 
-  useEffect(() => {
-    if (activeTab === 'my-publications') {
-      fetchPublications();
-    }
-  }, [communityId, activeTab]);
-
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash.startsWith('#publications-my-publications-')) {
-      const id = hash.replace('#publications-my-publications-', '');
-      const match = publications.find(p => p.id === id);
-      if (match) {
-        setSelected(match);
-      }
-    }
-  }, [publications]);
-
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('abstract', abstract);
-    formData.append('file', file);
-
-    setLoading(true);
-
-    try {
-      const response = await callApi(
-        `community/research/${communityId}/publications/create/`,
-        'POST',
-        formData,
-        'multipart/form-data'
-      );
-      setPublications([response.data, ...publications]);
+  // Upload mutation
+  const mutation = useMutation({
+    mutationFn: ({ title, abstract, file }) =>{
+      console.log('SUBMITTING FILE:', file);
+      uploadPublication({ communityId, title, abstract, file })
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(MY_PUBLICATIONS(communityId));
       setTitle('');
       setAbstract('');
       setFile(null);
       setActiveTab('my-publications');
-    } catch (err) {
-      console.error('Error submitting publication', err);
-    } finally {
-      setLoading(false);
+      window.location.hash = 'publications-my-publications';
+    },
+  });
+
+  // Detail selection based on hash
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#publications-my-publications-')) {
+      const id = hash.replace('#publications-my-publications-', '');
+      const match = publications.find(p => String(p.id) === String(id));
+      if (match) setSelected(match);
+    } else {
+      setSelected(null);
     }
+  }, [publications, activeTab]);
+
+  // Tab switching sync with hash
+  useEffect(() => {
+    if (activeTab === 'my-publications') window.location.hash = 'publications-my-publications';
+    if (activeTab === 'upload') window.location.hash = 'publications-upload';
+  }, [activeTab]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('SUBMIT HANDLER:', { file });
+    if (!file) {
+      return;
+    }
+    mutation.mutate({ title, abstract, file });
   };
 
-  return selected ? (
-    <PublicationDetail
-      publication={selected}
-      embedded={true}
-      onBack={() => {
-        setSelected(null);
-        window.location.hash = 'publications-my-publications';
-      }}
-    />
-  ) : (
+  if (selected) {
+    return (
+      <PublicationDetail
+        publication={selected}
+        embedded={true}
+        onBack={() => {
+          setSelected(null);
+          window.location.hash = 'publications-my-publications';
+        }}
+      />
+    );
+  }
+
+  return (
     <div className="publications-tab">
       <div className="tab-row">
         <button
@@ -98,7 +96,6 @@ const PublicationsTab = ({ communityId }) => {
             setSelected(null);
             window.location.hash = 'publications-upload';
           }}
-
         >
           Upload Publication
         </button>
@@ -130,12 +127,14 @@ const PublicationsTab = ({ communityId }) => {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter publication title"
             required
+            disabled={mutation.isLoading}
           />
           <textarea
             value={abstract}
             onChange={(e) => setAbstract(e.target.value)}
             placeholder="Write a short abstract"
             required
+            disabled={mutation.isLoading}
           />
           <label className="custom-file-upload">
             <input
@@ -143,38 +142,43 @@ const PublicationsTab = ({ communityId }) => {
               accept="application/pdf"
               onChange={(e) => setFile(e.target.files[0])}
               required
+              disabled={mutation.isLoading}
             />
             {file ? file.name : 'Choose PDF File'}
           </label>
-          <button type="submit" disabled={loading || !file}>
-            {loading ? 'Uploading...' : 'Upload'}
+          <button type="submit" disabled={mutation.isLoading || !file}>
+            {mutation.isLoading ? 'Uploading...' : 'Upload'}
           </button>
+          {mutation.isError && (
+            <div className="publication-form-error">
+              {mutation.error?.response?.data?.detail || mutation.error?.message || 'Failed to upload.'}
+            </div>
+          )}
         </form>
       )}
 
       {activeTab === 'my-publications' && (
-        <>
-          <div className="publication-list">
-            {publications.length === 0 ? (
-              <p>No publications found.</p>
-            ) : (
-              publications.map((pub) => (
-                <div
-                  className="publication-card"
-                  key={pub.id}
-                  onClick={() => {
-                    setSelected(pub);
-                    window.location.hash = `publications-my-publications-${pub.id}`;
-                  }}
-
-                >
-                  <h4>{pub.title}</h4>
-                  <p>{pub.abstract.slice(0, 140)}...</p>
-                </div>
-              ))
-            )}
-          </div>
-        </>
+        <div className="publication-list">
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : publications.length === 0 ? (
+            <p>No publications found.</p>
+          ) : (
+            publications.map((pub) => (
+              <div
+                className="publication-card"
+                key={pub.id}
+                onClick={() => {
+                  setSelected(pub);
+                  window.location.hash = `publications-my-publications-${pub.id}`;
+                }}
+              >
+                <h4>{pub.title}</h4>
+                <p>{pub.abstract.slice(0, 140)}...</p>
+              </div>
+            ))
+          )}
+        </div>
       )}
     </div>
   );

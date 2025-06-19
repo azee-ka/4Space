@@ -188,10 +188,11 @@
   gap: var(--uh-gap-content);
 }
 .username-handle-setting-content-btn button {
+  all: unset;
   padding: 0.5rem 1.5rem;
   flex: 0;
   font-size: 1rem;
-  border: 0 1px rgba(63, 63, 63, 0.859);
+  border: 1px rgba(63, 63, 63, 0.859);
   border-radius: var(--uh-content-radius);
   background: rgba(32, 121, 128, 0.591);
   color: var(--uh-item-color);

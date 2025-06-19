@@ -1,41 +1,45 @@
 import React, { useState, useRef } from 'react';
 import './createDiscussionOverlay.css';
-import useApi from '../../../../../../../utils/useApi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import CustomEditor from '../../../../../../../utils/editor/editor';
 import EmojiButton from '../../../../../../../utils/editor/EmojiButton';
 
+import { useCommunity } from '../../../../../../../context/CommunityContext'; // Import context
+
 const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
-    const { callApi } = useApi();
     const [titleContent, setTitleContent] = useState('');
     const [bodyContent, setBodyContent] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const { exchange } = useCommunity(); // Access the exchange logic
 
     // Each editor has its own ref to track insertEmoji per instance
     const titleInsertEmojiRef = useRef(null);
 
     const handleSubmit = async () => {
+        setError(null);
         const strippedTitle = titleContent.replace(/<[^>]+>/g, '').trim();
         const strippedBody = bodyContent.replace(/<[^>]+>/g, '').trim();
 
         if (strippedTitle.length > 255) {
-    alert("Title must be 255 characters or less.");
-    return;
-}
-
+            alert("Title must be 255 characters or less.");
+            return;
+        }
         if (!strippedTitle || !strippedBody) return;
 
         setLoading(true);
         try {
-            const response = await callApi(`community/${communityId}/exchanges/create/`, 'POST', {
-                title: titleContent,
-                content: bodyContent,
+            const post = await exchange.createDiscussion({
+            title: titleContent,
+            content: bodyContent
             });
-            onPostCreated(response.data);
-            console.log(response.data);
+            exchange.setPosts([post, ...exchange.posts]);
+            onPostCreated(post);
             onClose();
         } catch (err) {
+            setError(err?.response?.data?.detail || err?.message || 'Failed to post.');
             console.error('Post failed:', err);
         } finally {
             setLoading(false);
@@ -55,9 +59,9 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
 
                 <div className="title-section">
                     <label className="editor-label">
-    Title
-    <span className="char-counter">{titleContent.replace(/<[^>]+>/g, '').length}/255</span>
-</label>
+                        Title
+                        <span className="char-counter">{titleContent.replace(/<[^>]+>/g, '').length}/255</span>
+                    </label>
 
                     <div className="title-editor-block">
                         <input
@@ -68,22 +72,9 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
                             placeholder="e.g. How do I optimize React rendering?"
                             maxLength={255}
                         />
-
-                        {/* <CustomEditor
-                            id="title-editor"
-                            content={titleContent}
-                            onContentChange={setTitleContent}
-                            placeholder="e.g. How do I optimize React rendering?"
-                            showToolbar={false}
-                            isPlainText={true}
-                            isOverlay={true}
-                            supportMedia={false}
-                            ref={(ref) => (titleInsertEmojiRef.current = ref?.insertEmoji)}
-                        /> */}
-                        {/* <EmojiButton onEmojiSelect={(emoji) => titleInsertEmojiRef.current?.(emoji)} /> */}
+                        {/* You can bring back the rich title editor if needed */}
                     </div>
                 </div>
-
 
                 <div className="body-section">
                     <label className="editor-label">Content</label>
@@ -108,6 +99,11 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
                     >
                         {loading ? 'Posting...' : 'Post Discussion'}
                     </button>
+                    {error && (
+                        <div className="discussion-form-error">
+                            {error}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

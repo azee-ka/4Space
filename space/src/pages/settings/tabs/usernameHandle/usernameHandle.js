@@ -1,60 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import useApi from '../../../../utils/useApi';
+import { useDispatch } from 'react-redux';
 import { useAuth } from '../../../../hooks/useAuth';
 import { switchHandleAction } from '../../../../state/actions/authActions';
 import './usernameHandle.css';
-import { useDispatch } from 'react-redux';
+import { emitGlobalEvent } from '../../../../utils/GlobalEvent';
+import { useHandles } from '../../../../context/HandlesContext'; // <-- USE THE CONTEXT
 
 const UsernameHandleTab = () => {
-  const { callApi } = useApi();
   const dispatch = useDispatch();
   const { authState } = useAuth();
   const currentUsername = authState.current.user.username;
 
-  // main vs custom
-  const [mainHandle, setMainHandle] = useState({
-    id: null, username: '', label: 'main', is_active: false
-  });
-  const [handles, setHandles]           = useState([]);
+  // Pull handles and loading status from context
+  const {
+    handles: data,
+    isLoading,
+    refetchHandles,
+    saveHandles,
+    saveHandlesStatus,
+  } = useHandles();
+
+  // UI state
+  const [mainHandle, setMainHandle] = useState({ id: null, username: '', label: 'main', is_active: false });
+  const [handles, setHandles] = useState([]);
   const [initialState, setInitialState] = useState(null);
 
-  // 1) Load on mount
+  // Sync on data load
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await callApi('settings/username-handles/');
-        const all     = res.data;
-        const main    = all.find(h => h.label === 'main');
-        const customs = all.filter(h => h.label !== 'main');
+    if (data) {
+      const main = data.find(h => h.label === 'main');
+      const customs = data.filter(h => h.label !== 'main');
+      setMainHandle({
+        id: main?.id || null,
+        username: main?.username || '',
+        label: 'main',
+        is_active: main?.is_active || false,
+      });
+      setHandles(customs || []);
+      setInitialState({
+        main: { ...main },
+        custom: customs.map(h => ({ ...h }))
+      });
+    }
+  }, [data]);
 
-        setMainHandle({
-          id:        main.id,
-          username:  main.username,
-          label:     'main',
-          is_active: main.is_active
-        });
-        setHandles(customs);
-
-        setInitialState({
-          main:   { ...main },
-          custom: customs.map(h => ({ ...h }))
-        });
-      } catch (err) {
-        console.error('Error fetching username handles', err);
-      }
-    })();
-  }, []);  // callApi not in deps
-
-  // 2) Local edits
+  // Local edits, exactly as before
   const addHandle = () => {
     if (handles.length >= 3) return;
-    setHandles(hs => [
-      ...hs,
-      { id: `new-${Date.now()}`, username: '', label: '', is_active: false }
-    ]);
+    setHandles(hs => [...hs, { id: `new-${Date.now()}`, username: '', label: '', is_active: false }]);
   };
-  const removeHandle = idx =>
-    setHandles(hs => hs.filter((_, i) => i !== idx));
+  const removeHandle = idx => setHandles(hs => hs.filter((_, i) => i !== idx));
   const onFieldChange = (idx, field, val) => {
     setHandles(hs => {
       const copy = [...hs];
@@ -68,116 +63,65 @@ const UsernameHandleTab = () => {
     setHandles(hs => hs.map(h => ({ ...h, is_active: false })));
   };
   const activateCustom = idx => {
-    setHandles(hs => hs.map((h, i) => ({
-      ...h,
-      is_active: i === idx
-    })));
+    setHandles(hs => hs.map((h, i) => ({ ...h, is_active: i === idx })));
     setMainHandle(m => ({ ...m, is_active: false }));
   };
 
-  // 3) Dirty?
+  // Dirty logic
   const dirty = initialState && (
     initialState.main.is_active !== mainHandle.is_active ||
     JSON.stringify(initialState.custom) !== JSON.stringify(handles)
   );
 
-
-
-const handleSave = async () => {
-  // 1) Filter out any empty custom handles
-  const validCustom = handles.filter(h =>
-    h.label.trim() !== '' && h.username.trim() !== ''
-  );
-
-  // 2) Build payload
-  const payload = {
-    username_handles: [
-      { ...mainHandle },
-      ...validCustom.map(h => ({ ...h }))
-    ]
+  // Save action (now via context)
+  const handleSave = async () => {
+    const validCustom = handles.filter(h => h.label.trim() !== '' && h.username.trim() !== '');
+    const payload = {
+      username_handles: [
+        { ...mainHandle },
+        ...validCustom.map(h => ({ ...h }))
+      ]
+    };
+    try {
+      const active = await saveHandles(payload);
+      // Redux/session/localStorage update if handle changed
+      if (active?.username && active.username !== currentUsername) {
+        dispatch(switchHandleAction({
+          username:  active.username,
+          handle_id: active.id
+        }));
+        // sessionStorage/localStorage logic as before
+        const session = JSON.parse(sessionStorage.getItem('authCurrent')) || {};
+        session.user = { ...session.user, username: active.username, handle_id: active.id };
+        sessionStorage.setItem('authCurrent', JSON.stringify(session));
+        const storedAccounts = JSON.parse(localStorage.getItem('authAccounts')) || [];
+        const updatedAccounts = storedAccounts.map(acc => {
+          if (acc.token === session.token) {
+            return { ...acc, user: { ...acc.user, username:  active.username, handle_id: active.id } };
+          }
+          return acc;
+        });
+        localStorage.setItem('authAccounts', JSON.stringify(updatedAccounts));
+      }
+      emitGlobalEvent('user-handle-changed', {
+        handle_id: active.id,
+        username:  active.username
+      });
+      refetchHandles();
+    } catch (e) {
+      // Error UI handled below
+    }
   };
 
-  try {
-    // 3) POST to server
-    const res = await callApi(
-      'settings/username-handles/',
-      'POST',
-      payload
-    );
-    const active = res.data;  // newly-active handle
-
-    // 4a) Update local UI state
-    if (active.label === 'main') {
-      setMainHandle({
-        id:        active.id,
-        username:  active.username,
-        label:     'main',
-        is_active: true
-      });
-      setHandles(validCustom.map(h => ({ ...h, is_active: false })));
-    } else {
-      setMainHandle(m => ({ ...m, is_active: false }));
-      setHandles(validCustom.map(h => ({
-        ...h,
-        is_active: h.id === active.id
-      })));
-    }
-
-    // 4b) Dispatch handle‐switch if it really changed
-  if (active.username !== currentUsername) {
-    // 1) update Redux
-    dispatch(switchHandleAction({
-      username:  active.username,
-      handle_id: active.id
-    }));
-
-    // 2) persist to sessionStorage (so current picks it up)
-    const session = JSON.parse(sessionStorage.getItem('authCurrent')) || {};
-    session.user = { ...session.user, username: active.username, handle_id: active.id };
-    sessionStorage.setItem('authCurrent', JSON.stringify(session));
-
-    // 3) **persist to localStorage** so your authAccounts list is updated too
-    const storedAccounts = JSON.parse(localStorage.getItem('authAccounts')) || [];
-    const updatedAccounts = storedAccounts.map(acc => {
-      // match by token (your unique session key)
-      if (acc.token === session.token) {
-        return {
-          ...acc,
-          user: {
-            ...acc.user,
-            username:  active.username,
-            handle_id: active.id
-          }
-        };
-      }
-      return acc;
-    });
-    localStorage.setItem('authAccounts', JSON.stringify(updatedAccounts));
-  }
-
-
-    // 4c) Snapshot fresh baseline for the form
-    setInitialState({
-      main:   { ...mainHandle, is_active: mainHandle.is_active },
-      custom: validCustom.map(h => ({ ...h }))
-    });
-
-    // 4d) Reload so the rest of the app picks up the new handle immediately
-    window.location.reload();
-
-  } catch (err) {
-    console.error('Error saving username handles', err);
-  }
-};
-
-
-
-  // 5) Reset
+  // Reset
   const handleReset = () => {
     if (!initialState) return;
     setMainHandle({ ...initialState.main });
     setHandles(initialState.custom.map(h => ({ ...h })));
   };
+
+  // Render
+  if (isLoading) return <div>Loading…</div>;
 
   return (
     <div className="username-handle-tab">
@@ -250,8 +194,10 @@ const handleSave = async () => {
 
           {dirty && (
             <div className="username-handle-setting-content-btn">
-              <button onClick={handleSave}>Save</button>
-              <button onClick={handleReset}>Reset</button>
+              <button onClick={handleSave} disabled={saveHandlesStatus === 'pending'}>Save</button>
+              <button onClick={handleReset} disabled={saveHandlesStatus === 'pending'}>Reset</button>
+              {saveHandlesStatus === 'pending' && <span>Saving…</span>}
+              {saveHandlesStatus === 'error' && <span style={{ color: 'red' }}>Save failed!</span>}
             </div>
           )}
         </div>

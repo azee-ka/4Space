@@ -1,8 +1,13 @@
+// src/appc/space/tools/tools.jsx
 import React from "react";
-import { Link } from "react-router-dom";
-import { FiEdit3, FiCode, FiFileText, FiTerminal, FiLayers, FiShare2, FiUser, FiBriefcase, FiEdit, FiCheckSquare } from "react-icons/fi";
+import { useMutation } from '@tanstack/react-query';
+import { CREATE_SPACE_PROJECT } from "../../../services/queryKeys";
+import { createSpaceProject } from "../../../services/space";
 import "./tools.css";
-import useApi from "../../../utils/useApi";
+import {
+  FiEdit3, FiCode, FiFileText, FiTerminal, FiLayers, FiShare2,
+  FiUser, FiBriefcase, FiEdit, FiCheckSquare
+} from "react-icons/fi";
 
 const tools = [
   {
@@ -94,27 +99,26 @@ const tools = [
 
 
 const SpaceTools = () => {
-
-    const { callApi } = useApi();
-
-    const handleToolClick = async (tool) => {
-        const data = {
-        title: `${tool.name} - ${new Date().toISOString()}`,
-        tool_type: tool.apiToolType
-      }
-    try {
-      const response = await callApi("space/projects/", 'POST', data);
-        console.log("Project created successfully:", response.data);
-      const projectId = response.data.id; // Assuming your API returns this
-      const finalUrl = tool.launchPath.replace("{id}", projectId);
-
+  // React Query mutation
+  const mutation = useMutation({
+    mutationKey: CREATE_SPACE_PROJECT,
+    mutationFn: ({ toolType, toolName, launchPath }) =>
+      createSpaceProject({ toolType, toolName })
+        .then((data) => ({
+          id: data.id,
+          launchPath
+        })),
+    onSuccess: ({ id, launchPath }) => {
+      const finalUrl = launchPath.replace("{id}", id);
       window.open(finalUrl, "_blank");
-    } catch (err) {
-      console.error("Failed to create project", err);
+    },
+    onError: () => {
       alert("Something went wrong while launching the tool.");
     }
-  };
+  });
 
+  // Only tools with an apiToolType need project creation
+  const isLaunchableTool = (tool) => !!tool.apiToolType && !!tool.launchPath;
 
   return (
     <div className="space-tools-page">
@@ -122,26 +126,41 @@ const SpaceTools = () => {
         <h1>Tools</h1>
       </div>
       <div className="space-tools-content">
-        {tools.map((tool, i) => (
-<div
-            key={i}
-            className="tool-card"
-            onClick={() => handleToolClick(tool)}
-            style={{ cursor: "pointer" }}
-          >            <div className="tool-card-blur" />
-            <div className="tool-card-inner">
-              <div className="tool-card-icon">{tool.icon}</div>
-              <h3>{tool.name}</h3>
-              <p className="tool-type">{tool.type}</p>
-              <p className="tool-description">{tool.description}</p>
-              <ul className="tool-features">
-                {tool.features.map((feat, idx) => (
-                  <li key={idx}>{feat}</li>
-                ))}
-              </ul>
+        {tools.map((tool, i) => {
+          const handleClick = () => {
+            if (isLaunchableTool(tool)) {
+              mutation.mutate({
+                toolType: tool.apiToolType,
+                toolName: tool.name,
+                launchPath: tool.launchPath
+              });
+            } else if (tool.path) {
+              window.open(tool.path, "_blank");
+            }
+          };
+
+          return (
+            <div
+              key={i}
+              className="tool-card"
+              onClick={handleClick}
+              style={{ cursor: "pointer" }}
+            >
+              <div className="tool-card-blur" />
+              <div className="tool-card-inner">
+                <div className="tool-card-icon">{tool.icon}</div>
+                <h3>{tool.name}</h3>
+                <p className="tool-type">{tool.type}</p>
+                <p className="tool-description">{tool.description}</p>
+                <ul className="tool-features">
+                  {tool.features.map((feat, idx) => (
+                    <li key={idx}>{feat}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

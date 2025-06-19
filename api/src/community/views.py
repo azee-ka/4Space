@@ -6,7 +6,14 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from .models import Community, CommunityMembership, CommunityPermission, CommunityTab
-from .serializers import CommunityCreateSerializer, CommunityDetailSerializer, CommunityUpdateSerializer, CommunityTabSerializer, CommunityTabCreateSerializer
+from .serializers import (
+    CommunityCreateSerializer, 
+    CommunityDetailSerializer, 
+    CommunityUpdateSerializer, 
+    CommunityTabSerializer, 
+    CommunityTabCreateSerializer, 
+    CommunityMemberSerializer
+)
 from ..user.models import BaseUser
 from ..notifications.models import Notification
 from .permissions_defaults import DEFAULT_MEMBER_PERMISSIONS
@@ -28,8 +35,29 @@ def community_members(request, community_id):
     if not CommunityMembership.objects.filter(user=request.user, community=community, role='admin').exists():
         return Response({"detail": "Unauthorized."}, status=403)
 
-    users = BaseUser.objects.filter(communitymembership__community=community)
-    return Response([{"id": u.id, "username": u.username} for u in users])
+    memberships = CommunityMembership.objects.filter(community=community).select_related('user')
+
+    # Pre-fetch all permissions for efficiency
+    permissions_map = {
+        (str(p.user_id), str(p.community_id)): p.permissions
+        for p in CommunityPermission.objects.filter(community=community)
+    }
+
+    # Collect info for each member
+    members = []
+    for m in memberships:
+        user = m.user
+        perms = permissions_map.get((str(user.id), str(community.id)))
+        members.append({
+            "user": user,
+            "role": m.role,
+            "permissions": perms or {},  # fallback to empty dict if not found
+        })
+
+    serializer = CommunityMemberSerializer(members, many=True)
+    return Response(serializer.data)
+
+
 
 
 
@@ -273,16 +301,16 @@ def set_user_permissions(request, community_id, user_id):
     if not CommunityMembership.objects.filter(user=user, community=community, role='admin').exists():
         return Response({"detail": "Unauthorized."}, status=403)
 
-    # Validate payload
     perms = request.data.get('permissions')
     if not isinstance(perms, dict):
         return Response({"detail": "Invalid format for permissions."}, status=400)
 
-    cp, _ = CommunityPermission.objects.get_or_create(community=community, user=target_user)
-    cp.permissions = perms
+    cp, created = CommunityPermission.objects.get_or_create(community=community, user=target_user)
+    # Instead of overwriting all:
+    cp.permissions = {**cp.permissions, **perms}
     cp.save()
-
     return Response({"success": True, "user_id": target_user.id, "permissions": cp.permissions})
+
 
 
 def get_user_permissions(request, community_id, user_id):

@@ -1,30 +1,31 @@
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTimes } from "react-icons/fa";
-import useApi from "../../../utils/useApi";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
+import { useMutation } from "@tanstack/react-query";
+import { searchUsers, createConversation } from "../../../services/messages";
 import "./createMessageOverlay.css";
-import { useAuth } from "../../../hooks/useAuth";
 
 const CreateMessageOverlay = ({ onClose }) => {
-  const { callApi } = useApi();
   const navigate = useNavigate();
-
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState([]);
   const [query, setQuery] = useState("");
-
   const inputRef = useRef(null);
 
-  const search = async (val) => {
+  const handleSearch = async (val) => {
     if (!val.trim()) return setResults([]);
-    try {
-      const res = await callApi(`search/user-search/?query=${val}`);
-      setResults(res.data);
-    } catch (err) {
-      console.error("Search error", err);
-    }
+    const users = await searchUsers(val);
+    setResults(users);
   };
+
+  const { mutate: startConversation, isLoading } = useMutation({
+    mutationFn: (recipients) => createConversation(recipients),
+    onSuccess: (data) => {
+      navigate(`/messages/inbox/c/${data.conversation_uuid}`);
+      onClose();
+    },
+  });
 
   const handleSelect = (user) => {
     if (selected.some((s) => s.id === user.id)) return;
@@ -43,28 +44,6 @@ const CreateMessageOverlay = ({ onClose }) => {
     }
   };
 
-
-const startConversation = async () => {
-  try {
-    console.log("Starting conversation with:", selected);
-    const payload = selected.map((u) => ({
-      id: u.user?.id ?? u.id,
-      username: u.user?.username ?? u.username,
-    }));
-
-    const res = await callApi("messages/create_conversation/", "POST", {
-      recipients: payload,
-    });
-
-    navigate(`/messages/inbox/c/${res.data.conversation_uuid}`);
-    onClose();
-  } catch (err) {
-    console.error("Start conversation error", err.response?.data || err);
-  }
-};
-
-
-
   return (
     <div className="msg-overlay" onClick={onClose}>
       <div className="msg-prompt" onClick={(e) => e.stopPropagation()}>
@@ -74,7 +53,6 @@ const startConversation = async () => {
             <FaTimes />
           </button>
         </div>
-
         <div className="recipient-bar">
           {selected.map((r) => (
             <span key={r.id} className="pill">
@@ -87,13 +65,13 @@ const startConversation = async () => {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              search(e.target.value);
+              handleSearch(e.target.value);
             }}
             placeholder="Type a username..."
             onKeyDown={handleKeyDown}
+            disabled={isLoading}
           />
         </div>
-
         {results.length > 0 && (
           <ul className="results-list">
             {results.map((user) => (
@@ -104,13 +82,19 @@ const startConversation = async () => {
             ))}
           </ul>
         )}
-
         <button
-          onClick={startConversation}
-          disabled={selected.length === 0}
+          onClick={() =>
+            startConversation(
+              selected.map((u) => ({
+                id: u.user?.id ?? u.id,
+                username: u.user?.username ?? u.username,
+              }))
+            )
+          }
+          disabled={selected.length === 0 || isLoading}
           className="submit-btn"
         >
-          Start
+          {isLoading ? "Starting..." : "Start"}
         </button>
       </div>
     </div>

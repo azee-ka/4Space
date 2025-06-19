@@ -14,7 +14,7 @@ urlpatterns = [
     path('<uuid:community_id>/accept-invitation/', views.accept_community_invitation, name='accept-community-invitation'),
 
     path('<uuid:community_id>/members/', views.community_members),
-    path('<uuid:community_id>/permissions/<int:user_id>/', views.user_permissions),
+    path('<uuid:community_id>/permissions/<uuid:user_id>/', views.user_permissions),
     
     path('timeline/get-communities/', views.list_communities, name='list_communities'),
     

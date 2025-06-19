@@ -150,7 +150,7 @@ const Navbar = ({
 
       <div className="navbar-right-group">
 
-        {!isM && (
+        {isAuthenticated && !isM && (
           <div className="handle-switcher">
             <HandleSwitcher />
           </div>

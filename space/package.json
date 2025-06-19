@@ -13,6 +13,7 @@
     "@popperjs/core": "^2.11.8",
     "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^2.6.1",
+    "@tanstack/react-query-devtools": "^5.80.7",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -99,5 +100,5 @@
   "devDependencies": {
     "source-map-explorer": "^2.5.3"
   },
-    "proxy": "http://localhost:8000"
+  "proxy": "http://localhost:8000"
 }
