@@ -11,17 +11,7 @@ const Profile = ({ enforceViewType = '', isCustomizing = false }) => {
     const { authState } = useAuth();
     const navigate = useNavigate();
     const { callApi } = useApi();
-
-    const fetchProfileData = async (username, setProfileInfo) => {
-        // if (!username) return;
-        try {
-            const response = await callApi(`profile/${username}/`);
-            console.log(response.data);
-            setProfileInfo(response.data);
-        } catch (err) {
-            console.error('Erre fetching profile data', err);
-        }
-    };
+    
 
     const cleanUrl = () => {
         // Get the current pathname and hash
@@ -64,18 +54,17 @@ const Profile = ({ enforceViewType = '', isCustomizing = false }) => {
 
     return enforceViewType === '' ? (
         (!username || authState?.current?.user.username === username || window.location.pathname === "/profile") ? (
-        <MyProfile username={username} fetchProfileData={fetchProfileData} isCustomizing={isCustomizing} />
-    ) : (
-        <OtherProfile username={username} fetchProfileData={fetchProfileData} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
-    )
+            <MyProfile username={username} isCustomizing={isCustomizing} />
+        ) : (
+            <OtherProfile username={username} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
+        )
     ) : (
         enforceViewType === 'self' ? (
-            <MyProfile username={authState?.current?.user.username} fetchProfileData={fetchProfileData} isCustomizing={isCustomizing} />
+            <MyProfile username={authState?.current?.user.username} isCustomizing={isCustomizing} />
         ) : (
-            <OtherProfile username={authState?.current?.user.username} fetchProfileData={fetchProfileData} enforceViewType={enforceViewType} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
+            <OtherProfile username={authState?.current?.user.username} enforceViewType={enforceViewType} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
         )
     )
-
 };
 
 export default Profile;

@@ -1,134 +1,132 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import './searchSidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
-import useApi from '../../../utils/useApi';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
+import { searchUsers, fetchSearchHistory, deleteSearchHistoryItem, storeSearchHistoryItem } from '../../../services/search';
+import { SEARCH_HISTORY, SEARCH_RESULTS } from '../../../services/queryKeys';
+import useDebounce from '../../../hooks/useDebounce';
 
 function SearchSidebar({ isOpen, onClose }) {
-    const { callApi } = useApi();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearchInput = useDebounce(searchInput, 300);
 
-    const [searchInput, setSearchInput] = useState('');
-    const [searhQueryResults, setSearchQueryResults] = useState([]);
+  // Search query
+  const { data: searchResults = [], isFetching: searching } = useQuery({
+    queryKey: SEARCH_RESULTS(debouncedSearchInput),
+    queryFn: () => searchUsers(debouncedSearchInput),
+    enabled: !!debouncedSearchInput,
+    staleTime: 0,
+  });
 
-    const [searchHistory, setSearchHistory] = useState([]);
+  // History query
+  const { data: searchHistory = [], refetch: refetchHistory } = useQuery({
+    queryKey: SEARCH_HISTORY,
+    queryFn: fetchSearchHistory,
+    enabled: isOpen && !debouncedSearchInput,
+    refetchOnWindowFocus: false,
+  });
 
-    const handleGetSearchHistory = async () => {
-        try {
-            const response = await callApi(`search/user-search/history/`);
-            // console.log(response.data);
-            setSearchHistory(response.data);
-        } catch (error) {
-            console.error('Error', error);
-        }
-    };
+  // Reset on open/close
+  React.useEffect(() => {
+    setSearchInput('');
+    // History will refetch via enabled above
+  }, [isOpen]);
 
-    const handleDeleteSearchItem = async (user) => {
-        try {
-            const response = await callApi(`search/user-search/delete/${user.username}/`,'DELETE');
-            console.log(response.data);
-            handleGetSearchHistory();
-        } catch (error) {
-            console.error('Error', error);
-        }
-    };
+  // Handlers
+  const handleDeleteSearchItem = async (user) => {
+    await deleteSearchHistoryItem(user.username);
+    refetchHistory();
+  };
 
+  const handleRedirect = async (user) => {
+    if (searchResults.length) {
+      await storeSearchHistoryItem(user.username);
+      navigate(`/profile/${user.username}`);
+    } else {
+      // history item
+      navigate(`/profile/${user.searched_user.username}`);
+    }
+    onClose();
+  };
 
-    useEffect(() => {
-        setSearchInput('');
-        setSearchQueryResults([]);
-        if(isOpen) {
-            handleGetSearchHistory();
-        }
-    }, [isOpen])
+  // Data to display: search or history
+  const showResults = !!debouncedSearchInput;
+  const displayItems = showResults && searchResults.length
+    ? searchResults
+    : (!showResults ? searchHistory : []);
 
-    const handleInputChange = (e) => {
-        const inputValue = e.target.value;
-        setSearchInput(inputValue);
-
-        if (inputValue !== "") {
-            handleSubmitSearch(inputValue);
-        } else {
-            setSearchQueryResults([]);
-        }
-    };
-
-    const handleSubmitSearch = async (searchQuery) => {
-        try {
-            const response = await callApi(`search/user-search/?query=${searchQuery}`);
-            console.log(response.data);
-            setSearchQueryResults(response.data);
-        } catch (error) {
-            console.error('Error', error);
-        }
-    };
-
-    // search-history/
-
-    const handleRedirect = async (user) => {
-        if (searhQueryResults.length !== 0) {
-            try {
-                const response = await callApi(`search/user-search/store/${user.username}/`, 'POST');
-                console.log(response.data);
-                navigate(`/profile/${user?.username}`);
-                onClose();
-            } catch (error) {
-                console.error('Error', error);
-            }
-        } else {
-            navigate(`/profile/${user?.searched_user?.username}`);
-            onClose();
-        }
-    };
-
-
-    return (
-        <div className={`search-sidebar-container ${isOpen ? '' : 'close'}`} onClick={(e) => e.stopPropagation()}>
-            <div className={`search-sidebar-container-content ${isOpen ? 'open' : ''}`}>
-                <div className='search-sidebar-container-content-inner'>
-                    <div className='search-sidebar-header'>
-                        <h2>Search</h2>
-                        <div className='search-sidebar-search-bar'>
-                            <input
-                                placeholder='Search...'
-                                value={searchInput}
-                                onChange={(e) => handleInputChange(e)}
-                            />
-                            <FontAwesomeIcon onClick={() => { setSearchInput(''); setSearchQueryResults([]); }} icon={faClose} />
-                        </div>
-                    </div>
-                    <div className='search-sidebar-results'>
-                        <div className='search-sidebar-results-inner'>
-                            {(searhQueryResults.length === 0 ? searchHistory : searhQueryResults).map((item, index) => (
-                                <div key={index} className='search-per-item' onClick={() => handleRedirect(item)}>
-                                    {/* <Link to={`/timeline/profile/${item.username}`}> */}
-                                    <div className='search-per-item-inner'>
-                                        <div className='search-item-info'>
-                                            <div className='search-item-profile-picture'>
-                                                <ProfilePicture src={searhQueryResults.length === 0 ? item.searched_user.profile_picture : item.profile_picture} />
-                                            </div>
-                                            <div className='search-item-username'>
-                                                {searhQueryResults.length === 0 ? item.searched_user.username : item.username}
-                                            </div>
-                                        </div>
-                                        {searhQueryResults.length === 0 &&
-                                            <div className='delete-history-search'>
-                                                <FontAwesomeIcon icon={faClose} onClick={(e) => { handleDeleteSearchItem(item.searched_user); e.stopPropagation() }} />
-                                            </div>
-                                        }
-                                    </div>
-                                    {/* </Link> */}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+  return (
+    <div className={`search-sidebar-container ${isOpen ? '' : 'close'}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`search-sidebar-container-content ${isOpen ? 'open' : ''}`}>
+        <div className='search-sidebar-container-content-inner'>
+          <div className='search-sidebar-header'>
+            <h2>Search</h2>
+            <div className='search-sidebar-search-bar'>
+              <input
+                placeholder='Search...'
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+              />
+              <FontAwesomeIcon onClick={() => { setSearchInput(''); }} icon={faClose} />
             </div>
+          </div>
+          <div className='search-sidebar-results'>
+            <div className='search-sidebar-results-inner'>
+              {/* Prompt user if nothing typed and sidebar is open */}
+              {!debouncedSearchInput && (!searchHistory || searchHistory.length === 0) && (
+                <div className="no-results">Type above to search for another user!</div>
+              )}
+
+              {/* Show "No results" only if searching and got nothing */}
+              {debouncedSearchInput && searchResults.length === 0 && !searching && (
+                <div className="no-results">No results found.</div>
+              )}
+
+              {/* Results/history */}
+              {displayItems.map((item, index) => {
+                const isHistory = !debouncedSearchInput;
+                const user = isHistory ? item.searched_user : item;
+                return (
+                  <div
+                    key={index}
+                    className='search-per-item'
+                    onClick={() => handleRedirect(item)}
+                  >
+                    <div className='search-per-item-inner'>
+                      <div className='search-item-info'>
+                        <div className='search-item-profile-picture'>
+                          <ProfilePicture src={user.profile_picture} />
+                        </div>
+                        <div className='search-item-username'>
+                          {user.username}
+                        </div>
+                      </div>
+                      {isHistory && (
+                        <div className='delete-history-search'>
+                          <FontAwesomeIcon
+                            icon={faClose}
+                            onClick={e => {
+                              handleDeleteSearchItem(user);
+                              e.stopPropagation();
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {searching && <div className="searching-indicator">Searching…</div>}
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
 
 export default SearchSidebar;

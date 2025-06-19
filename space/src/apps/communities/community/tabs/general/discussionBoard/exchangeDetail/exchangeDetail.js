@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import useApi from '../../../../../../../utils/useApi';
 import './exchangeDetail.css';
 import {
     FiArrowUp,
@@ -12,31 +11,24 @@ import {
 import { formatDateTime } from '../../../../../../../utils/formatDateTime';
 import ProfilePicture from '../../../../../../../utils/profilePicture/getProfilePicture';
 import RenderText from '../../../../../../../utils/autoCompleteInput/renderText';
+import { useQuery } from '@tanstack/react-query';
+import { EXCHANGE_DETAIL } from '../../../../../../../services/queryKeys';
+import { fetchExchangeDetail } from '../../../../../../../services/communities';
 
 const ExchangeDetail = ({ postId: propPostId, embedded = false, onClose }) => {
     const { exchangeId: routeId } = useParams();
     const postId = propPostId || routeId;
 
-    const { callApi } = useApi();
-    const [post, setPost] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // React Query to fetch the exchange post
+    const { data: post, isLoading, isError } = useQuery({
+        queryKey: EXCHANGE_DETAIL(postId),
+        queryFn: () => fetchExchangeDetail(postId),
+        enabled: !!postId,
+    });
 
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                const res = await callApi(`community/exchanges/e/${postId}/`);
-                setPost(res.data);
-            } catch (err) {
-                console.error('Failed to fetch post detail', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPost();
-    }, [postId]);
+    if (isLoading) return <div className="exchange-detail-loading">Loading...</div>;
+    if (isError || !post) return <div className="exchange-detail-error">Post not found.</div>;
 
-    if (loading) return <div className="exchange-detail-loading">Loading...</div>;
-    if (!post) return <div className="exchange-detail-error">Post not found.</div>;
 
     const dummyComments = [
         {
@@ -175,11 +167,9 @@ const ExchangeDetail = ({ postId: propPostId, embedded = false, onClose }) => {
                                 <button className="sidebar-button join-btn">Join Community</button>
                             </div>
                         </div>
-
                     </div>
                 )}
             </div>
-
         </div>
     );
 };
@@ -209,7 +199,6 @@ const Comment = ({ comment, level = 0 }) => {
                     </div>
                 </div>
             </div>
-
             {hasReplies && (
                 <div className="comment-children">
                     {comment.replies.map(reply => (

@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from "react";
-import useApi from "../../../utils/useApi";
-import { useAuth } from "../../../hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProfile } from "../../../services/profile";
+import { PROFILE } from '../../../services/queryKeys';
 import PartialProfile from "./partialProfile/partialProfile";
 import FullProfile from "./fullProfile/fullProfile";
 import { useLocation } from "react-router-dom";
 
-const OtherProfile = ({ username, fetchProfileData, enforceViewType = '', isCustomizing, handleStartChat }) => {
-    const [profileInfo, setProfileInfo] = useState({});
+const OtherProfile = ({ username, enforceViewType = '', isCustomizing, handleStartChat }) => {
+    const { data: profileInfo, isLoading } = useQuery({
+        queryKey: PROFILE(username),
+        queryFn: () => fetchProfile(username),
+        enabled: !!username
+    });
     const location = useLocation();
 
-    useEffect(() => {
-        if (location.state?.refreshed) {
-            fetchProfileData(username, setProfileInfo);
-        }
-    }, [location.state]);
+    if (isLoading) return <div>Loading...</div>;
 
-    useEffect(() => {
-        fetchProfileData(username, setProfileInfo);
-        // console.log(profileInfo);
-    }, [username]);
-
-
+    // (logic unchanged)
     return enforceViewType === '' ? (
         profileInfo?.view_type === 'partial' ? (
             <PartialProfile profileInfo={profileInfo} isCustomizing={isCustomizing} handleStartChat={handleStartChat} />
@@ -43,5 +38,4 @@ const OtherProfile = ({ username, fetchProfileData, enforceViewType = '', isCust
         )
     )
 }
-
 export default OtherProfile;

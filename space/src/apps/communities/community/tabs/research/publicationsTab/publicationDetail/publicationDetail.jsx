@@ -1,71 +1,69 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import useApi from "../../../../../../../utils/useApi";
 import "./publicationDetail.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FiExternalLink } from "react-icons/fi";
 import {
+  faArrowLeft,
+  faTimes,
   faExpand,
   faDownload,
   faUpRightFromSquare,
-  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { FiExternalLink } from "react-icons/fi";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPublicationDetail } from "../../../../../../../services/communities";
+import { PUBLICATION_DETAIL } from "../../../../../../../services/queryKeys";
 
 const PublicationDetail = ({
   publication: propPublication,
   embedded = false,
   onBack,
 }) => {
-  const { publicationId } = useParams();
-  const { callApi } = useApi();
+  const { publicationId: routePublicationId } = useParams();
+  const publicationId = propPublication?.id || routePublicationId;
 
-  const [publication, setPublication] = useState(propPublication || null);
-  const [loading, setLoading] = useState(!propPublication);
   const [pdfSrc, setPdfSrc] = useState(null);
   const [pdfError, setPdfError] = useState(false);
-
   const [isExpanded, setIsExpanded] = useState(false);
 
-  useEffect(() => {
-    if (publication?.file) {
-      setPdfSrc(`${publication.file}?v=${Date.now()}`);
-    }
-  }, [publication?.file]);
+  // Use the shared query key constant!
+  const {
+    data: publication,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: PUBLICATION_DETAIL(publicationId),
+    queryFn: () => fetchPublicationDetail(publicationId),
+    enabled: !propPublication && !!publicationId,
+    initialData: propPublication || undefined,
+  });
 
-  useEffect(() => {
-    if (!propPublication && publicationId) {
-      const fetchData = async () => {
-        try {
-          const response = await callApi(
-            `community/research/publication/${publicationId}/detail/`
-          );
-          setPublication(response.data);
-        } catch (err) {
-          console.error("Failed to fetch publication detail", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
-    }
-  }, [publicationId, propPublication]);
+useEffect(() => {
+  if (publication?.file_url) {
+    const src = `${publication.file_url}?v=${Date.now()}`;
+    setPdfSrc(src);
+    console.log('Publication file_url:', publication.file_url);
+    console.log('PDF src:', src);
+  }
+}, [publication?.file_url]);
 
-  if (!publication || loading) {
+
+
+  if (!publication || isLoading) {
     return <div className="publication-loading">Loading...</div>;
+  }
+  if (isError) {
+    return (
+      <div className="publication-loading">Failed to load publication.</div>
+    );
   }
 
   const renderPdfViewer = () => (
-    <div className={`community-card pdf-viewer-frame ${isExpanded ? 'overlay' : 'non-overlay'}`}>
-      <div className={`pdf-viewer-toolbar ${isExpanded ? 'overlay' : ''}`}>
+    <div className={`community-card pdf-viewer-frame ${isExpanded ? "overlay" : "non-overlay"}`}>
+      <div className={`pdf-viewer-toolbar ${isExpanded ? "overlay" : ""}`}>
         <div className="left-tools">
           {pdfSrc && (
-            <a
-              href={pdfSrc}
-              download
-              className="toolbar-btn"
-              title="Download PDF"
-            >
+            <a href={pdfSrc} download className="toolbar-btn" title="Download PDF">
               <FontAwesomeIcon icon={faDownload} />
             </a>
           )}
@@ -82,20 +80,20 @@ const PublicationDetail = ({
               <FontAwesomeIcon icon={faUpRightFromSquare} />
             </a>
           )}
-          {!isExpanded &&
-          <button
-            className="toolbar-btn"
-            onClick={() => setIsExpanded(true)}
-            title="Expand PDF"
-          >
-            <FontAwesomeIcon icon={faExpand} />
-          </button>
-          }
-          {isExpanded &&
+          {!isExpanded && (
+            <button
+              className="toolbar-btn"
+              onClick={() => setIsExpanded(true)}
+              title="Expand PDF"
+            >
+              <FontAwesomeIcon icon={faExpand} />
+            </button>
+          )}
+          {isExpanded && (
             <button className="close-btn" onClick={() => setIsExpanded(false)}>
               <FontAwesomeIcon icon={faTimes} />
             </button>
-          }
+          )}
         </div>
       </div>
       {!pdfError && pdfSrc ? (
@@ -198,14 +196,7 @@ const PublicationDetail = ({
         </div>
       </div>
       {isExpanded && (
-        <div className="pdf-overlay">
-          {/* <div className="pdf-overlay-toolbar">
-            <button className="close-btn" onClick={() => setIsExpanded(false)}>
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
-          </div> */}
-         {renderPdfViewer()}
-        </div>
+        <div className="pdf-overlay">{renderPdfViewer()}</div>
       )}
     </div>
   );

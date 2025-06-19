@@ -172,3 +172,15 @@ class CommunityTabCreateSerializer(serializers.Serializer):
         if value not in TAB_REGISTRY_FLAT:
             raise serializers.ValidationError(f"Invalid tab key: '{value}'")
         return value
+
+
+
+
+
+class CommunityMemberSerializer(serializers.Serializer):
+    id = serializers.UUIDField(source='user.id')
+    username = serializers.CharField(source='user.username')
+    display_name = serializers.CharField(source='user.display_name', required=False, allow_null=True)
+    profile_image = serializers.ImageField(source='user.profile_image', required=False, allow_null=True)
+    role = serializers.CharField()
+    permissions = serializers.JSONField()

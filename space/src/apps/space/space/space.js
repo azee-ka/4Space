@@ -1,7 +1,5 @@
-// src/components/space/Space.js
-
 import React, { useState, useEffect, useRef } from 'react';
-import useApi from '../../../utils/useApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ModalOverlay from './ModalOverlay';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -11,16 +9,23 @@ import './modal.css';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import { useAuth } from '../../../hooks/useAuth';
 
+import {
+  fetchSpaceProjects,
+  runSpaceWorkflow,
+  fetchSpaceWorkflowStatus,
+  postSpaceProjectChat
+} from '../../../services/space';
+import { SPACE_COPILOT_PROJECTS, SPACE_WORKFLOW } from '../../../services/queryKeys';
+
 const MAX_PARALLEL = 1;
 
 export default function Space() {
   const { authState } = useAuth();
-  const { callApi } = useApi();
+  const queryClient = useQueryClient();
 
   // ---- State ----
   const [prompt, setPrompt] = useState('');
   const [agents, setAgents] = useState([]);
-  const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -30,22 +35,53 @@ export default function Space() {
   const inFlight = useRef(0);
   const pollRef = useRef(null);
 
-  // ---- Lifecycle ----
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  // ---- Projects (sidebar) ----
+  const { data: projects = [], refetch: refetchProjects } = useQuery({
+    queryKey: SPACE_COPILOT_PROJECTS,
+    queryFn: fetchSpaceProjects
+  });
 
-  // ---- Load sidebar ----
-  async function fetchProjects() {
-    try {
-      const res = await callApi('space/space/projects/', 'GET');
-      setProjects(Array.isArray(res.data) ? res.data : []);
-    } catch (e) {
-      console.error('❌ Failed to load projects', e);
+  // ---- Workflow mutation ----
+  const workflowMutation = useMutation({
+    mutationFn: ({ prompt }) => runSpaceWorkflow({ prompt }),
+    onSuccess: async (data) => {
+      const wf = data.workflow;
+      const tasks = Array.isArray(wf.tasks) ? wf.tasks : [];
+
+      setAgents(tasks.map(t => ({ ...t, status: 'pending', result: '' })));
+      queueRef.current = [...tasks];
+
+      for (let i = 0; i < MAX_PARALLEL; i++) runNextAgent(wf.id);
+
+      // Start polling for workflow completion
+      pollRef.current = setInterval(async () => {
+        try {
+          const poll = await fetchSpaceWorkflowStatus(wf.id);
+          const done = Array.isArray(poll.tasks) && poll.tasks.every(t => t.status === 'done');
+          if (done) clearInterval(pollRef.current);
+        } catch {}
+      }, 2000);
+
+      setIsModalOpen(true);
+      refetchProjects();
+    },
+    onError: () => {
+      setIsModalOpen(false);
     }
-  }
+  });
 
-  // ---- Manual SSE via fetch() ----
+  // ---- Chat mutation ----
+  const chatMutation = useMutation({
+    mutationFn: ({ project, message }) => postSpaceProjectChat({ project, message }),
+    onSuccess: (data) => {
+      setChatMessages(m => [...m, { sender: 'bot', text: data.response || 'No response' }]);
+    },
+    onError: () => {
+      setChatMessages(m => [...m, { sender: 'bot', text: 'Error replying.' }]);
+    }
+  });
+
+  // ---- Agent streaming (manual SSE, not react-query) ----
   async function streamAgent(task, onToken, onDone, onError) {
     try {
       const res = await fetch(
@@ -78,7 +114,6 @@ export default function Space() {
     }
   }
 
-  // ---- SSE runner ----
   function runNextAgent() {
     if (!queueRef.current.length || inFlight.current >= MAX_PARALLEL) return;
     const task = queueRef.current.shift();
@@ -109,7 +144,6 @@ export default function Space() {
         runNextAgent();
       },
       err => {
-        console.error(`❌ SSE error on task ${task.id}`, err);
         setAgents(a =>
           a.map(x =>
             x.id === task.id ? { ...x, status: 'failed' } : x
@@ -119,32 +153,6 @@ export default function Space() {
         runNextAgent();
       }
     );
-  }
-
-  // ---- Kick off workflow & project ----
-  async function handleRunPrompt() {
-    try {
-      setIsModalOpen(true);
-      const { data } = await callApi('space/space/workflow/', 'POST', { prompt });
-      const wf = data.workflow;
-      const tasks = Array.isArray(wf.tasks) ? wf.tasks : [];
-
-      setAgents(tasks.map(t => ({ ...t, status: 'pending', result: '' })));
-      queueRef.current = [...tasks];
-      for (let i = 0; i < MAX_PARALLEL; i++) runNextAgent();
-
-      pollRef.current = setInterval(async () => {
-        try {
-          const poll = await callApi(`space/space/workflow/${wf.id}`, 'GET');
-          const done = Array.isArray(poll.data.tasks)
-            && poll.data.tasks.every(t => t.status === 'done');
-          if (done) clearInterval(pollRef.current);
-        } catch {}
-      }, 2000);
-    } catch (e) {
-      console.error('❌ Workflow launch failed', e);
-      setIsModalOpen(false);
-    }
   }
 
   // ---- Select project for chat ----
@@ -159,21 +167,17 @@ export default function Space() {
   }
 
   // ---- Chat send ----
-  async function sendChat() {
+  function sendChat() {
     if (!chatInput.trim() || !selectedProject) return;
     const txt = chatInput.trim();
     setChatMessages(m => [...m, { sender: 'user', text: txt }]);
     setChatInput('');
-    try {
-      const res = await callApi('space/space/project_chat/', 'POST', {
-        project: selectedProject.id,
-        message: txt
-      });
-      setChatMessages(m => [...m, { sender: 'bot', text: res.data.response || 'No response' }]);
-    } catch (e) {
-      console.error('❌ Chat failed', e);
-      setChatMessages(m => [...m, { sender: 'bot', text: 'Error replying.' }]);
-    }
+    chatMutation.mutate({ project: selectedProject.id, message: txt });
+  }
+
+  // ---- Workflow run ----
+  function handleRunPrompt() {
+    workflowMutation.mutate({ prompt });
   }
 
   return (
@@ -187,7 +191,7 @@ export default function Space() {
           onChange={e => setPrompt(e.target.value)}
         />
         <button className="run-button" onClick={handleRunPrompt}>
-          Run Workflow
+          {workflowMutation.isLoading ? 'Running…' : 'Run Workflow'}
         </button>
         <div className="space-project-list">
           {projects.map(p => (
@@ -219,7 +223,7 @@ export default function Space() {
                   <Copy size={20} />
                 </button>
                 <button className="space-icon-btn">
-                    <Trash2 size={20} />
+                  <Trash2 size={20} />
                 </button>
                 <button className="space-icon-btn">
                   <Settings size={20} />
@@ -231,7 +235,7 @@ export default function Space() {
               {chatMessages.map((m, i) => (
                 <div key={i} className={`space-chat-msg ${m.sender}`}>
                   <div className="space-avatar">
-                    {m.sender === 'user' ? <User size={20}/> : <Cpu size={20}/>}
+                    {m.sender === 'user' ? <User size={20} /> : <Cpu size={20} />}
                   </div>
                   <div className="space-bubble">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -257,9 +261,9 @@ export default function Space() {
                 rows={1}
               />
               <div className='space-input-toolbar'>
-              <button className="space-send-btn" onClick={sendChat}>
-                <Send />
-              </button>
+                <button className="space-send-btn" onClick={sendChat}>
+                  <Send />
+                </button>
               </div>
             </div>
           </div>

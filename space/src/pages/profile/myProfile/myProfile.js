@@ -1,66 +1,57 @@
-// File: src/pages/profile/myProfile/MyProfile.jsx
-
-import { useEffect, useState } from "react";
+// src/pages/profile/myProfile/MyProfile.jsx
+import { useQuery } from '@tanstack/react-query';
+import { fetchProfile } from "../../../services/profile";
+import { PROFILE } from '../../../services/queryKeys';
+import { useAuth } from "../../../hooks/useAuth";
 import './myProfile.css';
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../../hooks/useAuth";
 import { FaCog } from "react-icons/fa";
 import UserListOverlay from "../../../components/userListOverlay/userListOverlay";
-
-// Tab Components
 import MyPostsTab from "./tabs/myPostsTab/myPostsTab";
 import MyCommunitiesTab from "./tabs/myCommunitiesTab/myCommunitiesTab";
 import CollectionsPostsTab from "./tabs/bookmarkedPostsTab/collectionsTab";
 import { formatDateTime } from "../../../utils/formatDateTime";
+import React, { useState } from "react";
 
-const MyProfile = ({ username: usernameProp, fetchProfileData, isCustomizing }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+const MyProfile = ({ username: usernameProp, isCustomizing }) => {
   const { authState } = useAuth();
-  const [profileInfo, setProfileInfo] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const username = usernameProp || authState?.current?.user.username;
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Query the profile data
+  const { data: profileInfo, isLoading } = useQuery({
+    queryKey: PROFILE(username),
+    queryFn: () => fetchProfile(username),
+    enabled: !!username,
+  });
 
   const [showFollowersOverlay, setShowFollowersOverlay] = useState(false);
   const [showFollowingOverlay, setShowFollowingOverlay] = useState(false);
 
-  // ─── Decide activeTab from URL ───
-  // defaultTabs keys: 'posts', 'communities', 'collections'
+  // Tabs
   const defaultTabs = [
     { key: 'posts', label: 'My Posts' },
     { key: 'communities', label: 'My Communities' },
     { key: 'collections', label: 'My Collections' },
   ];
 
-  // pull ?tab= from the query string
+  // Manage active tab via URL
   const getTabFromSearch = () => {
     const params = new URLSearchParams(location.search);
     const t = params.get('tab');
     if (t === 'communities' || t === 'collections') return t;
     return 'posts';
   };
-
   const [activeTab, setActiveTab] = useState(getTabFromSearch());
 
-  // Whenever location.search changes (e.g. user hit back/forward), update activeTab
-  useEffect(() => {
+  // Update tab when URL changes
+  React.useEffect(() => {
     const newTab = getTabFromSearch();
-    if (newTab !== activeTab) {
-      setActiveTab(newTab);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search]);
-
-  // ─── Fetch profileInfo on mount / username change ───
-  useEffect(() => {
-    setIsLoading(true);
-    const targetUsername = usernameProp || authState?.current?.user.username;
-    fetchProfileData(targetUsername, (data) => {
-      setProfileInfo(data);
-      setIsLoading(false);
-    });
+    if (newTab !== activeTab) setActiveTab(newTab);
     // eslint-disable-next-line
-  }, [usernameProp]);
+  }, [location.search]);
 
   if (isLoading) {
     return (
@@ -70,13 +61,10 @@ const MyProfile = ({ username: usernameProp, fetchProfileData, isCustomizing }) 
     );
   }
 
-  // ─── Helper: update URL to ?tab=<key> without reloading ───
   const switchToTab = (tabKey) => {
-    // update the URL query string
     const params = new URLSearchParams(location.search);
     params.set('tab', tabKey);
     navigate({ search: params.toString() }, { replace: true });
-    // activeTab will also update via the useEffect on location.search
   };
 
   return (
@@ -95,7 +83,7 @@ const MyProfile = ({ username: usernameProp, fetchProfileData, isCustomizing }) 
       </div>
 
       <div className="profile-main-panel">
-        {/* ─── Left Sidebar ─── */}
+        {/* Left Sidebar */}
         <aside className="profile-left">
           <div className="profile-card">
             <div className="profile-settings">
@@ -138,7 +126,7 @@ const MyProfile = ({ username: usernameProp, fetchProfileData, isCustomizing }) 
           </div>
         </aside>
 
-        {/* ─── Center Panel ─── */}
+        {/* Center Panel */}
         <main className="profile-center">
           <section className="highlight-section">
             <h3>Highlights</h3>
@@ -165,7 +153,7 @@ const MyProfile = ({ username: usernameProp, fetchProfileData, isCustomizing }) 
         </main>
       </div>
 
-      {/* ─── Overlays ─── */}
+      {/* Overlays */}
       {showFollowersOverlay && (
         <UserListOverlay
           userList={profileInfo?.data?.followers}
@@ -183,5 +171,4 @@ const MyProfile = ({ username: usernameProp, fetchProfileData, isCustomizing }) 
     </div>
   );
 };
-
 export default MyProfile;

@@ -296,3 +296,13 @@
     color: #d63636 !important;
     background: none !important;
 }
+
+
+
+.searching-indicator,
+.no-results {
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    color:  gray;
+}

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './createPost.css';
 import { FaEllipsisV, FaTimes } from 'react-icons/fa';
 import { useCreatePostContext } from '../../../context/CreatePostContext';
-import { faAlignRight, faCalendarDay, faCameraRetro, faImage, faMicrophoneLines, faPoll } from '@fortawesome/free-solid-svg-icons';
+import { faAlignRight, faCalendarDay, faImage, faPoll } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CustomEditor from '../../../utils/editor/editor';
 import Thread from './thread/thread';
@@ -10,15 +10,17 @@ import Visual from './visual/visual';
 import Poll from './poll/poll';
 import MediaPreview from './visual/mediaPreview';
 import { formatDateTime } from '../../../utils/formatDateTime';
-import useApi from '../../../utils/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
+// React Query
+import { useMutation } from '@tanstack/react-query';
+import { createPost } from '../../../services/home';
+import { CREATE_POST } from '../../../services/queryKeys';
 
 const CreatePost = () => {
     const navigate = useNavigate();
     const { authState } = useAuth();
-    const { callApi } = useApi();
     const imageUploadRef = useRef(null);
 
     const { closeCreatePostOverlay: onClose } = useCreatePostContext();
@@ -27,51 +29,64 @@ const CreatePost = () => {
     const [selectedMediaFiles, setSelectedMediaFiles] = useState([]);
 
     const [activeButton, setActiveButton] = useState("Thread");
-
     const [visibilityActiveBtn, setVisibilityActiveBtn] = useState("Private");
     const [restrictionActiveBtn, setRestrictionActiveBtn] = useState("");
     const [isRestrictionValid, setIsRestrictionValid] = useState(true);
     const [commentsActiveBtn, setCommentsActiveBtn] = useState("Allow");
-
-
     const [expirationActiveBtn, setExpirationActiveBtn] = useState("Never");
     const [customExpirationDate, setCustomExpirationDate] = useState(() => {
         const nextDay = new Date();
-        nextDay.setDate(nextDay.getDate() + 1);  // Add 1 day to the current date
+        nextDay.setDate(nextDay.getDate() + 1);
         return nextDay;
     });
-
-    const [pollExpirationActiveBtn, setPollExpirationActiveBtn] = useState("1"); // Default to 1 day
+    const [pollExpirationActiveBtn, setPollExpirationActiveBtn] = useState("1");
     const [customPollExpirationDate, setCustomPollExpirationDate] = useState(() => {
         const nextDay = new Date();
-        nextDay.setDate(nextDay.getDate() + 1);  // Add 1 day to the current date
+        nextDay.setDate(nextDay.getDate() + 1);
         return nextDay;
     });
+    const [showpostEditorToolbar, setShowpostEditorToolbar] = useState(false);
+    const [editorContent, setEditorContent] = useState({
+        Thread: '',
+        Visual: '',
+        Event: '',
+    });
+    const [eventData, setEventData] = useState({ title: '', date: '' });
+
+    const threadRef = useRef();
+    const visualRef = useRef();
+    const pollRef = useRef();
+
+    // React Query Mutation for Post Creation
+    const mutation = useMutation({
+        mutationKey: CREATE_POST,
+        mutationFn: createPost,
+        onSuccess: (data) => {
+            onClose();
+            navigate(`/posts/p/${data.id}`);
+        },
+        onError: (error) => {
+            alert('Error creating post: ' + (error?.response?.data?.detail || error.message));
+        },
+    });
+
+    useEffect(() => {
+        window.history.pushState(null, '', '/create/post');
+    }, []);
 
     const handleImageUpload = (handleImageUploadFn) => {
         imageUploadRef.current = handleImageUploadFn;
     };
     const handleButtonClick = () => {
         if (imageUploadRef.current) {
-            imageUploadRef.current();  // Trigger the image upload function
+            imageUploadRef.current();
         }
     };
 
     const handleActiveButtonChange = (button) => {
         setActiveButton(button);
         setShowpostEditorToolbar(false);
-    }
-
-    const [showpostEditorToolbar, setShowpostEditorToolbar] = useState(false);
-
-    const [editorContent, setEditorContent] = useState({
-        Thread: '',
-        Visual: '',
-        Event: '',
-    });
-
-    const [eventData, setEventData] = useState({ title: '', date: '' });
-
+    };
 
     const handleEditorChange = (content, tab) => {
         setEditorContent((prevContent) => ({
@@ -80,35 +95,28 @@ const CreatePost = () => {
         }));
     };
 
-    useEffect(() => {
-        window.history.pushState(null, '', '/create/post');
-    }, []);
-
     const handleMediaSelect = (files) => {
-        console.log(files)
         setSelectedMediaFiles(files);
         setShowMediaPreview(true);
     };
 
     const handleTemporarySaveMedia = (savedMedia) => {
-        setSelectedMediaFiles(savedMedia); // Store the temporarily saved media
-        setShowMediaPreview(false); // Hide the media preview and go back to the main form
+        setSelectedMediaFiles(savedMedia);
+        setShowMediaPreview(false);
     };
-
-
 
     const getPollExpirationDate = () => {
         const now = new Date();
         if (pollExpirationActiveBtn === '1') {
-            return new Date(now.setDate(now.getDate() + 1)); // Expire in 1 day
+            return new Date(now.setDate(now.getDate() + 1));
         } else if (pollExpirationActiveBtn === '2') {
-            return new Date(now.setDate(now.getDate() + 2)); // Expire in 2 days
+            return new Date(now.setDate(now.getDate() + 2));
         } else if (pollExpirationActiveBtn === '7') {
-            return new Date(now.setDate(now.getDate() + 7)); // Expire in 7 days
+            return new Date(now.setDate(now.getDate() + 7));
         } else if (pollExpirationActiveBtn === 'Custom' && customPollExpirationDate) {
-            return customPollExpirationDate; // Custom date expiration
+            return customPollExpirationDate;
         } else {
-            return null; // Default to no expiration
+            return null;
         }
     };
 
@@ -117,23 +125,18 @@ const CreatePost = () => {
         if (value !== "Custom") {
             setCustomPollExpirationDate(() => {
                 const nextDay = new Date();
-                nextDay.setDate(nextDay.getDate() + 1);  // Add 1 day to the current date
+                nextDay.setDate(nextDay.getDate() + 1);
                 return nextDay;
-            }); // Reset custom date when selecting predefined options
-        };
+            });
+        }
     };
 
     const handleCustomPollExpirationChange = (e) => {
         setCustomPollExpirationDate(e.target.value);
-        setPollExpirationActiveBtn("Custom"); // Set active flag to Custom when selecting a date
+        setPollExpirationActiveBtn("Custom");
     };
 
-
-    const threadRef = React.useRef();
-    const visualRef = React.useRef();
-    const pollRef = React.useRef();
-
-    // Function to collect data from the active tab
+    // Collect data from the active tab
     const getActiveTabData = () => {
         switch (activeButton) {
             case 'Thread':
@@ -149,8 +152,8 @@ const CreatePost = () => {
         }
     };
 
-    // Function to handle form submission
-    const handleSubmit = async () => {
+    // Form submission handler
+    const handleSubmit = () => {
         if (!restrictionActiveBtn) {
             setIsRestrictionValid(false);
             return;
@@ -164,9 +167,6 @@ const CreatePost = () => {
         }
 
         const activeTabData = getActiveTabData();
-        console.log('Active Tab Data:', activeTabData);
-        console.log(' editorContent[activeButton]:', editorContent[activeButton]);
-        // Build form data
         const formData = new FormData();
 
         formData.append('post_type', activeButton === 'Poll' || activeButton === 'Event' ? 'Thread' : activeButton);
@@ -181,7 +181,7 @@ const CreatePost = () => {
         }
         if (activeButton === 'Visual') {
             selectedMediaFiles.forEach(file => {
-                formData.append('media_files', file); // ✅ append real files!
+                formData.append('media_files', file);
             });
         }
         if (activeButton === 'Poll') {
@@ -191,30 +191,13 @@ const CreatePost = () => {
             });
             formData.append('expiration_date', getPollExpirationDate().toISOString());
         }
-
         if (activeButton === 'Event') {
             formData.append('title', activeTabData.title);
             formData.append('event_date', activeTabData.event_date);
         }
 
-        console.log('Submitting FormData:');
-        for (let pair of formData.entries()) {
-            console.log(pair[0] + ':', pair[1]);
-        }
-
-
-        try {
-            const response = await callApi('posts/post/', 'POST', formData, "multipart/form-data");
-            console.log('Post created successfully:', response.data);
-            onClose(); // Close the overlay after successful post creation
-            navigate(`/posts/p/${response.data.id}`);
-        } catch (error) {
-            console.error('Error creating post:', error);
-        }
+        mutation.mutate(formData);
     };
-
-
-    console.log(activeButton);;
 
     return (
         <div className="create-post-overlay" onClick={() => onClose()}>
@@ -256,8 +239,8 @@ const CreatePost = () => {
                                             <div className={`create-post-content-editor ${activeButton}`}>
                                                 <CustomEditor
                                                     placeholder="Write something here..."
-                                                    content={editorContent[activeButton]} // Use unique content per tab
-                                                    onContentChange={(content) => handleEditorChange(content, activeButton)} // Update the content for the active tab
+                                                    content={editorContent[activeButton]}
+                                                    onContentChange={(content) => handleEditorChange(content, activeButton)}
                                                     showToolbar={showpostEditorToolbar}
                                                     isOverlay={true}
                                                     supportMedia={true}
@@ -494,15 +477,22 @@ const CreatePost = () => {
                             </div>
                         </div>
                         <div className='submit-post-btns'>
-                            <button className='submit-post-btn' onClick={handleSubmit}>Post</button>
+                            <button className='submit-post-btn' onClick={handleSubmit} disabled={mutation.isLoading}>
+                                {mutation.isLoading ? 'Posting…' : 'Post'}
+                            </button>
                             <button className='save-draft-btn'>Save Draft</button>
                             <button className='cancel-post-btn' onClick={onClose}>Cancel</button>
                         </div>
+                        {mutation.isError && (
+                            <div className="post-error-message">
+                                {mutation.error?.response?.data?.detail || mutation.error?.message || 'Failed to create post.'}
+                            </div>
+                        )}
                     </>
                 )}
             </div>
         </div>
-    )
+    );
 };
 
 export default CreatePost;

@@ -1,79 +1,60 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchMessageSettings, updateMessageSettings } from '../../../../services/settings';
 import './messagesControl.css';
-import useApi from "../../../../utils/useApi";
-import useAppTriggers from "../../../../hooks/useAppTriggers";
+
+const options = [
+    { value: 'allow', label: 'Allow Messages' },
+    { value: 'requests', label: 'Requests Only' },
+    { value: 'no-requests', label: 'No Requests' },
+];
 
 const MessagesControl = () => {
-    const { callApi } = useApi();
-    // State to manage both follower and other settings
-    const [settings, setSettings] = useState({
-        followers: null,
-        others: null,
+    const queryClient = useQueryClient();
+
+    // Fetch settings (v5 object form)
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['messageSettings'],
+        queryFn: fetchMessageSettings
     });
 
-    // Fetch initial settings from the server (e.g., when the component is mounted)
-    const fetchSettings = async () => {
-        try {
-            const response = await callApi('messages/settings/');
-            console.log(response.data);
-            if (response.data) {
-                setSettings({
-                    followers: response.data?.allow_messages_from_followers || 'requests',
-                    others: response.data?.allow_messages_from_others || 'no-requests',
-                });
-            }
-        } catch (error) {
-            console.error("Error fetching message settings:", error);
+    // Local state for editing
+    const [settings, setSettings] = React.useState({ followers: null, others: null });
+
+    React.useEffect(() => {
+        if (data?.data) {
+            setSettings({
+                followers: data.data.allow_messages_from_followers || 'requests',
+                others: data.data.allow_messages_from_others || 'no-requests',
+            });
         }
-    };
+    }, [data]);
 
-
-    useEffect(() => {
-        fetchSettings();
-    }, []);
-
-    useAppTriggers({
-        userHandleChanged: fetchSettings
+    // Mutation for updating settings (v5 object form)
+    const mutation = useMutation({
+        mutationFn: updateMessageSettings,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['messageSettings'] });
+        }
     });
 
-    const options = [
-        { value: 'allow', label: 'Allow Messages' },
-        { value: 'requests', label: 'Requests Only' },
-        { value: 'no-requests', label: 'No Requests' },
-    ];
-
-    // Save the settings when the user selects a new option, directly passing the values
-    const handleSaveSettings = async (followers, others) => {
-        try {
-            const data = {
-                allow_messages_from_followers: followers,
-                allow_messages_from_others: others,
-            };
-            console.log('Sending data to backend:', data);
-            const response = await callApi('messages/settings/', 'POST', data);
-            console.log(response.data); // Log the response from the backend
-        } catch (error) {
-            console.error('Error updating settings:', error);
-        }
-    };
-
-    // Update settings state and send new values to the backend immediately
     const handleSettingChange = (group, value) => {
         const newSettings = { ...settings, [group]: value };
-        setSettings(newSettings);  // Update state optimistically
-
-        // Send the updated values immediately to the backend without waiting for state to re-render
-        handleSaveSettings(newSettings.followers, newSettings.others);
+        setSettings(newSettings);
+        mutation.mutate({
+            allow_messages_from_followers: newSettings.followers,
+            allow_messages_from_others: newSettings.others,
+        });
     };
 
-    const renderOptions = (selectedValue, onChange, groupName) => (
+    const renderOptions = (selectedValue, onChange, groupName) =>
         options.map(option => (
             <label key={option.value} className="control-settings-item">
                 {option.label}
                 <input
                     type="radio"
-                    id={option.value}
-                    name={groupName} // Use a unique name for each section
+                    id={option.value + '-' + groupName}
+                    name={groupName}
                     value={option.value}
                     checked={selectedValue === option.value}
                     onChange={() => onChange(option.value)}
@@ -81,32 +62,37 @@ const MessagesControl = () => {
                 />
                 <span className="custom-checkmark"></span>
             </label>
-        ))
-    );
+        ));
 
+    if (isLoading) return <div>Loading…</div>;
+    if (isError) return <div>Error loading message settings</div>;
 
     return (
         <div className="messages-control-settings">
             <section>
                 <h3>Your Followers</h3>
-                <p>Select whether to allow your followers to send direct messages,
+                <p>
+                    Select whether to allow your followers to send direct messages,
                     permit message requests that require your approval in the Requests tab, or block all messages entirely.
                 </p>
                 <div className="messages-control-content">
-                    {renderOptions(settings.followers, (value) => handleSettingChange('followers', value), 'followers')}
+                    {renderOptions(settings.followers, value => handleSettingChange('followers', value), 'followers')}
                 </div>
             </section>
             <section>
                 <h3>Others</h3>
-                <p>Select whether to allow others to send direct messages,
+                <p>
+                    Select whether to allow others to send direct messages,
                     permit message requests that appear in the Requests tab for your approval, or block all messages from non-followers.
                 </p>
                 <div className="messages-control-content">
-                    {renderOptions(settings.others, (value) => handleSettingChange('others', value), 'others')}
+                    {renderOptions(settings.others, value => handleSettingChange('others', value), 'others')}
                 </div>
             </section>
+            {mutation.isLoading && <span>Updating…</span>}
+            {mutation.isError && <span style={{ color: 'red' }}>Update failed!</span>}
         </div>
-    )
+    );
 }
 
 export default MessagesControl;

@@ -145,7 +145,7 @@ class BaseUser(models.Model):
         return f"{self.first_name or ''} {self.last_name or ''}".strip()
 
     def __str__(self):
-        return f"@{self.handle} ({self.label or 'no-label'})"
+        return f"{self.username}"
 
     def clean(self):
         if self.account.handles.exclude(pk=self.pk).count() >= 4:

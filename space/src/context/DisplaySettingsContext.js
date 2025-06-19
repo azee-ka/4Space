@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import useApi from '../utils/useApi';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
+import { fetchDisplaySettings, saveDisplaySettings } from '../services/displaySettings';
+import { DISPLAY_SETTINGS } from '../services/queryKeys';
 
 export const defaultSettings = {
   gradient: 'radial',
   gradientColors: [{ color: '#5387be', alpha: 0.15 }],
-  fontSize: '1em',          // ← slider’s default
+  fontSize: '1em',
   themeMode: 'dark',
   backgroundColor: 'black',
   padding: 'medium',
@@ -13,7 +15,7 @@ export const defaultSettings = {
   radialPosition: '50% 0%',
   linearAngle: '135deg',
   brightness: 1,
-  contrast:   1,
+  contrast: 1,
   saturation: 1,
   radialSizeX: 100,
   radialSizeY: 100,
@@ -39,11 +41,41 @@ const rgba = ({ color, alpha }) => {
 
 export const DisplaySettingsProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  const [settings, setSettings] = useState(defaultSettings);
-  const [loaded, setLoaded] = useState(false);
-  const { callApi } = useApi();
+  const queryClient = useQueryClient();
 
-  const apply = (s = settings) => {
+  // Load settings with React Query
+  const {
+    data: loadedSettings,
+    isLoading,
+    isSuccess,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: DISPLAY_SETTINGS,
+    queryFn: fetchDisplaySettings,
+    enabled: !!isAuthenticated,
+    staleTime: 60_000,
+  });
+
+  // Local state for theme
+  const [settings, setSettings] = useState(defaultSettings);
+
+  // Sync loaded settings into local state when loaded
+  useEffect(() => {
+    if (isSuccess && loadedSettings) {
+      const merged = {
+        ...defaultSettings,
+        ...loadedSettings,
+        gradientColors: loadedSettings.gradientColors || defaultSettings.gradientColors,
+      };
+      setSettings(merged);
+      apply(merged);
+    }
+  // eslint-disable-next-line
+  }, [isSuccess, loadedSettings]);
+
+  // Always apply theme when settings change
+  const apply = useCallback((s = settings) => {
     const {
       fontSize,
       gradientColors = [],
@@ -59,22 +91,18 @@ export const DisplaySettingsProvider = ({ children }) => {
       radialSizeY,
     } = s;
 
-    // 1) Drive the root CSS variable for font-size
     document.documentElement.style.setProperty('--base-font-size', fontSize);
 
-    // 2) Theme attribute
     const theme = getEffectiveTheme(themeMode);
     document.documentElement.setAttribute('data-theme', theme);
     document.body.className = theme;
 
-    // 3) If light mode, set solid background & clear filters
     if (theme === 'light') {
       document.documentElement.style.setProperty('--display-bg', '#eeeeee');
       document.documentElement.style.setProperty('--display-filter', '');
       return;
     }
 
-    // 4) Otherwise build your gradient and filters...
     const stops     = gradientColors.map(rgba).join(', ');
     const fullStops = `${stops}, rgba(0,0,0,0)`;
     const grad = gradient === 'radial'
@@ -86,43 +114,52 @@ export const DisplaySettingsProvider = ({ children }) => {
       '--display-filter',
       `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`
     );
-  };
+  }, [settings]);
 
+  // Apply default at startup
   useEffect(() => {
     apply(defaultSettings);
-    setLoaded(true);
+    // setLoaded(true); // Not needed, react-query isSuccess is your 'loaded'
   }, []);
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    (async () => {
-      try {
-        const res = await callApi('settings/load/?category=display');
-        const raw = res.data.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {});
-        const merged = {
-          ...defaultSettings,
-          ...raw,
-          gradientColors: raw.gradientColors || defaultSettings.gradientColors,
-        };
-        setSettings(merged);
-        apply(merged);
-      } catch {
-        setSettings(defaultSettings);
-        apply(defaultSettings);
-      }
-    })();
-  }, [isAuthenticated]);
-
+  // Watch system theme if needed
   useEffect(() => {
     if (settings.themeMode !== 'system') return;
     const mql = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => apply(settings);
     mql.addEventListener('change', handler);
     return () => mql.removeEventListener('change', handler);
-  }, [settings]);
+  }, [settings, apply]);
+
+  // React Query save mutation
+  const saveSettingsMutation = useMutation({
+    mutationFn: saveDisplaySettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries(DISPLAY_SETTINGS);
+    },
+    onError: (err) => {
+      // You can add error reporting here if you want
+      console.error('Failed to save display settings', err);
+    }
+  });
+
+  // This is the abstracted save function you want to use everywhere
+  const saveSettings = async (settings) => {
+    await saveSettingsMutation.mutateAsync(settings);
+  };
 
   return (
-    <DisplaySettingsContext.Provider value={{ settings, setSettings, apply, loaded }}>
+    <DisplaySettingsContext.Provider
+      value={{
+        settings,
+        setSettings,
+        apply,
+        loaded: isSuccess && !!loadedSettings,
+        refetchSettings: refetch,
+        saveSettings,
+        isLoading,
+        isError,
+      }}>
       {children}
     </DisplaySettingsContext.Provider>
   );

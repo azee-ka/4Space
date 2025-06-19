@@ -1,30 +1,29 @@
-import React, { useEffect, useState } from 'react';
+// src/apps/communities/timeline/timline.js
+import React, { useState, useMemo } from 'react';
 import './timeline.css';
-import useApi from '../../../utils/useApi';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCommunitiesTimeline } from '../../../services/communities';
+import { COMMUNITIES_TIMELINE } from '../../../services/queryKeys';
 import { formatDateTime } from '../../../utils/formatDateTime';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
 import { Link } from 'react-router-dom';
 
 const CommunitiesTimeline = () => {
-  const { callApi } = useApi();
-  const [communities, setCommunities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchCommunities = async () => {
-      try {
-        const response = await callApi('community/timeline/get-communities/');
-        setCommunities(response.data);
-      } catch (error) {
-        console.error("Error fetching communities:", error);
-      }
-    };
+  // React Query fetch
+  const { data: communities = [], isLoading, isError } = useQuery({
+    queryKey: COMMUNITIES_TIMELINE,
+    queryFn: fetchCommunitiesTimeline,
+    refetchOnWindowFocus: false,
+  });
 
-    fetchCommunities();
-  }, []);
-
-  const filteredCommunities = communities.filter(comm =>
-    comm.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCommunities = useMemo(
+    () =>
+      communities.filter((comm) =>
+        comm.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [communities, searchQuery]
   );
 
   return (
@@ -51,7 +50,11 @@ const CommunitiesTimeline = () => {
         </div>
 
         <div className="timeline-feed">
-          {filteredCommunities.length === 0 ? (
+          {isLoading ? (
+            <div className="loading">Loading…</div>
+          ) : isError ? (
+            <div className="loading">Error loading communities.</div>
+          ) : filteredCommunities.length === 0 ? (
             <div className="loading">No communities found.</div>
           ) : (
             filteredCommunities.map((comm) => (
@@ -59,7 +62,6 @@ const CommunitiesTimeline = () => {
                 <div className="lane-logo">
                   <ProfilePicture src={comm.logo} isCommunity={true} />
                 </div>
-
                 <div className="lane-details">
                   <div className="lane-title-row">
                     <h3 className="lane-title">{comm.name}</h3>
@@ -69,12 +71,11 @@ const CommunitiesTimeline = () => {
                     {comm.description || 'No description provided.'}
                   </p>
                   <div className="lane-meta">
-                    <span >{comm.type}</span>
+                    <span>{comm.type}</span>
                     <span>{comm.members_count || 0} members</span>
                     <span>{formatDateTime(comm.created_at)}</span>
                   </div>
                 </div>
-
                 <div className="lane-actions">
                   <button className="lane-action-btn">Join</button>
                 </div>
@@ -84,10 +85,8 @@ const CommunitiesTimeline = () => {
         </div>
       </div>
 
-
       <aside className="community-timeline-sidebar">
         <h4>Explore</h4>
-
         <div className="sidebar-section">
           <h5 className="section-title">Trending</h5>
           <ul className="sidebar-trending">
@@ -103,7 +102,6 @@ const CommunitiesTimeline = () => {
               ))}
           </ul>
         </div>
-
         <div className="sidebar-section">
           <h5 className="section-title">Suggested</h5>
           <div className="sidebar-suggested">
@@ -119,7 +117,6 @@ const CommunitiesTimeline = () => {
             </div>
           </div>
         </div>
-
         <div className="sidebar-section">
           <h5 className="section-title">Your Activity</h5>
           <ul className="sidebar-mini-list">
@@ -131,7 +128,6 @@ const CommunitiesTimeline = () => {
             </li>
           </ul>
         </div>
-
         <div className="sidebar-section">
           <h5 className="section-title">Filter by Type</h5>
           <div className="sidebar-tags">
@@ -142,14 +138,11 @@ const CommunitiesTimeline = () => {
             ))}
           </div>
         </div>
-
         <div className="sidebar-actions">
           <button>Create Community</button>
           <button>Explore All</button>
         </div>
       </aside>
-
-
     </div>
   );
 };

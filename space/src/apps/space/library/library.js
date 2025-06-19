@@ -1,6 +1,4 @@
-// components/SpaceLibrary.js
-import React, { useState, useEffect } from "react";
-import useApi from "../../../utils/useApi";
+import React, { useState, useMemo } from "react";
 import {
   FiUpload,
   FiFolderPlus,
@@ -16,28 +14,39 @@ import {
   FiDownload,
 } from "react-icons/fi";
 import "./library.css";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchLibraryItems,
+  uploadLibraryFile,
+  createLibraryFolder,
+} from "../../../services/space";
+import { SPACE_LIBRARY } from "../../../services/queryKeys";
 
 const SpaceLibrary = () => {
-  const { callApi } = useApi();
-  const [items, setItems]       = useState([]);
   const [viewMode, setViewMode] = useState("grid");
   const [folder, setFolder]     = useState({ id: null, name: "Home" });
   const [crumbs, setCrumbs]     = useState([{ id: null, name: "Home" }]);
   const [search, setSearch]     = useState("");
   const [preview, setPreview]   = useState(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    (async () => {
-      try {
+  // Fetch library items (react-query)
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: [...SPACE_LIBRARY, folder.id],
+    queryFn: () => fetchLibraryItems(folder.id),
+  });
 
-      const suffix = folder.id ? `?parent=${folder.id}` : "";
-      const res = await callApi(`space/library${suffix}`);
-      setItems(res.data || []);
-      } catch (err) {
-        console.error('Error fetching items', err)
-      }
-    })();
-  }, [folder.id]);
+  // Upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: uploadLibraryFile,
+    onSuccess: () => queryClient.invalidateQueries([...SPACE_LIBRARY, folder.id]),
+  });
+
+  // Create folder mutation
+  const createFolderMutation = useMutation({
+    mutationFn: createLibraryFolder,
+    onSuccess: () => queryClient.invalidateQueries([...SPACE_LIBRARY, folder.id]),
+  });
 
   const goToCrumb = (c, i) => {
     setFolder({ id: c.id, name: c.name });
@@ -51,31 +60,17 @@ const SpaceLibrary = () => {
   const handleUpload = async e => {
     const f = e.target.files[0];
     if (!f) return;
-    const fd = new FormData();
-    fd.append("file", f);
-    if (folder.id) fd.append("parent", folder.id);
-    await callApi("space/library/upload/", "POST", fd, "multipart/form-data");
-    const suffix = folder.id ? `?parent=${folder.id}` : "";
-    const res = await callApi(`space/library${suffix}`);
-    setItems(res.data || []);
+    uploadMutation.mutate({ file: f, folderId: folder.id });
   };
-  const createFolder = async () => {
-    try {
+  const handleCreateFolder = async () => {
     const name = prompt("New folder name");
     if (!name) return;
-    const payload = { title: name };
-    if (folder.id) payload.parent = folder.id;
-    await callApi("space/library/folder/", "POST", payload);
-    const suffix = folder.id ? `?parent=${folder.id}` : "";
-    const res = await callApi(`space/library${suffix}`);
-    setItems(res.data || []);
-    } catch(err) {
-      console.error('Error creating folder', err);
-    }
+    createFolderMutation.mutate({ name, folderId: folder.id });
   };
 
-  const filtered = items.filter(i =>
-    i.title.toLowerCase().includes(search.toLowerCase())
+  const filtered = useMemo(
+    () => items.filter(i => i.title.toLowerCase().includes(search.toLowerCase())),
+    [items, search]
   );
   const folders = filtered.filter(i => i.type === "folder");
   const files   = filtered.filter(i => i.type === "file");
@@ -126,7 +121,7 @@ const SpaceLibrary = () => {
             <span>Upload</span>
             <input type="file" hidden onChange={handleUpload} />
           </label>
-          <button className="sl-btn sl-new-folder-btn" onClick={createFolder}>
+          <button className="sl-btn sl-new-folder-btn" onClick={handleCreateFolder}>
             <FiFolderPlus />
             <span>New Folder</span>
           </button>
@@ -148,10 +143,10 @@ const SpaceLibrary = () => {
       </header>
 
       <main className={`sl-content ${filtered.length === 0 ? 'empty' : ''}`}>
+        {isLoading && <div>Loading…</div>}
         {folders.length > 0 && (
           <div className="sl-section">
             <h4 className="sl-section-header">Folders</h4>
-
             {viewMode === "list" && (
               <div className="sl-list-header-row">
                 <div className="sl-col-title">Name</div>
@@ -203,7 +198,6 @@ const SpaceLibrary = () => {
         {files.length > 0 && (
           <div className="sl-section">
             <h4 className="sl-section-header">Files</h4>
-
             {viewMode === "list" && (
               <div className="sl-list-header-row">
                 <div className="sl-col-title">Name</div>
@@ -266,10 +260,10 @@ const SpaceLibrary = () => {
 
 const SlPreviewModal = ({ file, onClose }) => {
   const { url, mimeType, title } = file;
-  const isImage = mimeType.startsWith("image/");
+  const isImage = mimeType?.startsWith("image/");
   const isPdf   = mimeType === "application/pdf";
-  const isAudio = mimeType.startsWith("audio/");
-  const isVideo = mimeType.startsWith("video/");
+  const isAudio = mimeType?.startsWith("audio/");
+  const isVideo = mimeType?.startsWith("video/");
   return (
     <div className="sl-modal-backdrop" onClick={onClose}>
       <div className="sl-modal-content" onClick={e => e.stopPropagation()}>

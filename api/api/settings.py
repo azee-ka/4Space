@@ -210,11 +210,6 @@ AUTH_USER_MODEL = 'user.AuthUser'
 AUTH_PROFILE_MODEL = 'user.BaseUser'
 
 
-import os
-os.environ["IMAGEIO_FFMPEG_EXE"] = '/opt/homebrew/bin/ffmpeg'
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CORS settings
 CORS_ALLOW_HEADERS = [
@@ -254,7 +249,11 @@ if USE_AZURE_STORAGE:
 else:
     from .config import MEDIA_URL, MEDIA_ROOT
 
+import os
+os.environ["IMAGEIO_FFMPEG_EXE"] = '/opt/homebrew/bin/ffmpeg'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 import os
