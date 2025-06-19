@@ -1,31 +1,48 @@
 // NotificationsMenu.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '../../../utils/apiUrl';
-import { useAuth } from '../../../hooks/useAuth';
+import React from 'react';
 import './notificationsMenu.css';
-import { timeAgo } from '../../../utils/convertDateTIme';
 import NotificationList from './notificationList';
 import { FaChevronRight } from 'react-icons/fa';
+import DropdownButton from '../../../utils/popperButton/DropdownButton';
 
-const NotificationsMenu = ({ handleNotificationSidebarOpen }) => {
-
-    return (
-        <div className='notifications-menu-container' onClick={(e) => e.stopPropagation()}>
-            <div className='notifications-menu-top-panel'>
-                <h3>Notifications</h3>
-                <button onClick={() => handleNotificationSidebarOpen(null)}>
-                    <p>
-                        Expand Panel
-                        <span><FaChevronRight /></span>
-                    </p>
-                </button>
-            </div>
-            <NotificationList
-                handleNotificationSidebarOpen={handleNotificationSidebarOpen}
-            />
+const NotificationsMenuContent = ({ handleNotificationSidebarOpen, closeDropdown }) => (
+    <div className='notifications-menu-container' onClick={(e) => e.stopPropagation()}>
+        <div className='notifications-menu-top-panel'>
+            <h3>Notifications</h3>
+            <button
+                onClick={() => {
+                    closeDropdown?.();
+                    handleNotificationSidebarOpen(null);
+                }}
+            >
+                <p>
+                    Expand Panel
+                    <span><FaChevronRight /></span>
+                </p>
+            </button>
         </div>
-    );
-}
+        <NotificationList handleNotificationSidebarOpen={handleNotificationSidebarOpen} />
+    </div>
+);
+
+const NotificationsMenu = ({
+  toggleContent,
+  handleNotificationSidebarOpen,
+  placement = 'bottom-end',
+  boundaryRef,
+}) => (
+  <DropdownButton
+    toggleContent={toggleContent}
+    placement={placement}
+    boundaryRef={boundaryRef}
+  >
+    {({ closeDropdown }) => (
+      <NotificationsMenuContent
+        handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+        closeDropdown={closeDropdown}
+      />
+    )}
+  </DropdownButton>
+);
 
 export default NotificationsMenu;

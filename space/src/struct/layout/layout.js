@@ -131,6 +131,7 @@ function Layout({ children }) {
                     sidebarOpen={sidebarOpen}
                     setSidebarOpen={setSidebarOpen}
                     profileData={profileData}
+                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />
             </div>
             }
@@ -165,12 +166,12 @@ function Layout({ children }) {
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />
             }
-            {menuOpen && <ProfileMenu profileData={profileData} onClose={handleCloseOverlays} />}
+            {/* {menuOpen && <ProfileMenu profileData={profileData} onClose={handleCloseOverlays} />} */}
             {appMenuOpen && <AppMenu />}
-            {notificationsMenuOpen &&
+            {/* {notificationsMenuOpen &&
                 <NotificationsMenu
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
-                />}
+                />} */}
             {expandPostIdReciever && <Post />}
             {displayMenuVisible && <DisplayMenu onClose={() => setDisplayMenuVisible(false)} />}
         </div>

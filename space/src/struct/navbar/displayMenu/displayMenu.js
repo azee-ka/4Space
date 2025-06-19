@@ -25,12 +25,13 @@ const getNextTheme = (current) => {
   return themeOptions[(idx + 1) % themeOptions.length];
 };
 
-export default function DisplayMenu({ onClose }) {
+// --- DisplayMenuPanel is just the content ---
+function DisplayMenuPanel({ onClose }) {
   const { settings, setSettings, apply, loaded, saveSettings } = useDisplaySettings();
 
   const [savedSettings, setSavedSettings] = useState(defaultSettings);
-  const [radialCoord, setRadialCoord]   = useState({ x: 50, y: 0 });
-  const [colorCount, setColorCount]     = useState(1);
+  const [radialCoord, setRadialCoord] = useState({ x: 50, y: 0 });
+  const [colorCount, setColorCount] = useState(1);
 
   const containerRef = useRef(null);
 
@@ -66,7 +67,6 @@ export default function DisplayMenu({ onClose }) {
   const reset  = () => { setSettings(savedSettings); apply(savedSettings); };
   const revert = () => { setColorCount(defaultSettings.gradientColors.length); setSettings(defaultSettings); apply(defaultSettings); };
 
-  // ---- UPDATED: Use abstracted saveSettings ----
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
@@ -75,10 +75,9 @@ export default function DisplayMenu({ onClose }) {
     setSaveError(null);
     try {
       await saveSettings(settings);
-      onClose();
+      onClose(); // <--- closes the popper
     } catch (err) {
       setSaveError('Failed to save display settings');
-      // Optionally: Show toast here
     } finally {
       setSaving(false);
     }
@@ -304,7 +303,7 @@ export default function DisplayMenu({ onClose }) {
         </>
       )}
 
-      {/* Font Size (SMOOTH SLIDER!) */}
+      {/* Font Size */}
       <div className="display-setting">
         <label>Font Size</label>
         <div className="slider-wrapper">
@@ -356,5 +355,20 @@ export default function DisplayMenu({ onClose }) {
         </button>
       </div>
     </div>
+  );
+}
+
+// --- Main export: Popper Dropdown ---
+export default function DisplayMenu({ toggleContent, placement = 'bottom-end', boundaryRef }) {
+  return (
+    <DropdownButton
+      toggleContent={toggleContent}
+      placement={placement}
+      boundaryRef={boundaryRef}
+    >
+      {({ closeDropdown }) => (
+        <DisplayMenuPanel onClose={closeDropdown} />
+      )}
+    </DropdownButton>
   );
 }
