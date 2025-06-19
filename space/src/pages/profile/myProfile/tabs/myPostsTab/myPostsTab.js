@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Masonry from 'react-masonry-css';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { fetchUserPosts } from '../../../../../services/posts';
-import { USER_POSTS } from '../../../../../services/queryKeys';
+import './myPostsTab.css';
+
 import { useAuth } from '../../../../../hooks/useAuth';
 import { ExpandPostProvider } from '../../../../../components/postUI/expandPost/expandPostContext';
 import { usePostContext } from '../../../../../context/PostContext';
 import VisualGridTile from '../../../../../apps/home/explore/visual/exploreVisualPostCard';
 import ThreadPostCard from '../../../../../apps/home/explore/thread/threadPostCard';
-import './myPostsTab.css';
+import { fetchUserPosts } from '../../../../../services/posts';
+import { USER_POSTS } from '../../../../../services/queryKeys';
 
 const PAGE_SIZE = 20;
 
@@ -16,7 +17,7 @@ const MyPostsTab = () => {
   const { authState } = useAuth();
   const username = authState?.current?.user?.username;
 
-  // ---- Tab management ----
+  // --- Tab state ---
   const getTabFromHash = () => {
     const h = window.location.hash.replace('#', '');
     return h === 'thread' ? 'thread' : 'visual';
@@ -28,6 +29,7 @@ const MyPostsTab = () => {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
   useEffect(() => {
     if (!window.location.hash) window.history.replaceState(null, '', '#visual');
   }, []);
@@ -39,25 +41,13 @@ const MyPostsTab = () => {
     }
   };
 
-  // ---- Infinite Queries ----
-  const baseQueryOptions = {
-    staleTime: Infinity,         // Don't refetch unless forced
-    cacheTime: Infinity,         // Don't GC cache
-    refetchOnWindowFocus: false, // Don't refetch on focus
-  };
-
-  const {
-    data: visualData,
-    isLoading: isLoadingVisual,
-    fetchNextPage: fetchNextVisual,
-    hasNextPage: hasMoreVisual,
-    isFetchingNextPage: isLoadingMoreVisual,
-  } = useInfiniteQuery({
+  // --- Infinite Query for each tab ---
+  const visualQuery = useInfiniteQuery({
     queryKey: USER_POSTS(username, 'Visual'),
     queryFn: ({ pageParam = 0 }) =>
       fetchUserPosts({ username, postType: 'Visual', pageParam, pageSize: PAGE_SIZE }),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.next) {
+    getNextPageParam: lastPage => {
+      if (lastPage?.next) {
         const urlObj = new URL(lastPage.next, window.location.origin);
         const offset = urlObj.searchParams.get('offset');
         return offset ? parseInt(offset, 10) : undefined;
@@ -65,21 +55,17 @@ const MyPostsTab = () => {
       return undefined;
     },
     enabled: !!username && activeTab === 'visual',
-    ...baseQueryOptions,
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
-  const {
-    data: threadData,
-    isLoading: isLoadingThread,
-    fetchNextPage: fetchNextThread,
-    hasNextPage: hasMoreThread,
-    isFetchingNextPage: isLoadingMoreThread,
-  } = useInfiniteQuery({
+  const threadQuery = useInfiniteQuery({
     queryKey: USER_POSTS(username, 'Thread'),
     queryFn: ({ pageParam = 0 }) =>
       fetchUserPosts({ username, postType: 'Thread', pageParam, pageSize: PAGE_SIZE }),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.next) {
+    getNextPageParam: lastPage => {
+      if (lastPage?.next) {
         const urlObj = new URL(lastPage.next, window.location.origin);
         const offset = urlObj.searchParams.get('offset');
         return offset ? parseInt(offset, 10) : undefined;
@@ -87,61 +73,66 @@ const MyPostsTab = () => {
       return undefined;
     },
     enabled: !!username && activeTab === 'thread',
-    ...baseQueryOptions,
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
-  // ---- Infinite scroll ----
+  // Infinite scroll sentinel
   const sentinelRef = useRef(null);
   useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            if (activeTab === 'visual' && hasMoreVisual && !isLoadingMoreVisual) fetchNextVisual();
-            if (activeTab === 'thread' && hasMoreThread && !isLoadingMoreThread) fetchNextThread();
+    const observer = new window.IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          if (activeTab === 'visual' && visualQuery.hasNextPage && !visualQuery.isFetchingNextPage) {
+            visualQuery.fetchNextPage();
           }
-        });
-      },
-      { rootMargin: '200px' }
-    );
+          if (activeTab === 'thread' && threadQuery.hasNextPage && !threadQuery.isFetchingNextPage) {
+            threadQuery.fetchNextPage();
+          }
+        }
+      });
+    }, { rootMargin: '200px' });
     if (sentinelRef.current) observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [
-    activeTab,
-    hasMoreVisual,
-    isLoadingMoreVisual,
-    fetchNextVisual,
-    hasMoreThread,
-    isLoadingMoreThread,
-    fetchNextThread,
-  ]);
+    // Only needs to depend on tab & fetch functions
+  }, [activeTab, visualQuery.hasNextPage, visualQuery.isFetchingNextPage, threadQuery.hasNextPage, threadQuery.isFetchingNextPage]);
 
-  // ---- Post Expand Handler ----
+  // Post expand handler
   const { handleExpandPostOpen } = usePostContext();
-  const onExpand = (post, index, postList) => {
+  const onExpand = (post, index, postsList) => {
     const currentPath = window.location.pathname + window.location.hash;
     handleExpandPostOpen(
       post.id,
-      postList.map((p) => ({ id: p.id, post_type: p.post_type })),
+      postsList.map(p => ({ id: p.id, post_type: p.post_type })),
       currentPath,
       index,
       post.post_type
     );
   };
 
-  // ---- Rendering ----
+  // Masonry
   const masonryBreakpoints = { default: 3, 1200: 3, 900: 2, 600: 1 };
 
-  // Flatten all fetched pages
-  const visualPosts = (visualData?.pages || []).flatMap((page) => page.results || []);
-  const threadPosts = (threadData?.pages || []).flatMap((page) => page.results || []);
+  // Pick correct query result
   const isVisual = activeTab === 'visual';
+  const {
+    data: vData, isLoading: vLoading, isFetchingNextPage: vLoadingMore
+  } = visualQuery;
+  const {
+    data: tData, isLoading: tLoading, isFetchingNextPage: tLoadingMore
+  } = threadQuery;
+
+  const visualPosts = (vData?.pages || []).flatMap(page => page.results || []);
+  const threadPosts = (tData?.pages || []).flatMap(page => page.results || []);
+
   const displayedPosts = isVisual ? visualPosts : threadPosts;
-  const isLoadingFirstPage = isVisual ? isLoadingVisual : isLoadingThread;
-  const isLoadingMore = isVisual ? isLoadingMoreVisual : isLoadingMoreThread;
+  const isLoadingFirstPage = isVisual ? vLoading : tLoading;
+  const isLoadingMore = isVisual ? vLoadingMore : tLoadingMore;
 
   return (
     <div className="my-posts-tab-container">
+      {/* Tabs Header */}
       <div className="my-posts-tabs-header">
         <button
           className={`my-posts-tab-btn ${activeTab === 'visual' ? 'active' : ''}`}
@@ -156,7 +147,6 @@ const MyPostsTab = () => {
           Thread
         </button>
       </div>
-
       {isLoadingFirstPage ? (
         <div className="my-posts-loading">Loading your posts…</div>
       ) : (
@@ -200,7 +190,6 @@ const MyPostsTab = () => {
                   {isLoadingMore && <div className="my-posts-loading-more">Loading more…</div>}
                 </div>
               )}
-
               {!isVisual && (
                 <div className="my-thread-list">
                   {threadPosts.map((post, idx) => (

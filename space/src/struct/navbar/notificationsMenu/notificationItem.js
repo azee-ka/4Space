@@ -7,8 +7,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { markNotificationAsRead, notificationTakeAction } from '../../../services/notifications';
 import { timeAgo } from '../../../utils/convertDateTIme';
 import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
-import { FaChevronRight } from "react-icons/fa";
+import { FaChevronRight, FaEllipsisV } from "react-icons/fa";
 import { NOTIFICATIONS } from '../../../services/queryKeys';
+import DropdownButton from '../../../utils/popperButton/DropdownButton';
 
 const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
     const dispatch = useDispatch();
@@ -46,6 +47,48 @@ const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
         }
     };
 
+     // --- The Popper Menu content ---
+    const menuContent = (
+        <div className="notification-actions-dropdown">
+            {!notification.is_read && (
+                <button
+                    className="menu-action-btn"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkAsRead(e);
+                    }}
+                    disabled={markAsReadMutation.isPending}
+                >
+                    Mark as read
+                </button>
+            )}
+            {notification.type === 'action' && (
+                <>
+                    <button
+                        className="menu-action-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleTakeAction('approve');
+                        }}
+                        disabled={takeActionMutation.isPending}
+                    >
+                        Approve
+                    </button>
+                    <button
+                        className="menu-action-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleTakeAction('reject');
+                        }}
+                        disabled={takeActionMutation.isPending}
+                    >
+                        Reject
+                    </button>
+                </>
+            )}
+        </div>
+    );
+
     return (
         <div
             className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
@@ -71,40 +114,13 @@ const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
                         {notification.message}
                         <span>{timeAgo(notification.created_at, true)}</span>
                     </p>
-                    {!notification.is_read && (
-                        <button 
-                            className="mark-as-read-btn"
-                            onClick={handleMarkAsRead}
-                            disabled={markAsReadMutation.isPending}
-                        >
-                            Mark as read
-                        </button>
-                    )}
                 </div>
-                {notification.type === 'action' && (
-                    <div className='notification-item-actions-container'>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleTakeAction('approve');
-                            }}
-                            className="action-button"
-                            disabled={takeActionMutation.isPending}
-                        >
-                            Approve
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleTakeAction('reject');
-                            }}
-                            className="action-button"
-                            disabled={takeActionMutation.isPending}
-                        >
-                            Reject
-                        </button>
-                    </div>
-                )}
+                <DropdownButton
+                    toggleContent={<button className="notification-action-toggle"><FaEllipsisV /></button>}
+                    placement="bottom-start"
+                >
+                    {menuContent}
+                </DropdownButton>
             </div>
         </div>
     );

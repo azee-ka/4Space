@@ -6,6 +6,9 @@ import './HandleSwitcher.css';
 import { FaUser } from 'react-icons/fa';
 import { emitGlobalEvent } from '../../../utils/GlobalEvent';
 import { useHandles } from '../../../context/HandlesContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 export default function HandleSwitcher() {
   const dispatch = useDispatch();
@@ -15,46 +18,66 @@ export default function HandleSwitcher() {
 
   const { handles, isLoading, saveHandles } = useHandles();
 
-  const onSelect = async h => {
-    if (h.id === currentId) return;
-    // Build payload: mark exactly one active
-    const payload = {
-      username_handles: handles.map(hh => ({
-        id: hh.id,
-        username: hh.username,
-        label: hh.label,
-        is_active: hh.id === h.id,
-      })),
-    };
+const onSelect = async h => {
+  if (h.id === currentId) return;
 
-    try {
-      const active = await saveHandles(payload);
-      dispatch(switchHandleAction({
-        username:  active.username,
-        handle_id: active.id,
-      }));
-      const sess = JSON.parse(sessionStorage.getItem('authCurrent') || '{}');
-      sessionStorage.setItem('authCurrent', JSON.stringify({
-        ...sess,
-        user: {
-          ...sess.user,
-          username:  active.username,
-          handle_id: active.id
-        }
-      }));
-      emitGlobalEvent('user-handle-changed', {
-        handle_id: active.id,
-        username:  active.username,
-      });
-    } catch (err) {
-      console.error('Failed to switch handle', err);
-    }
+  // Build payload: mark exactly one active
+  const payload = {
+    username_handles: handles.map(hh => ({
+      id: hh.id,
+      username: hh.username,
+      label: hh.label,
+      is_active: hh.id === h.id,
+    })),
   };
+
+  try {
+    const active = await saveHandles(payload);
+    dispatch(switchHandleAction({
+      username:  active.username,
+      handle_id: active.id,
+    }));
+
+    // --- Update sessionStorage (active account) ---
+    const session = JSON.parse(sessionStorage.getItem('authCurrent')) || {};
+    session.user = { ...session.user, username: active.username, handle_id: active.id };
+    sessionStorage.setItem('authCurrent', JSON.stringify(session));
+
+    // --- Update localStorage (authAccounts, for all signed-in) ---
+    const storedAccounts = JSON.parse(localStorage.getItem('authAccounts')) || [];
+    const updatedAccounts = storedAccounts.map(acc => {
+      // Match by token (or however you store it)
+      if (acc.token === session.token) {
+        return { ...acc, user: { ...acc.user, username: active.username, handle_id: active.id } };
+      }
+      return acc;
+    });
+    localStorage.setItem('authAccounts', JSON.stringify(updatedAccounts));
+
+    // Fire global event for listeners (react-query hooks, etc)
+    emitGlobalEvent('user-handle-changed', {
+      handle_id: active.id,
+      username:  active.username,
+    });
+  } catch (err) {
+    console.error('Failed to switch handle', err);
+  }
+};
+
 
   const content = isLoading
     ? <div className="hs-loading">Loading…</div>
     : (
       <div className="hs-list">
+        <h3 className='hs-list-title'>Handles</h3>
+        <Link
+          to="/settings#account-&-identity-username-&-handle"
+          className="hs-ext-link"
+          title="Go to handle settings"
+          onClick={e => e.stopPropagation()}
+        >
+          <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+        </Link>
         {handles.map(h => (
           <div
             key={h.id}

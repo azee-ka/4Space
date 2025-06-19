@@ -178,7 +178,6 @@ def create_primary_handle(sender, instance, created, **kwargs):
             account      = instance,
             username     = instance.username,
             label        = 'main',
-            display_name = instance.username,
         )
         instance.active_handle = h
         instance.save(update_fields=['active_handle'])
