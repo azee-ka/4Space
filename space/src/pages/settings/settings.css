@@ -239,9 +239,9 @@
 .exit-customization {
   position: absolute;
   bottom: 0.9375rem;
-  left: 0.9375rem;
+  right: 0.9375rem;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.375rem;
+  border-radius: 2.5rem;
   border: 0;
   background-color: var(--exit-customization-bg);
   border: var(--exit-customization-border);

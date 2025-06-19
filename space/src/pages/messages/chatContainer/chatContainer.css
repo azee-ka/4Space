@@ -409,8 +409,13 @@
 }
 .ellipsis-btn:hover {
   background: rgba(255,255,255,0.11);
-  color: #111;
+  color: #ffffff;
 }
+.ellipsis-btn.active {
+  background: rgba(255,255,255,0.11);
+  color: #ffffff;
+}
+
 .message-dropdown {
   background: var(--dropdown-bg);
   backdrop-filter: var(--dropdown-blur);

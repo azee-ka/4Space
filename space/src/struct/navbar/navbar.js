@@ -23,10 +23,6 @@ import DisplayMenu from './displayMenu/displayMenu';
 import AppMenu from './appMenu/appMenu';
 
 const Navbar = ({
-  handleProfileMenuToggle,
-  handleAppMenuToggle,
-  handleNotificationsMenuToggle,
-  handleDisplayMenuToggle,
   sidebarOpen,
   setSidebarOpen,
   profileData,
@@ -42,42 +38,15 @@ const Navbar = ({
   const { count: notificationsCount } = useNotifications();
   const { openCreatePostOverlay } = useCreatePostContext();
 
-  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
-  const [notificationsMenuVisible, setNotificationsMenuVisible] = useState(false);
-  const [appMenuVisible, setAppMenuVisible] = useState(false);
-  const [displayMenuVisible, setDisplayMenuVisible] = useState(false);
-
   const location = useLocation();
   const navigate = useNavigate();
 
-  const profileMenuRef = useRef(null);
-  const notificationsMenuRef = useRef(null);
-  const appMenuRef = useRef(null);
-  const displayMenuRef = useRef(null);
 
   const [navbarSearchValue, setNavbarSearchValue] = useState('');
 
   const { buildLink } = useRedirector();
 
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        setProfileMenuVisible(false);
-      }
-      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
-        setNotificationsMenuVisible(false);
-      }
-      if (appMenuRef.current && !appMenuRef.current.contains(event.target)) {
-        setAppMenuVisible(false);
-      }
-      if (displayMenuRef.current && !displayMenuRef.current.contains(event.target)) {
-        setDisplayMenuVisible(false);
-      }
-    };
 
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, []);
 
   const publicPagesNavbar = [
     { path: buildLink('/login'), label: 'Sign In', id: 'navbar-access' },
@@ -105,14 +74,9 @@ const Navbar = ({
       ? spacePagesNavbar
       : homePagesNavbar;
 
-  const handleMenuClick = (path, action) => {
-    if (action) action();
-    else navigate(path);
-  };
 
   const handleHighOrderSidebarToggle = () => setSidebarOpen(!sidebarOpen);
 
-  const pagesNavbar = isAuthenticated ? privatePagesNavbar : publicPagesNavbar;
 
   return (
     <div className='navbar-container'>

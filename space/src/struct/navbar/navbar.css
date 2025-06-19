@@ -105,16 +105,18 @@
 
 
 .navbar-right {
-  height: 3.4375rem;
+  height: 3.2rem;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
   gap: 0.625rem;
-  background-color: rgba(30, 30, 30, 0.200);
+  background-color: rgba(40, 40, 40, 0.193);
+  backdrop-filter: blur(20px);
   box-shadow: 0 0 0.25rem 0.125rem rgba(202, 202, 202, 0.159);
   border-radius: 2.5rem;
   margin-right: 0.5rem;
-  padding: 0 0rem 0 0.625rem;
+  padding: 0.3rem 0rem 0.3rem 0.625rem;
+  box-sizing: border-box;
 }
 
 .navbar-right.unauthenticated {
@@ -222,6 +224,11 @@
   border-radius: 0.625rem;
   cursor: pointer;
 }
+.navbar-items li:not(:last-child) button.active {
+  background-color: rgba(128, 128, 128, 0.551);
+  border-radius: 0.625rem;
+  cursor: pointer;
+}
 
 
 .navbar-items li:nth-child(5) button {
@@ -233,6 +240,10 @@
   transition: all 0.3 ease;
 }
 .navbar-items li:nth-child(5) button:hover {
+  border: 0.125rem solid rgb(255, 255, 255);
+  cursor: pointer;
+}
+.navbar-items li:nth-child(5) button.active {
   border: 0.125rem solid rgb(255, 255, 255);
   cursor: pointer;
 }
