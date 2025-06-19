@@ -111,7 +111,8 @@ def get_profile_posts_list(request, username):
     if not is_self and profile_user.is_private_profile and not follows_them:
         # Return an empty paginated response (count=0).
         paginator = LimitOffsetPagination()
-        return paginator.get_paginated_response([])
+        page = paginator.paginate_queryset([], request)
+        return paginator.get_paginated_response(page)
 
     # 2) Which post_type to fetch?
     post_type = request.GET.get('post_type', None)  # "Visual", "Thread", or None

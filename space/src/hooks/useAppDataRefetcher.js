@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { ALL_QUERY_KEYS } from '../services/queryKeys';
 
 const EVENT_MAP = {
   userHandleChanged: 'user-handle-changed',
@@ -7,13 +8,7 @@ const EVENT_MAP = {
 };
 
 const REFRESH_QUERIES_FOR_EVENT = {
-  userHandleChanged: [
-    ['profileVisibility'],
-    ['userProfile'],
-    ['basicInfo'],
-    // add any other keys you want to invalidate on handle switch
-  ],
-  // add more event-query mappings as needed
+  userHandleChanged: ALL_QUERY_KEYS
 };
 
 /**

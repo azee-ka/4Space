@@ -199,6 +199,9 @@
   position: relative;
 }
 
+
+
+
 .navbar-items li button,
 .navbar-items li a {
   width: 2.5rem;
@@ -212,6 +215,36 @@
   display: flex;
   justify-content: center !important;
   align-items: center !important;
+}
+ .navbar-items li:not(:last-child) a:hover,
+.navbar-items li:not(:last-child) button:hover {
+  background-color: rgba(128, 128, 128, 0.551);
+  border-radius: 0.625rem;
+  cursor: pointer;
+}
+
+
+.navbar-items li:nth-child(5) button {
+  border-radius: 50%;
+  height: 2.6875rem;
+  width: 2.6875rem;
+  padding: 0;
+  border: 0.125rem solid rgba(244, 244, 244, 0);
+  transition: all 0.3 ease;
+}
+.navbar-items li:nth-child(5) button:hover {
+  border: 0.125rem solid rgb(255, 255, 255);
+  cursor: pointer;
+}
+.navbar-items li:nth-child(5) button img {
+  display: flex;
+  align-self: center;
+  height: 100%;
+  width: 100%;
+  transition: all 0.3 ease;
+}
+.navbar-items li::nth-child(5) button img:hover {
+  cursor: pointer;
 }
 
 
@@ -246,7 +279,7 @@
   width: 100%;
   transition: all 0.3 ease;
 }
-.navbar-items li::last-child button img:hover {
+.navbar-items li:last-child button img:hover {
   cursor: pointer;
 }
 
@@ -262,6 +295,11 @@
   border-radius: 50%;
   padding: 0.22rem 0.19rem;
   font-size: 0.6875rem;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .navbar-public-btns {
@@ -487,3 +525,8 @@
 }
 
 /* Add more light mode tweaks below if you see any other issues in your UI! */
+
+
+
+
+

@@ -12,7 +12,7 @@ from ..user.models import BaseUser
 from .models import Conversation, Message, Attachment, MessageSettings, Participant, Reaction
 from .serializers import ConversationSerializer, MessageSerializer, ConversationListSerializer, AttachmentSerializer, ReactionSerializer
 from rest_framework.pagination import LimitOffsetPagination
-
+import uuid
 
 
 
@@ -174,8 +174,9 @@ def create_conversation(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
-            rid = int(r['id'])
-        except (TypeError, ValueError):
+            rid = str(r['id'])
+            uuid_obj = uuid.UUID(rid)  # Will raise ValueError if not a valid UUID
+        except (TypeError, ValueError, AttributeError):
             return Response(
                 {"error": f"Invalid recipient ID: {r.get('id')}"},
                 status=status.HTTP_400_BAD_REQUEST

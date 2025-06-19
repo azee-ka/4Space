@@ -106,6 +106,18 @@ const BasicInfo = () => {
                 <div className="form-field">
                     <input
                         type="text"
+                        name="display_name"
+                        value={basicInfo?.display_name || ""}
+                        onChange={handleInputChange}
+                        placeholder=" "
+                    />
+                    <label htmlFor="displa_name">Display Name</label>
+                </div>
+            </div>
+            <div className="basic-info-email">
+                <div className="form-field">
+                    <input
+                        type="text"
                         name="email"
                         value={basicInfo?.email || ""}
                         onChange={handleInputChange}

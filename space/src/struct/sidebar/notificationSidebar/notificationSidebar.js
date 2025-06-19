@@ -111,41 +111,49 @@ const NotificationSidebar = ({
                     ) : (
                         <div className="notification-sidebar-individual-notification">
                             <div className="notification-sidebar-individual-notification-top-panel">
-                                <button
-                                    onClick={() => setNotificationIdForSidebar(null)}
-                                >
+                                <button onClick={() => setNotificationIdForSidebar(null)}>
                                     <FaChevronLeft className="icon-style" />
                                 </button>
                                 <h4>{individualNotification?.title}</h4>
                             </div>
-                            <div className='notification-sidebar-individual-notification-item-content'>
-                                <div className='notification-sidebar-individual-notification-item-message-container'>
-                                    <div className='notification-sidebar-individual-notification-item-profile-image'>
+
+                            <div className="notification-sidebar-individual-notification-item-content">
+                                <div className="notification-individual-row">
+                                    <div className="notification-individual-profile-image">
                                         <ProfilePicture src={individualNotification?.sender?.profile_image} />
                                     </div>
-                                    <p>
-                                        <span><Link to={`/profile/${individualNotification?.sender.username}`}>{individualNotification?.sender.username}</Link></span>
-                                        {individualNotification?.message}
-                                        <span>{timeAgo(individualNotification?.created_at, true)}</span>
-                                    </p>
+                                    <div className="notification-individual-header">
+                                        <div className="notification-individual-username-row">
+                                            <span className="notification-individual-username">
+                                                <Link to={`/profile/${individualNotification?.sender?.username}`}>
+                                                    {individualNotification?.sender?.username}
+                                                </Link>
+                                            </span>
+                                            <span className="notification-individual-timestamp">
+                                                {timeAgo(individualNotification?.created_at, true)}
+                                            </span>
+                                        </div>
+                                        <div className="notification-individual-message-text">
+                                            {individualNotification?.message}
+                                        </div>
+                                    </div>
                                 </div>
+
                                 {individualNotification?.type === 'action' && (
-                                    <div className='notification-sidebar-individual-notification-item-actions-container'>
+                                    <div className="notification-individual-actions-container">
                                         <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleTakeAction(individualNotification, 'approve')
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                handleTakeAction(individualNotification, 'approve');
                                             }}
-                                            className="action-button"
                                         >
                                             Approve
                                         </button>
                                         <button
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleTakeAction(individualNotification, 'reject')
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                handleTakeAction(individualNotification, 'reject');
                                             }}
-                                            className="action-button"
                                         >
                                             Reject
                                         </button>
@@ -153,6 +161,7 @@ const NotificationSidebar = ({
                                 )}
                             </div>
                         </div>
+
                     )
                 ) : (
                     <div className='notifications-sidebar-no-notifications'>
