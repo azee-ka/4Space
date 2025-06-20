@@ -50,6 +50,7 @@
     "katex": "^0.16.22",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.511.0",
+    "macy": "^2.5.1",
     "mathlive": "^0.76.1",
     "monaco-editor": "^0.52.2",
     "quill": "^2.0.3",

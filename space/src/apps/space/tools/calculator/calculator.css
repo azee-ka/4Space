@@ -26,19 +26,22 @@
   background: rgba(113, 113, 113, 0.12);
   border-radius: 20px;
   padding: 2rem;
-  width: 24rem;
+  width: 20vw;
   height: 100%;
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
+flex-shrink: 0;
 }
 
 .glass-calculator {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: calc(100% - 20vw - 1.5rem); /* subtract sidebar width + gap */
   background: rgba(113, 113, 113, 0.12);
   border-radius: 20px;
-  padding: 1rem 1rem;
-  width: 100%;
+  padding: 1rem;
   height: 100%;
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -48,6 +51,7 @@
   flex-direction: column;
   gap: 1.5rem;
 }
+
 
 .glass-tabs {
   display: flex;
@@ -76,28 +80,26 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
-.glass-symbols-masonry {
-  display: flex;
-  margin-left: -10px;
-  width: 100%;
-  overflow-y: auto;
-  max-height: 200px;
-}
 
-.glass-symbols-column {
-  padding-left: 10px;
-  background-clip: padding-box;
-  display: flex;
-  flex-direction: column;
+
+
+.glass-symbols-grid {
+  display: grid;
+grid-template-columns: repeat(auto-fit, minmax(min-content, 60px));
+  grid-auto-rows: 45px; /* Fixed row height */
   gap: 10px;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
 }
-
-
 .glass-symbol-btn {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   width: auto;
   max-width: 100%;
-  padding: 0.5rem 0.7rem;
+  padding: 0.5rem;
   font-size: 1.1rem;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.15);
@@ -105,15 +107,27 @@
   color: #fff;
   text-align: center;
   cursor: pointer;
-  transition: background 0.2s ease;
-  break-inside: avoid; /* prevent breaking inside columns */
+  transition: all 0.3s ease;
 }
-
-
 .glass-symbol-btn:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+.katex-scale {
+  transform: scale(0.65);
+  transform-origin: center;
+  display: inline-block;
+}
 
+
+
+
+
+.glass-calculator-input-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    width: 100%;
+}
 
 .glass-input-row {
   display: flex;
@@ -129,6 +143,9 @@
   border-radius: 12px;
   overflow: scroll;
   cursor: text;
+    display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .mathfield-box math-field {
@@ -139,61 +156,40 @@
   border: none;
   background: transparent;
   color: #fff;
-  padding: 0.4rem 0.8rem;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
   line-height: 1.6;
   caret-color: #00ffc3;
+  box-sizing: border-box;
+
 }
 
-.mathfield-box math-field {
-  width: 100%;
-  height: 100%;
-  font-size: 1.4rem;
-  outline: none !important;
-  border: none;
-  background: transparent;
-  color: #fff;
-  box-sizing: border-box;
-    padding: 0.4rem 0.8rem;
-  line-height: 1.6;
-  caret-color: #00ffc3 !important;
-}
 .mathfield-box math-field:focus {
   outline: none;
   border: none;
   box-shadow: none;
   caret-color: #00ffc3 !important;
 }
-.mathfield-box math-field {
-  --primary: #00c9a7;
-  --primary-foreground: #ffffff;
-  --keyboard-background: rgba(20, 20, 20, 0.9);
-  --keyboard-toolbar-color: #00c9a7;
-  --keyboard-button-background: rgba(255, 255, 255, 0.1);
-  --keyboard-button-hover-background: rgba(255, 255, 255, 0.2);
-  --keyboard-button-active-background: #00b38f;
-  --keyboard-button-foreground: #ffffff;
-  --menu-color: #ffffff;
-  --menu-background-color: rgba(30, 30, 30, 0.95);
-  --menu-highlight-color: #00ffc3;
-  --menu-highlight-background-color: rgba(0, 255, 195, 0.1);
-  --caret-color: #00ffc3;
+.mathfield-box {
+  position: relative;
 }
-
-.mathfield-box  math-virtual-keyboard {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 10px;
+.mathfield-placeholder {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9d9d9dc4;
+  pointer-events: none;
+  font-size: 1.1rem;
+  z-index: 1;
+  display: block;
+}
+.mathfield-box.has-content .mathfield-placeholder {
+  display: none;
 }
 
 
 
-.glass-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 30px;
-}
+
 
 .glass-evaluate-btn {
     height: 45px;
@@ -210,31 +206,119 @@
     background-color: rgba(142, 142, 142, 0.417);
 }
 
-.glass-control-btn {
-  padding: 0.4rem 1rem;
-  font-size: 1.1rem;
-  background: #00c9a7;
-  color: white;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: 0.3s;
+
+
+
+.glass-utility-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-right: 0.5rem;
 }
 
-.glass-control-btn:hover {
-  background: #00b38f;
+
+.glass-icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s ease;
+  width: 36px;
+  height: 36px;
 }
+
+.glass-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+
+
+
+
+
+
+
+
+
+
 
 .glass-output {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 15px;
-  text-align: center;
+  padding: 1rem 1.2rem;
+  color: white;
+  position: relative;
+}
+
+.glass-output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.glass-output-copy {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.glass-output-copy:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .glass-latex {
-  font-size: 1.5rem;
-  color: #a8ffc9;
+  font-size: 1.6rem;
+  color: white;
   margin-top: 1rem;
+  word-break: break-word;
 }
 
+.glass-latex-placeholder {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.glass-icon-btn {
+  position: relative;
+  overflow: visible;
+}
+
+.tooltip-text {
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(20, 20, 20, 0.9);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+.glass-icon-btn:hover .tooltip-text,
+.tooltip-text.show {
+  opacity: 1;
+}
