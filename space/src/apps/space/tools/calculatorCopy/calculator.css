@@ -1,0 +1,122 @@
+.calculator-container {
+  background-color: rgba(255, 255, 255, 0);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.calculator-container-inner {
+  background-color: rgba(25, 203, 99, 0);
+  width: 100%;
+  height: 95%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  overflow: hidden !important;
+  justify-content: left;
+  align-items: left;
+}
+
+
+.calculator-title {
+  background-color: rgba(255, 0, 0, 0);
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.calculator-title-inner {
+  background-color: rgba(0, 255, 187, 0);
+  height: 100%;
+  width: 97%;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+
+.calculator-holder {
+  background-color: rgba(255, 255, 255, 0);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: top;
+  align-items: top;
+  overflow: hidden !important;
+}
+.calculator-holder-inner {
+  background-color: rgba(255, 0, 0, 0);
+  display: flex;
+  flex-direction: row;
+  justify-content: top;
+  align-items: top;
+  width: 100%;
+  height: 100%;
+  margin-top: -1.5%;
+}
+
+.calculator-sidebar-holder {
+  background-color: rgba(255, 255, 255, 0);
+  width: 130px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.calculator-sidebar-holder-inner {
+  background-color: rgba(190, 53, 53, 0);
+  width: 60%;
+  height: 85%;
+  transition: transform 0.5s ease;
+  border-radius: 15px;
+  background: linear-gradient(to bottom, #061d21, #001113);
+  box-shadow: 0 0px 10px rgb(0, 180, 165) !important;
+}
+
+.calculator-sidebar-holder-inner:hover {
+  transform: scale(1.03);
+}
+
+.calculator-content-holder {
+  background-color: rgba(255, 0, 0, 0);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+.calculator-content-holder-inner {
+  background-color: rgba(0, 0, 255, 0);
+  max-width: 1050px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.calculator-content-holder-inner-sub {
+  background-color: rgb(212, 0, 255, 0);
+  width: 92%;
+  height: 85%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to right, #00090a, #061d21);
+  transition: transform 0.5s ease;
+  border-radius: 15px;
+  box-shadow: 0 0px 30px rgb(0, 180, 165) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.calculator-content-holder-inner-sub:hover {
+  transform: scale(1.03);
+}

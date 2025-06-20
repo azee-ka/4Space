@@ -93,7 +93,7 @@ const AppRouter = () => {
         { name: 'Latex Editor', path: '/space/project/:projectId/latex-editor', component: <LaTeXEditor />, key: 'LaTeXEditor' },
         { name: 'Markdown Editor', path: '/space/project/:projectId/markdown-editor', component: <MarkdownEditor />, key: 'MarkdownEditor' },
         { name: 'Notebook', path: '/space/project/:projectId/notebook', component: <NotebookEditor />, key: 'NotebookEditor' },
-        { name: 'Calculator', path: '/space/calculator', component: <Calculator />, key: 'Calculator' },
+        { name: 'Calculator', path: '/space/tools/calculator', component: <Calculator />, key: 'Calculator' },
 
 
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
@@ -114,7 +114,10 @@ const AppRouter = () => {
         { name: 'Home', path: '/', component: <FrontPage />, key: 'FrontPage' },
         { name: 'Home', path: '/home', component: <FrontPage />, key: 'FrontPage' },
         { name: 'OAuth Callback', path: '/oauth/callback', component: <OauthCallback />, key: 'OauthCallback' },
+        
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
+        
+        { name: 'Calculator', path: '/space/tools/calculator', component: <Calculator />, key: 'Calculator' },
     ];
 
 

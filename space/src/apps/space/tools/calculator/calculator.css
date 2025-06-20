@@ -1,0 +1,240 @@
+.glass-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem 1rem;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  gap: 1rem;
+}
+
+.glass-title-outside {
+  font-size: 2rem;
+  color: #e2eafc;
+  text-align: left;
+}
+
+.calculator-main {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    width: 100%;
+    flex: 1;
+}
+.calculator-sidebar {
+  background: rgba(113, 113, 113, 0.12);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 24rem;
+  height: 100%;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
+
+.glass-calculator {
+  background: rgba(113, 113, 113, 0.12);
+  border-radius: 20px;
+  padding: 1rem 1rem;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.glass-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  /* margin-bottom: 1.5rem; */
+}
+
+.glass-tab-btn {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.glass-tab-btn.active,
+.glass-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.glass-symbols-masonry {
+  display: flex;
+  margin-left: -10px;
+  width: 100%;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.glass-symbols-column {
+  padding-left: 10px;
+  background-clip: padding-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+.glass-symbol-btn {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  padding: 0.5rem 0.7rem;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  break-inside: avoid; /* prevent breaking inside columns */
+}
+
+
+.glass-symbol-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+
+.glass-input-row {
+  display: flex;
+  flex-direction: row;
+    gap: 1rem;
+  width: 100%;
+}
+
+.mathfield-box {
+  flex: 1;
+  min-height: 50px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: scroll;
+  cursor: text;
+}
+
+.mathfield-box math-field {
+  width: 100%;
+  height: 100%;
+  font-size: 1.4rem;
+  outline: none !important;
+  border: none;
+  background: transparent;
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  line-height: 1.6;
+  caret-color: #00ffc3;
+}
+
+.mathfield-box math-field {
+  width: 100%;
+  height: 100%;
+  font-size: 1.4rem;
+  outline: none !important;
+  border: none;
+  background: transparent;
+  color: #fff;
+  box-sizing: border-box;
+    padding: 0.4rem 0.8rem;
+  line-height: 1.6;
+  caret-color: #00ffc3 !important;
+}
+.mathfield-box math-field:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  caret-color: #00ffc3 !important;
+}
+.mathfield-box math-field {
+  --primary: #00c9a7;
+  --primary-foreground: #ffffff;
+  --keyboard-background: rgba(20, 20, 20, 0.9);
+  --keyboard-toolbar-color: #00c9a7;
+  --keyboard-button-background: rgba(255, 255, 255, 0.1);
+  --keyboard-button-hover-background: rgba(255, 255, 255, 0.2);
+  --keyboard-button-active-background: #00b38f;
+  --keyboard-button-foreground: #ffffff;
+  --menu-color: #ffffff;
+  --menu-background-color: rgba(30, 30, 30, 0.95);
+  --menu-highlight-color: #00ffc3;
+  --menu-highlight-background-color: rgba(0, 255, 195, 0.1);
+  --caret-color: #00ffc3;
+}
+
+.mathfield-box  math-virtual-keyboard {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 10px;
+}
+
+
+
+.glass-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.glass-evaluate-btn {
+    height: 45px;
+  padding: 0.2rem 0.9rem;
+  font-size: 1.1rem;
+  background: #00af92b9;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.glass-evaluate-btn:hover {
+    background-color: rgba(142, 142, 142, 0.417);
+}
+
+.glass-control-btn {
+  padding: 0.4rem 1rem;
+  font-size: 1.1rem;
+  background: #00c9a7;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.glass-control-btn:hover {
+  background: #00b38f;
+}
+
+.glass-output {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1rem;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.glass-latex {
+  font-size: 1.5rem;
+  color: #a8ffc9;
+  margin-top: 1rem;
+}
+
