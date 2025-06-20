@@ -1,0 +1,133 @@
+.math-field {
+  overflow: auto !important;
+  background-color: rgba(32, 61, 63, 0);
+  color: rgb(255, 255, 255);
+  padding-left: 13px;
+  padding-right: 45px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  font-size: 26px !important;
+  border: 0px solid white !important;
+  border-radius: 5px;
+  box-shadow: 0px 0px 2px 2px rgb(0, 125, 134);
+  transition: transform 0.3s ease-in-out;
+  font-size: 16px;
+  z-index: 0;
+  text-align: left;
+}
+
+.math-field:active {
+  outline: none !important;
+  box-shadow: 0px 0px 30px rgb(0, 238, 255) !important;
+}
+
+.math-field:focus {
+  outline: none !important;
+}
+
+.mq-cursor {
+  border-color: rgb(255, 255, 255) !important;
+}
+
+input:focus {
+  outline: none !important;
+}
+
+.field-input-area {
+  position: relative;
+}
+
+.placeholder-field {
+  position: absolute;
+  top: 50%;
+  left: 1.5%;
+  transform: translateY(-50%);
+  z-index: 0;
+  text-align: left;
+  justify-content: center;
+  color: gray;
+}
+
+.clear-button {
+  background: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  width: 4%;
+  height: 36px;
+  position: relative;
+  justify-content: right !important;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.clear-button:hover {
+  border: 0.5px solid rgba(128, 128, 128);
+}
+
+.clear-button:active {
+  background-color: rgba(2, 124, 148, 0.426);
+}
+
+.clear-button img {
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle;
+}
+
+.clear-button {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  right: 0.5% !important;
+}
+
+.math-field {
+  width: 100% !important;
+  outline: none;
+}
+
+.math-field:hover {
+  box-shadow: 0px 0px 4px 4px rgb(4, 154, 157);
+  background-color: rgba(0, 241, 245, 0.09) !important;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: row;
+  gap: 0px;
+  background-color: rgba(255, 255, 255, 0);
+  outline: none;
+  border: 0px solid white;
+  border-radius: 8px;
+  margin: 0;
+  box-shadow: 0px 0px 6px 5px rgb(0, 125, 134);
+}
+
+.math-field:focus,
+.math-field:active,
+.edit-field:focus,
+.edit-field:active,
+.mq-focused,
+.math-field .mq-editable-field .mq-math-mode,
+.math-field .mq-editable-field .mq-math-mode .mq-focused,
+.input:focus,
+.edit-field span {
+  outline: none !important;
+}
+
+.edit-field {
+  outline: none !important;
+  box-shadow: 0px 0px 0px rgb(0, 238, 255) !important;
+}
+
+.edit-field span:focus {
+  outline: none !important;
+  box-shadow: 0px 0px 5px rgb(0, 255, 153) !important;
+}
+
+.math-field:focus {
+  background-color: white;
+}

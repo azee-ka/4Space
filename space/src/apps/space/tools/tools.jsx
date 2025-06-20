@@ -8,6 +8,7 @@ import {
   FiEdit3, FiCode, FiFileText, FiTerminal, FiLayers, FiShare2,
   FiUser, FiBriefcase, FiEdit, FiCheckSquare
 } from "react-icons/fi";
+import { FaCalculator } from "react-icons/fa";
 
 const tools = [
   {
@@ -54,6 +55,14 @@ const tools = [
     icon: <FiTerminal />,
     type: "Developer",
     features: ["Live Output", "Logs", "Eval"],
+  },
+  {
+    name: "Advanced Calculator",
+    path: "/space/tools/calculator",
+    description: "A scientific calculator with advanced math, graphing, history, and programmable expressions.",
+    icon: <FaCalculator />,
+    type: "Math",
+    features: [ "Scientific", "Advanced" ],
   },
   {
     name: "Mind Map",
