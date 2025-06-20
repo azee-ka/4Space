@@ -281,6 +281,8 @@ grid-template-columns: repeat(auto-fit, minmax(min-content, 60px));
   color: white;
   margin-top: 1rem;
   word-break: break-word;
+  overflow-x: auto;
+  padding: 1rem 0.5rem;
 }
 
 .glass-latex-placeholder {

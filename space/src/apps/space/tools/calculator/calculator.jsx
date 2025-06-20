@@ -5,6 +5,8 @@ import "./calculator.css";
 import { MathfieldElement } from "mathlive";
 import { Clipboard, X } from "lucide-react";
 import apiCall from "../../../../utils/api";
+import { useMutation } from "@tanstack/react-query";
+import { solveExpression } from "../../../../services/tools";
 
 const SYMBOL_SETS = {
   Algebra: [
@@ -187,7 +189,7 @@ const Calculator = () => {
   const [activeTab, setActiveTab] = useState("Algebra");
   const [latex, setLatex] = useState("");
   const [output, setOutput] = useState("");
-const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const mathfieldContainerRef = useRef(null); // DOM node to append to
   const mathfieldInstanceRef = useRef(null); // store MathfieldElement instance
@@ -204,6 +206,7 @@ const [copied, setCopied] = useState(false);
         keypressSound: null,
         plonkSound: null,
       });
+
       mf.setValue("");
       mf.style.width = "100%";
       mf.style.fontSize = "1.4rem";
@@ -214,6 +217,18 @@ const [copied, setCopied] = useState(false);
 
       mathfieldContainerRef.current.appendChild(mf);
       mathfieldInstanceRef.current = mf;
+
+      // NOW it's safe to bind keydown
+      mf.addEventListener("keystroke", (ev) => {
+        if (ev.detail?.keystroke === "[Enter]") {
+          const mf = mathfieldInstanceRef.current;
+          if (mf) {
+            const currentLatex = mf.getValue();
+            setLatex(currentLatex);
+            handleEvaluate(currentLatex);
+          }
+        }
+      });
 
       customElements.whenDefined("math-field").then(() => {
         const shadowRoot = mf.shadowRoot;
@@ -284,6 +299,7 @@ const [copied, setCopied] = useState(false);
     }
   }, []);
 
+
   const handleInsert = (latexCmd) => {
     const mf = mathfieldInstanceRef.current;
     if (mf) {
@@ -292,20 +308,23 @@ const [copied, setCopied] = useState(false);
     }
   };
 
-  const handleEvaluate = async () => {
-    try {
-      const res = await apiCall(
-        "space/projects/tools/calculator/solve/",
-        "POST",
-        { expression: latex }
-        );
-      console.log(res.data);
-      setOutput(res.data.output_latex || res.data.raw_result || "No output");
-    } catch (err) {
-        console.error(err)
-      setOutput("Error evaluating expression");
-    }
-  };
+
+  const { mutate: evaluateLatex } = useMutation({
+  mutationFn: solveExpression,
+  onSuccess: (data) => {
+    setOutput(data.output_latex || data.raw_result || "No output");
+  },
+  onError: (err) => {
+    console.error(err);
+    setOutput("Error evaluating expression");
+  },
+});
+
+
+  const handleEvaluate = async (value = latex) => {
+  evaluateLatex(value);
+};
+
 
   const handleClear = () => {
     const mf = mathfieldInstanceRef.current;
@@ -368,7 +387,10 @@ const [copied, setCopied] = useState(false);
                 <div ref={mathfieldContainerRef} style={{ width: "100%" }} />
               </div>
 
-              <button className="glass-evaluate-btn" onClick={handleEvaluate}>
+              <button
+                className="glass-evaluate-btn"
+                onClick={() => handleEvaluate()}
+              >
                 Evaluate
               </button>
             </div>
@@ -393,42 +415,42 @@ const [copied, setCopied] = useState(false);
             </div>
           </div>
           <div className="glass-output">
-  <div className="glass-output-header">
-    <strong>Output:</strong>
-    {output && (
-      <div className="tooltip-wrapper">
-  <button
-    className="glass-icon-btn"
-    onClick={() => {
-      navigator.clipboard.writeText(output);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }}
-    title="Copy Output"
-    aria-label="Copy Output"
-  >
-    <Clipboard size={16} />
-    <span className="tooltip-text">{copied ? "Copied!" : "Copy"}</span>
-  </button>
-</div>
+            <div className="glass-output-header">
+              <strong>Output:</strong>
+              {output && (
+                <div className="tooltip-wrapper">
+                  <button
+                    className="glass-icon-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(output);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    }}
+                    title="Copy Output"
+                    aria-label="Copy Output"
+                  >
+                    <Clipboard size={16} />
+                    <span className="tooltip-text">
+                      {copied ? "Copied!" : "Copy"}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
 
-    )}
-  </div>
-
-  {output ? (
-    <div
-      className="glass-latex"
-      dangerouslySetInnerHTML={{
-        __html: katex.renderToString(output, {
-          throwOnError: false,
-        }),
-      }}
-    />
-  ) : (
-    <p className="glass-latex-placeholder">No output yet</p>
-  )}
-</div>
-
+            {output ? (
+              <div
+                className="glass-latex"
+                dangerouslySetInnerHTML={{
+                  __html: katex.renderToString(output, {
+                    throwOnError: false,
+                  }),
+                }}
+              />
+            ) : (
+              <p className="glass-latex-placeholder">No output yet</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
