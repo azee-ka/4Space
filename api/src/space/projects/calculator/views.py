@@ -5,12 +5,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework import status
+import logging
 
 from .models import CalculatorExpression
 from .serializers import CalculatorExpressionSerializer
 from .utils import compute_expression
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -19,39 +19,25 @@ logger = logging.getLogger(__name__)
 @parser_classes([JSONParser])
 def solve_expression(request):
     expression = request.data.get("expression")
-
     if not isinstance(expression, str) or not expression.strip():
-        return Response(
-            {"error": "Missing or invalid 'expression' in request."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"error": "Missing or invalid 'expression'."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        input_latex = expression.strip()
-        output_latex, raw_result = compute_expression(input_latex)
+        latex_out, raw_result = compute_expression(expression.strip())
 
         record = CalculatorExpression.objects.create(
             user=request.user,
-            input_latex=input_latex,
-            output_latex=output_latex,
+            input_latex=expression,
+            output_latex=latex_out,
             raw_result=raw_result
         )
-
         return Response(CalculatorExpressionSerializer(record).data)
 
-    except ImportError as e:
-        if "antlr4" in str(e).lower():
-            return Response({
-                "error": "LaTeX parsing requires the ANTLR4 runtime. Install it using: pip install antlr4-python3-runtime==4.11"
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        logger.exception("Computation failed")
-        return Response(
-            {"error": f"Failed to solve the expression: {str(e)}"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        logger.exception("Unhandled error")
+        return Response({"error": "Unexpected error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
