@@ -56,6 +56,8 @@ export const TIMELINE_FEED = (filter) => ['timelineFeed', filter];
 
 
 // src/apps/space
+export const CALCULATOR_HISTORY = ['calculatorHistory'];
+
 export const SPACE_LIBRARY = ['spaceLibrary'];
 
 export const SPACE_PROJECTS = ['spaceProjects'];

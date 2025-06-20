@@ -5,8 +5,9 @@ import "./calculator.css";
 import { MathfieldElement } from "mathlive";
 import { Clipboard, X } from "lucide-react";
 import apiCall from "../../../../utils/api";
-import { useMutation } from "@tanstack/react-query";
-import { solveExpression } from "../../../../services/tools";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchCalculatorHistory, solveExpression } from "../../../../services/tools";
+import { CALCULATOR_HISTORY } from "../../../../services/queryKeys";
 
 const SYMBOL_SETS = {
   Algebra: [
@@ -299,7 +300,6 @@ const Calculator = () => {
     }
   }, []);
 
-
   const handleInsert = (latexCmd) => {
     const mf = mathfieldInstanceRef.current;
     if (mf) {
@@ -308,11 +308,13 @@ const Calculator = () => {
     }
   };
 
+const queryClient = useQueryClient();
 
-  const { mutate: evaluateLatex } = useMutation({
+const { mutate: evaluateLatex } = useMutation({
   mutationFn: solveExpression,
   onSuccess: (data) => {
     setOutput(data.output_latex || data.raw_result || "No output");
+    queryClient.invalidateQueries(CALCULATOR_HISTORY); // <- this updates history
   },
   onError: (err) => {
     console.error(err);
@@ -320,11 +322,15 @@ const Calculator = () => {
   },
 });
 
+  const { data: history = [] } = useQuery({
+  queryKey: CALCULATOR_HISTORY,
+  queryFn: fetchCalculatorHistory,
+});
 
   const handleEvaluate = async (value = latex) => {
-  evaluateLatex(value);
-};
-
+    evaluateLatex(value);
+    
+  };
 
   const handleClear = () => {
     const mf = mathfieldInstanceRef.current;
@@ -341,7 +347,30 @@ const Calculator = () => {
     <div className="glass-wrapper">
       <h2 className="glass-title-outside">Calculator</h2>
       <div className="calculator-main">
-        <div className="calculator-sidebar"></div>
+            <div className="calculator-sidebar">
+  <h3 className="calculator-sidebar-title">History</h3>
+  <div className="calculator-history-list">
+    {history.length === 0 && <p className="calculator-history-placeholder">No history yet.</p>}
+    {history.map((item, idx) => (
+      <div key={idx} className="calculator-history-entry">
+        <div
+          className="calculator-history-expression"
+          dangerouslySetInnerHTML={{
+            __html: katex.renderToString(item.input_latex, { throwOnError: false }),
+          }}
+        />
+        <div
+          className="calculator-history-result"
+          dangerouslySetInnerHTML={{
+            __html: katex.renderToString(item.output_latex || item.raw_result || "–", {
+              throwOnError: false,
+            }),
+          }}
+        />
+      </div>
+    ))}
+  </div>
+        </div>
         <div className="glass-calculator">
           <div className="glass-tabs">
             {Object.keys(SYMBOL_SETS).map((tab) => (
