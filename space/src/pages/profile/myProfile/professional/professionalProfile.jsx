@@ -12,6 +12,39 @@ import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import { FaEdit } from "react-icons/fa";
 import { formatDateTime } from "../../../../utils/formatDateTime";
 
+/**
+ * ExpandableText
+ * - preserves newlines (pre-wrap)
+ * - clamps to 6 lines
+ * - toggles full text
+ */
+function ExpandableText({ text, maxLines = 6 }) {
+  const [expanded, setExpanded] = useState(false);
+  // Heuristic: if more than maxLines newline breaks, or very long
+  const needsTruncation =
+    text.split("\n").length > maxLines || text.length > maxLines * 100;
+
+  return (
+    <div className="pro-entry-text-wrapper">
+      <p
+        className={
+          "pro-entry-description" + (expanded ? " expanded" : "")
+        }
+      >
+        {text}
+      </p>
+      {needsTruncation && (
+        <button
+          className="show-more-btn"
+          onClick={() => setExpanded((e) => !e)}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 const tabConfig = [
   { key: "home", label: "Home" },
   { key: "experience", label: "Experience" },
@@ -46,20 +79,17 @@ export default function ProfessionalProfile({ profileInfo }) {
       setSaveError(null);
       setIsModalOpen(false);
     },
-    onError: () => {
-      setSaveError("Something went wrong. Please try again.");
-    },
+    onError: () => setSaveError("Something went wrong. Please try again."),
   });
 
   const hasCategoryData = (key) => {
     const arr = profileData[key];
     if (!Array.isArray(arr) || arr.length === 0) return false;
-    if (key === "skills") {
-      return arr.some((s) => typeof s === "string" && s.trim() !== "");
-    }
+    if (key === "skills")
+      return arr.some((s) => typeof s === "string" && s.trim());
     return arr.some((obj) =>
       Object.values(obj).some(
-        (val) => val != null && (typeof val !== "string" || val.trim() !== "")
+        (val) => val != null && (typeof val !== "string" || val.trim())
       )
     );
   };
@@ -107,47 +137,69 @@ export default function ProfessionalProfile({ profileInfo }) {
     const sections = {
       experience: d.experience?.map((item, i) => {
         const start = formatDateTime(item.startDate);
-        const end = item.endDate !== null ? formatDateTime(item.endDate) : "Present";
+        const end =
+          item.endDate !== null ? formatDateTime(item.endDate) : "Present";
         const dateRange = `${start} – ${end}`;
         const durationDot = item.duration ? ` • ${item.duration}` : "";
         return (
           <div key={i} className="pro-entry">
-            <h4>{item.title} — {item.company}</h4>
-            <p><i>{dateRange}{durationDot}</i></p>
-            <p>{item.description}</p>
+            <h4>
+              {item.title} — {item.company}
+            </h4>
+            <p>
+              <i>
+                {dateRange}
+                {durationDot}
+              </i>
+            </p>
+            <ExpandableText text={item.description || ""} />
           </div>
         );
       }),
       education: d.education?.map((edu, i) => {
         const start = formatDateTime(edu.startDate);
-        const end = edu.endDate !== null ? formatDateTime(edu.endDate) : "Present";
+        const end =
+          edu.endDate !== null ? formatDateTime(edu.endDate) : "Present";
         const dateRange = `${start} – ${end}`;
         const durationDot = edu.duration ? ` • ${edu.duration}` : "";
         return (
           <div key={i} className="pro-entry">
             <h4>{edu.degree}</h4>
             <p>{edu.school}</p>
-            <p><i>{dateRange}{durationDot}</i></p>
-            <p>{edu.notes}</p>
+            <p>
+              <i>
+                {dateRange}
+                {durationDot}
+              </i>
+            </p>
+            <ExpandableText text={edu.notes || ""} />
           </div>
         );
       }),
       skills: (
         <ul className="skills-list">
-          {d.skills?.map((skill, i) => <li key={i}>{skill}</li>)}
+          {d.skills?.map((skill, i) => (
+            <li key={i}>{skill}</li>
+          ))}
         </ul>
       ),
       certifications: d.certifications?.map((cert, i) => (
         <div key={i} className="pro-entry">
           <h4>{cert.title}</h4>
-          <p>{cert.issuer} — <i>{cert.year}</i></p>
+          <p>
+            {cert.issuer} — <i>{cert.year}</i>
+          </p>
         </div>
       )),
       projects: d.projects?.map((proj, i) => (
         <div key={i} className="pro-entry">
           <h4>{proj.name}</h4>
-          <p>{proj.description}</p>
-          {proj.link && <a href={proj.link} target="_blank" rel="noreferrer">{proj.link}</a>}
+          <ExpandableText text={proj.description || ""} />
+          {proj.link && (
+            <a href={proj.link} target="_blank" rel="noreferrer">
+              {proj.link}
+            </a>
+          )}
         </div>
       )),
       languages: d.languages?.map((lang, i) => (
@@ -159,8 +211,14 @@ export default function ProfessionalProfile({ profileInfo }) {
       publications: d.publications?.map((pub, i) => (
         <div key={i} className="pro-entry">
           <h4>{pub.title}</h4>
-          <p>{pub.publisher}, <i>{pub.year}</i></p>
-          {pub.link && <a href={pub.link} target="_blank" rel="noreferrer">{pub.link}</a>}
+          <p>
+            {pub.publisher}, <i>{pub.year}</i>
+          </p>
+          {pub.link && (
+            <a href={pub.link} target="_blank" rel="noreferrer">
+              {pub.link}
+            </a>
+          )}
         </div>
       )),
       references: d.references?.map((ref, i) => (
@@ -190,7 +248,10 @@ export default function ProfessionalProfile({ profileInfo }) {
       <div className="pro-content-area">
         <div className="pro-tabs-horizontal">
           <div className="pro-edit-btn-wrapper">
-            <button className="pro-edit-btn" onClick={() => setIsModalOpen(true)}>
+            <button
+              className="pro-edit-btn"
+              onClick={() => setIsModalOpen(true)}
+            >
               <FaEdit />
             </button>
           </div>
@@ -199,7 +260,9 @@ export default function ProfessionalProfile({ profileInfo }) {
             .map((t) => (
               <button
                 key={t.key}
-                className={`pro-tab-btn ${activeTab === t.key ? "active" : ""}`}
+                className={`pro-tab-btn ${
+                  activeTab === t.key ? "active" : ""
+                }`}
                 onClick={() => switchToTab(t.key)}
               >
                 {t.label}
@@ -220,34 +283,58 @@ export default function ProfessionalProfile({ profileInfo }) {
         </div>
       </div>
 
+      {/* Sidebar */}
       <aside className="pro-sidebar">
         <div className="pro-sidebar-section">
           <div className="pro-sidebar-profile-image-wrapper">
-            <ProfilePicture src={profileInfo?.basicInfo?.profile_image} />
+            <ProfilePicture
+              src={profileInfo?.basicInfo?.profile_image}
+            />
           </div>
-          <h4>{profileInfo?.basicInfo?.full_name || "User"}</h4>
-          <p className="pro-role">{profileInfo?.basicInfo?.headline || "Professional"}</p>
+          <h4>
+            {profileInfo?.basicInfo?.first_name +
+              " " +
+              profileInfo?.basicInfo?.last_name ||
+              "User"}
+          </h4>
+          <p className="pro-role">
+            {profileInfo?.basicInfo?.headline || "Professional"}
+          </p>
         </div>
-
         <div className="pro-sidebar-section">
-          <p><strong>Email:</strong><br />{profileInfo?.basicInfo?.email}</p>
-          <p><strong>Location:</strong><br />{profileInfo?.basicInfo?.location || "—"}</p>
+          <p>
+            <strong>Email:</strong>
+            <br />
+            {profileInfo?.basicInfo?.email}
+          </p>
+          <p>
+            <strong>Location:</strong>
+            <br />
+            {profileInfo?.basicInfo?.location || "—"}
+          </p>
         </div>
-
         <div className="pro-sidebar-section">
-          <a className="download-cv-btn" href="#">Download CV</a>
+          <a className="download-cv-btn" href="#">
+            Download CV
+          </a>
         </div>
-
         <div className="pro-sidebar-section pro-sidebar-links">
-          <a href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
-          <a href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a href="https://github.com" target="_blank" rel="noreferrer">
+            GitHub
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noreferrer">
+            LinkedIn
+          </a>
         </div>
       </aside>
 
       {isModalOpen && (
         <ProfessionalProfileModal
           existingData={profileData}
-          onClose={() => { setIsModalOpen(false); setSaveError(null); }}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSaveError(null);
+          }}
           onSave={(updatedData) => saveMutation.mutate(updatedData)}
           isSaving={saveMutation.isLoading}
           error={saveError}
