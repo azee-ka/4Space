@@ -217,6 +217,10 @@
   display: flex;
   justify-content: center !important;
   align-items: center !important;
+  padding: 0.3rem;
+}
+.navbar-items li a {
+  padding: 0rem;
 }
  .navbar-items li:not(:last-child) a:hover,
 .navbar-items li:not(:last-child) button:hover {
@@ -236,15 +240,15 @@
   height: 2.6875rem;
   width: 2.6875rem;
   padding: 0;
-  border: 0.125rem solid rgba(244, 244, 244, 0);
+  border: 0.125rem solid rgba(154, 154, 154, 0.309) !important;
   transition: all 0.3 ease;
 }
 .navbar-items li:nth-child(5) button:hover {
-  border: 0.125rem solid rgb(255, 255, 255);
+  border: 0.125rem solid rgb(255, 255, 255) !important;
   cursor: pointer;
 }
 .navbar-items li:nth-child(5) button.active {
-  border: 0.125rem solid rgb(255, 255, 255);
+  border: 0.125rem solid rgb(255, 255, 255) !important;
   cursor: pointer;
 }
 .navbar-items li:nth-child(5) button img {
@@ -253,6 +257,7 @@
   height: 100%;
   width: 100%;
   transition: all 0.3 ease;
+  border: 0;
 }
 .navbar-items li::nth-child(5) button img:hover {
   cursor: pointer;
