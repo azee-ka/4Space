@@ -77,7 +77,7 @@
 .layout-page-content.sidebar {
     padding: 0.625rem 0.3rem 0.625rem 1.25rem;
     padding-top: 0;
-    padding-bottom: 0rem;
+    padding-bottom: 0rem !important;
     margin-left: 5.625rem;
     box-sizing: border-box;
   }

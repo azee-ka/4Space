@@ -1,0 +1,95 @@
+
+.profile-action-btns {
+    position: absolute;
+    top: 0.625rem;
+    right: 0.625rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.profile-action-btns button {
+    all: unset;
+    font-size: 1.4em;
+    cursor: pointer;
+    color: var(--profile-settings-color, rgba(255,255,255,0.6));
+    transition: all 0.3s;
+}
+.profile-action-btns button:hover {
+    color: var(--profile-settings-hover, #fff);
+}
+.profile-action-btns button.active {
+  color: rgb(56, 248, 255);
+}
+
+
+.profile-views-edit-menu {
+  background: rgba(58, 58, 58, 0.15);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 0.625rem 1.25rem rgba(0, 0, 0, 0.3);
+  padding: 0.6rem 0rem;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.profile-views-edit-menu-title {
+  padding: 0 0.7rem;
+  margin: 0;
+  color: rgb(230, 230, 230);
+  font-size: 1rem;
+}
+.profile-views-edit-menu-list {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.profile-views-edit-menu-list > * {
+    font-size: 0.8rem;
+    all: unset;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 0px;
+  color: #bbbbbb;
+}
+.profile-views-edit-menu-list > *:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+
+
+
+
+
+.edit-profile-button {
+    margin-top: 0.9375rem;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 0.0625rem solid var(--edit-profile-border, #fff);
+    border-radius: 1.25rem;
+    text-decoration: none;
+    color: var(--edit-profile-text, #fff);
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+.edit-profile-button:hover {
+    background: var(--edit-profile-hover-bg, rgba(255,255,255,0.1));
+    cursor: pointer;
+}
+
+/* === LIGHT MODE OVERRIDES === */
+[data-theme="light"] {
+    --profile-settings-color: #27507a;
+    --profile-settings-hover: #005cc1;
+    --edit-profile-border: #20507d;
+    --edit-profile-text: #20507d;
+    --edit-profile-hover-bg: rgba(30,120,220,0.08);
+}

@@ -120,6 +120,22 @@ class BaseUser(models.Model):
                              help_text="Customize visibility for profile fields"
                          )
 
+    # Professional Profile
+    experience = models.JSONField(blank=True, null=True, default=list)
+    education = models.JSONField(blank=True, null=True, default=list)
+    skills = models.JSONField(blank=True, null=True, default=list)
+    certifications = models.JSONField(blank=True, null=True, default=list)
+    projects = models.JSONField(blank=True, null=True, default=list)
+    languages = models.JSONField(blank=True, null=True, default=list)
+    publications = models.JSONField(blank=True, null=True, default=list)
+    references = models.JSONField(blank=True, null=True, default=list)
+    professional_tab_order = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="The front-end order of professional profile categories"
+    )
+
+    
     class Meta:
         ordering = ['date_joined']
 

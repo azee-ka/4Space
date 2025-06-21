@@ -100,6 +100,7 @@ export const USERNAME_HANDLES = ['usernameHandles'];
 // src/pages/profile
 export const PROFILE = (username) => ['profile', username || 'me'];
 export const USER_PROFILE_WITH_ID = (userId) => ['userProfile', userId];
+export const PROFILE_PROFESSIONAL = (username) => ['professionalProfile', username || 'me'];
 
 
 // src/pages/profile/myPostsTab

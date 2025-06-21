@@ -3,11 +3,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './myCommunitiesTab.css';
-import useApi from '../../../../../utils/useApi';
-import { formatDateTime } from '../../../../../utils/formatDateTime';
-import ProfilePicture from '../../../../../utils/profilePicture/getProfilePicture';
-import RenderText from '../../../../../utils/autoCompleteInput/renderText';
-import { useAuth } from '../../../../../hooks/useAuth';
+import useApi from '../../../../../../utils/useApi';
+import { formatDateTime } from '../../../../../../utils/formatDateTime';
+import ProfilePicture from '../../../../../../utils/profilePicture/getProfilePicture';
+import RenderText from '../../../../../../utils/autoCompleteInput/renderText';
+import { useAuth } from '../../../../../../hooks/useAuth';
 
 const PAGE_SIZE = 20;
 
