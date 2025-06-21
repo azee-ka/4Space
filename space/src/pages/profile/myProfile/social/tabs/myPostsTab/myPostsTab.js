@@ -2,14 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import Masonry from 'react-masonry-css';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import './myPostsTab.css';
-
-import { useAuth } from '../../../../../hooks/useAuth';
-import { ExpandPostProvider } from '../../../../../components/postUI/expandPost/expandPostContext';
-import { usePostContext } from '../../../../../context/PostContext';
-import VisualGridTile from '../../../../../apps/home/explore/visual/exploreVisualPostCard';
-import ThreadPostCard from '../../../../../apps/home/explore/thread/threadPostCard';
-import { fetchUserPosts } from '../../../../../services/posts';
-import { USER_POSTS } from '../../../../../services/queryKeys';
+import { useAuth } from '../../../../../../hooks/useAuth';
+import { ExpandPostProvider } from '../../../../../../components/postUI/expandPost/expandPostContext';
+import { usePostContext } from '../../../../../../context/PostContext';
+import VisualGridTile from '../../../../../../apps/home/explore/visual/exploreVisualPostCard';
+import ThreadPostCard from '../../../../../../apps/home/explore/thread/threadPostCard';
+import { fetchUserPosts } from '../../../../../../services/posts';
+import { USER_POSTS } from '../../../../../../services/queryKeys';
 
 const PAGE_SIZE = 20;
 

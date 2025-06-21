@@ -9,6 +9,9 @@ urlpatterns = [
     path('profile/get-user-info/', views.get_user_info, name='get-user-info'),
     path('profile/<str:username>/', views.user_profile_view, name='profile_view'),
     
+    path("profile/tab/professional/",                    views.get_professional_profile, name='get-own-professional-profile'),
+    path('profile/tab/professional/<str:username>/',     views.get_professional_profile, name='get-user-professional-profile'),
+
     # Search
     path('search/', include('src.user.search.urls')),
 
@@ -17,7 +20,7 @@ urlpatterns = [
     
     # Data (Flares, Entries, Packet)
     path('profile/', include('src.user.data.urls')),
-    
+        
     # Settings
     path('settings/toggle-profile-visibility/', views.toggle_profile_visibility, name='toggle-profile-visibility'),
     path('settings/edit-basic-info/', views.edit_basic_info, name='edit-basic-info'),

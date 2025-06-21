@@ -1,15 +1,63 @@
-/* HandleSwitcher.css */
+:root {
+  --hs-bg-toggle: rgba(195, 195, 195, 0.08);
+  --hs-border-toggle: rgba(195, 195, 195, 0.12);
+  --hs-bg-toggle-hover: rgba(255, 255, 255, 0.12);
+  --hs-border-toggle-hover: rgba(255, 255, 255, 0.14);
+  --hs-color-toggle: #eaeaea;
 
-/* The toggle “chip” */
+  --hs-bg-list: rgba(60, 60, 60, 0.247);
+  --hs-border-list: rgba(255, 255, 255, 0.1);
+  --hs-box-shadow: 0 0.625rem 1.25rem rgba(0, 0, 0, 0.3);
+
+  --hs-item-hover: rgba(255, 255, 255, 0.08);
+  --hs-item-active: rgba(255, 255, 255, 0.12);
+
+  --hs-color-username: #eaeaea;
+  --hs-color-label: #aaa;
+  --hs-color-loading: #ccc;
+  --hs-color-check: rgb(0, 255, 0);
+  --hs-color-title: white;
+
+  --hs-link-color: #888;
+  --hs-link-hover: #3bf6ea;
+}
+
+/* Light mode override */
+.light-mode,
+[data-theme="light"] {
+  --hs-bg-toggle: rgba(0, 0, 0, 0.05);
+  --hs-border-toggle: rgba(0, 0, 0, 0.08);
+  --hs-bg-toggle-hover: rgba(0, 0, 0, 0.12);
+  --hs-border-toggle-hover: rgba(0, 0, 0, 0.14);
+  --hs-color-toggle: #222;
+
+  --hs-bg-list: rgba(245, 245, 245, 0.85);
+  --hs-border-list: rgba(0, 0, 0, 0.1);
+  --hs-box-shadow: 0 0.625rem 1.25rem rgba(0, 0, 0, 0.1);
+
+  --hs-item-hover: rgba(0, 0, 0, 0.05);
+  --hs-item-active: rgba(0, 180, 220, 0.15);
+
+  --hs-color-username: #222;
+  --hs-color-label: #666;
+  --hs-color-loading: #555;
+  --hs-color-check: green;
+  --hs-color-title: #000;
+
+  --hs-link-color: #555;
+  --hs-link-hover: #00a9b3;
+}
+
+/* Toggle chip */
 .hs-toggle {
-width: 100%;
+  width: 100%;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(195, 195, 195, 0.08);
+  background: var(--hs-bg-toggle);
   backdrop-filter: blur(1px);
-  border: 1px solid rgba(195, 195, 195, 0.12);
-  color: #eaeaea;
+  border: 1px solid var(--hs-border-toggle);
+  color: var(--hs-color-toggle);
   padding: 0.7rem 1.3rem;
   border-radius: 999px;
   font-size: 0.9rem;
@@ -17,30 +65,28 @@ width: 100%;
   cursor: pointer;
   transition: all 0.3s;
 }
-.hs-toggle:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.14);
-}
+.hs-toggle:hover,
 .hs-toggle.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: var(--hs-bg-toggle-hover);
+  border-color: var(--hs-border-toggle-hover);
 }
 
+/* Title */
 .hs-list-title {
-    color: white;
-    font-size: 0.9rem;
-    padding: 0 0.8rem;
-    margin: 0;
+  color: var(--hs-color-title);
+  font-size: 0.9rem;
+  padding: 0 0.8rem;
+  margin: 0;
 }
 
-/* The dropdown container */
+/* Dropdown container */
 .hs-list {
-  background: rgba(60, 60, 60, 0.247);
+  background: var(--hs-bg-list);
   backdrop-filter: blur(1.25rem);
   -webkit-backdrop-filter: blur(1.25rem);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--hs-border-list);
   border-radius: 1rem;
-  box-shadow: 0 0.625rem 1.25rem rgba(0, 0, 0, 0.3);
+  box-shadow: var(--hs-box-shadow);
   padding: 0.5rem 0rem;
   min-width: 210px;
   display: flex;
@@ -59,27 +105,27 @@ width: 100%;
   border-radius: 0px;
 }
 .hs-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--hs-item-hover);
 }
 .hs-item.active {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--hs-item-active);
   font-weight: 600;
 }
 
 /* Username & label */
 .hs-username {
   font-size: 0.9rem;
-  color: #eaeaea;
+  color: var(--hs-color-username);
 }
 .hs-label {
   font-size: 0.75rem;
-  color: #aaa;
+  color: var(--hs-color-label);
   margin-left: 1rem;
 }
 
-/* Checkmark on active */
+/* Checkmark */
 .hs-check {
-  color: rgb(0, 255, 0);
+  color: var(--hs-color-check);
   margin-left: -1rem;
   font-size: 1rem;
 }
@@ -88,17 +134,15 @@ width: 100%;
 .hs-loading {
   padding: 0.75rem 1rem;
   text-align: center;
-  color: #ccc;
+  color: var(--hs-color-loading);
 }
 
-
-
-
+/* External link icon */
 .hs-ext-link {
   position: absolute;
   top: 8px;
   right: 12px;
-  color: #888;
+  color: var(--hs-link-color);
   background: none;
   border: none;
   z-index: 2;
@@ -108,5 +152,5 @@ width: 100%;
   text-decoration: none;
 }
 .hs-ext-link:hover {
-  color: #3bf6ea;
+  color: var(--hs-link-hover);
 }

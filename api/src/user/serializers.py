@@ -2,6 +2,109 @@
 
 from rest_framework import serializers
 from .models import BaseUser, AuthUser
+from datetime import date, datetime
+
+
+class ProfessionalProfileSerializer(serializers.ModelSerializer):
+    professional_tab_order = serializers.ListField(
+        child=serializers.CharField(), required=False, allow_empty=True
+    )
+    experience = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
+    education = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
+    skills = serializers.ListField(
+        child=serializers.CharField(), required=False, allow_empty=True
+    )
+    certifications = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
+    projects = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
+    languages = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
+    publications = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
+    references = serializers.ListField(
+        child=serializers.DictField(), required=False, allow_empty=True
+    )
+
+    class Meta:
+        model = BaseUser
+        fields = [
+            'experience', 'education', 'skills', 'certifications',
+            'projects', 'languages', 'publications', 'references',
+            'professional_tab_order',
+        ]
+
+    def validate(self, data):
+        # First run your existing list‐type checks
+        list_fields = [
+            'experience','education','skills','certifications',
+            'projects','languages','publications','references'
+        ]
+        for field in list_fields:
+            if field in data and not isinstance(data[field], list):
+                raise serializers.ValidationError({field: "Must be a list."})
+            if field != 'skills' and field in data:
+                if not all(isinstance(item, dict) for item in data[field]):
+                    raise serializers.ValidationError({field: "All items must be dictionaries."})
+
+        # Normalize any empty‐string or missing dates → None
+        for list_name in ('experience', 'education'):
+            for entry in data.get(list_name, []):
+                if entry.get('startDate') in ("", None):
+                    entry['startDate'] = None
+                if entry.get('endDate') in ("", None):
+                    entry['endDate'] = None
+
+        return data
+
+    def _compute_duration(self, start_iso, end_iso):
+        if not start_iso:
+            return ""
+        start = datetime.fromisoformat(start_iso).date()
+        end   = datetime.fromisoformat(end_iso).date() if end_iso else date.today()
+        months = (end.year - start.year) * 12 + (end.month - start.month)
+        if months < 0:
+            return ""
+        yrs, mos = divmod(months, 12)
+        parts = []
+        if yrs:
+            parts.append(f"{yrs} yr{'s' if yrs>1 else ''}")
+        if mos:
+            parts.append(f"{mos} mo{'s' if mos>1 else ''}")
+        return " ".join(parts)
+
+    def _annotate(self, items):
+        out = []
+        for entry in items or []:
+            e = entry.copy()
+            # Guarantee both date keys exist (None → JSON null)
+            e.setdefault('startDate', None)
+            e.setdefault('endDate',   None)
+            # Compute duration up to today if endDate is None
+            e['duration'] = self._compute_duration(
+                e['startDate'], e['endDate']
+            )
+            out.append(e)
+        return out
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Re-inject computed durations (and explicit nulls) for both sections
+        data['experience'] = self._annotate(data.get('experience', []))
+        data['education']  = self._annotate(data.get('education', []))
+        return data
+    
+    
+    
+    
 
 
 class HandleSerializer(serializers.ModelSerializer):

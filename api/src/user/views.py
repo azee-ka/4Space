@@ -10,9 +10,39 @@ from .serializers import (
     FullProfileSerializer, 
     EditUserInfoSerializer,
     HandleSerializer,
+    ProfessionalProfileSerializer,
     )
 from django.shortcuts import get_object_or_404
 from ..notifications.models import Notification
+
+
+
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def get_professional_profile(request, username=None):
+    viewer = request.user
+    is_me  = username is None or username == viewer.username
+
+    # GET handler
+    if request.method == 'GET':
+        user = viewer if is_me else get_object_or_404(BaseUser, username=username)
+        serializer = ProfessionalProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # PATCH handler
+    if not is_me:
+        return Response(
+            {'detail': "Cannot edit someone else’s profile."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    # Let the serializer handle professional_tab_order (and all other fields)
+    serializer = ProfessionalProfileSerializer(viewer, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    return Response({'message': 'Profile updated.'}, status=status.HTTP_200_OK)
 
 
 

@@ -1,28 +1,30 @@
-export const formatDateTime = (dateTimeString, includeTime) => {
-    if(dateTimeString === null) {
-        return '';
-    }
+export const formatDateTime = (dateTimeString, includeTime = false) => {
+  // 1) nothing or empty → ""
+  if (!dateTimeString) {
+    return "";
+  }
 
-    let options;
-  
-    if (includeTime) {
-      options = {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      };
-    } else {
-      options = {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      };
-    }
-  
-    const formattedDate = new Date(dateTimeString).toLocaleDateString('en-US', options);
-  
-    return formattedDate;
-  };
+  const d = new Date(dateTimeString);
+  // 2) invalid → ""
+  if (isNaN(d.getTime())) {
+    return "";
+  }
+
+  // 3) pick your formatter
+  if (includeTime) {
+    return d.toLocaleString("en-US", {
+      year:   "numeric",
+      month:  "short",
+      day:    "numeric",
+      hour:   "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } else {
+    return d.toLocaleDateString("en-US", {
+      year:  "numeric",
+      month: "short",
+      day:   "numeric",
+    });
+  }
+};

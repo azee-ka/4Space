@@ -1,0 +1,354 @@
+/* Modal Overlay */
+.pro-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal Container */
+.pro-modal {
+  background: var(--color-bg);
+  color: var(--color-text);
+  /* backdrop-filter: blur(10px); */
+  border: 1px solid rgba(128, 128, 128, 0.28);
+  padding: 1rem;
+  /* width: 80%; */
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 1rem;
+  font-family: var(--font-main);
+  transition: all 0.4s;
+}
+
+.close-pro-modal-btn {
+  all: unset;
+  font-size: 1.5rem;
+}
+
+/* Header */
+.pro-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+.pro-modal-header h3 {
+  padding: 0;
+  margin: 0;
+}
+
+/* Pill Buttons */
+.pill-btn {
+  background: var(--color-btn-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--color-text);
+  transition: background 0.25s ease, color 0.25s ease;
+  white-space: nowrap;
+}
+
+.pill-btn:hover {
+  background: var(--color-btn-bg-hover);
+  color: var(--color-text-strong);
+}
+
+/* Pills Row */
+.pro-modal-pills {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.pro-modal-pills::-webkit-scrollbar {
+  height: 5px;
+}
+.pro-modal-pills::-webkit-scrollbar-thumb {
+  background: var(--color-scroll-thumb);
+  border-radius: 5px;
+}
+
+/* Form Section Wrapper */
+.pro-form-section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg-soft);
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text-strong);
+  cursor: pointer;
+  padding: 0.5rem 0;
+  /* margin-bottom: 0.6rem; */
+  transition: all 0.4s ease;
+
+}
+
+.section-header.collapsed {
+  margin: 0;
+}
+
+/* Entry Body */
+/* Animated Section Body */
+.section-body {
+  overflow: hidden;
+  max-height: 0;
+  transform: scaleY(0.95);
+  transition: all 0.4s ease;
+  transform-origin: top;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.expanded-section {
+  max-height: 5000px;
+  transform: scaleY(1);
+}
+.collapsed-section {
+  max-height: 0;
+  opacity: 0;
+  transform: scaleY(0.95);
+}
+
+
+/* Individual Entry Card */
+.pro-form-entry {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius);
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  position: relative;
+}
+
+/* Input Container */
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-size: 0.75rem;
+  color: var(--color-text-strong);
+  margin-bottom: 0.3rem;
+}
+
+.pro-form-entry .input-group .control-settings-item {
+  width: fit-content;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+
+
+.input-group input,
+.input-group select {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--color-border-accent);
+}
+
+.input-group textarea {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.input-group.double-span {
+  grid-column: span 2;
+}
+
+
+.input-group textarea:focus {
+  outline: none;
+  border-color: var(--color-border-accent);
+}
+
+
+/* Remove Button */
+.entry-controls {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.entry-controls .pill-btn {
+  background: rgba(255, 60, 60, 0.12);
+  color: #ff9c9c;
+  border-color: rgba(255, 60, 60, 0.3);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-pill);
+}
+
+.entry-controls .pill-btn:hover {
+  background: rgba(255, 60, 60, 0.25);
+  color: #ffc0c0;
+}
+
+/* Save Button */
+.pro-submit-btn {
+  align-self: flex-end;
+  background: var(--color-btn-bg-active);
+  color: var(--color-text-strong);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.pro-submit-btn:hover {
+  background: var(--color-btn-bg-hover);
+}
+
+
+
+
+/* Category Buttons Row */
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border-soft);
+  margin-bottom: 1rem;
+}
+
+.category-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  background: var(--color-btn-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.category-btn:hover {
+  background: var(--color-btn-bg-hover);
+  color: var(--color-text-strong);
+}
+
+/* Distinct Remove Button */
+.remove-btn {
+  background: rgba(255, 60, 60, 0.1);
+  color: #ff9999;
+  border-color: rgba(255, 60, 60, 0.3);
+}
+
+.remove-btn:hover {
+  background: rgba(255, 60, 60, 0.25);
+  color: #ffcaca;
+}
+
+/* Distinct Add Button */
+.add-btn {
+  background: rgba(0, 228, 255, 0.12);
+  color: #99faff;
+  border-color: rgba(0, 228, 255, 0.2);
+  margin-top: 0.5rem;
+  width: fit-content;
+}
+
+
+
+/* Prompt message when no categories are open */
+.no-tabs-message {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text);
+  background: var(--color-bg-soft);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+}
+
+
+/* when a category has already been opened */
+.category-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+
+
+.drag-icon {
+  cursor: grab;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background 0.2s;
+}
+
+.drag-icon:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.drag-icon:active {
+  cursor: grabbing;
+}
+
+/* ----- Already-clicked category button (reuse your existing styles) ----- */
+.category-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+
+
+.pro-error-message {
+  background: rgba(255, 0, 0, 0.1);
+  color: #a00;
+  padding: 0.5rem;
+  border-radius: var(--radius-pill);
+  margin-bottom: 1rem;
+  text-align: center;
+}
