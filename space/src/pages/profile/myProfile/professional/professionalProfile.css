@@ -59,7 +59,7 @@
 }
 
 /* === Global Reset === */
-* {
+.pro-profile * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;

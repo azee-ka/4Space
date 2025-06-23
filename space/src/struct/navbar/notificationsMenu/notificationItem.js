@@ -11,7 +11,7 @@ import { FaChevronRight, FaEllipsisV } from "react-icons/fa";
 import { NOTIFICATIONS } from '../../../services/queryKeys';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
 
-const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
+const NotificationItem = ({ notification, handleNotificationSidebarOpen, closeDropdown }) => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
 
@@ -92,7 +92,10 @@ const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
     return (
         <div
             className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
-            onClick={() => handleNotificationSidebarOpen(notification.id)}
+            onClick={() => {
+                closeDropdown?.();
+                handleNotificationSidebarOpen(notification.id);
+            }}
         >
             <div className='notification-item-top-panel'>
                 <h3>{notification.title}</h3>
@@ -116,7 +119,7 @@ const NotificationItem = ({ notification, handleNotificationSidebarOpen }) => {
                     </p>
                 </div>
                 <DropdownButton
-                    toggleContent={<button className="notification-action-toggle"><FaEllipsisV /></button>}
+                    toggleContent={<button onClick={(e) => e.stopPropagation()} className="notification-action-toggle"><FaEllipsisV /></button>}
                     placement="bottom-start"
                 >
                     {menuContent}

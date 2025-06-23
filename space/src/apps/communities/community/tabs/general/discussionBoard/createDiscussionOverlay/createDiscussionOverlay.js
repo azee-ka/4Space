@@ -10,41 +10,44 @@ import { useCommunity } from '../../../../../../../context/CommunityContext'; //
 const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
     const [titleContent, setTitleContent] = useState('');
     const [bodyContent, setBodyContent] = useState('');
-    const [loading, setLoading] = useState(false);
+    // const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const { exchange } = useCommunity(); // Access the exchange logic
 
+const { createDiscussionMutation } = exchange;
+const { mutate: createDiscussion, isLoading } = createDiscussionMutation;
+
     // Each editor has its own ref to track insertEmoji per instance
     const titleInsertEmojiRef = useRef(null);
 
-    const handleSubmit = async () => {
-        setError(null);
-        const strippedTitle = titleContent.replace(/<[^>]+>/g, '').trim();
-        const strippedBody = bodyContent.replace(/<[^>]+>/g, '').trim();
 
-        if (strippedTitle.length > 255) {
-            alert("Title must be 255 characters or less.");
-            return;
-        }
-        if (!strippedTitle || !strippedBody) return;
+    const handleSubmit = () => {
+    const plainTitle = titleContent.replace(/<[^>]+>/g, '').trim();
+    const plainBody  = bodyContent.replace(/<[^>]+>/g, '').trim();
+    if (!plainTitle || !plainBody) return;
+    if (plainTitle.length > 255) {
+      return alert('Title must be 255 characters or less.');
+    }
 
-        setLoading(true);
-        try {
-            const post = await exchange.createDiscussion({
-            title: titleContent,
-            content: bodyContent
-            });
-            exchange.setPosts([post, ...exchange.posts]);
-            onPostCreated(post);
-            onClose();
-        } catch (err) {
-            setError(err?.response?.data?.detail || err?.message || 'Failed to post.');
-            console.error('Post failed:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    createDiscussion(
+      { title: titleContent, content: bodyContent },
+      {
+        onSuccess: (newPost) => {
+          // first close the overlay
+          onClose();
+
+          // then notify parent that a new post was created
+          if (onPostCreated) {
+            onPostCreated(newPost);
+          }
+        },
+        onError: (err) => {
+          setError(err?.response?.data?.detail || err.message || 'Failed to post.');
+        },
+      }
+    );
+  };
 
     return (
         <div className="discussion-overlay-backdrop" onClick={onClose}>
@@ -95,9 +98,9 @@ const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
                     <button
                         className="submit-discussion-btn"
                         onClick={handleSubmit}
-                        disabled={loading}
+                        disabled={isLoading}
                     >
-                        {loading ? 'Posting...' : 'Post Discussion'}
+                        {isLoading ? 'Posting...' : 'Post Discussion'}
                     </button>
                     {error && (
                         <div className="discussion-form-error">

@@ -4,9 +4,11 @@
   left: 0;
   width: 100%;
   height: 100%;
-  backdrop-filter: blur(0.875rem);
-  background-color: rgba(21, 21, 21, 0.49);
-  z-index: 100;
+  /* backdrop-filter: blur(0.875rem);
+  background-color: rgba(21, 21, 21, 0.49); */
+      background: rgba(10, 10, 20, 0.55);
+    backdrop-filter: blur(1.25rem) saturate(140%);
+  z-index: 51;
   display: flex;
   justify-content: center;
   align-items: center;

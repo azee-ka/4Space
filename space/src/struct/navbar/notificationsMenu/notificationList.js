@@ -3,7 +3,7 @@ import './notificationsMenu.css'
 import NotificationItem from './notificationItem';
 import useNotifications from '../../../hooks/useNotifications';
 
-const NotificationList = ({ handleNotificationSidebarOpen }) => {
+const NotificationList = ({ handleNotificationSidebarOpen, closeDropdown }) => {
     const { notifications } = useNotifications();
 
     return (notifications?.length > 0) ? (
@@ -12,6 +12,7 @@ const NotificationList = ({ handleNotificationSidebarOpen }) => {
                 <NotificationItem 
                     key={notification.id} 
                     notification={notification} 
+                    closeDropdown={closeDropdown}
                     handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                 />
             ))}

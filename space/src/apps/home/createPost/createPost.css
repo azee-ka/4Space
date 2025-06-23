@@ -211,7 +211,7 @@
 
 .create-post-content-editor {
     width: 100%;
-    min-height: 9.375rem;
+    min-height: 8.375rem;
     max-height: 25rem;
     background-color: rgba(0, 128, 0, 0);
     position: relative;
@@ -225,10 +225,10 @@
     gap: 0.3125rem;
 }
 .create-post-content-editor.Thread {
-    min-height: 10rem;
+    min-height: 7.5rem;
 }
 .create-post-content-editor.Visual {
-    min-height: 5.625rem;
+    min-height: 3.625rem;
 }
 
 

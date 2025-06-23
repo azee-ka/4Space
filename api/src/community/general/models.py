@@ -13,7 +13,7 @@ class ExchangePost(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     upvotes = models.PositiveIntegerField(default=0)
-    comments_count = models.PositiveIntegerField(default=0)  # for fast lookup (update in logic)
+    comments_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-created_at']
