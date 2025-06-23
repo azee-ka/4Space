@@ -1,6 +1,4 @@
 .sidebar-container {
-    backdrop-filter: blur(2.5rem) !important;
-    background-color: rgba(16, 16, 16, 0.229);
     position: fixed;
     width: 18.75rem;
     height: 100vh;
@@ -15,6 +13,11 @@
     box-shadow: 0 1.125rem 0.9375rem rgba(0, 0, 0, 0.82);
     transition: transform 0.4s ease;
     transform: translateX(0);
+
+    background: rgba(154, 154, 154, 0.093);
+    backdrop-filter: blur(1.9375rem);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+    color: #e4e4e4;
 }
 
 .sidebar-container.close {
@@ -88,8 +91,8 @@
 
 @media (max-width: 50rem) {
     .sidebar-container {
-    width: 16.875rem;
-}
+        width: 16.875rem;
+    }
 }
 
 
@@ -102,7 +105,7 @@
    ====================== */
 [data-theme="light"] .sidebar-container {
     background: rgba(255, 255, 255, 0.98) !important;
-    box-shadow: 0 0.375rem 1.75rem 0.125rem rgba(128, 150, 180, 0.13), 0 0.0938rem 0.5rem 0 rgba(30,40,60,0.06);
+    box-shadow: 0 0.375rem 1.75rem 0.125rem rgba(128, 150, 180, 0.13), 0 0.0938rem 0.5rem 0 rgba(30, 40, 60, 0.06);
     /* More subtle shadow for light mode, softer blur effect */
     backdrop-filter: blur(1.5rem) !important;
 }
@@ -140,7 +143,7 @@
 @media (max-width: 50rem) {
     [data-theme="light"] .sidebar-container {
         width: 16.875rem;
-        background: rgba(255,255,255,0.98) !important;
-        box-shadow: 0 0.25rem 1rem 0 rgba(160,180,220,0.11);
+        background: rgba(255, 255, 255, 0.98) !important;
+        box-shadow: 0 0.25rem 1rem 0 rgba(160, 180, 220, 0.11);
     }
 }

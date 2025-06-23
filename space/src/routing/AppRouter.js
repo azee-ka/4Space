@@ -54,8 +54,14 @@ import useAppDataRefetcher from '../hooks/useAppDataRefetcher';
 import { HandlesProvider } from '../context/HandlesContext';
 
 
+
+// tiny wrapper so that useAppDataRefetcher is called *inside* Router
+function DataRefetcher() {
+  useAppDataRefetcher();
+  return null;
+}
+
 const AppRouter = () => {
-    useAppDataRefetcher();
     const { isLoading, isAuthenticated, isAddingAccount } = useAuth();
 
     const privateRoutes = [
@@ -114,9 +120,9 @@ const AppRouter = () => {
         { name: 'Home', path: '/', component: <FrontPage />, key: 'FrontPage' },
         { name: 'Home', path: '/home', component: <FrontPage />, key: 'FrontPage' },
         { name: 'OAuth Callback', path: '/oauth/callback', component: <OauthCallback />, key: 'OauthCallback' },
-        
+
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
-        
+
         { name: 'Calculator', path: '/space/tools/calculator', component: <Calculator />, key: 'Calculator' },
     ];
 
@@ -148,10 +154,11 @@ const AppRouter = () => {
 
     return (
         <Router>
+            {isAuthenticated && <DataRefetcher />}
             <DndProvider backend={HTML5Backend}>
-                <DisplaySettingsProvider>
-                    <ModeProvider>
-                        <HandlesProvider>
+                <HandlesProvider>
+                    <DisplaySettingsProvider>
+                        <ModeProvider>
                             <ReportOverlayProvider>
                                 <EditorProvider>
                                     <PostProvider>
@@ -199,9 +206,9 @@ const AppRouter = () => {
                                     </PostProvider>
                                 </EditorProvider>
                             </ReportOverlayProvider>
-                        </HandlesProvider>
-                    </ModeProvider>
-                </DisplaySettingsProvider>
+                        </ModeProvider>
+                    </DisplaySettingsProvider>
+                </HandlesProvider>
             </DndProvider>
         </Router>
     );

@@ -21,7 +21,7 @@ const NotificationsMenuContent = ({ handleNotificationSidebarOpen, closeDropdown
                 </p>
             </button>
         </div>
-        <NotificationList handleNotificationSidebarOpen={handleNotificationSidebarOpen} />
+        <NotificationList closeDropdown={closeDropdown} handleNotificationSidebarOpen={handleNotificationSidebarOpen} />
     </div>
 );
 
