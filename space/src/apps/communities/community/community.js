@@ -1,26 +1,26 @@
+// src/pages/Community/CommunityPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { CommunityProvider, useCommunity } from "../../../context/CommunityContext";
 import { TAB_COMPONENTS_FLAT } from "./tabs/tabComponents";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
+import RenderText from "../../../utils/autoCompleteInput/renderText";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
 import AddTabOverlay from "./addTabOverlay/addTabOverlay";
 import InviteOverlay from "./inviteOverlay/inviteOverlay";
 import "./community.css";
-import RenderText from "../../../utils/autoCompleteInput/renderText";
 
-const CommunityPage = () => {
+export default function CommunityPage() {
   const { slug } = useParams();
-
   return (
     <CommunityProvider slug={slug}>
       <Community />
     </CommunityProvider>
   );
-};
+}
 
-const Community = () => {
+function Community() {
   const {
     community,
     selectedTab,
@@ -30,151 +30,126 @@ const Community = () => {
     addTabs,
   } = useCommunity();
 
-  const [addTabOverlayIsOpen, setAddTabOverlayIsOpen] = useState(false);
-  const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
+  // fetch on mount
   useEffect(() => {
     fetchCommunityData();
   }, [fetchCommunityData]);
 
+  // sync selectedTab to hash or default
   useEffect(() => {
-    if (community?.tabs?.length) {
-      const raw = window.location.hash.replace("#", "");
-      const key = raw.split("-")[0];
-      const found = community.tabs.find((t) => t.key === key);
-      setSelectedTab(found || community.tabs[0]);
-    }
+    if (!community || !community.tabs?.length) return;
+    const raw = window.location.hash.replace("#", "");
+    const key = raw.split("-")[0];
+    const found = community.tabs.find(t => t.key === key);
+    setSelectedTab(found || community.tabs[0]);
   }, [community, setSelectedTab]);
 
   if (!community) {
-    return <div className="community-loading">Loading...</div>;
+    return <div className="loading">Loading…</div>;
   }
 
   return (
-    <div className="community-wrapper">
-      {/* Sidebar */}
-      <div className="community-sidebar">
-        <div
-          className={`community-card community-header-bar ${
-            selectedTab?.key === "home" ? "hidden" : ""
-          }`}
-        >
-          <div className="community-header-top">
-            <ProfilePicture
-              src={community.logo}
-              isCommunity={true}
-              className="community-header-logo"
-            />
-            <div className="community-header-info">
-              <div className="community-header-name">
-                <h2>{community.name}</h2>
-                <h3><RenderText text={`c/${community?.slug}`} /></h3>
-              </div>
-              <div className="community-header-meta">
-                {community.members_count || 0} members •{" "}
-                {community.posts_count || 0} posts
-              </div>
+    <div className="community-page">
+      {/* — App Bar */}
+      <div className="cp-appbar">
+        <div className="cp-info">
+          <ProfilePicture
+            src={community.logo}
+            isCommunity
+            className="cp-logo"
+          />
+          <div>
+            <h1>{community.name}</h1>
+            <div className="cp-subtitle">
+              <RenderText text={`c/${community.slug}`} />{" "}
+              <span className="cp-dot">·</span>{" "}
+              {community.members_count} members
             </div>
           </div>
-          <div className="community-header-actions">
+        </div>
+        <div className="cp-actions">
+          <button
+            onClick={handleJoinLeave}
+            className={`btn ${community.is_member ? "btn-leave" : "btn-join"}`}
+          >
+            {community?.is_member ? "Leave" : "Join"}
+          </button>
+          {community?.permissions?.can_invite_members && (
             <button
-              className={`community-join-btn ${
-                community.is_member ? "leave" : ""
-              }`}
-              onClick={handleJoinLeave}
+              onClick={() => setShowInvite(true)}
+              className="btn btn-invite"
             >
-              {community.is_member ? "Leave" : "Join"}
+              <FontAwesomeIcon icon={faEnvelopeOpen} /> Invite
             </button>
-            {community.visibility === "public" &&
-              community.permissions.can_invite_members && (
-                <button
-                  className="community-invite-btn"
-                  onClick={() => setInviteOverlayOpen(true)}
-                >
-                  Invite
-                </button>
-              )}
-          </div>
-        </div>
-
-        <div
-          className={`community-card community-tabs-card ${
-            selectedTab?.key === "home" ? "shift-up" : ""
-          }`}
-        >
-          <div className="community-tabs-header">
-            <h3 className="community-tabs-title">Menu</h3>
-            {community.permissions.can_add_tabs && (
-              <button
-                className="community-add-tab-btn"
-                onClick={() => setAddTabOverlayIsOpen(true)}
-              >
-                <FontAwesomeIcon icon={faPlus} /> Add Tab
-              </button>
-            )}
-          </div>
-          <div className="community-tabs-list">
-            {community.tabs.map((tab) => (
-              <div
-                key={tab.key}
-                className={`community-tab-item ${
-                  selectedTab?.key === tab.key ? "active" : ""
-                }`}
-                onClick={() => {
-                  setSelectedTab(tab);
-                  window.history.replaceState(
-                    null,
-                    "",
-                    `#${tab.key}`
-                  );
-                }}
-              >
-                {tab.label}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="community-card-wrapper">
-        <div className="community-content-card">
-          {selectedTab?.key &&
-          TAB_COMPONENTS_FLAT[selectedTab.key] ? (
-            React.createElement(
-              TAB_COMPONENTS_FLAT[selectedTab.key].Component,
-              {
-                communitySlug: community.slug,
-                community,
-                handleJoinLeave,
-                setInviteOverlayOpen,
-                fetchCommunityData,
-              }
-            )
-          ) : (
-            <div className="tab-content-placeholder">
-              This tab is not yet supported.
-            </div>
           )}
         </div>
       </div>
 
-      {addTabOverlayIsOpen && (
+      {/* — Tab Bar */}
+      <nav className="cp-tabs">
+        <div className="cp-tabs-left">
+          {community.tabs.map(tab => (
+            <button
+              key={tab.key}
+              className={`cp-tab ${
+                selectedTab?.key === tab.key ? "active" : ""
+              }`}
+              onClick={() => {
+                setSelectedTab(tab);
+                window.history.replaceState(null, "", `#${tab.key}`);
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {community?.permissions?.can_add_tabs && (
+          <button
+            className="cp-btn cp-btn-add"
+            onClick={() => setShowAdd(true)}
+          >
+            <FontAwesomeIcon icon={faPlus} /> Add Tab
+          </button>
+        )}
+      </nav>
+
+      {/* — Content */}
+      <main className="cp-content">
+        {selectedTab && TAB_COMPONENTS_FLAT[selectedTab.key] ? (
+          React.createElement(
+            TAB_COMPONENTS_FLAT[selectedTab.key].Component,
+            {
+              communitySlug: community.slug,
+              community,
+              handleJoinLeave,
+              setInviteOverlayOpen: () => setShowInvite(true),
+              fetchCommunityData,
+            }
+          )
+        ) : (
+          <div className="placeholder">
+            No content for “{selectedTab?.label || "…"}” yet.
+          </div>
+        )}
+      </main>
+
+      {/* — Overlays */}
+      {showAdd && (
         <AddTabOverlay
-          onClose={() => setAddTabOverlayIsOpen(false)}
+          onClose={() => setShowAdd(false)}
           communitySlug={community.slug}
           community={community}
           addTabs={addTabs}
         />
       )}
-      {inviteOverlayOpen && (
+      {showInvite && (
         <InviteOverlay
-          communitySlug={community.slug}
-          onClose={() => setInviteOverlayOpen(false)}
+          onClose={() => setShowInvite(false)}
         />
       )}
     </div>
   );
-};
-
-
-export default CommunityPage;
+}

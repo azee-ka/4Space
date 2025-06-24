@@ -93,7 +93,7 @@ const Exchange = ({ communitySlug, community }) => {
         </div>
       </div>
 
-      {community.permissions.can_post_discussions && (
+      {community?.permissions?.can_post_discussions && (
         <>
           <button
             className="floating-discussion-btn"
