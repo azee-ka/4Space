@@ -1,4 +1,3 @@
-# communities/views.py
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -7,16 +6,21 @@ from django.shortcuts import get_object_or_404
 
 from .models import Community, CommunityMembership, CommunityPermission, CommunityTab
 from .serializers import (
-    CommunityCreateSerializer, 
-    CommunityDetailSerializer, 
-    CommunityUpdateSerializer, 
-    CommunityTabSerializer, 
-    CommunityTabCreateSerializer, 
-    CommunityMemberSerializer
+    CommunityCreateSerializer,
+    CommunityDetailSerializer,
+    CommunityUpdateSerializer,
+    CommunityTabSerializer,
+    CommunityTabCreateSerializer,
+    CommunityMemberSerializer,
 )
 from ..user.models import BaseUser
 from ..notifications.models import Notification
-from .permissions_defaults import DEFAULT_MEMBER_PERMISSIONS
+from .permissions_defaults import DEFAULT_MEMBER_PERMISSIONS, DEFAULT_ADMIN_PERMISSIONS
+
+
+def get_community_or_404_by_slug(slug):
+    # case-insensitive lookup
+    return get_object_or_404(Community, slug__iexact=slug)
 
 
 @api_view(['GET'])
@@ -27,50 +31,41 @@ def list_communities(request):
     return Response(serializer.data)
 
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def community_members(request, community_id):
-    community = get_object_or_404(Community, id=community_id)
+def community_members(request, slug):
+    community = get_community_or_404_by_slug(slug)
     if not CommunityMembership.objects.filter(user=request.user, community=community, role='admin').exists():
         return Response({"detail": "Unauthorized."}, status=403)
 
     memberships = CommunityMembership.objects.filter(community=community).select_related('user')
-
-    # Pre-fetch all permissions for efficiency
     permissions_map = {
-        (str(p.user_id), str(p.community_id)): p.permissions
+        (p.user_id): p.permissions
         for p in CommunityPermission.objects.filter(community=community)
     }
 
-    # Collect info for each member
     members = []
     for m in memberships:
         user = m.user
-        perms = permissions_map.get((str(user.id), str(community.id)))
+        perms = permissions_map.get(user.id) or {}
         members.append({
             "user": user,
             "role": m.role,
-            "permissions": perms or {},  # fallback to empty dict if not found
+            "permissions": perms,
         })
 
     serializer = CommunityMemberSerializer(members, many=True)
     return Response(serializer.data)
 
 
-
-
-
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def join_community(request, community_id):
-    community = get_object_or_404(Community, id=community_id)
+def join_community(request, slug):
+    community = get_community_or_404_by_slug(slug)
 
     if community.visibility == 'public':
         membership, created = CommunityMembership.objects.get_or_create(
-            user=request.user,
-            community=community,
+            user=request.user, community=community,
             defaults={'role': 'member'}
         )
         if created:
@@ -79,220 +74,188 @@ def join_community(request, community_id):
                 user=request.user,
                 defaults={'permissions': DEFAULT_MEMBER_PERMISSIONS}
             )
+        return Response({"detail": "Joined community successfully."})
 
-        return Response({"detail": "Joined community successfully."}, status=200)
+    if community.visibility == 'invite':
+        return Response({"detail": "Invitation required."}, status=403)
 
-    elif community.visibility == 'invite':
-        return Response({"detail": "This community requires an invitation to join."}, status=403)
-
-    return Response({"detail": "This community is private and cannot be joined directly."}, status=403)
-
+    return Response({"detail": "Private community."}, status=403)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def invite_user_to_community(request, community_id):
-    community = get_object_or_404(Community, id=community_id)
+def invite_user_to_community(request, slug):
+    community = get_community_or_404_by_slug(slug)
 
-    # Permission check
     if not CommunityPermission.objects.filter(
-        community=community, user=request.user, permissions__can_invite_members=True
+        community=community, user=request.user,
+        permissions__can_invite_members=True
     ).exists():
-        return Response({"detail": "You do not have permission to invite users."}, status=403)
+        return Response({"detail": "No invite permission."}, status=403)
 
     target_user_id = request.data.get('user_id')
     if not target_user_id:
-        return Response({"detail": "Missing user_id in request."}, status=400)
+        return Response({"detail": "Missing user_id."}, status=400)
 
-    # Prevent self-invite
     if str(request.user.id) == str(target_user_id):
-        return Response({"detail": "You cannot invite yourself."}, status=400)
+        return Response({"detail": "Cannot invite yourself."}, status=400)
 
-    # Resolve target user
     target_user = get_object_or_404(BaseUser, id=target_user_id)
-
-    # Already a member?
     if CommunityMembership.objects.filter(user=target_user, community=community).exists():
-        return Response({"detail": "User is already a member of this community."}, status=409)
+        return Response({"detail": "Already a member."}, status=409)
 
-    # Check if there's already a pending invitation notification
     already_invited = Notification.objects.filter(
         user=target_user,
         sender=request.user,
         title__icontains=community.name,
         status='pending'
     ).exists()
-
     if already_invited:
-        return Response({"detail": "User has already been invited."}, status=409)
+        return Response({"detail": "Already invited."}, status=409)
 
-    # Create notification
     Notification.objects.create(
         user=target_user,
         sender=request.user,
         title=f"Invitation to join {community.name}",
-        message=f"{request.user.username} has invited you to join the community '{community.name}'.",
+        message=f"{request.user.username} invited you to '{community.name}'.",
         type='action',
         status='pending',
-        action_url=f"community/{community.id}/accept-invitation/"
+        action_url=f"community/{community.slug}/accept-invitation/"
     )
-
-    return Response({"detail": f"Invitation sent to {target_user.username}."}, status=200)
-
+    return Response({"detail": f"Invitation sent to {target_user.username}."})
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def accept_community_invitation(request, community_id):
-    community = get_object_or_404(Community, id=community_id)
-
+def accept_community_invitation(request, slug):
+    community = get_community_or_404_by_slug(slug)
     if community.visibility != 'invite':
-        return Response({"detail": "This community doesn't require invitations."}, status=400)
+        return Response({"detail": "No invitation needed."}, status=400)
 
-    membership, created = CommunityMembership.objects.get_or_create(user=request.user, community=community, defaults={'role': 'member'})
+    membership, created = CommunityMembership.objects.get_or_create(
+        user=request.user, community=community,
+        defaults={'role': 'member'}
+    )
     if not created:
-        return Response({"detail": "You are already a member."}, status=400)
-
-    return Response({"detail": "Successfully joined the community."})
+        return Response({"detail": "Already a member."}, status=400)
+    return Response({"detail": "Joined via invitation."})
 
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def leave_community(request, community_id):
-    community = get_object_or_404(Community, id=community_id)
-
+def leave_community(request, slug):
+    community = get_community_or_404_by_slug(slug)
     try:
         membership = CommunityMembership.objects.get(user=request.user, community=community)
     except CommunityMembership.DoesNotExist:
-        return Response({"detail": "You are not a member of this community."}, status=400)
+        return Response({"detail": "Not a member."}, status=400)
 
-    # Prevent the creator (admin) from leaving for now
     if membership.role == 'admin' and community.created_by == request.user:
         return Response({
-            "detail": "You are the creator of this community. Transfer ownership before leaving."
+            "detail": "Transfer ownership first."
         }, status=403)
 
     membership.delete()
-    return Response({"detail": "Left community successfully."})
-
-
+    return Response({"detail": "Left successfully."})
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def add_tabs_to_community(request, community_id):
-    try:
-        community = Community.objects.get(id=community_id)
-    except Community.DoesNotExist:
-        return Response({"detail": "Community not found"}, status=404)
-
-    user = request.user
-    if not CommunityMembership.objects.filter(user=user, community=community, role__in=["admin", "moderator"]).exists():
-        return Response({"detail": "Not authorized"}, status=403)
+def add_tabs_to_community(request, slug):
+    community = get_community_or_404_by_slug(slug)
+    if not CommunityMembership.objects.filter(
+        user=request.user, community=community,
+        role__in=["admin", "moderator"]
+    ).exists():
+        return Response({"detail": "Unauthorized."}, status=403)
 
     tabs_data = request.data.get("tabs", [])
     if not isinstance(tabs_data, list):
         return Response({"detail": "tabs must be a list"}, status=400)
 
-    existing_count = community.tabs.count()
-
     created_tabs = []
+    base_order = community.tabs.count()
+    from .serializers import CommunityTabCreateSerializer
+
     for i, tab_entry in enumerate(tabs_data):
         serializer = CommunityTabCreateSerializer(data=tab_entry)
         serializer.is_valid(raise_exception=True)
-
         key = serializer.validated_data["key"]
-
         tab, _ = CommunityTab.objects.get_or_create(
-            community=community,
-            key=key,
-            defaults={"order": existing_count + i, "is_active": True}
+            community=community, key=key,
+            defaults={"order": base_order + i, "is_active": True}
         )
         created_tabs.append(tab)
 
-
-    serialized = CommunityTabSerializer(created_tabs, many=True)
-    return Response({"success": True, "tabs": serialized.data})
-
-
+    out = CommunityTabSerializer(created_tabs, many=True)
+    return Response({"success": True, "tabs": out.data})
 
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
-def update_community(request, community_id):
-    user = request.user
-    try:
-        community = Community.objects.get(id=community_id)
-    except Community.DoesNotExist:
-        return Response({"detail": "Community not found."}, status=404)
+def update_community(request, slug):
+    community = get_community_or_404_by_slug(slug)
+    if not CommunityMembership.objects.filter(
+        user=request.user, community=community,
+        role__in=['admin', 'moderator']
+    ).exists():
+        return Response({"detail": "Unauthorized."}, status=403)
 
-    # Check if user is admin of this community
-    if not CommunityMembership.objects.filter(user=user, community=community, role__in=['admin', 'moderator']).exists():
-        return Response({"detail": "You do not have permission to update this community."}, status=403)
+    serializer = CommunityUpdateSerializer(
+        community, data=request.data,
+        context={'request': request},
+        partial=True
+    )
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
 
-    serializer = CommunityUpdateSerializer(community, data=request.data, context={'request': request}, partial=True)
-    if serializer.is_valid():
-        updated_community = serializer.save()
-        detail_serializer = CommunityDetailSerializer(updated_community, context={'request': request})
-        return Response(detail_serializer.data)
-    #     return Response({"success": True, "community_id": updated_community.id})
-    return Response(serializer.errors, status=400)
-
+    updated = serializer.save()
+    out = CommunityDetailSerializer(updated, context={'request': request})
+    return Response(out.data)
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])  # or IsAuthenticated if you want to restrict
-def get_community_by_id(request, community_id):
-    try:
-        community = Community.objects.get(id=community_id)
-    except Community.DoesNotExist:
-        return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
-
+@permission_classes([AllowAny])
+def get_community_by_slug(request, slug):
+    community = get_community_or_404_by_slug(slug)
     serializer = CommunityDetailSerializer(community, context={'request': request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.data)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_community(request):
     serializer = CommunityCreateSerializer(data=request.data, context={'request': request})
-    if serializer.is_valid():
-        community = serializer.save()
-        CommunityTab.objects.create(
-            community=community,
-            key="home",
-            order=0,
-            is_active=True
-        )
-        return Response({"success": True, "community_id": community.id})
-    return Response(serializer.errors, status=400)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
 
-
-
-
-
-
-
-
-
-
-
+    community = serializer.save()
+    CommunityTab.objects.create(
+        community=community, key="home", order=0, is_active=True
+    )
+    return Response({"success": True, "slug": community.slug}, status=201)
 
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
-def user_permissions(request, community_id, user_id):
+def user_permissions(request, slug, user_id):
+    # You can reuse the same slug lookup + permissions logic here...
     if request.method == 'GET':
-        return get_user_permissions(request, community_id, user_id)
-    elif request.method == 'PUT':
-        return set_user_permissions(request, community_id, user_id)
+        return get_user_permissions(request, slug, user_id)
+    else:
+        return set_user_permissions(request, slug, user_id)
+
+# … implement get_user_permissions & set_user_permissions just as before, 
+#    replacing Community.objects.get(id=community_id) 
+#    with get_community_or_404_by_slug(slug) …
 
 
 
-def set_user_permissions(request, community_id, user_id):
+
+def set_user_permissions(request, slug, user_id):
     user = request.user
     try:
-        community = Community.objects.get(id=community_id)
+        community = get_community_or_404_by_slug(slug)
         target_user = BaseUser.objects.get(id=user_id)
     except (Community.DoesNotExist, BaseUser.DoesNotExist):
         return Response({"detail": "Not found."}, status=404)
@@ -313,9 +276,9 @@ def set_user_permissions(request, community_id, user_id):
 
 
 
-def get_user_permissions(request, community_id, user_id):
+def get_user_permissions(request, slug, user_id):
     try:
-        community = Community.objects.get(id=community_id)
+        community = get_community_or_404_by_slug(slug)
     except Community.DoesNotExist:
         return Response({"detail": "Community not found."}, status=404)
 

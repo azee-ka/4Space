@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import './community.css';
-import { useParams } from 'react-router-dom';
-
-import { CommunityProvider, useCommunity } from '../../../context/CommunityContext';
-import { TAB_COMPONENTS_FLAT } from './tabs/tabComponents';
-import ProfilePicture from '../../../utils/profilePicture/getProfilePicture';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import AddTabOverlay from './addTabOverlay/addTabOverlay';
-import InviteOverlay from './inviteOverlay/inviteOverlay';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { CommunityProvider, useCommunity } from "../../../context/CommunityContext";
+import { TAB_COMPONENTS_FLAT } from "./tabs/tabComponents";
+import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import AddTabOverlay from "./addTabOverlay/addTabOverlay";
+import InviteOverlay from "./inviteOverlay/inviteOverlay";
+import "./community.css";
+import RenderText from "../../../utils/autoCompleteInput/renderText";
 
 const CommunityPage = () => {
-  const { communityId } = useParams();
+  const { slug } = useParams();
+
   return (
-    <CommunityProvider communityId={communityId}>
+    <CommunityProvider slug={slug}>
       <Community />
     </CommunityProvider>
   );
@@ -32,16 +33,14 @@ const Community = () => {
   const [addTabOverlayIsOpen, setAddTabOverlayIsOpen] = useState(false);
   const [inviteOverlayOpen, setInviteOverlayOpen] = useState(false);
 
-  // fetch the main community on mount (also picks up invalidations)
   useEffect(() => {
     fetchCommunityData();
   }, [fetchCommunityData]);
 
-  // when community or hash changes, select the right tab
   useEffect(() => {
     if (community?.tabs?.length) {
-      const raw = window.location.hash.replace('#', '');
-      const key = raw.split('-')[0];
+      const raw = window.location.hash.replace("#", "");
+      const key = raw.split("-")[0];
       const found = community.tabs.find((t) => t.key === key);
       setSelectedTab(found || community.tabs[0]);
     }
@@ -57,10 +56,9 @@ const Community = () => {
       <div className="community-sidebar">
         <div
           className={`community-card community-header-bar ${
-            selectedTab?.key === 'home' ? 'hidden' : ''
+            selectedTab?.key === "home" ? "hidden" : ""
           }`}
         >
-          {/* header contents… */}
           <div className="community-header-top">
             <ProfilePicture
               src={community.logo}
@@ -68,9 +66,12 @@ const Community = () => {
               className="community-header-logo"
             />
             <div className="community-header-info">
-              <div className="community-header-name">{community.name}</div>
+              <div className="community-header-name">
+                <h2>{community.name}</h2>
+                <h3><RenderText text={`c/${community?.slug}`} /></h3>
+              </div>
               <div className="community-header-meta">
-                {community.members_count || 0} members •{' '}
+                {community.members_count || 0} members •{" "}
                 {community.posts_count || 0} posts
               </div>
             </div>
@@ -78,13 +79,13 @@ const Community = () => {
           <div className="community-header-actions">
             <button
               className={`community-join-btn ${
-                community.is_member ? 'leave' : ''
+                community.is_member ? "leave" : ""
               }`}
               onClick={handleJoinLeave}
             >
-              {community.is_member ? 'Leave' : 'Join'}
+              {community.is_member ? "Leave" : "Join"}
             </button>
-            {community.visibility === 'public' &&
+            {community.visibility === "public" &&
               community.permissions.can_invite_members && (
                 <button
                   className="community-invite-btn"
@@ -98,7 +99,7 @@ const Community = () => {
 
         <div
           className={`community-card community-tabs-card ${
-            selectedTab?.key === 'home' ? 'shift-up' : ''
+            selectedTab?.key === "home" ? "shift-up" : ""
           }`}
         >
           <div className="community-tabs-header">
@@ -117,11 +118,15 @@ const Community = () => {
               <div
                 key={tab.key}
                 className={`community-tab-item ${
-                  selectedTab?.key === tab.key ? 'active' : ''
+                  selectedTab?.key === tab.key ? "active" : ""
                 }`}
                 onClick={() => {
                   setSelectedTab(tab);
-                  window.history.replaceState(null, '', `#${tab.key}`);
+                  window.history.replaceState(
+                    null,
+                    "",
+                    `#${tab.key}`
+                  );
                 }}
               >
                 {tab.label}
@@ -138,7 +143,7 @@ const Community = () => {
             React.createElement(
               TAB_COMPONENTS_FLAT[selectedTab.key].Component,
               {
-                communityId: community.id,
+                communitySlug: community.slug,
                 community,
                 handleJoinLeave,
                 setInviteOverlayOpen,
@@ -156,19 +161,20 @@ const Community = () => {
       {addTabOverlayIsOpen && (
         <AddTabOverlay
           onClose={() => setAddTabOverlayIsOpen(false)}
-          communityId={community.id}
+          communitySlug={community.slug}
           community={community}
           addTabs={addTabs}
         />
       )}
       {inviteOverlayOpen && (
         <InviteOverlay
-          communityId={community.id}
+          communitySlug={community.slug}
           onClose={() => setInviteOverlayOpen(false)}
         />
       )}
     </div>
   );
 };
+
 
 export default CommunityPage;

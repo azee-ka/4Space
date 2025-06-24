@@ -4,13 +4,16 @@ import axios from 'axios';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import API_BASE_URL from '../../../utils/apiUrl';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaCheck, FaTimes, FaGithub, FaApple } from 'react-icons/fa';
 import OrganizationalRegister from './organization/organization';
 import './register.css';
 import GitHubLoginButton from '../third_party_buttons/GitHubLoginButton';
 import GoogleCustomButton from '../third_party_buttons/GoogleCustomButton';
 import AppleSignInButton from '../third_party_buttons/AppleSignInButton';
 import useRedirector from '../../../hooks/useRedirector';
+import { MicrosoftIcon } from '../Login/login';
+
+const USERNAME_REGEX = /^[A-Za-z0-9](?:[A-Za-z0-9._-]{1,28}[A-Za-z0-9])$/;
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -30,7 +33,6 @@ const RegisterPage = () => {
 
   const isOrganizationRegister = location.hash === '#organization';
   const [isOrganizationRegisterPage, setIsOrganizationRegisterPage] = useState(isOrganizationRegister);
-
   const isAddAccount = new URLSearchParams(location.search).get('from') === 'add-account';
 
   useEffect(() => {
@@ -39,14 +41,26 @@ const RegisterPage = () => {
 
   const handlePasswordToggle = () => setShowPassword(!showPassword);
 
-  const handleContinue = (e) => {
+  // validation flags
+  const lengthValid = username.length >= 3 && username.length <= 30;
+  const startValid  = /^[A-Za-z0-9]/.test(username);
+  const endValid    = /[A-Za-z0-9]$/.test(username);
+  const charsValid  = /^[A-Za-z0-9._-]+$/.test(username);
+
+  const handleContinue = e => {
     e.preventDefault();
-    if (username && password) setStep(2);
+    if (!USERNAME_REGEX.test(username)) return;
+    if (!password) {
+      setRegisterError('Password cannot be empty.');
+      return;
+    }
+    setRegisterError(null);
+    setStep(2);
   };
 
-  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+  const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
@@ -59,106 +73,193 @@ const RegisterPage = () => {
         last_name: capitalize(lastName),
         dob: dob || null,
       };
-      const response = await axios.post(`${API_BASE_URL}api/register/`, data, config);
-      login(response.data, { switchTo: !isAddAccount });
+      const res = await axios.post(`${API_BASE_URL}api/register/`, data, config);
+      login(res.data, { switchTo: !isAddAccount });
       goBack('/timeline');
-      
-    } catch (error) {
-      setRegisterError(error?.response?.data?.message || 'Registration failed.');
+    } catch (err) {
+      setRegisterError(err?.response?.data?.message || 'Registration failed.');
     }
   };
 
+const handleGitHub = () => {
+    window.location.href = `${API_BASE_URL}api/auth/github/login/`;
+  };
+
+  const handleMicrosoft = () => {
+    window.location.href = `${API_BASE_URL}api/auth/microsoft/login/`;
+  };
+
+  const handleApple = () => {
+    try {
+      window.AppleID?.auth?.signIn();
+    } catch (e) {
+      console.error('Apple login failed:', e);
+    }
+  };
+
+
+  if (isOrganizationRegisterPage) return <OrganizationalRegister />;
+
   return (
     <div className="register-auth-container">
-      {isOrganizationRegisterPage ? (
-        <OrganizationalRegister />
-      ) : (
-        <div className="register-auth-card">
-          <h1 className="register-title">Create Account</h1>
-          <form onSubmit={step === 1 ? handleContinue : handleSubmit}>
-            {step === 1 ? (
-              <>
-                <input
-                  type="text"
-                  placeholder="Username"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-                <div className="register-password-field-container">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle-button"
-                    onClick={handlePasswordToggle}
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-                <button type="submit" className="step-button">Continue</button>
-              </>
-            ) : (
-              <>
-                <div className="register-card-full-name">
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                  type="date"
-                  placeholder="Date of Birth (optional)"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                />
-                <button type="submit" className="step-button">Create Account</button>
-              </>
+      {/* Main form card */}
+      <div className="register-auth-card">
+        <h1 className="register-title">Create Account</h1>
+
+        {step === 1 ? (
+          <form className="register-form" onSubmit={handleContinue}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              required
+            />
+
+            <div className="register-password-field-container">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                value={password}
+                onChange={e => {
+                  setPassword(e.target.value);
+                  setRegisterError(null);
+                }}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-button"
+                onClick={handlePasswordToggle}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              className="step-button"
+              disabled={!(lengthValid && startValid && endValid && charsValid && password)}
+            >
+              Continue
+            </button>
+
+            {registerError && (
+              <p className="register-error-display">{registerError}</p>
             )}
           </form>
-
-          <div className="register-oauth-divider">OR</div>
-          <div className="register-oauth-buttons">
-            <div className="oauth-btn-wrapper">
-              <GoogleCustomButton />
+        ) : (
+          <form onSubmit={handleSubmit} className="register-form">
+            <div className="register-card-full-name">
+              <input
+                type="text"
+                placeholder="First Name"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+                required
+              />
             </div>
-            <div className="oauth-btn-wrapper">
-              <GitHubLoginButton />
-            </div>
-            <div className="oauth-btn-wrapper">
-              <AppleSignInButton />
-            </div>
-          </div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="date"
+              placeholder="Date of Birth (optional)"
+              value={dob}
+              onChange={e => setDob(e.target.value)}
+            />
+            <button type="submit" className="step-button">
+              Create Account
+            </button>
+            {registerError && (
+              <p className="register-error-display">{registerError}</p>
+            )}
+          </form>
+        )}
 
-          <div className="redirect-to-login">
-            <Link to="/login">Already have an account? Login</Link>
-          </div>
+        <div className="register-oauth-divider">OR</div>
 
-          {registerError && <p className="register-error-display">{registerError}</p>}
+        <div className="oauth-button-group">
+          <GoogleCustomButton />
+          <button className="oauth-btn oauth-microsoft" onClick={handleMicrosoft}>
+            <MicrosoftIcon />
+            Continue with Microsoft Account
+          </button>
+
+          <button className="oauth-btn oauth-apple" onClick={handleApple}>
+            <FaApple className="oauth-icon" />
+            Continue with Apple
+          </button>
+
+          <button className="oauth-btn oauth-github" onClick={handleGitHub}>
+            <FaGithub className="oauth-icon" />
+            Continue with GitHub
+          </button>
         </div>
-      )}
+
+        <div className="redirect-to-login">
+          <Link to="/login">Already have an account? Login</Link>
+        </div>
+      </div>
+
+<div className='register-requiremnts-card'>
+      {/* Checklist card */}
+{step === 1 && username.length > 0 && (
+  <div className="register-auth-card checklist-card">
+    <h4 className="checklist-title">Username Requirements</h4>
+    <ul className="checklist-list">
+      <li className={lengthValid ? 'valid' : 'invalid'}>
+        {lengthValid ? <FaCheck /> : <FaTimes />} Must be 3–30 characters
+      </li>
+      <li className={startValid ? 'valid' : 'invalid'}>
+        {startValid ? <FaCheck /> : <FaTimes />} Start with a letter or number
+      </li>
+      <li className={endValid ? 'valid' : 'invalid'}>
+        {endValid ? <FaCheck /> : <FaTimes />} End with a letter or number
+      </li>
+      <li className={charsValid ? 'valid' : 'invalid'}>
+        {charsValid ? <FaCheck /> : <FaTimes />} Only letters, numbers, <code>.</code>, <code>_</code>, or <code>-</code>
+      </li>
+    </ul>
+  </div>
+)}
+
+{/* Password checklist card */}
+{step === 1 && password.length > 0 && (
+  <div className="register-auth-card checklist-card">
+    <h4 className="checklist-title">Password Requirements</h4>
+    <ul className="checklist-list">
+      <li className={password.length >= 8 ? 'valid' : 'invalid'}>
+        {password.length >= 8 ? <FaCheck /> : <FaTimes />} At least 8 characters
+      </li>
+      <li className={/[A-Z]/.test(password) ? 'valid' : 'invalid'}>
+        {/[A-Z]/.test(password) ? <FaCheck /> : <FaTimes />} One uppercase letter
+      </li>
+      <li className={/[a-z]/.test(password) ? 'valid' : 'invalid'}>
+        {/[a-z]/.test(password) ? <FaCheck /> : <FaTimes />} One lowercase letter
+      </li>
+      <li className={/[0-9]/.test(password) ? 'valid' : 'invalid'}>
+        {/[0-9]/.test(password) ? <FaCheck /> : <FaTimes />} One number
+      </li>
+      <li className={/[!@#$%^&*]/.test(password) ? 'valid' : 'invalid'}>
+        {/[!@#$%^&*]/.test(password) ? <FaCheck /> : <FaTimes />} One special character (!@#$%^&*)
+      </li>
+    </ul>
+  </div>
+)}
+</div>
     </div>
   );
 };

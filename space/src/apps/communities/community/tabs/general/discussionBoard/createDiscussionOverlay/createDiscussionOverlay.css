@@ -2,13 +2,14 @@
 .discussion-overlay-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 51;
+    z-index: 60;
     background: rgba(10, 10, 20, 0.55);
     backdrop-filter: blur(1.25rem) saturate(140%);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2.5rem;
+    padding: 1rem;
+    box-sizing: border-box;
 }
 
 /* === Modal Card === */
@@ -18,7 +19,7 @@
     background: rgba(255, 255, 255, 0.05);
     border: 0.0625rem solid rgba(255, 255, 255, 0.1);
     border-radius: 1.125rem;
-    padding: 2.25rem 2rem;
+    padding: 1.5rem 2rem;
     box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
@@ -26,6 +27,7 @@
     color: white;
     position: relative;
     box-sizing: border-box;
+    max-height: 98vh;
 }
 
 /* === Close Button === */
@@ -75,7 +77,10 @@
 }
 
 
-
+ .body-section {
+    min-height: 13.75rem;
+    max-height: 30rem;
+ }
 /* === Content Editor === */
 .body-section .editor-container {
     background: rgba(255, 255, 255, 0.03);
@@ -83,7 +88,7 @@
     border-radius: 0.75rem;
     padding: 0.65em 0.55em;
     min-height: 13.75rem;
-    max-height: 28.125rem;
+    max-height: 100%;
 }
 
 /* === Toolbar === */

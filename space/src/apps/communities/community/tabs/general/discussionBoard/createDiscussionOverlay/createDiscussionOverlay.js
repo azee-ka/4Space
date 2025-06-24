@@ -7,7 +7,7 @@ import EmojiButton from '../../../../../../../utils/editor/EmojiButton';
 
 import { useCommunity } from '../../../../../../../context/CommunityContext'; // Import context
 
-const CreateDiscussionOverlay = ({ communityId, onClose, onPostCreated }) => {
+const CreateDiscussionOverlay = ({ slug, onClose, onPostCreated }) => {
     const [titleContent, setTitleContent] = useState('');
     const [bodyContent, setBodyContent] = useState('');
     // const [loading, setLoading] = useState(false);

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils.text import slugify
-from .models import Community, CommunityTab, CommunityPermission, CommunityMembership
+from .models import Community, CommunityTab, CommunityPermission, CommunityMembership, SLUG_RE
 from .permissions_defaults import DEFAULT_ADMIN_PERMISSIONS
 from .tab_registry import TAB_REGISTRY_FLAT
 
@@ -21,6 +21,20 @@ class CommunityTabSerializer(serializers.ModelSerializer):
 
     def get_category(self, obj):
         return TAB_REGISTRY_FLAT.get(obj.key, {}).get("category", "")
+    
+    def validate_slug(self, slug):
+        # if they left it blank, auto-generate from name (CamelCase preserved)
+        if not slug:
+            slug = slugify(self.initial_data.get('name', ''))[:21]
+        # enforce format
+        if not SLUG_RE.match(slug):
+            raise serializers.ValidationError(
+                "Invalid slug. 3–21 chars, letters/digits/underscore only."
+            )
+        # check CI uniqueness
+        if Community.objects.filter(slug__iexact=slug).exists():
+            raise serializers.ValidationError("That community name is already taken.")
+        return slug
 
     
 

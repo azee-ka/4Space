@@ -1,43 +1,47 @@
+// src/utils/autoCompleteInput/renderText.jsx
 import React from 'react';
-import DOMPurify from 'dompurify'; // Import DOMPurify for sanitizing HTML
+import DOMPurify from 'dompurify';
 import './renderText.css';
 
-// Helper function to convert mentions, hashtags, and exchange references to links
 const convertTextToLinks = (text) => {
-    const mentionPattern = /@(\w+)/g;
-    const hashtagPattern = /#(\w+)/g;
-    const exchangePattern = /x\/(\w+)/g;
+    // username must start/end alphanumeric, and may contain . _ - in between
+    const userHandle = '[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?';
+    
+    // c/community-slug  → community pages
+    const communityPattern = new RegExp(`\\bc\\/([A-Za-z0-9][A-Za-z0-9_-]*)\\b`, 'g');
+    // u/username
+    const uPattern = new RegExp(`\\bu\\/(${userHandle})\\b`, 'g');
+    // @username
+    const mentionPattern = new RegExp(`@(${userHandle})\\b`, 'g');
+    // #hashtag (word chars only)
+    const hashtagPattern = /\#(\w+)\b/g;
+    // x/exchange (allow word chars and dashes)
+    const exchangePattern = /\bx\/([\w-]+)\b/g;
 
-    // Replace mentions, hashtags, and exchanges with <a> tags
-    text = text.replace(mentionPattern, (match, username) => {
-        return `<a href="/profile/${username}" class="mention-link">${match}</a>`;
-    });
-    text = text.replace(hashtagPattern, (match, hashtag) => {
-        return `<a href="/hashtag/${hashtag}" class="hashtag-link">${match}</a>`;
-    });
-    text = text.replace(exchangePattern, (match, exchange) => {
-        return `<a href="/exchange/${exchange}" class="exchange-link">${match}</a>`;
-    });
-
-    return text;
+    // convert in order
+    return text
+      .replace(communityPattern, (_m, slug) =>
+        `<a href="/communities/c/${slug}" class="community-link">c/${slug}</a>`
+      )
+      .replace(uPattern, (_m, name) =>
+        `<a href="/profile/${name}" class="mention-link">u/${name}</a>`
+      )
+      .replace(mentionPattern, (_m, name) =>
+        `<a href="/profile/${name}" class="mention-link">@${name}</a>`
+      )
+      .replace(hashtagPattern, (_m, tag) =>
+        `<a href="/hashtag/${tag}" class="hashtag-link">#${tag}</a>`
+      )
+      .replace(exchangePattern, (_m, id) =>
+        `<a href="/exchange/${id}" class="exchange-link">x/${id}</a>`
+      );
 };
 
-// Main component for rendering the post content
 const RenderText = ({ text }) => {
     if (!text) return null;
-
-    // Step 1: Convert mentions, hashtags, and exchange references to links
-    const textWithLinks = convertTextToLinks(text);
-
-    // Step 2: Sanitize the text content with DOMPurify to prevent XSS
-    const sanitizedText = DOMPurify.sanitize(textWithLinks);
-
-    // Step 3: Render the sanitized content as raw HTML
-    return (
-        <div
-            dangerouslySetInnerHTML={{ __html: sanitizedText }}
-        />
-    );
+    const withLinks = convertTextToLinks(text);
+    const safe = DOMPurify.sanitize(withLinks);
+    return <div className="render-text" dangerouslySetInnerHTML={{ __html: safe }} />;
 };
 
 export default RenderText;
