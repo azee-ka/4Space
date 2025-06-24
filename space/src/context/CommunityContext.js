@@ -147,7 +147,7 @@ export const CommunityProvider = ({ slug, children }) => {
 
   const addTabsMutation = useMutation({
     mutationFn: ({ slug, tabs }) =>
-      addCommunityTabs({ slug, tabs }),
+      addCommunityTabs({ communitySlug : slug, tabs }),
     onSuccess: () => qc.invalidateQueries(COMMUNITY(slug)),
   });
   const addTabs = useCallback(
