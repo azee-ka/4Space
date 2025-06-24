@@ -54,9 +54,7 @@ ALLOWED_HOSTS = [
     "fourspace-ybgm.onrender.com"
 ]
 
-
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -87,7 +85,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken', 
     'api',
-    
 ]
 
 REST_FRAMEWORK = {
