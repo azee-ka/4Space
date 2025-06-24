@@ -12,6 +12,15 @@ a {
 }
 
 
+.community-link {
+    color: #46ffe9bc;
+    text-decoration: none;
+    font-weight: bold;
+}
+.community-link:hover {
+    text-decoration: underline;
+}
+
 .hashtag-link {
     color: #35edc8;
     text-decoration: none;

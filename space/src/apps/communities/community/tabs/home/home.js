@@ -5,6 +5,7 @@ import { formatDateTime } from '../../../../../utils/formatDateTime';
 import { FiSettings } from 'react-icons/fi';
 import default_banner_image from '../../../../../assets/default_banner_image.png';
 import CommunitySettings from '../../settings/communitySettings';
+import RenderText from '../../../../../utils/autoCompleteInput/renderText';
 
 const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen, fetchCommunityData }) => {
 
@@ -53,9 +54,12 @@ const HomeTab = ({ community, handleJoinLeave, setInviteOverlayOpen, fetchCommun
                     <img className="community-banner" src={community.banner || default_banner_image} alt="Banner" />
                     <div className="community-identity">
                         <div className="community-logo-circle">
-                            <ProfilePicture src={community.logo} isCommunity={true} />
+                            <ProfilePicture src={community?.logo} isCommunity={true} />
                         </div>
-                        <h2 className="community-name">{community.name}</h2>
+                        <div>
+                            <h2 className="community-name">{community?.name}</h2>
+                            <h3 className="community-slug"><RenderText text={`c/${community?.slug}`} /></h3>
+                        </div>
                     </div>
                 </div>
             </div>

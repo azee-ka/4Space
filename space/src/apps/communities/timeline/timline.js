@@ -58,7 +58,7 @@ const CommunitiesTimeline = () => {
             <div className="loading">No communities found.</div>
           ) : (
             filteredCommunities.map((comm) => (
-              <Link to={`/communities/c/${comm.id}`} className="community-lane" key={comm.id}>
+              <Link to={`/communities/c/${comm.slug}`} className="community-lane" key={comm.slug}>
                 <div className="lane-logo">
                   <ProfilePicture src={comm.logo} isCommunity={true} />
                 </div>
@@ -95,8 +95,8 @@ const CommunitiesTimeline = () => {
               .sort((a, b) => b.members_count - a.members_count)
               .slice(0, 3)
               .map((c) => (
-                <li key={c.id}>
-                  <Link to={`/communities/c/${c.id}`}>{c.name}</Link>
+                <li key={c.slug}>
+                  <Link to={`/communities/c/${c.slug}`}>{c.name}</Link>
                   <span>{c.members_count} members</span>
                 </li>
               ))}

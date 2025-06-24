@@ -13,7 +13,7 @@ import useRedirector from '../../../hooks/useRedirector';
 
 
 
-const MicrosoftIcon = () => (
+export const MicrosoftIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24">
     <rect fill="#F35325" x="1" y="1" width="10" height="10" />
     <rect fill="#81BC06" x="13" y="1" width="10" height="10" />

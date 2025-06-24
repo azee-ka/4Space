@@ -86,9 +86,15 @@
 }
 
 .community-name {
-  font-size: 1em;
+  font-size: 0.8em;
   font-weight: 600;
   color: #fff;
+  margin: 0;
+}
+.community-slug {
+  font-size: 1em;
+  font-weight: 600;
+  color: #b5b5b5;
   margin: 0;
 }
 

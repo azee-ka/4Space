@@ -2,6 +2,10 @@ from django.db import models
 import uuid
 from ..user.models import BaseUser
 from ..organization.models import Organization
+import re
+from django.db.models import UniqueConstraint
+from django.db.models.functions import Lower
+from django.core.exceptions import ValidationError
 
 
 def community_banner_upload_path(instance, filename):
@@ -19,11 +23,15 @@ VISIBILITY_CHOICES = [
     ('invite', 'Invite Only'),
 ]
 
+SLUG_RE = re.compile(r'^[A-Za-z0-9](?:[A-Za-z0-9_]{1,19}[A-Za-z0-9])?$')
 
 class Community(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    slug = models.CharField(
+        max_length=21,
+        help_text="3–21 chars: letters, digits or underscore; case-insensitive uniqueness."
+    )
     description = models.TextField(blank=True, null=True)
 
     category = models.CharField(
@@ -50,7 +58,23 @@ class Community(models.Model):
     banner = models.ImageField(upload_to=community_banner_upload_path, null=True, blank=True)
     logo = models.ImageField(upload_to=community_logo_upload_path, null=True, blank=True)
 
+    class Meta:
+        constraints = [
+            # Enforce case-insensitive unique slugs
+            UniqueConstraint(Lower('slug'), name='uq_community_slug_ci')
+        ]
 
+    def clean(self):
+        # Validate format
+        if not SLUG_RE.match(self.slug):
+            raise ValidationError({
+                'slug': "3–21 characters; letters, digits or underscore only; must start/end with alphanumeric."
+            })
+
+    def save(self, *args, **kwargs):
+        # run clean() to enforce format
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class CommunityTab(models.Model):

@@ -86,6 +86,17 @@
     font-weight: 600;
     margin: 0;
 }
+.community-header-name h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+.community-header-name h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 0;
+    color: rgb(180, 180, 180);
+}
 
 .community-header-meta {
     font-size: 0.6875rem;

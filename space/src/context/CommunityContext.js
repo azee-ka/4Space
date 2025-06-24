@@ -26,25 +26,25 @@ import { HandlesProvider } from './HandlesContext';
 const CommunityContext = createContext();
 export const useCommunity = () => useContext(CommunityContext);
 
-function useSettingsLogic(communityId) {
+function useSettingsLogic(slug) {
   const qc = useQueryClient();
   const { data: members = [], isLoading: loading, refetch: fetchMembers } =
     useQuery({
-      queryKey: COMMUNITY_MEMBERS(communityId),
-      queryFn: () => fetchCommunityMembers(communityId),
+      queryKey: COMMUNITY_MEMBERS(slug),
+      queryFn: () => fetchCommunityMembers(slug),
       enabled: false,
       staleTime: 30_000,
     });
 
   const updateRoleMutation = useMutation({
     mutationFn: ({ userId, newRole }) =>
-      updateRole({ communityId, userId, newRole }),
-    onSuccess: () => qc.invalidateQueries(COMMUNITY_MEMBERS(communityId)),
+      updateRole({ slug, userId, newRole }),
+    onSuccess: () => qc.invalidateQueries(COMMUNITY_MEMBERS(slug)),
   });
   const updatePermissionsMutation = useMutation({
     mutationFn: ({ userId, perms }) =>
-      updatePermissions({ communityId, userId, perms }),
-    onSuccess: () => qc.invalidateQueries(COMMUNITY_MEMBERS(communityId)),
+      updatePermissions({ slug, userId, perms }),
+    onSuccess: () => qc.invalidateQueries(COMMUNITY_MEMBERS(slug)),
   });
 
   const bulkUpdate = useCallback(
@@ -73,31 +73,31 @@ function useSettingsLogic(communityId) {
   };
 }
 
-function useExchangeLogic(communityId) {
+function useExchangeLogic(slug) {
   const qc = useQueryClient();
   const {
     data: posts = [],
     isLoading: loading,
     isError: error,
   } = useQuery({
-    queryKey: COMMUNITY_EXCHANGES(communityId),
-    queryFn: () => fetchExchanges(communityId),
+    queryKey: COMMUNITY_EXCHANGES(slug),
+    queryFn: () => fetchExchanges(slug),
     staleTime: 30_000,
     keepPreviousData: true,
   });
 
   const createDiscussionMutation = useMutation({
     mutationFn: ({ title, content }) =>
-      createDiscussion({ communityId, title, content }),
+      createDiscussion({ slug, title, content }),
     onSuccess: () => {
-      qc.invalidateQueries(COMMUNITY_EXCHANGES(communityId));
+      qc.invalidateQueries(COMMUNITY_EXCHANGES(slug));
     },
   });
 
   const voteDiscussionMutation = useMutation({
     mutationFn: ({ postId, direction }) =>
-      voteDiscussion({ communityId, postId, direction }),
-    onSuccess: () => qc.invalidateQueries(COMMUNITY_EXCHANGES(communityId)),
+      voteDiscussion({ slug, postId, direction }),
+    onSuccess: () => qc.invalidateQueries(COMMUNITY_EXCHANGES(slug)),
   });
 
   return {
@@ -109,15 +109,15 @@ function useExchangeLogic(communityId) {
   };
 }
 
-export const CommunityProvider = ({ communityId, children }) => {
+export const CommunityProvider = ({ slug, children }) => {
   const qc = useQueryClient();
   const [communityState, setCommunity] = useState(null);
   const [selectedTab, setSelectedTab] = useState(null);
 
   const { data: community, refetch: fetchCommunityData } = useQuery({
-    queryKey: COMMUNITY(communityId),
-    queryFn: () => fetchCommunity(communityId),
-    enabled: !!communityId,
+    queryKey: COMMUNITY(slug),
+    queryFn: () => fetchCommunity(slug),
+    enabled: !!slug,
     staleTime: 30_000,
     onSuccess: data => {
       setCommunity(data);
@@ -137,18 +137,18 @@ export const CommunityProvider = ({ communityId, children }) => {
         : (current.members_count || 0) + 1,
     });
     try {
-      if (wasMember) await leaveCommunity(communityId);
-      else await joinCommunity(communityId);
-      qc.invalidateQueries(COMMUNITY(communityId));
+      if (wasMember) await leaveCommunity(slug);
+      else await joinCommunity(slug);
+      qc.invalidateQueries(COMMUNITY(slug));
     } catch {
       setCommunity(current);
     }
-  }, [community, communityState, communityId, qc]);
+  }, [community, communityState, slug, qc]);
 
   const addTabsMutation = useMutation({
-    mutationFn: ({ communityId, tabs }) =>
-      addCommunityTabs({ communityId, tabs }),
-    onSuccess: () => qc.invalidateQueries(COMMUNITY(communityId)),
+    mutationFn: ({ slug, tabs }) =>
+      addCommunityTabs({ slug, tabs }),
+    onSuccess: () => qc.invalidateQueries(COMMUNITY(slug)),
   });
   const addTabs = useCallback(
     tabsToAdd => {
@@ -158,11 +158,11 @@ export const CommunityProvider = ({ communityId, children }) => {
         tabs: [...(prev?.tabs || []), ...tabsToAdd],
       }));
       addTabsMutation.mutate(
-        { communityId, tabs: tabsToAdd },
+        { slug, tabs: tabsToAdd },
         { onError: () => setCommunity(communityState || community) }
       );
     },
-    [addTabsMutation, community, communityId, communityState]
+    [addTabsMutation, community, slug, communityState]
   );
 
   const searchUsers = useCallback(
@@ -175,13 +175,13 @@ export const CommunityProvider = ({ communityId, children }) => {
   );
   const inviteUser = useCallback(
     async userId => {
-      await inviteUserApi({ communityId, userId });
+      await inviteUserApi({ slug, userId });
     },
-    [communityId]
+    [slug]
   );
 
-  const settings = useSettingsLogic(communityId);
-  const exchange = useExchangeLogic(communityId);
+  const settings = useSettingsLogic(slug);
+  const exchange = useExchangeLogic(slug);
 
   return (
     <HandlesProvider>

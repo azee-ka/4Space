@@ -7,6 +7,7 @@
   background: transparent;
   padding: 2rem;
   box-sizing: border-box;
+  position: relative;
 }
 
 
@@ -146,4 +147,130 @@
 .register-card-organization a {
   color: cyan;
   text-decoration: none;
+}
+
+
+
+/* ---------------------------------- */
+/* Checklist as its own card beside the form */
+.register-requiremnts-card{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checklist-card {
+  /* reuse your main card’s look & feel */
+  background: rgba(154, 154, 154, 0.08);
+  backdrop-filter: blur(23px);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  color: #fff;
+  max-width: 280px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.checklist-title {
+  margin: 0;
+  font-size: 1.1rem;
+  text-align: center;
+  color: inherit;
+}
+
+.checklist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist-list li {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  color: #eee;
+}
+
+.checklist-list li.valid {
+  color: #8fffa1;
+}
+
+.checklist-list li.invalid {
+  color: #ff8f8f;
+}
+
+.checklist-list li svg {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.checklist-list li code {
+  background: rgba(255,255,255,0.1);
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+}
+
+/* Make parent container flex side by side */
+.register-auth-container {
+  display: flex;            /* add this */
+  gap: 2rem;                /* add this */
+  justify-content: center;  /* add this */
+}
+
+/* Stack on narrow screens */
+@media (max-width: 800px) {
+  .register-auth-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+
+.register-auth-container > .checklist-card + .checklist-card,
+.register-auth-container > .checklist-card + .register-auth-card {
+  margin-left: 1rem;
+}
+
+
+
+/* ──────────────── Override container to block so main card stays centered ──────────────── */
+.register-auth-container {
+  display: block;
+  position: relative;   /* for absolute children */
+}
+
+/* center the main form card exactly */
+.register-auth-container > .register-auth-card {
+  margin: 0 auto;
+}
+
+/* ──────────────── Position the combined requirements cards ──────────────── */
+.register-requiremnts-card {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 200px + 3rem);  /* 200px = half of 400px main-card width */
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 10;
+}
+
+/* each checklist-card already styled, no further change needed */
+
+/* ──────────────── Responsive fallback ──────────────── */
+@media (max-width: 800px) {
+  .register-requiremnts-card {
+    position: static;
+    transform: none;
+    margin: 1rem auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }

@@ -29,21 +29,21 @@ export const DISPLAY_SETTINGS = ['displaySettings'];
 
 
 // src/apps/communities
-export const COMMUNITY = (communityId) => ['community', communityId];
-export const COMMUNITY_MEMBERS = (communityId) => ['communityMembers', communityId];
-export const COMMUNITY_EXCHANGES = (communityId) => ['communityExchanges', communityId];
+export const COMMUNITY = (slug) => ['community', slug];
+export const COMMUNITY_MEMBERS = (slug) => ['communityMembers', slug];
+export const COMMUNITY_EXCHANGES = (slug) => ['communityExchanges', slug];
 
 // You can expand here with other keys as needed!
-export const COMMUNITY_POST = (communityId, postId) => ['communityPost', communityId, postId];
-export const COMMUNITY_TABS = (communityId) => ['communityTabs', communityId];
-export const COMMUNITY_SEARCH_USERS = (communityId, query) => ['communitySearchUsers', communityId, query];
+export const COMMUNITY_POST = (slug, postId) => ['communityPost', slug, postId];
+export const COMMUNITY_TABS = (slug) => ['communityTabs', slug];
+export const COMMUNITY_SEARCH_USERS = (slug, query) => ['communitySearchUsers', slug, query];
 
 export const CREATE_DISCUSSION = ['createDiscussion'];
 
 export const EXCHANGE_DETAIL = (postId) => ['exchangeDetail', postId];
 
 export const PUBLICATION_DETAIL = (publicationId) => ['publicationDetail', publicationId];
-export const MY_PUBLICATIONS = (communityId) => ['myPublications', communityId];
+export const MY_PUBLICATIONS = (slug) => ['myPublications', slug];
 
 export const CREATE_COMMUNITY = ['createCommunity'];
 export const COMMUNITIES_TIMELINE = ['communitiesTimeline'];

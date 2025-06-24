@@ -77,7 +77,7 @@ const AppRouter = () => {
         { name: 'Community Dasboard', path: '/communities', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
         { name: 'Community Dasboard', path: '/communities/dashboard', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
         { name: 'Communities Timeline', path: '/communities/timeline', component: <CommunitiesTimeline />, key: 'Communities Timline' },
-        { name: 'Community', path: '/communities/c/:communityId', component: <CommunityPage />, key: 'Community' },
+        { name: 'Community', path: '/communities/c/:slug', component: <CommunityPage />, key: 'Community' },
         { name: 'Community Exchange', path: '/communities/e/:exchangeId', component: <ExchangeDetail />, key: 'ExchangeDetail' },
         { name: 'Create Community', path: '/communities/create', component: <CreateCommunity />, key: 'CreateCommunity' },
         { name: 'Community Publication Detail', path: '/communities/research/:publicationId', component: <PublicationDetail />, key: 'PublicationDetailPage' },
