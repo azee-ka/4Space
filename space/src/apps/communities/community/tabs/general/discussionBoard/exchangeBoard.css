@@ -38,20 +38,16 @@
 }
 
 
-.discussion-vote-panel-wrapper {
-  position: sticky;
-  top: calc(var(--tabs-height) + 1rem);   /* sit just below your tabs bar */
-  align-self: flex-start;                /* don’t get shoved down by flex centering */
-  z-index: 1;                            /* float above content */
+.discussion-vote-panel-wrapper { 
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;          /* optional, to pin the up-arrow to the top */
+  justify-content: flex-start;
   width: 2.5rem;
 }
 
 /* Vote panel */
-.discussion-vote-panel {
+.discussion-vote-panel {    
   display: flex;
   flex-direction: column;
   align-items: center;

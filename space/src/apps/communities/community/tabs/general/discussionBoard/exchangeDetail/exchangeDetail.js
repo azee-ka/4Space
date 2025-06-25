@@ -36,7 +36,23 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                 }
             ]
         },
-        { id: 4, user: "@another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [] }
+        { id: 4, user: "@another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [
+            {
+                    id: 8, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [
+                        { id: 9, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [
+                            {
+                    id: 10, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [
+                        { id: 11, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] }
+                    ]
+                }
+                        ] }
+                    ]
+                }
+        ] },
+        { id: 5, user: "@another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [] },
+        { id: 6, user: "@another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [] },
+        { id: 7, user: "@another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [] },
+
     ];
 
     if (isLoading) return <div className="ed-loading">Loading...</div>;
@@ -73,7 +89,6 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                         <header className="ed-header">
                             <h1 className="ed-title"><RenderText text={post.title} /></h1>
                             <div className="ed-meta">
-                                <ProfilePicture src={post.author.profile_image} className="ed-header-avatar" />
                                 <span><RenderText text={`u/${post.author.username}`} /></span>
                                 <span className="ed-dot">•</span>
                                 <span>{formatDateTime(post.created_at)}</span>

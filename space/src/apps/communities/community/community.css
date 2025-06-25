@@ -236,7 +236,7 @@
 .community-main-content-area {
   display: flex;
   flex-grow: 1;
-  overflow: hidden;
+  overflow: visible;
   margin-right: 0.5rem;
 }
 

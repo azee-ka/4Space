@@ -29,13 +29,14 @@
 .ed-content {
   display: flex;
   flex: 1;
-  overflow: hidden;
+   overflow: visible;
+   gap: 1rem;
 }
 
 .ed-main {
   flex: 1;
   padding: 0 0rem;
-  overflow-y: auto;
+  overflow-y: visible;
   min-width: 0;
 }
 
@@ -47,6 +48,7 @@
   backdrop-filter: blur(var(--ed-blur));
   border-radius: var(--ed-radius);
   box-shadow: var(--ed-shadow);
+  box-sizing: border-box;
 }
 
 /* headers */
@@ -114,7 +116,7 @@
 .ed-postcard {
   display: flex;
   gap: 0.6rem;
-  padding: 1rem;
+  padding: 1rem 0.6rem;
   background: var(--ed-glass-bg-light);
   backdrop-filter: blur(var(--ed-blur));
   border-radius: var(--ed-radius);
@@ -127,16 +129,7 @@
   transform: translateY(-2px);
 }
 
-.ed-votebar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 .ed-votebar-inner {
-  position: sticky;
-  top: 1rem;
-  align-self: flex-start;
-  z-index: 1; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -146,6 +139,13 @@
     color: gray;
     font-size: 1rem; 
 }
+.ed-votebar-inner {
+  position: sticky;
+  top: calc(var(--tabs-height) + 20px);    /* or hard-code “30px” if you’d rather */
+  align-self: flex-start;     /* keep it pinned to the top of its row */
+  z-index: 1;                 /* float it above the text */
+}
+
 
 .ed-voteicon {
   font-size: 1.4rem;
