@@ -55,7 +55,6 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                     <div className="ed-embedded-header">
                         <h1 className="ed-title"><RenderText text={post.title} /></h1>
                         <div className="ed-meta">
-                            <ProfilePicture src={post.author.profile_image} className="ed-header-avatar" />
                             <span><RenderText text={`u/${post.author.username}`} /></span>
                             <span className="ed-dot">•</span>
                             <span>{formatDateTime(post.created_at)}</span>
@@ -88,7 +87,12 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                     {/* post card */}
                     <article className="ed-postcard">
                         <div className="ed-votebar">
-                            <FiArrowUp className="ed-voteicon" /><span>{post.upvotes}</span><FiArrowDown className="ed-voteicon" />
+                            <div className='ed-votebar-inner' onClick={(e) => e.stopPropagation()}>
+                            <FiArrowUp className="ed-voteicon" />
+                            <span>{post.upvotes}</span>
+                            <FiArrowDown className="ed-voteicon" />
+                            </div>
+    
                         </div>
                         <div className="ed-postbody">
                             <div className="ed-contentbody">
@@ -102,7 +106,7 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
 
                     {/* comments */}
                     <section className="ed-comments">
-                        <h2>Comments</h2>
+                        <h2>Replies</h2>
                         {dummyComments.map(c => <Comment key={c.id} comment={c} level={0} />)}
                     </section>
                 </div>

@@ -39,12 +39,17 @@
 
 
 .discussion-vote-panel-wrapper {
+  position: sticky;
+  top: calc(var(--tabs-height) + 1rem);   /* sit just below your tabs bar */
+  align-self: flex-start;                /* don’t get shoved down by flex centering */
+  z-index: 1;                            /* float above content */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;          /* optional, to pin the up-arrow to the top */
   width: 2.5rem;
 }
+
 /* Vote panel */
 .discussion-vote-panel {
   display: flex;

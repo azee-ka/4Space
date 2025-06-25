@@ -85,15 +85,16 @@
   border-color: rgba(25, 255, 255, 0.2);
 }
 
-.discussion-vote-panel {
+.my-discussion-vote-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   gap: 0.25rem;
   padding-top: 0.375rem;
-  min-width: 2rem;
+  width: 1rem;
   color: #7be5ec;
+  flex-grow: 0;
 }
 
 .vote-icon {
@@ -112,20 +113,21 @@
   color: #ffffff;
 }
 
-.discussion-content {
+.my-discussion-content {
   flex: 1;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.discussion-header {
+.my-discussion-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.user-icon {
+.my-user-icon {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
@@ -136,42 +138,42 @@
   align-items: center;
 }
 
-.user-icon img {
+.my-user-icon img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.meta {
+.my-meta {
   display: flex;
   flex-direction: column;
   font-size: 0.85rem;
   color: #aaa;
 }
 
-.username {
+.my-username {
   font-weight: 600;
   color: #fff;
 }
 
-.timestamp {
+.my-timestamp {
   font-size: 0.75rem;
 }
 
-.discussion-body {
+.my-discussion-body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.discussion-title {
+.my-discussion-title {
   font-size: 1.1rem;
   font-weight: 600;
   color: #eef9ff;
   margin: 0;
 }
 
-.preview {
+.my-preview {
   font-size: 0.95rem;
   color: #b0b0b0;
   line-height: 1.4;
@@ -183,7 +185,7 @@
   word-break: break-word;
 }
 
-.discussion-footer {
+.my-discussion-footer {
   display: flex;
   gap: 0.375rem;
   font-size: 0.85rem;
@@ -191,7 +193,7 @@
   align-items: center;
 }
 
-.comment-icon {
+.my-comment-icon {
   font-size: 1.2rem;
   margin-right: 0.25rem;
 }

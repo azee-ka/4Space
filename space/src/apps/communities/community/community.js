@@ -103,16 +103,16 @@ function Community() {
             <div className="community-appbar">
               <div className="community-info">
                 <ProfilePicture
-                  src={community.logo}
+                  src={community?.logo}
                   isCommunity
                   className="community-logo"
                 />
                 <div>
-                  <h1>{community.name}</h1>
+                  <h1>{community?.name}</h1>
                   <div className="community-subtitle">
                     <RenderText text={`c/${community.slug}`} />
                     <span className="community-dot">·</span>
-                    {community.members_count} members
+                    {community?.members_count} members
                   </div>
                 </div>
               </div>
@@ -120,14 +120,14 @@ function Community() {
                 <button
                   onClick={handleJoinLeave}
                   className={`community-btn ${
-                    community.is_member
+                    community?.is_member
                       ? "community-btn-leave"
                       : "community-btn-join"
                   }`}
                 >
-                  {community.is_member ? "Leave" : "Join"}
+                  {community?.is_member ? "Leave" : "Join"}
                 </button>
-                {community.permissions.can_invite_members && (
+                {community?.permissions?.can_invite_members && (
                   <button
                     onClick={() => setShowInvite(true)}
                     className="community-btn community-btn-invite"
@@ -141,7 +141,7 @@ function Community() {
             {/* Tabs (stick to top of scroll container) */}
             <nav className="community-tabs">
               <div className="community-tabs-left">
-                {community.tabs.map(tab => (
+                {community?.tabs.map(tab => (
                   <button
                     key={tab.key}
                     className={`community-tab ${
@@ -160,7 +160,7 @@ function Community() {
                   </button>
                 ))}
               </div>
-              {community.permissions.can_add_tabs && (
+              {community?.permissions?.can_add_tabs && (
                 <button
                   className="community-btn-add"
                   onClick={() => setShowAdd(true)}
@@ -178,7 +178,7 @@ function Community() {
                   React.createElement(
                     TAB_COMPONENTS_FLAT[selectedTab.key].Component,
                     {
-                      communitySlug: community.slug,
+                      communitySlug: community?.slug,
                       community,
                       handleJoinLeave,
                       setInviteOverlayOpen: () => setShowInvite(true),
@@ -195,7 +195,7 @@ function Community() {
               <aside className="community-sidebar-right">
                 <h3>About this community</h3>
                 <p>
-                  {community.description ||
+                  {community?.description ||
                     "No description provided."}
                 </p>
               </aside>
@@ -208,7 +208,7 @@ function Community() {
       {showAdd && (
         <AddTabOverlay
           onClose={() => setShowAdd(false)}
-          communitySlug={community.slug}
+          communitySlug={community?.slug}
           community={community}
           addTabs={addTabs}
         />

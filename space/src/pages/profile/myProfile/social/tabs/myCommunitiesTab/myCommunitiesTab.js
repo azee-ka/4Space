@@ -173,8 +173,8 @@ const MyCommunitiesTab = () => {
   const onExpandExchange = (exchangeId) => {
     navigate(`/communities/e/${exchangeId}`);
   };
-  const onExpandCommunity = (commId) => {
-    navigate(`/communities/c/${commId}`);
+  const onExpandCommunity = (communitySlug) => {
+    navigate(`/communities/c/${communitySlug}`);
   };
 
   return (
@@ -212,32 +212,32 @@ const MyCommunitiesTab = () => {
                   className="my-discussion-card"
                   onClick={() => onExpandExchange(post.id)}
                 >
-                  <div className="discussion-vote-panel">
+                  <div className="my-discussion-vote-panel">
                     <span className="vote-icon">▲</span>
                     <span className="vote-count">{post.upvotes}</span>
                     <span className="vote-icon">▼</span>
                   </div>
-                  <div className="discussion-content">
-                    <div className="discussion-header">
-                      <div className="user-icon">
+                  <div className="my-discussion-content">
+                    <div className="my-discussion-header">
+                      <div className="my-user-icon">
                         <ProfilePicture src={post.author.profile_image} />
                       </div>
-                      <div className="meta">
+                      <div className="my-meta">
                         <span className="username">@{post.author.username}</span>
                         <span className="timestamp">
                           {formatDateTime(post.created_at, true)}
                         </span>
                       </div>
                     </div>
-                    <div className="discussion-body">
-                      <h4 className="discussion-title">{post.title}</h4>
-                      <div className="preview">
+                    <div className="my-discussion-body">
+                      <h4 className="my-discussion-title">{post.title}</h4>
+                      <div className="my-preview">
                         <RenderText text={post.content} />
                       </div>
                     </div>
-                    <div className="discussion-footer">
-                      <div className="action">
-                        <span className="comment-icon">💬</span>
+                    <div className="my-discussion-footer">
+                      <div className="my-action">
+                        <span className="my-comment-icon">💬</span>
                         <span>{post.comments_count} comments</span>
                       </div>
                     </div>
@@ -271,7 +271,7 @@ const MyCommunitiesTab = () => {
                 <div
                   key={comm.id}
                   className="my-community-lane"
-                  onClick={() => onExpandCommunity(comm.id)}
+                  onClick={() => onExpandCommunity(comm?.slug)}
                 >
                   <div className="lane-logo">
                     <ProfilePicture src={comm.logo} isCommunity={true} />

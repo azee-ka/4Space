@@ -34,7 +34,7 @@
 
 .ed-main {
   flex: 1;
-  padding: 1rem;
+  padding: 0 0rem;
   overflow-y: auto;
   min-width: 0;
 }
@@ -51,7 +51,7 @@
 
 /* headers */
 .ed-embedded-header {
-  margin-bottom: 1rem;
+  padding: 0.5rem 0rem;
 }
 
 .ed-header {
@@ -60,23 +60,9 @@
 
 .ed-title {
   margin: 0;
-  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
   font-weight: 600;
-}
-
-/* avatar */
-.ed-header-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.ed-embedded-header .ed-header-avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 .ed-community-chip {
@@ -103,8 +89,8 @@
 
 
 .ed-comment-header img {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -116,6 +102,7 @@
   gap: 0.5rem;
   color: var(--ed-meta);
   margin-top: 0.25rem;
+  font-size: 0.8rem;
 }
 
 .ed-dot {
@@ -126,12 +113,13 @@
 /* post card */
 .ed-postcard {
   display: flex;
-  gap: 1rem;
+  gap: 0.6rem;
   padding: 1rem;
   background: var(--ed-glass-bg-light);
   backdrop-filter: blur(var(--ed-blur));
   border-radius: var(--ed-radius);
   box-shadow: var(--ed-shadow);
+  transition: all 0.3s ease;
 }
 
 .ed-postcard:hover {
@@ -144,12 +132,26 @@
   flex-direction: column;
   align-items: center;
 }
+.ed-votebar-inner {
+  position: sticky;
+  top: 1rem;
+  align-self: flex-start;
+  z-index: 1; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+.ed-votebar-inner span {
+    color: gray;
+    font-size: 1rem; 
+}
 
 .ed-voteicon {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: var(--ed-meta);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.3s;
 }
 
 .ed-voteicon:hover {
@@ -176,12 +178,13 @@
 
 /* comments */
 .ed-comments {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .ed-comments h2 {
   margin-bottom: 1rem;
   color: var(--ed-text);
+  font-size: 1rem;
 }
 
 /* threaded comments */
