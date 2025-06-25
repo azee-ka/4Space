@@ -16,12 +16,21 @@ const Exchange = ({ communitySlug, community }) => {
   const [showForm, setShowForm] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
-  useEffect(() => {
+useEffect(() => {
+  const handleHashChange = () => {
     const hash = window.location.hash;
     if (hash.startsWith("#exchange-")) {
       setSelectedPostId(hash.replace("#exchange-", ""));
+    } else {
+      setSelectedPostId(null);
     }
-  }, []);
+  };
+
+  handleHashChange(); // run once on mount
+  window.addEventListener("hashchange", handleHashChange);
+  return () => window.removeEventListener("hashchange", handleHashChange);
+}, []);
+
 
   if (loading) return <div className="discussion-loading">Loading discussions…</div>;
   if (error) return <div className="discussion-error">Failed to load discussions.</div>;

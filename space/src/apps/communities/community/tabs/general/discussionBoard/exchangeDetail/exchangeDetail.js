@@ -54,6 +54,40 @@ const ExchangeDetail = ({ postId: propPostId, embedded = false, onClose }) => {
                             replies: []
                         }
                     ]
+                },
+                {
+                    id: 4,
+                    user: "@nested_user",
+                    time: "1 min ago",
+                    text: "This is a nested reply.",
+                    votes: 2,
+                    replies: [
+                        {
+                            id: 3,
+                            user: "@deep_reply",
+                            time: "just now",
+                            text: "Deep nesting works!",
+                            votes: 1,
+                            replies: []
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    user: "@nested_user",
+                    time: "1 min ago",
+                    text: "This is a nested reply.",
+                    votes: 2,
+                    replies: [
+                        {
+                            id: 3,
+                            user: "@deep_reply",
+                            time: "just now",
+                            text: "Deep nesting works!",
+                            votes: 1,
+                            replies: []
+                        }
+                    ]
                 }
             ]
         },
