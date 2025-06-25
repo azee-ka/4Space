@@ -37,7 +37,7 @@
 .community-sidebar-left {
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   background-color: var(--card);
   width: 300px;

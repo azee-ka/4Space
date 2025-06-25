@@ -1,6 +1,6 @@
+// ExchangeDetail.jsx
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import './exchangeDetail.css';
 import {
     FiArrowUp,
     FiArrowDown,
@@ -8,240 +8,150 @@ import {
     FiArrowLeft,
     FiExternalLink
 } from 'react-icons/fi';
-import { formatDateTime } from '../../../../../../../utils/formatDateTime';
-import ProfilePicture from '../../../../../../../utils/profilePicture/getProfilePicture';
-import RenderText from '../../../../../../../utils/autoCompleteInput/renderText';
 import { useQuery } from '@tanstack/react-query';
 import { EXCHANGE_DETAIL } from '../../../../../../../services/queryKeys';
 import { fetchExchangeDetail } from '../../../../../../../services/communities';
+import ProfilePicture from '../../../../../../../utils/profilePicture/getProfilePicture';
+import RenderText from '../../../../../../../utils/autoCompleteInput/renderText';
+import { formatDateTime } from '../../../../../../../utils/formatDateTime';
+import './exchangeDetail.css';
 
-const ExchangeDetail = ({ postId: propPostId, embedded = false, onClose }) => {
+export default function ExchangeDetail({ postId: propPostId, embedded = false, onClose }) {
     const { exchangeId: routeId } = useParams();
     const postId = propPostId || routeId;
 
-    // React Query to fetch the exchange post
     const { data: post, isLoading, isError } = useQuery({
         queryKey: EXCHANGE_DETAIL(postId),
         queryFn: () => fetchExchangeDetail(postId),
         enabled: !!postId,
     });
 
-    if (isLoading) return <div className="exchange-detail-loading">Loading...</div>;
-    if (isError || !post) return <div className="exchange-detail-error">Post not found.</div>;
-
-
     const dummyComments = [
         {
-            id: 1,
-            user: "@demo_user",
-            time: "just now",
-            text: "This is a comment with replies.",
-            votes: 5,
-            replies: [
+            id: 1, user: "@demo_user", time: "just now", text: "This is a comment with replies.", votes: 5, replies: [
                 {
-                    id: 2,
-                    user: "@nested_user",
-                    time: "1 min ago",
-                    text: "This is a nested reply.",
-                    votes: 2,
-                    replies: [
-                        {
-                            id: 3,
-                            user: "@deep_reply",
-                            time: "just now",
-                            text: "Deep nesting works!",
-                            votes: 1,
-                            replies: []
-                        }
-                    ]
-                },
-                {
-                    id: 4,
-                    user: "@nested_user",
-                    time: "1 min ago",
-                    text: "This is a nested reply.",
-                    votes: 2,
-                    replies: [
-                        {
-                            id: 3,
-                            user: "@deep_reply",
-                            time: "just now",
-                            text: "Deep nesting works!",
-                            votes: 1,
-                            replies: []
-                        }
-                    ]
-                },
-                {
-                    id: 5,
-                    user: "@nested_user",
-                    time: "1 min ago",
-                    text: "This is a nested reply.",
-                    votes: 2,
-                    replies: [
-                        {
-                            id: 3,
-                            user: "@deep_reply",
-                            time: "just now",
-                            text: "Deep nesting works!",
-                            votes: 1,
-                            replies: []
-                        }
+                    id: 2, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [
+                        { id: 3, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] }
                     ]
                 }
             ]
         },
-        {
-            id: 4,
-            user: "@another_user",
-            time: "just now",
-            text: "Another top-level comment.",
-            votes: 3,
-            replies: []
-        }
+        { id: 4, user: "@another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [] }
     ];
 
+    if (isLoading) return <div className="ed-loading">Loading...</div>;
+    if (isError || !post) return <div className="ed-error">Post not found.</div>;
+
     return (
-        <div className={`exchange-detail-wrapper ${embedded ? 'embedded' : 'non-embedded'}`}>
+        <div className={`ed-wrapper ${embedded ? 'ed-embedded' : 'ed-nonembedded'}`}>
+
+            {/* embedded topbar + embedded header */}
             {embedded && (
                 <>
-                    <div className="exchange-top-buttons">
-                        <button className="icon-btn" onClick={onClose}><FiArrowLeft /></button>
-                        <Link to={`/communities/e/${postId}`} className="icon-btn"><FiExternalLink /></Link>
+                    <div className="ed-topbar">
+                        <button className="ed-iconbtn" onClick={onClose}><FiArrowLeft /></button>
+                        <Link to={`/communities/e/${postId}`} className="ed-iconbtn"><FiExternalLink /></Link>
                     </div>
-                    <div className="exchange-title-bar">
-                        <RenderText text={post?.title} />
+                    <div className="ed-embedded-header">
+                        <h1 className="ed-title"><RenderText text={post.title} /></h1>
+                        <div className="ed-meta">
+                            <ProfilePicture src={post.author.profile_image} className="ed-header-avatar" />
+                            <span><RenderText text={`u/${post.author.username}`} /></span>
+                            <span className="ed-dot">•</span>
+                            <span>{formatDateTime(post.created_at)}</span>
+                            <div className="ed-community-chip" >
+                                <RenderText text={`c/${post.community.slug}`} />
+                            </div>
+                        </div>
                     </div>
                 </>
             )}
 
-            <div className="exchange-detail-content-area">
-                <div className="exchange-detail-main">
+            <div className="ed-content">
+                <div className="ed-main">
+                    {/* non-embedded header */}
                     {!embedded && (
-                        <div className="exchange-header-nonembedded-modern">
-                            <div className="exchange-header-top">
-                                <div className="exchange-post-title">
-                                    <RenderText text={post?.title} />
+                        <header className="ed-header">
+                            <h1 className="ed-title"><RenderText text={post.title} /></h1>
+                            <div className="ed-meta">
+                                <ProfilePicture src={post.author.profile_image} className="ed-header-avatar" />
+                                <span><RenderText text={`u/${post.author.username}`} /></span>
+                                <span className="ed-dot">•</span>
+                                <span>{formatDateTime(post.created_at)}</span>
+                                <div className="ed-community-chip" >
+                                    <RenderText text={`c/${post.community.slug}`} />
                                 </div>
                             </div>
-                            <div className="exchange-post-meta-row">
-                                <div className="exchange-post-meta">
-                                    <span>Posted by @{post?.author?.username}</span>
-                                    <span className="dot">•</span>
-                                    <span>{formatDateTime(post.created_at)}</span>
-                                </div>
-                                <Link to={`/communities/${post?.community?.slug}`} className="exchange-meta-community-link">
-                                    c/community-1{post?.community?.name}
-                                </Link>
-                            </div>
-                        </div>
+                        </header>
                     )}
 
-                    <div className="community-card exchange-post-card">
-                        <div className="vote-bar">
-                            <FiArrowUp className="vote-icon" />
-                            <span>{post.upvotes}</span>
-                            <FiArrowDown className="vote-icon" />
+                    {/* post card */}
+                    <article className="ed-postcard">
+                        <div className="ed-votebar">
+                            <FiArrowUp className="ed-voteicon" /><span>{post.upvotes}</span><FiArrowDown className="ed-voteicon" />
                         </div>
-
-                        <div className="post-body-section">
-                            <div className="post-header">
-                                <ProfilePicture src={post.author.profile_image} />
-                                <div className="meta">
-                                    <span className="username">@{post.author.username}</span>
-                                    <span className="timestamp">{formatDateTime(post.created_at, true)}</span>
-                                </div>
-                            </div>
-
-                            <div className="post-body">
+                        <div className="ed-postbody">
+                            <div className="ed-contentbody">
                                 <RenderText text={post.content} />
                             </div>
-
-                            <div className="post-footer">
-                                <FiMessageSquare />
-                                <span>{post.comments_count} comments</span>
-                            </div>
+                            <footer className="ed-postfooter">
+                                <FiMessageSquare /><span>{post.comments_count} comments</span>
+                            </footer>
                         </div>
-                    </div>
+                    </article>
 
-                    <div className="comments-section">
-                        <h3>Comments</h3>
-                        <div className="comment-thread-root">
-                            {dummyComments.map(comment => (
-                                <Comment key={comment.id} comment={comment} level={0} />
-                            ))}
-                        </div>
-                    </div>
+                    {/* comments */}
+                    <section className="ed-comments">
+                        <h2>Comments</h2>
+                        {dummyComments.map(c => <Comment key={c.id} comment={c} level={0} />)}
+                    </section>
                 </div>
 
+                {/* non-embedded sidebar */}
                 {!embedded && (
-                    <div className="exchange-detail-sidebar-wrapper">
-                        <div className="community-card exchange-detail-sidebar">
-                            <div className="exchange-sidebar-section">
-                                <h4>Quick Actions</h4>
-                                <div className="sidebar-button-group">
-                                    <button className="sidebar-button">Follow @{post.author.username}</button>
-                                    <button className="sidebar-button">Send Message</button>
-                                    <button className="sidebar-button">Save Post</button>
-                                </div>
-                            </div>
-
-                            <div className="exchange-sidebar-section">
-                                <h4>Explore More</h4>
-                                <ul className="sidebar-links">
-                                    <li><Link to="#">Related Discussion</Link></li>
-                                    <li><Link to="#">Hot Threads</Link></li>
-                                    <li><Link to="#">New This Week</Link></li>
-                                </ul>
-                            </div>
-
-                            <div className="exchange-sidebar-section">
-                                <h4>Community</h4>
-                                <p>Respectful dialogue. Stay on topic. Contribute meaningfully.</p>
-                                <button className="sidebar-button join-btn">Join Community</button>
-                            </div>
+                    <aside className="ed-sidebar">
+                        <div className="ed-sb-section">
+                            <h3>Quick Actions</h3>
+                            <button className="ed-sb-btn">Follow @{post.author.username}</button>
+                            <button className="ed-sb-btn">Send Message</button>
+                            <button className="ed-sb-btn">Save Post</button>
                         </div>
-                    </div>
+                        <div className="ed-sb-section">
+                            <h3>Explore More</h3>
+                            <ul className="ed-sb-links">
+                                <li><Link to="#">Related Discussion</Link></li>
+                                <li><Link to="#">Hot Threads</Link></li>
+                                <li><Link to="#">New This Week</Link></li>
+                            </ul>
+                        </div>
+                        <div className="ed-sb-section">
+                            <h3>Community</h3>
+                            <p>Respectful dialogue. Stay on topic. Contribute meaningfully.</p>
+                            <button className="ed-sb-btn ed-join-btn">Join Community</button>
+                        </div>
+                    </aside>
                 )}
             </div>
         </div>
     );
-};
+}
 
-const Comment = ({ comment, level = 0 }) => {
-    const hasReplies = comment.replies && comment.replies.length > 0;
-
+function Comment({ comment, level }) {
     return (
-        <div className="comment-thread-level" data-level={level}>
-            <div className="comment-wrapper">
-                <div className="comment-connector" />
-                <div className="comment-content">
-                    <div className="comment-header">
-                        <ProfilePicture />
-                        <span className="comment-username">{comment.user}</span>
-                        <span className="comment-time">{comment.time}</span>
-                    </div>
-                    <div className="comment-body">
-                        <div className="comment-text">{comment.text}</div>
-                        <div className="comment-actions">
-                            <div className="comment-vote">
-                                <FiArrowUp className="vote-icon" />
-                                <span>{comment.votes}</span>
-                                <FiArrowDown className="vote-icon" />
-                            </div>
-                        </div>
-                    </div>
+        <div className="ed-comment-level" style={{ marginLeft: `${level * 1.5}rem` }}>
+            <div className="ed-comment-box">
+                <div className="ed-comment-header">
+                    <ProfilePicture />
+                    <span className="ed-comment-user">{comment.user}</span>
+                    <span className="ed-comment-time">{comment.time}</span>
+                </div>
+                <div className="ed-comment-text">{comment.text}</div>
+                <div className="ed-comment-actions">
+                    <FiArrowUp className="ed-comment-voteicon" /><span>{comment.votes}</span>
+                    <FiArrowDown className="ed-comment-voteicon" />
                 </div>
             </div>
-            {hasReplies && (
-                <div className="comment-children">
-                    {comment.replies.map(reply => (
-                        <Comment key={reply.id} comment={reply} level={level + 1} />
-                    ))}
-                </div>
-            )}
+            {comment.replies.map(r => <Comment key={r.id} comment={r} level={level + 1} />)}
         </div>
     );
-};
-
-export default ExchangeDetail;
+}
