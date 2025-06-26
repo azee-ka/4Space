@@ -33,7 +33,21 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
             id: 1, user: "@demo_user", time: "just now", text: "This is a comment with replies.", votes: 5, replies: [
                 {
                     id: 2, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [
-                        { id: 3, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] }
+                        { id: 23, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [
+                        { id: 30, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 31, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 32, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 33, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 34, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 35, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        ] },
+                        { id: 24, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 25, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 26, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 27, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 28, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                        { id: 29, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+
                     ]
                 },
                 { id: 12, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
@@ -182,7 +196,13 @@ function Comment({ comment, level }) {
                     View {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
                 </button>
             ) : (
-                comment.replies.map(r => <Comment key={r.id} comment={r} level={level + 1} />)
+                comment.replies.length > 0 && (
+  <div className="ed-replies">
+    {comment.replies.map(r => (
+      <Comment key={r.id} comment={r} level={level+1} />
+    ))}
+  </div>
+)
             )}
         </div>
     );

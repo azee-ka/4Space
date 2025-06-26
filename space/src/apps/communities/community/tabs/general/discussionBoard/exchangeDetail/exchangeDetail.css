@@ -8,7 +8,11 @@
   --ed-text: #f4fcff;
   --ed-meta: #aab;
   --ed-line: rgba(255, 255, 255, 0.2);
-  --ed-indent: 3.5rem; /* indentation for threaded comments */
+
+    --ed-indent: -2rem;
+  --elbow-offset-y: 1rem;
+  --ed-line: rgba(255,255,255,0.2);
+
 }
 
 [data-theme="light"] {
@@ -181,10 +185,10 @@
 }
 
 /* comment connectors are now drawn via react-archer SVG, so remove CSS gutters */
-.ed-comment-level::before,
+/* .ed-comment-level::before,
 .ed-comment-level::after {
   content: none;
-}
+} */
 
 /* comment box */
 .ed-comment-box {
@@ -305,30 +309,51 @@
 
 
 
-/* make sure .ed-comment-box is the stacking context for the line */
-.ed-comment-box {
+/* .ed-comment-box {
   position: relative;
   z-index: 1;
 }
-/* draw a perfect L: vertical leg + horizontal leg, with one rounded corner */
 .ed-comment-box.ed-has-line::before {
   content: "";
   position: absolute;
-
-  /* vertically offset so the elbow sits at ~mid‐height of your bubble's padding */
   top: -0.8rem;
-
-  /* start exactly --ed-indent to the left of the box */
   left: calc(-1 * var(--ed-indent) + 1.3rem);
-
-  /* two legs: down then right */
-  height: 4rem;               /* vertical drop */
-  width: calc(var(--ed-indent) - 1.6rem);       /* horizontal run */
-
-  /* draw left border and bottom border only */
+  height: 4rem;
+  width: calc(var(--ed-indent) - 1.6rem);
   border-left: 2px solid var(--ed-line);
   border-bottom: 2px solid var(--ed-line);
-
-  /* round that single corner */
   border-bottom-left-radius: 1.5rem;
+} */
+
+
+
+
+
+
+
+.ed-replies {
+  position: relative;
+}
+.ed-replies::before {
+  content: "";
+  position: absolute;
+  top: -1rem; bottom: 5rem; left: 2rem;
+  border-right: 2px solid var(--ed-line);
+  z-index: 1;
+}
+.ed-comment-box.ed-has-line {
+  position: relative;
+  margin-left: 0rem;
+}
+.ed-comment-box.ed-has-line::before {
+  content: "";
+  position: absolute;
+  top: 0.2rem;
+  left: -1.5rem;
+  width: 1.4rem;
+  height: 1.5rem;
+  border-bottom: 2px solid var(--ed-line);
+  border-left:   2px solid var(--ed-line);
+  border-bottom-left-radius: 1rem;
+  z-index: 2;
 }
