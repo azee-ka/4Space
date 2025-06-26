@@ -2,6 +2,28 @@
 
 import apiCall from "../utils/api";
 
+// create a new comment or reply
+export const createComment = async ({ postId, content, parent }) => {
+  // parent: null for top‐level, or comment UUID to reply under
+  const res = await apiCall(
+    `community/exchanges/e/${postId}/comments/create/`,
+    "POST",
+    { content, parent }
+  );
+  return res.data;
+};
+
+// fetch paginated top-level comments
+export const fetchComments = async ({ postId, pageParam = 1 }) => {
+  const res = await apiCall(`community/exchanges/e/${postId}/comments/?page=${pageParam}`);
+  return res.data; // { results: [ ... ], next: url, previous: url }
+};
+
+// fetch paginated replies for a comment
+export const fetchReplies = async ({ commentId, pageParam = 1 }) => {
+  const res = await apiCall(`community/exchanges/comments/${commentId}/replies/?page=${pageParam}`);
+  return res.data;
+};
 
 // COMMUNITY
 export const fetchCommunity = async (communitySlug) => {

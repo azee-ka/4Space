@@ -110,13 +110,16 @@
   display: flex;
   gap: 0.6rem;
   padding: 1rem 0.6rem;
+}
+
+.ed-postcard.ed-postcard-style {
   background: var(--ed-glass-bg-light);
   backdrop-filter: blur(var(--ed-blur));
   border-radius: var(--ed-radius);
   box-shadow: var(--ed-shadow);
   transition: all 0.3s ease;
 }
-.ed-postcard:hover {
+.ed-postcard.ed-postcard-style:hover {
   background: rgba(255, 255, 255, 0.07);
   transform: translateY(-2px);
 }
@@ -162,6 +165,11 @@
   color: var(--ed-meta);
 }
 
+.ed-post-reply-btn {
+    all: unset;
+    cursor: pointer;
+}
+
 /* comments */
 .ed-comments {
   margin-top: 1rem;
@@ -178,6 +186,11 @@
   margin: 1rem 0;
 }
 
+.ed-comment-content {
+    display: flex;
+    flex-direction: row;
+}
+
 /* comment box */
 .ed-comment-box {
   background: var(--ed-glass-bg-light);
@@ -185,6 +198,16 @@
   padding: 0.75rem;
   border-radius: var(--ed-radius);
   box-sizing: border-box;
+    position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+
+.ed-comment-body {
+    gap: 0.5rem;
 }
 
 .ed-comment-header {
@@ -310,10 +333,6 @@
 }
 .connector-spine {
   z-index: 0;
-}
-.ed-comment-box {
-  position: relative;
-  z-index: 1;
 }
 .ed-comment-box.ed-has-line::before {
   content: "";

@@ -3,9 +3,59 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import ExchangePost
+from .models import ExchangePost, ExchangeReply
 from ..models import Community, CommunityMembership, CommunityPermission
-from .serializers import ExchangePostSerializer, CreateExchangePostSerializer
+from .serializers import (
+    ExchangeReplySerializer,
+    ReplySerializer,
+    CreateExchangeReplySerializer,
+    ExchangePostSerializer,
+    CreateExchangePostSerializer,
+)
+from rest_framework.pagination import PageNumberPagination
+
+class ExchangeReplyPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_comments(request, exchange_id):
+    post = get_object_or_404(ExchangePost, id=exchange_id)
+    qs = ExchangeReply.objects.filter(post=post, parent__isnull=True).order_by('created_at')
+    paginator = ExchangeReplyPagination()
+    page = paginator.paginate_queryset(qs, request)
+    serializer = ExchangeReplySerializer(page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_comment(request, exchange_id):
+    post = get_object_or_404(ExchangePost, id=exchange_id)
+    serializer = CreateExchangeReplySerializer(data=request.data)
+    if serializer.is_valid():
+        reply = serializer.save(author=request.user, post=post)
+        # update denormalized count
+        post.comments_count = post.comments.count()
+        post.save(update_fields=['comments_count'])
+        return Response(ExchangeReplySerializer(reply).data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_replies(request, comment_id):
+    parent = get_object_or_404(ExchangeReply, id=comment_id)
+    qs = parent.replies.order_by('created_at')
+    paginator = ExchangeReplyPagination()
+    page = paginator.paginate_queryset(qs, request)
+    serializer = ReplySerializer(page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+
 
 
 @api_view(['GET'])
