@@ -245,16 +245,45 @@ function Comment({ comment, level }) {
   const repliesRef = useRef(null);
   const [spineHeight, setSpineHeight] = useState(0);
 
-  // After each render (and on expand), measure how tall the replies block is
-  useLayoutEffect(() => {
-    if (repliesRef.current) {
-      // distance from parent’s bottom to last child’s top:
-      const rect = repliesRef.current.getBoundingClientRect();
-      // we want the line from y=0 (parent bottom inside this container) to
-      // y = rect.height - offset (the elbow sits ELBOW_RADIUS px below the top)
-      setSpineHeight(rect.height - ELBOW_RADIUS);
-    }
-  }, [expanded]);
+useLayoutEffect(() => {
+  const container = repliesRef.current;
+  if (!container) {
+    setSpineHeight(0);
+    return;
+  }
+
+  const containerRect = container.getBoundingClientRect();
+  // grab only the immediate .ed-comment-level children
+  const directLevels = Array.from(container.children)
+    .filter(el => el.classList.contains('ed-comment-level'));
+
+  if (directLevels.length === 0) {
+    setSpineHeight(0);
+    return;
+  }
+
+  // baseline: if no elbows found, at least draw down to ELBOW_RADIUS
+  const minElbowY = containerRect.top + ELBOW_RADIUS;
+
+  // for each sibling: find its elbow Y (box-top + ELBOW_RADIUS)
+  const elbowYs = directLevels.map(level => {
+    const box = level.querySelector('.ed-comment-box.ed-has-line');
+    if (!box) return minElbowY;
+    const { top } = box.getBoundingClientRect();
+    return top + ELBOW_RADIUS;
+  });
+
+  // pick the furthest‐down elbow
+  const maxElbowY = Math.max(...elbowYs, minElbowY);
+
+  // convert into relative height inside this container
+  // add 1px so the line actually reaches into the little curve
+  const heightPx = Math.ceil(maxElbowY - containerRect.top) + 28;
+
+  setSpineHeight(heightPx);
+}, [expanded]);
+
+
 
   return (
     <div className="ed-comment-level">
