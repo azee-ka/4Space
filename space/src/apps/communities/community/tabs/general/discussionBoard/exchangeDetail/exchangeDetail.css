@@ -8,6 +8,7 @@
   --ed-text: #f4fcff;
   --ed-meta: #aab;
   --ed-line: rgba(255, 255, 255, 0.2);
+  --ed-indent: 3.5rem; /* indentation for threaded comments */
 }
 
 [data-theme="light"] {
@@ -175,8 +176,8 @@
 .ed-comment-level {
   position: relative;
   margin: 1rem 0;
-  padding-left: 1.5rem;
-  padding-right: 1rem; /* room for the hook */
+  /* padding-left: 1.5rem; */
+  /* padding-right: 1rem; */
 }
 
 /* comment connectors are now drawn via react-archer SVG, so remove CSS gutters */
@@ -304,26 +305,30 @@
 
 
 
-
-/* start = bottom‐left inset */
-.corner-anchor.start {
-  position: absolute;
-  bottom: 0;
-  left: 0.75rem;    /* tweak this to slide the vertical leg left/right */
-  width: 0;
-  height: 0;
-}
-
-/* end = left side, a hair down from the top */
-.corner-anchor.end {
-  position: absolute;
-  top: 0.5rem;      /* moves your horizontal hook down, off the very corner */
-  left: 0;
-  width: 0;
-  height: 0;
-}
-
+/* make sure .ed-comment-box is the stacking context for the line */
 .ed-comment-box {
-  position: relative;  /* make anchors resolve against the box */
-  z-index: 2;          /* keep cards above the SVG lines */
+  position: relative;
+  z-index: 1;
+}
+/* draw a perfect L: vertical leg + horizontal leg, with one rounded corner */
+.ed-comment-box.ed-has-line::before {
+  content: "";
+  position: absolute;
+
+  /* vertically offset so the elbow sits at ~mid‐height of your bubble's padding */
+  top: -0.8rem;
+
+  /* start exactly --ed-indent to the left of the box */
+  left: calc(-1 * var(--ed-indent) + 1.3rem);
+
+  /* two legs: down then right */
+  height: 4rem;               /* vertical drop */
+  width: calc(var(--ed-indent) - 1.6rem);       /* horizontal run */
+
+  /* draw left border and bottom border only */
+  border-left: 2px solid var(--ed-line);
+  border-bottom: 2px solid var(--ed-line);
+
+  /* round that single corner */
+  border-bottom-left-radius: 1.5rem;
 }

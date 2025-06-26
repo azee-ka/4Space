@@ -192,7 +192,7 @@ function Community() {
                 )}
               </main>
 
-              <aside className="community-sidebar-right">
+              <aside className={`community-sidebar-right ${selectedTab?.key === 'home' ? 'community-home-right-sidebar' : ''}`}>
                 <h3>About this community</h3>
                 <p>
                   {community?.description ||

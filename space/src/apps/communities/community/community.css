@@ -170,11 +170,9 @@
 /* === Scrollable Area (tabs + content + right sidebar) === */
 .community-scrollable-content {
   flex-grow: 1;
-  /* overflow-y: auto; */
   display: flex;
   flex-direction: column;
   flex: 1;
-  /* height: 100%; */
 }
 
 /* === Tabs (sticky) === */
@@ -186,13 +184,12 @@
   justify-content: space-between;
   align-items: center;
   height: var(--tabs-height);
-  padding: 0.4rem 1rem;
+  padding: 0.2rem 1rem;
   background-color: var(--card);
   backdrop-filter: blur(15px);
   border-bottom: 1px solid rgba(255,255,255,0.1);
   margin-right: 0.5rem;
 }
-
 .community-tabs-left {
   display: flex;
   gap: 0.5rem;
@@ -256,6 +253,11 @@
   padding: 0.5rem;
   background-color: var(--card);
   box-sizing: border-box;
+  transition: all 0.3s;
+}
+.community-sidebar-right.community-home-right-sidebar{
+  width: 320px;
+  max-width: 320px;
 }
 
 .community-sidebar-right h3 {
@@ -332,8 +334,3 @@
     width: 100%;
   }
 }
-
-
-
-
-
