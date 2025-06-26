@@ -16,7 +16,6 @@ import RenderText from '../../../../../../../utils/autoCompleteInput/renderText'
 import { formatDateTime } from '../../../../../../../utils/formatDateTime';
 import './exchangeDetail.css';
 
-const INDENT_REM = 1; // rem per nesting level
 const ELBOW_RADIUS = 8; // px
 
 
@@ -32,63 +31,63 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
   // ── Dummy data ──
   const dummyComments = [
     {
-      id: 1, user: "@demo_user", time: "just now", text: "This is a comment with replies.", votes: 5, replies: [
+      id: 1, user: "demo_user", time: "just now", text: "This is a comment with replies.", votes: 5, replies: [
         {
-          id: 2, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [
+          id: 2, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [
             {
-              id: 23, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [
-                { id: 30, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                { id: 31, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                { id: 32, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                { id: 33, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                { id: 34, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+              id: 23, user: "deep_reply", time: "just now", text: "This is a comment with replies.", votes: 1, replies: [
+                { id: 30, user: "deep_reply", time: "just now", text: "Deep nesting works! This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.This is a comment with replies.", votes: 1, replies: [] },
+                { id: 31, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                { id: 32, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                { id: 33, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                { id: 34, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
                 {
-                  id: 35, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [
-                    { id: 36, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                    { id: 37, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                  id: 35, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [
+                    { id: 36, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                    { id: 37, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
                     {
-                      id: 38, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [
-                        { id: 43, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                      id: 38, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [
+                        { id: 43, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
                       ]
                     },
-                    { id: 39, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                    { id: 40, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                    { id: 41, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-                    { id: 42, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                    { id: 39, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                    { id: 40, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                    { id: 41, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+                    { id: 42, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
                   ]
                 },
               ]
             },
-            { id: 24, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-            { id: 25, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-            { id: 26, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-            { id: 27, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-            { id: 28, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
-            { id: 29, user: "@deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+            { id: 24, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+            { id: 25, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+            { id: 26, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+            { id: 27, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+            { id: 28, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
+            { id: 29, user: "deep_reply", time: "just now", text: "Deep nesting works!", votes: 1, replies: [] },
           ]
         },
-        { id: 12, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 13, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 14, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 15, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 16, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 17, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 18, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 19, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 20, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 21, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
-        { id: 22, user: "@nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 12, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 13, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 14, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 15, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 16, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 17, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 18, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 19, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 20, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 21, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
+        { id: 22, user: "nested_user", time: "1 min ago", text: "This is a nested reply.", votes: 2, replies: [] },
       ]
     },
     {
-      id: 4, user: "@another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [
+      id: 4, user: "another_user", time: "just now", text: "Another top-level comment.", votes: 3, replies: [
         {
-          id: 8, user: "@nested_user", time: "1 min ago", text: "Nested under 4.", votes: 2, replies: [
+          id: 8, user: "nested_user", time: "1 min ago", text: "Nested under 4.", votes: 2, replies: [
             {
-              id: 9, user: "@deep_reply", time: "just now", text: "Deeper!", votes: 1, replies: [
+              id: 9, user: "deep_reply", time: "just now", text: "Deeper!", votes: 1, replies: [
                 {
-                  id: 10, user: "@too_deep", time: "1 min ago", text: "Too deep reply", votes: 2, replies: [
-                    { id: 11, user: "@deepest", time: "just now", text: "Deepest!", votes: 1, replies: [] }
+                  id: 10, user: "too_deep", time: "1 min ago", text: "Too deep reply", votes: 2, replies: [
+                    { id: 11, user: "deepest", time: "just now", text: "Deepest!", votes: 1, replies: [] }
                   ]
                 }
               ]
@@ -97,9 +96,9 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
         }
       ]
     },
-    { id: 5, user: "@another_user", time: "just now", text: "Yet another comment.", votes: 3, replies: [] },
-    { id: 6, user: "@another_user", time: "just now", text: "And one more.", votes: 3, replies: [] },
-    { id: 7, user: "@another_user", time: "just now", text: "Last top-level.", votes: 3, replies: [] },
+    { id: 5, user: "another_user", time: "just now", text: "Yet another comment.", votes: 3, replies: [] },
+    { id: 6, user: "another_user", time: "just now", text: "And one more.", votes: 3, replies: [] },
+    { id: 7, user: "another_user", time: "just now", text: "Last top-level.", votes: 3, replies: [] },
   ];
 
   // refs to every comment box and parent relationships
@@ -213,7 +212,7 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
           <aside className="ed-sidebar">
             <div className="ed-sb-section">
               <h3>Quick Actions</h3>
-              <button className="ed-sb-btn">Follow @{post.author.username}</button>
+              <button className="ed-sb-btn">Follow <RenderText text={`u/${post.author.username}`} /></button>
               <button className="ed-sb-btn">Send Message</button>
               <button className="ed-sb-btn">Save Post</button>
             </div>
@@ -284,14 +283,13 @@ function Comment({ comment, level }) {
     ro.observe(container);
 
     return () => ro.disconnect();
-  }, [expanded]);  // no deps: mount once
+  }, [expanded, comment?.replies?.length]);
 
   return (
     <div className="ed-comment-level">
       <div className={`ed-comment-box${level > 0 ? ' ed-has-line' : ''}`}>
         <div className="ed-comment-header">
-          <ProfilePicture />
-          <span className="ed-comment-user">{comment.user}</span>
+          <span className="ed-comment-user"><RenderText text={`u/${comment.user}`} /></span>
           <span className="ed-comment-time">{comment.time}</span>
         </div>
         <div className="ed-comment-text">{comment.text}</div>
@@ -321,7 +319,7 @@ function Comment({ comment, level }) {
             <path
               d={`M ${ELBOW_RADIUS/2},${ELBOW_RADIUS} L ${ELBOW_RADIUS/2},${spineHeight}`}
               stroke="var(--ed-line)"
-              strokeWidth="2"
+              strokeWidth="1"
               fill="none"
               strokeLinecap="round"
             />

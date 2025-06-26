@@ -8,9 +8,7 @@
   --ed-meta: #aab;
   --ed-line: rgba(255, 255, 255, 0.2);
 
-  --ed-indent: -2rem;
-  --elbow-offset-y: 1rem;
-  --ed-line: rgb(155, 155, 155);
+  --ed-line: rgb(106, 106, 106);
 }
 
 [data-theme="light"] {
@@ -18,7 +16,7 @@
   --ed-glass-bg-dark: rgba(255, 255, 255, 0.2);
   --ed-text: #21333f;
   --ed-meta: #555;
-  --ed-line: rgba(0, 0, 0, 0.1);
+  --ed-line: rgb(169, 169, 169);
 }
 
 .ed-wrapper {
@@ -197,6 +195,7 @@
 }
 .ed-comment-user {
   font-weight: 600;
+  font-size: 0.8rem;
 }
 .ed-comment-time {
   font-size: 0.75rem;
@@ -320,11 +319,11 @@
   content: "";
   position: absolute;
   top: 0.25rem;
-  left: -2.3rem;
-  width: 2.1rem;
+  left: -2.28rem;
+  width: 2.2rem;
   height: 1.5rem;
-  border-left: 2px solid var(--ed-line);
-  border-bottom: 2px solid var(--ed-line);
+  border-left: 1px solid var(--ed-line);
+  border-bottom: 1px solid var(--ed-line);
   border-bottom-left-radius: 2.5rem;
   z-index: 2;
 }
