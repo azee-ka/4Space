@@ -237,53 +237,54 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
   );
 }
 
+
 function Comment({ comment, level }) {
   const [expanded, setExpanded] = useState(false);
   const hasReplies = comment.replies.length > 0;
   const truncated  = level >= 2 && !expanded && hasReplies;
-  const indentRem  = level * INDENT_REM;
   const repliesRef = useRef(null);
   const [spineHeight, setSpineHeight] = useState(0);
 
-useLayoutEffect(() => {
-  const container = repliesRef.current;
-  if (!container) {
-    setSpineHeight(0);
-    return;
-  }
+  // whenever the replies container resizes, recalc the vertical spine
+  useLayoutEffect(() => {
+    const container = repliesRef.current;
+    if (!container) {
+      setSpineHeight(0);
+      return;
+    }
 
-  const containerRect = container.getBoundingClientRect();
-  // grab only the immediate .ed-comment-level children
-  const directLevels = Array.from(container.children)
-    .filter(el => el.classList.contains('ed-comment-level'));
+    const recalc = () => {
+      const containerRect = container.getBoundingClientRect();
+      const directLevels = Array.from(container.children)
+        .filter(el => el.classList.contains('ed-comment-level'));
 
-  if (directLevels.length === 0) {
-    setSpineHeight(0);
-    return;
-  }
+      if (directLevels.length === 0) {
+        setSpineHeight(0);
+        return;
+      }
 
-  // baseline: if no elbows found, at least draw down to ELBOW_RADIUS
-  const minElbowY = containerRect.top + ELBOW_RADIUS;
+      const minElbowY = containerRect.top + ELBOW_RADIUS;
+      const elbowYs = directLevels.map(level => {
+        const box = level.querySelector('.ed-comment-box.ed-has-line');
+        if (!box) return minElbowY;
+        const { top } = box.getBoundingClientRect();
+        return top + ELBOW_RADIUS;
+      });
 
-  // for each sibling: find its elbow Y (box-top + ELBOW_RADIUS)
-  const elbowYs = directLevels.map(level => {
-    const box = level.querySelector('.ed-comment-box.ed-has-line');
-    if (!box) return minElbowY;
-    const { top } = box.getBoundingClientRect();
-    return top + ELBOW_RADIUS;
-  });
+      const maxElbowY = Math.max(...elbowYs, minElbowY);
+      const heightPx   = Math.ceil(maxElbowY - containerRect.top) + 20;
+      setSpineHeight(heightPx);
+    };
 
-  // pick the furthest‐down elbow
-  const maxElbowY = Math.max(...elbowYs, minElbowY);
+    // do an initial measurement
+    recalc();
 
-  // convert into relative height inside this container
-  // add 1px so the line actually reaches into the little curve
-  const heightPx = Math.ceil(maxElbowY - containerRect.top) + 28;
+    // observe further resizes (expanding / collapsing children)
+    const ro = new ResizeObserver(() => recalc());
+    ro.observe(container);
 
-  setSpineHeight(heightPx);
-}, [expanded]);
-
-
+    return () => ro.disconnect();
+  }, [expanded]);  // no deps: mount once
 
   return (
     <div className="ed-comment-level">
@@ -303,24 +304,19 @@ useLayoutEffect(() => {
 
       {truncated ? (
         <button className="ed-view-replies-btn" onClick={() => setExpanded(true)}>
-          View {comment.replies.length} replies
+          View {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
         </button>
       ) : hasReplies && (
         <div className="ed-replies" ref={repliesRef}>
-          {/*
-            Inline <svg> spine of exactly the right height:
-            x=0 (left edge), y=ELBOW_RADIUS,
-            height = spineHeight
-          */}
           <svg
             className="connector-spine"
             width={ELBOW_RADIUS}
             height={spineHeight}
             style={{
-            position: 'absolute',
-            top: '-1.5rem',
-            left: `-2rem`      /* shift right under the elbow */
-          }}
+              position: 'absolute',
+              top: '-1.5rem',
+              left: `-2rem`
+            }}
           >
             <path
               d={`M ${ELBOW_RADIUS/2},${ELBOW_RADIUS} L ${ELBOW_RADIUS/2},${spineHeight}`}
@@ -339,4 +335,3 @@ useLayoutEffect(() => {
     </div>
   );
 }
-
