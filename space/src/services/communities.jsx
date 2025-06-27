@@ -70,11 +70,22 @@ export const createDiscussion = async ({ slug, title, content }) => {
   return res.data;
 };
 
-export const voteDiscussion = async ({ communitySlug, postId, direction }) => {
+// vote on an exchange post (upvote/downvote)
+export const voteDiscussion = async ({ postId, voteType }) => {
   const res = await apiCall(
-    `community/${communitySlug}/exchanges/${postId}/vote/`,
+    `community/exchanges/e/${postId}/vote/`,
     "POST",
-    { direction }
+    { vote_type: voteType }
+  );
+  return res.data;
+};
+
+// vote on an exchange comment/reply (upvote/downvote)
+export const voteComment = async ({ commentId, voteType }) => {
+  const res = await apiCall(
+    `community/exchanges/comments/${commentId}/vote/`,
+    "POST",
+    { vote_type: voteType }
   );
   return res.data;
 };
@@ -143,9 +154,6 @@ export const uploadPublication = async ({
   return res.data;
 };
 
-
-
-
 // src/apps/communities/createCommunity
 export const createCommunity = async (formData) => {
   const res = await apiCall(
@@ -157,16 +165,12 @@ export const createCommunity = async (formData) => {
   return res.data;
 };
 
-
 // src/apps/communities/timeline
 // Get all communities for the timeline
 export const fetchCommunitiesTimeline = async () => {
   const res = await apiCall("community/timeline/get-communities/", "GET");
   return res.data || [];
 };
-
-
-
 
 // src/pages/profile/tabs/myCommunitiesTab
 // Exchanges: paginated, infinite scroll

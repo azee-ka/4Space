@@ -1,13 +1,19 @@
 # src/apps/communities/community/models.py
 
-from django.db import models
 import uuid
-from ..models import Community
+from django.db import models
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
+from src.post.models import Vote        # ← adjust this import to your Vote location
+
+from ..models import Community
+
 
 class ExchangePost(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='exchanges')
+    community = models.ForeignKey(
+        Community, on_delete=models.CASCADE, related_name='exchanges'
+    )
     author = models.ForeignKey(
         settings.AUTH_PROFILE_MODEL,
         on_delete=models.SET_NULL,
@@ -17,10 +23,14 @@ class ExchangePost(models.Model):
     )
     title = models.CharField(max_length=255)
     content = models.TextField(blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    upvotes = models.PositiveIntegerField(default=0)
+    # generic up/down votes
+    votes = GenericRelation(Vote, related_query_name='exchange_posts')
+
+    # denormalized count of top-level replies
     comments_count = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -33,9 +43,7 @@ class ExchangePost(models.Model):
 class ExchangeReply(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(
-        ExchangePost,
-        on_delete=models.CASCADE,
-        related_name='comments'
+        ExchangePost, on_delete=models.CASCADE, related_name='comments'
     )
     parent = models.ForeignKey(
         'self',
@@ -52,8 +60,10 @@ class ExchangeReply(models.Model):
         related_name='exchange_replies'
     )
     content = models.TextField()
-    upvotes = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # generic up/down votes
+    votes = GenericRelation(Vote, related_query_name='exchange_replies')
 
     class Meta:
         ordering = ['created_at']

@@ -165,14 +165,17 @@
 
 .ed-contentbody {
   flex: 1;
-  margin-bottom: 0.75rem;
+  line-height: 0.5em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .ed-postfooter {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  color: rgba(231, 252, 255, 0.701);
 }
 
 .ed-post-reply-count {
@@ -183,7 +186,7 @@
   gap: 0.5rem
 }
 
-.ed-post-reply-btn {
+/* .ed-post-reply-btn {
   all: unset;
   cursor: pointer;
   transition: 0.3s all;
@@ -195,10 +198,9 @@
   justify-content: center;
   align-items: center;
 }
-
 .ed-post-reply-btn:hover {
   color: white;
-}
+} */
 
 /* comments */
 .ed-comments {
@@ -282,10 +284,11 @@
 }
 
 .ed-comment-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
+  line-height: 0.5em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .ed-comment-actions {
@@ -394,13 +397,12 @@
 
 /* collapsed state */
 .ed-reply-box {
-    display: flex;
+  display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
   gap: 1rem;
   padding-right: 1rem;
-
   max-height: 0;
   opacity: 0;
   transition: max-height 0.5s ease;
@@ -408,16 +410,16 @@
 
 /* expanded state */
 .ed-reply-box.ed-open {
-  max-height: 500px;     /* large enough for editor */
+  max-height: 500px;
   opacity: 1;
 }
 
 .ed-reply-box .editor-container {
   border: 1px solid rgba(128, 128, 128, 0);
-  border-radius: 9px;
+  border-radius: 12px;
   background-color: rgba(59, 59, 59, 0.042);
   backdrop-filter: blur(8px);
-  padding: 0.5rem 0.5rem 0rem 0.5rem;
+  padding: 0.2rem 0.4rem 0rem 0.4rem;
   box-sizing: border-box;
   flex: 1;
 }
@@ -510,16 +512,19 @@
   justify-content: center;
   gap: 0.4rem;
   padding: 0.4rem 0.8rem;
-  background-color: rgba(151, 151, 151, 0.196);
+  background-color: rgba(151, 151, 151, 0.150);
   border-radius: 2rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s;
   font-size: 0.9rem;
+  color: rgba(220, 220, 220, 0.845);
+
 }
 
 .ed-action-btn:hover,
 .ed-post-reply-btn:hover {
   background-color: rgba(109, 109, 109, 0.25);
+  color: white;
 }
 
 .ed-comment-actions button {
@@ -532,13 +537,14 @@
   background-color: rgba(128, 128, 128, 0.1);
   border-radius: 2rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s;
   font-size: 0.9rem;
-  color: rgba(231, 252, 255, 0.701);
+  color: rgba(220, 220, 220, 0.701);
 }
 
 .ed-comment-actions button:hover {
   background-color: rgba(128, 128, 128, 0.2);
+  color: white;
 }
 
 .ed-load-more,
@@ -559,4 +565,10 @@
 .ed-load-more:hover,
 .ed-view-replies-btn:hover {
   background-color: rgba(128, 128, 128, 0.2);
+}
+
+
+
+.ed-no-comments {
+  color: rgba(167, 167, 167, 0.754);
 }
