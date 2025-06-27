@@ -39,6 +39,7 @@ class ExchangeReplySerializer(serializers.ModelSerializer):
             'upvotes_count':   up,
             'downvotes_count': down,
             'net_votes_count': up - down,
+            'replies_count':   obj.replies.count(),
         }
 
     def get_status(self, obj):

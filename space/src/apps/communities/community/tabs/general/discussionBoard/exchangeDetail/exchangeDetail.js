@@ -20,7 +20,11 @@ import {
   useMutation,
   useQueryClient
 } from '@tanstack/react-query';
-import { EXCHANGE_DETAIL } from '../../../../../../../services/queryKeys';
+import {
+  EXCHANGE_DETAIL,
+  EXCHANGE_COMMENTS,
+  EXCHANGE_COMMENT_REPLIES,
+} from '../../../../../../../services/queryKeys';
 import {
   fetchExchangeDetail,
   fetchComments,
@@ -57,7 +61,7 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
     fetchNextPage,
     hasNextPage
   } = useInfiniteQuery({
-    queryKey: ['comments', postId],
+    queryKey: EXCHANGE_COMMENTS(postId),
     queryFn: ({ pageParam = 1 }) => fetchComments({ postId, pageParam }),
     getNextPageParam: last => last.next
       ? Number(new URL(last.next).searchParams.get('page'))
@@ -65,11 +69,13 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
     enabled: !!postId
   });
 
-  // 3) Mutations (v5 signature)
+  // 3) Mutations
   const replyMutation = useMutation({
     mutationFn: ({ content, parentId }) =>
       createComment({ postId, content, parent: parentId }),
-    onSuccess: () => qc.invalidateQueries(['comments', postId])
+    onSuccess: () => {
+      qc.invalidateQueries(EXCHANGE_COMMENTS(postId));
+    }
   });
 
   const votePostMutation = useMutation({
@@ -88,6 +94,7 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
   const [showPostReply, setShowPostReply] = useState(false);
   const [postReplyContent, setPostReplyContent] = useState('');
 
+  // rebuild connector lines
   useLayoutEffect(() => {
     if (!treeRef.current || !commentsPages) return;
     const treeRect = treeRef.current.getBoundingClientRect();
@@ -115,12 +122,14 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
 
   const allComments = commentsPages?.pages.flatMap(p => p.results) || [];
 
+  // handle top-level reply submit
   const submitPostReply = () => {
     replyMutation.mutate({ content: postReplyContent, parentId: null });
     setPostReplyContent('');
     setShowPostReply(false);
   };
 
+  // common onReply callback
   const onReply = (content, parentId) => {
     replyMutation.mutate({ content, parentId });
   };
@@ -138,14 +147,16 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
         <div className="ed-main">
           {/* HEADER */}
           <header className="ed-header">
-            <h1 className="ed-title"><RenderText text={post?.title} /></h1>
+            <h1 className="ed-title"><RenderText text={post.title} /></h1>
             <div className="ed-meta">
-              <span><RenderText text={`u/${post?.author?.username}`} /></span>
+              <span><RenderText text={`u/${post.author.username}`} /></span>
               <span className="ed-dot">•</span>
-              <span>{timeAgo(post?.meta?.created_at)}</span>
+              <span>{timeAgo(post.meta.created_at)}</span>
               <span className="ed-dot">•</span>
-              <span>{formatDateTime(post?.meta?.created_at)}</span>
-              <div className="ed-community-chip"><RenderText text={`c/${post?.community?.slug}`} /></div>
+              <span>{formatDateTime(post.meta.created_at)}</span>
+              <div className="ed-community-chip">
+                <RenderText text={`c/${post.community.slug}`} />
+              </div>
             </div>
           </header>
 
@@ -154,16 +165,16 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
             <div className="ed-votebar">
               <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
                 <button
-                  className={`vote-btn ${post?.status?.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-vote-btn`}
+                  className={`vote-btn ${post.status.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-vote-btn`}
                   onClick={() => votePostMutation.mutate({ voteType: 'upvote' })}
                 >
                   <FaArrowUp className="icon-style" />
                 </button>
                 <div className="vote-count ed-exchange-vote-count">
-                  {formatCount(post?.stats?.net_votes_count) || 0}
+                  {formatCount(post.stats.net_votes_count) || 0}
                 </div>
                 <button
-                  className={`vote-btn ${post?.status?.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-vote-btn`}
+                  className={`vote-btn ${post.status.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-vote-btn`}
                   onClick={() => votePostMutation.mutate({ voteType: 'downvote' })}
                 >
                   <FaArrowDown className="icon-style" />
@@ -171,16 +182,19 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
               </div>
             </div>
             <div className="ed-postbody">
-              <div className="ed-contentbody"><RenderText text={post?.content} /></div>
+              <div className="ed-contentbody"><RenderText text={post.content} /></div>
               <footer className="ed-postfooter">
                 <button className="ed-action-btn">
-                  <FiMessageSquare /> {post?.stats?.comments_count}
+                  <FiMessageSquare /> {post.stats.comments_count}
                 </button>
-                <button className="ed-action-btn" onClick={() => setShowPostReply(s => !s)}>
+                <button
+                  className="ed-action-btn"
+                  onClick={() => setShowPostReply(s => !s)}
+                >
                   <FaReply /> Reply
                 </button>
                 <button className="ed-action-btn">
-                  <FiRepeat /> {post?.stats?.reposts_count}
+                  <FiRepeat /> {post.stats.reposts_count}
                 </button>
                 <button className="ed-action-btn">
                   <FiBookmark /> Save
@@ -201,7 +215,7 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                     showToolbar
                     isPlainText={false}
                     supportMedia
-                    onImageUpload={() => { }}
+                    onImageUpload={() => {}}
                   />
                   <button
                     className="ed-reply-submit-btn"
@@ -251,7 +265,9 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
           <aside className="ed-sidebar">
             <div className="ed-sb-section">
               <h3>Quick Actions</h3>
-              <button className="ed-sb-btn">Follow <RenderText text={`u/${post?.author?.username}`} /></button>
+              <button className="ed-sb-btn">
+                Follow <RenderText text={`u/${post.author.username}`} />
+              </button>
               <button className="ed-sb-btn">Send Message</button>
               <button className="ed-sb-btn">Save Post</button>
             </div>
@@ -285,7 +301,7 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
 
   const { data: repliesPages, isFetching: repliesLoading, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ['replies', comment.id],
+      queryKey: EXCHANGE_COMMENT_REPLIES(comment.id),
       queryFn: ({ pageParam = 1 }) => fetchReplies({ commentId: comment.id, pageParam }),
       getNextPageParam: last =>
         last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
@@ -293,11 +309,14 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
     });
 
   const voteCommentMutation = useMutation({
-    mutationFn: ({ voteType }) =>
-      voteComment({ commentId: comment.id, voteType }),
+    mutationFn: ({ voteType }) => voteComment({ commentId: comment.id, voteType }),
     onSuccess: () => {
-      qc.invalidateQueries(['comments', postId]);
-      qc.invalidateQueries(['replies', comment.id]);
+      // always refresh the top‐level comments list
+      qc.invalidateQueries(EXCHANGE_COMMENTS(postId));
+      // if this is a nested reply, re-fetch its parent’s replies
+      if (parentId) {
+        qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId));
+      }
     }
   });
 
@@ -325,6 +344,7 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
     return () => ro.disconnect();
   }, [repliesPages, showReplies]);
 
+  // register for connectors
   const selfRef = useRef(null);
   boxRefs.current[comment.id] = selfRef;
   parentMap.current[comment.id] = parentId;
@@ -343,35 +363,37 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
         <div className="ed-votebar">
           <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
             <button
-              className={`vote-btn ${comment?.status?.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
+              className={`vote-btn ${comment.status.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
               onClick={() => voteCommentMutation.mutate({ voteType: 'upvote' })}
             >
               <FaArrowUp className="icon-style" />
             </button>
             <div className="vote-count ed-exchange-comment-vote-count">
-              {formatCount(comment?.stats?.net_votes_count) || 0}
+              {formatCount(comment.stats.net_votes_count) || 0}
             </div>
             <button
-              className={`vote-btn ${comment?.status?.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
+              className={`vote-btn ${comment.status.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
               onClick={() => voteCommentMutation.mutate({ voteType: 'downvote' })}
             >
               <FaArrowDown className="icon-style" />
             </button>
           </div>
         </div>
-        <div className='ed-postbody ed-comment-body'>
+        <div className="ed-postbody ed-comment-body">
           <div className="ed-comment-header">
-            <span className="ed-comment-user"><RenderText text={`u/${comment?.author?.username}`} /></span>
-            <span className="ed-comment-time">{timeAgo(comment?.meta?.created_at)}</span>
+            <span className="ed-comment-user">
+              <RenderText text={`u/${comment.author.username}`} />
+            </span>
+            <span className="ed-comment-time">{timeAgo(comment.meta.created_at)}</span>
             <span className="ed-dot ed-comment-time">•</span>
-            <span className="ed-comment-time">{formatDateTime(comment?.meta?.created_at)}</span>
+            <span className="ed-comment-time">{formatDateTime(comment.meta.created_at)}</span>
           </div>
           <div className="ed-comment-text">
-            <RenderText text={comment?.content} />
+            <RenderText text={comment.content} />
           </div>
           <div className="ed-comment-actions">
             <button className="ed-action-btn">
-              <FiMessageSquare /> {comment?.replies?.length ?? 0}
+              <FiMessageSquare /> {comment.replies.length}
             </button>
             <button className="ed-action-btn" onClick={() => setShowReplyBox(s => !s)}>
               <FaReply /> Reply
@@ -380,11 +402,10 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
               <FiShare2 /> Share
             </button>
           </div>
-
           <div className="ed-reply-wrapper">
             <div className={`ed-reply-box ${showReplyBox ? 'ed-open' : ''}`}>
               <CustomEditor
-                id={`reply-editor-${comment?.id}`}
+                id={`reply-editor-${comment.id}`}
                 content={replyContent}
                 onContentChange={setReplyContent}
                 placeholder="Write your reply…"
@@ -392,58 +413,62 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
                 showToolbar
                 isPlainText={false}
                 supportMedia
-                onImageUpload={() => { }}
+                onImageUpload={() => {}}
               />
-              <button className='ed-reply-submit-btn' onClick={submitReply} disabled={!replyContent.trim()}>
+              <button className="ed-reply-submit-btn" onClick={submitReply} disabled={!replyContent.trim()}>
                 Post Reply
               </button>
             </div>
           </div>
         </div>
-
-        {comment?.replies?.length > 0 && (
-          <button
-            className="ed-view-replies-btn"
-            onClick={() => setShowReplies(s => !s)}
-          >
-            {showReplies
-              ? 'Hide replies'
-              : `Show ${comment?.replies?.length} repl${comment?.replies?.length === 1 ? 'y' : 'ies'}`}
-          </button>
-        )}
-
-        {showReplies && (
-          <div className="ed-replies" ref={repliesRef}>
-            <svg className="connector-spine" width={ELBOW_RADIUS} height={spineHeight}
-              style={{ position: 'absolute', top: '-1.5rem', left: '-2rem' }}>
-              <path
-                d={`M${ELBOW_RADIUS / 2},${ELBOW_RADIUS} L${ELBOW_RADIUS / 2},${spineHeight}`}
-                stroke="var(--ed-line)" strokeWidth="1" fill="none" strokeLinecap="round"
-              />
-            </svg>
-
-            {repliesLoading && <div>Loading…</div>}
-            {replies.map(r => (
-              <Comment
-                key={r.id}
-                comment={r}
-                level={level + 1}
-                parentId={comment?.id}
-                boxRefs={boxRefs}
-                parentMap={parentMap}
-                onReply={onReply}
-                postId={postId}
-              />
-            ))}
-
-            {hasNextPage && (
-              <button className="ed-load-more" onClick={() => fetchNextPage()}>
-                Load more replies
-              </button>
-            )}
-          </div>
-        )}
       </div>
+      {/* ← show/hide replies button back outside the comment-box */}
+      {comment.replies.length > 0 && (
+        <button
+          className="ed-view-replies-btn"
+          onClick={() => setShowReplies(s => !s)}
+        >
+          {showReplies
+            ? 'Hide replies'
+            : `Show ${comment.replies.length} repl${comment.replies.length === 1 ? 'y' : 'ies'}`}
+        </button>
+      )}
+      {showReplies && (
+        <div className="ed-replies" ref={repliesRef}>
+          <svg
+            className="connector-spine"
+            width={ELBOW_RADIUS}
+            height={spineHeight}
+            style={{ position: 'absolute', top: '-1.5rem', left: '-2rem' }}
+          >
+            <path
+              d={`M${ELBOW_RADIUS / 2},${ELBOW_RADIUS} L${ELBOW_RADIUS / 2},${spineHeight}`}
+              stroke="var(--ed-line)"
+              strokeWidth="1"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </svg>
+          {repliesLoading && <div>Loading…</div>}
+          {replies.map(r => (
+            <Comment
+              key={r.id}
+              comment={r}
+              level={level + 1}
+              parentId={comment.id}
+              boxRefs={boxRefs}
+              parentMap={parentMap}
+              onReply={onReply}
+              postId={postId}
+            />
+          ))}
+          {hasNextPage && (
+            <button className="ed-load-more" onClick={() => fetchNextPage()}>
+              Load more replies
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -29,6 +29,8 @@ export const DISPLAY_SETTINGS = ['displaySettings'];
 
 
 // src/apps/communities
+export const EXCHANGE_COMMENTS = (postId) => ['exchangeComments', postId];
+export const EXCHANGE_COMMENT_REPLIES = (commentId) => ['exchangeCommentReplies', commentId];
 export const CREATE_COMMENT = ['createComment'];
 
 export const COMMUNITY = (slug) => ['community', slug];
