@@ -73,8 +73,12 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
   const replyMutation = useMutation({
     mutationFn: ({ content, parentId }) =>
       createComment({ postId, content, parent: parentId }),
-    onSuccess: () => {
-      qc.invalidateQueries(EXCHANGE_COMMENTS(postId));
+    onSuccess: (_data, { parentId }) => {
+      if (parentId) {
+     qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId));
+   } else {
+     qc.invalidateQueries(EXCHANGE_COMMENTS(postId));
+   }
     }
   });
 
@@ -299,7 +303,13 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
   const repliesRef = useRef(null);
   const [spineHeight, setSpineHeight] = useState(0);
 
-  const { data: repliesPages, isFetching: repliesLoading, fetchNextPage, hasNextPage } =
+  const {
+   data: repliesPages,
+   isLoading: repliesInitialLoading,      // true only on first load
+   isFetching: repliesFetching,           // true on any refetch (including votes)
+   fetchNextPage,
+   hasNextPage
+ } = 
     useInfiniteQuery({
       queryKey: EXCHANGE_COMMENT_REPLIES(comment.id),
       queryFn: ({ pageParam = 1 }) => fetchReplies({ commentId: comment.id, pageParam }),
@@ -308,17 +318,99 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
       enabled: showReplies
     });
 
-  const voteCommentMutation = useMutation({
-    mutationFn: ({ voteType }) => voteComment({ commentId: comment.id, voteType }),
-    onSuccess: () => {
-      // always refresh the top‐level comments list
-      qc.invalidateQueries(EXCHANGE_COMMENTS(postId));
-      // if this is a nested reply, re-fetch its parent’s replies
-      if (parentId) {
-        qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId));
-      }
+const voteCommentMutation = useMutation({
+  mutationFn: ({ voteType }) =>
+    voteComment({ commentId: comment.id, voteType }),
+
+  onMutate: async ({ voteType }) => {
+    // 1) cancel both caches
+    await Promise.all([
+      qc.cancelQueries(EXCHANGE_COMMENT_REPLIES(parentId)),
+      qc.cancelQueries(EXCHANGE_COMMENTS(postId))
+    ])
+
+    // 2) snapshot both
+    const prevReplies  = qc.getQueryData(EXCHANGE_COMMENT_REPLIES(parentId))
+    const prevComments = qc.getQueryData(EXCHANGE_COMMENTS(postId))
+
+    // 3a) update replies if it's a nested reply
+    if (parentId) {
+      qc.setQueryData(
+        EXCHANGE_COMMENT_REPLIES(parentId),
+        old => updatePages(old, prevReplies, comment.id, voteType)
+      )
     }
-  });
+
+    // 3b) always update top-level comments cache
+    qc.setQueryData(
+      EXCHANGE_COMMENTS(postId),
+      old => updatePages(old, prevComments, comment.id, voteType)
+    )
+
+    // 4) return both for rollback
+    return { prevReplies, prevComments }
+  },
+
+  onError: (_err, _vars, context) => {
+    if (context.prevReplies)  qc.setQueryData(EXCHANGE_COMMENT_REPLIES(parentId), context.prevReplies)
+    if (context.prevComments) qc.setQueryData(EXCHANGE_COMMENTS(postId),     context.prevComments)
+  },
+
+  onSettled: () => {
+    qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId))
+    qc.invalidateQueries(EXCHANGE_COMMENTS(postId))
+  }
+})
+
+// helper to DRY up the pages‐mapping & fallback
+function updatePages(oldData, snapshot, targetId, voteType) {
+  const data = oldData ?? snapshot;
+
+  return {
+    ...data,
+    pages: data.pages.map(page => ({
+      ...page,
+      results: page.results.map(r => {
+        if (r.id !== targetId) return r;
+
+        const oldStatus = r.status.vote_status; // 'upvoted' | 'downvoted' | null
+        // 1) figure out net change
+        let delta;
+        if (voteType === 'upvote') {
+          delta = oldStatus === 'upvoted'
+            ? -1      // undo upvote
+            : oldStatus === 'downvoted'
+              ? 2     // remove downvote + add upvote
+              : 1;    // brand-new upvote
+        } else { // voteType === 'downvote'
+          delta = oldStatus === 'downvoted'
+            ? 1      // undo downvote
+            : oldStatus === 'upvoted'
+              ? -2    // remove upvote + add downvote
+              : -1;   // brand-new downvote
+        }
+
+        // 2) figure out new status
+        const newStatus =
+          oldStatus === voteType
+            ? null    // clicking same button clears your vote
+            : voteType;
+
+        return {
+          ...r,
+          stats: {
+            ...r.stats,
+            net_votes_count: r.stats.net_votes_count + delta
+          },
+          status: {
+            ...r.status,
+            vote_status: newStatus
+          }
+        };
+      })
+    }))
+  };
+}
 
   useLayoutEffect(() => {
     if (!repliesRef.current) return setSpineHeight(0);
@@ -393,7 +485,7 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
           </div>
           <div className="ed-comment-actions">
             <button className="ed-action-btn">
-              <FiMessageSquare /> {comment.replies.length}
+              <FiMessageSquare /> {comment.stats.replies_count}
             </button>
             <button className="ed-action-btn" onClick={() => setShowReplyBox(s => !s)}>
               <FaReply /> Reply
@@ -423,14 +515,14 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
         </div>
       </div>
       {/* ← show/hide replies button back outside the comment-box */}
-      {comment.replies.length > 0 && (
+      {comment.stats.replies_count > 0 && (
         <button
           className="ed-view-replies-btn"
           onClick={() => setShowReplies(s => !s)}
         >
           {showReplies
             ? 'Hide replies'
-            : `Show ${comment.replies.length} repl${comment.replies.length === 1 ? 'y' : 'ies'}`}
+            : `Show ${comment.stats.replies_count} repl${comment.stats.replies_count === 1 ? 'y' : 'ies'}`}
         </button>
       )}
       {showReplies && (
@@ -449,7 +541,7 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId
               strokeLinecap="round"
             />
           </svg>
-          {repliesLoading && <div>Loading…</div>}
+          {repliesInitialLoading && <div>Loading…</div>}
           {replies.map(r => (
             <Comment
               key={r.id}
