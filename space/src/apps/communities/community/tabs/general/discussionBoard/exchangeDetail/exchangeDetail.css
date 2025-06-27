@@ -428,8 +428,8 @@
 }
 
 .ed-reply-box .editor-container .toolbar .emoji-btn-container {
-  height: 100%;
-  aspect-ratio: 1 / 1;
+  height: 30px;
+  width: 30px;
   box-sizing: border-box;
 }
 

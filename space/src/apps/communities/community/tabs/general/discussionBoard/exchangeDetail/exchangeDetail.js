@@ -227,18 +227,6 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                                     Load more comments
                                 </button>
                             )}
-                            <svg className="ed-connectors">
-                                {connectors.map((c, i) => (
-                                    <path
-                                        key={i}
-                                        d={`M${c.x1},${c.y1} L${c.x2},${c.y2}`}
-                                        stroke="var(--ed-line)"
-                                        strokeWidth="1"
-                                        fill="none"
-                                        strokeLinecap="round"
-                                    />
-                                ))}
-                            </svg>
                         </div>
                     </section>
                 </div>
@@ -388,11 +376,16 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply }) {
                 </div>
             </div>
 
-            {!showReplies && comment.replies_count > 0 && (
-                <button className="ed-view-replies-btn" onClick={() => setShowReplies(true)}>
-                    Show {comment.replies_count} replies
-                </button>
-            )}
+            {comment.replies_count > 0 && (
+  <button
+    className="ed-view-replies-btn"
+    onClick={() => setShowReplies(s => !s)}
+  >
+    {showReplies
+      ? 'Hide replies'
+      : `Show ${comment.replies_count} repl${comment.replies_count === 1 ? 'y' : 'ies'}`}
+  </button>
+)}
 
             {showReplies && (
                 <div className="ed-replies" ref={repliesRef}>

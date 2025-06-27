@@ -44,7 +44,7 @@
 
 }
 
-.button {
+.toolbar .button {
     padding: 0.4em 0.5em !important;
     margin: 0 !important;
     font-size: 0.9em;
@@ -56,13 +56,13 @@
     transition: background-color 0.3s, transform 0.2s;
 }
 
-.button:hover {
-    background-color: #444;
-    transform: scale(1.1);
+.toolbar .button:hover {
+    background-color: rgba(127, 127, 127, 0.464);
+    transform: scale(1.1), translateZ(0);
 }
 
-.button.active {
-    background-color: #007bff;
+.toolbar .button.active {
+    background-color: #00a7a7;
     color: #fff;
     border-color: #007bff;
 }
