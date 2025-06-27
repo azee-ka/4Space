@@ -5,9 +5,13 @@ import {
     FiArrowUp,
     FiArrowDown,
     FiMessageSquare,
-    FiArrowLeft,
-    FiExternalLink
+    FiRepeat,
+    FiBookmark,
+    FiShare2,
+    FiExternalLink,
+    FiArrowLeft
 } from 'react-icons/fi';
+import { FaArrowDown, FaArrowUp, FaReply } from 'react-icons/fa';
 import {
     useQuery,
     useInfiniteQuery,
@@ -26,6 +30,7 @@ import { formatDateTime } from '../../../../../../../utils/formatDateTime';
 import CustomEditor from '../../../../../../../utils/editor/editor';
 import EmojiButton from '../../../../../../../utils/editor/EmojiButton';
 import './exchangeDetail.css';
+import { formatCount } from '../../../../../../../utils/formatCount';
 
 const ELBOW_RADIUS = 8;
 
@@ -85,22 +90,15 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
             const pRect = pRef.current.getBoundingClientRect();
             const cRect = ref.current.getBoundingClientRect();
             newConns.push({
-                x1: pRect.left - treeRect.left + 1,
+                x1: pRect.left - treeRect.left + ELBOW_RADIUS,
                 y1: pRect.bottom - treeRect.top,
-                x2: cRect.left - treeRect.left + 1,
+                x2: cRect.left - treeRect.left + ELBOW_RADIUS,
                 y2: cRect.top - treeRect.top
             });
         });
 
-        const same = newConns.length === connectors.length &&
-            newConns.every((c, i) =>
-                c.x1 === connectors[i].x1 &&
-                c.y1 === connectors[i].y1 &&
-                c.x2 === connectors[i].x2 &&
-                c.y2 === connectors[i].y2
-            );
-        if (!same) setConnectors(newConns);
-    }, [commentsPages, connectors]);
+        setConnectors(newConns);
+    }, [commentsPages]);
 
     // early returns
     if (postLoading) return <div className="ed-loading">Loading post…</div>;
@@ -146,32 +144,65 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                     <article className="ed-postcard ed-postcard-style">
                         <div className="ed-votebar">
                             <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
-                                <FiArrowUp className="ed-voteicon" /><span>{post.upvotes}</span><FiArrowDown className="ed-voteicon" />
+                                <button
+                                    className={`vote-btn ${post?.vote_status === "upvoted" ? 'active' : ''} ed-exchange-vote-btn`}
+                                // onClick={() => votePost('upvote')}
+                                >
+                                    <FaArrowUp className="icon-style" />
+                                </button>
+                                <div className="vote-count ed-exchange-vote-count">
+                                    {formatCount(post?.net_votes_count) || 0}
+                                </div>
+                                <button
+                                    className={`vote-btn ${post?.status?.vote_status === "downvoted" ? 'active' : ''} ed-exchange-vote-btn`}
+                                // onClick={() => votePost('downvote')}
+                                >
+                                    <FaArrowDown className="icon-style" />
+                                </button>
                             </div>
                         </div>
                         <div className="ed-postbody">
                             <div className="ed-contentbody"><RenderText text={post.content} /></div>
                             <footer className="ed-postfooter">
-                                <FiMessageSquare /> <span>{post.comments_count} comments</span>
-                                <button className="ed-view-replies-btn" onClick={() => setShowPostReply(s => !s)}>Reply</button>
+                                <button className="ed-action-btn">
+                                    <FiMessageSquare /> {post.comments_count}
+                                </button>
+                                <button className="ed-post-reply-btn" onClick={() => setShowPostReply(s => !s)}>
+                                    <FaReply /> Reply
+                                </button>
+                                <button className="ed-action-btn">
+                                    <FiRepeat /> {post.reposts_count}
+                                </button>
+                                <button className="ed-action-btn">
+                                    <FiBookmark /> Save
+                                </button>
+                                <button className="ed-action-btn">
+                                    <FiShare2 /> Share
+                                </button>
                             </footer>
 
-                            {showPostReply && (
-                                <div className="ed-reply-box">
+                            <div className="ed-reply-wrapper">
+                        <div className={`ed-reply-box ${showPostReply ? 'ed-open' : ''}`}>
                                     <CustomEditor
                                         id="post-reply-editor"
                                         content={postReplyContent}
                                         onContentChange={setPostReplyContent}
                                         placeholder="Write your reply…"
                                         isOverlay={false}
-                                        showToolbar={true}
+                                        showToolbar
                                         isPlainText={false}
-                                        supportMedia={true}
+                                        supportMedia
                                         onImageUpload={() => { }}
                                     />
-                                    <button onClick={submitPostReply} disabled={!postReplyContent.trim()}>Submit</button>
+                                    <button
+                                        className="ed-reply-submit-btn"
+                                        onClick={submitPostReply}
+                                        disabled={!postReplyContent.trim()}
+                                    >
+                                        Post Reply
+                                    </button>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </article>
 
@@ -196,12 +227,15 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
                                     Load more comments
                                 </button>
                             )}
-                            <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }} width="100%" height="100%">
+                            <svg className="ed-connectors">
                                 {connectors.map((c, i) => (
                                     <path
                                         key={i}
                                         d={`M${c.x1},${c.y1} L${c.x2},${c.y2}`}
-                                        stroke="var(--ed-line)" strokeWidth="1" fill="none" strokeLinecap="round"
+                                        stroke="var(--ed-line)"
+                                        strokeWidth="1"
+                                        fill="none"
+                                        strokeLinecap="round"
                                     />
                                 ))}
                             </svg>
@@ -238,9 +272,7 @@ export default function ExchangeDetail({ postId: propPostId, embedded = false, o
     );
 }
 
-
 function Comment({ comment, level, parentId, boxRefs, parentMap, onReply }) {
-    // all hooks at top
     const [showReplies, setShowReplies] = useState(false);
     const [showReplyBox, setShowReplyBox] = useState(false);
     const [replyContent, setReplyContent] = useState('');
@@ -296,13 +328,25 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply }) {
     return (
         <div className="ed-comment-level" ref={selfRef}>
             <div className={`ed-comment-box${level > 0 ? ' ed-has-line' : ''}`}>
-                    <div className="ed-votebar">
-                        <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
-                            <FiArrowUp className="ed-voteicon" />
-                            <span>{comment.upvotes}</span>
-                            <FiArrowDown className="ed-voteicon" />
+                <div className="ed-votebar">
+                    <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
+                        <button
+                            className={`vote-btn ${comment?.vote_status === "upvoted" ? 'active' : ''} ed-exchange-comment-vote-btn`}
+                        // onClick={() => votePost('upvote')}
+                        >
+                            <FaArrowUp className="icon-style" />
+                        </button>
+                        <div className="vote-count ed-exchange-comment-vote-count">
+                            {formatCount(comment?.net_votes_count) || 0}
                         </div>
+                        <button
+                            className={`vote-btn ${comment?.status?.vote_status === "downvoted" ? 'active' : ''} ed-exchange-comment-vote-btn`}
+                        // onClick={() => votePost('downvote')}
+                        >
+                            <FaArrowDown className="icon-style" />
+                        </button>
                     </div>
+                </div>
                 <div className='ed-postbody ed-comment-body'>
                     <div className="ed-comment-header">
                         <span className="ed-comment-user"><RenderText text={`u/${comment.author.username}`} /></span>
@@ -312,25 +356,35 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply }) {
                         <RenderText text={comment.content} />
                     </div>
                     <div className="ed-comment-actions">
-                        <button className="ed-post-reply-btn" onClick={() => setShowReplyBox(s => !s)}>Reply</button>
+                        <button className="ed-action-btn">
+                            <FiMessageSquare /> {comment.replies_count}
+                        </button>
+                        <button className="ed-action-btn" onClick={() => setShowReplyBox(s => !s)}>
+                            <FaReply /> Reply
+                        </button>
+                        <button className="ed-action-btn">
+                            <FiShare2 /> Share
+                        </button>
                     </div>
 
-                    {showReplyBox && (
-                        <div className="ed-reply-box" >
+                    <div className="ed-reply-wrapper">
+                        <div className={`ed-reply-box ${showReplyBox ? 'ed-open' : ''}`}>
                             <CustomEditor
                                 id={`reply-editor-${comment.id}`}
                                 content={replyContent}
                                 onContentChange={setReplyContent}
                                 placeholder="Write your reply…"
                                 isOverlay={false}
-                                showToolbar={true}
+                                showToolbar
                                 isPlainText={false}
-                                supportMedia={true}
+                                supportMedia
                                 onImageUpload={() => { }}
                             />
-                            <button onClick={submitReply} disabled={!replyContent.trim()}>Submit</button>
+                            <button className='ed-reply-submit-btn' onClick={submitReply} disabled={!replyContent.trim()}>
+                                Post Reply
+                            </button>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
 
@@ -364,7 +418,9 @@ function Comment({ comment, level, parentId, boxRefs, parentMap, onReply }) {
                     ))}
 
                     {hasNextPage && (
-                        <button onClick={() => fetchNextPage()}>Load more replies</button>
+                        <button className="ed-load-more" onClick={() => fetchNextPage()}>
+                            Load more replies
+                        </button>
                     )}
                 </div>
             )}

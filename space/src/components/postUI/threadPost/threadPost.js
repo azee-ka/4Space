@@ -113,15 +113,15 @@ const ThreadPost = () => {
                     </div>
                 )}
                 {post?.parent_post && post?.quote_text && (
-                                    <div className="repost-quote-block-banner" onClick={e => {
-                                        e.stopPropagation();
-                                        navigate(`/posts/p/${post?.parent_post?.id}`);
-                                    }}
-                                    >
-                                        <FaQuoteLeft />
-                                        <span>Quote</span>
-                                    </div>
-                    )}
+                    <div className="repost-quote-block-banner" onClick={e => {
+                        e.stopPropagation();
+                        navigate(`/posts/p/${post?.parent_post?.id}`);
+                    }}
+                    >
+                        <FaQuoteLeft />
+                        <span>Quote</span>
+                    </div>
+                )}
 
                 {/* Author Info */}
                 <div className="thread-post-author">
@@ -145,10 +145,10 @@ const ThreadPost = () => {
                     {post?.parent_post && post?.quote_text && (
                         <>
                             <div className="quote-block" onClick={e => {
-                                        e.stopPropagation();
-                                        navigate(`/posts/p/${post?.parent_post?.id}`);
-                                    }}
-                                    >
+                                e.stopPropagation();
+                                navigate(`/posts/p/${post?.parent_post?.id}`);
+                            }}
+                            >
                                 <div className="quote-meta">
                                     <ProfilePicture src={post.parent_post.author.profile_image} small />
                                     <span className="quote-username">@{post.parent_post.author.username}</span>
