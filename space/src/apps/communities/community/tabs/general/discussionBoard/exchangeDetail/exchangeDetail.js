@@ -4,34 +4,34 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  FiArrowUp,
-  FiArrowDown,
-  FiMessageSquare,
-  FiRepeat,
-  FiBookmark,
-  FiShare2,
-  FiExternalLink,
-  FiArrowLeft
+    FiArrowUp,
+    FiArrowDown,
+    FiMessageSquare,
+    FiRepeat,
+    FiBookmark,
+    FiShare2,
+    FiExternalLink,
+    FiArrowLeft
 } from 'react-icons/fi';
 import { FaArrowDown, FaArrowUp, FaReply } from 'react-icons/fa';
 import {
-  useQuery,
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient
+    useQuery,
+    useInfiniteQuery,
+    useMutation,
+    useQueryClient
 } from '@tanstack/react-query';
 import {
-  EXCHANGE_DETAIL,
-  EXCHANGE_COMMENTS,
-  EXCHANGE_COMMENT_REPLIES,
+    EXCHANGE_DETAIL,
+    EXCHANGE_COMMENTS,
+    EXCHANGE_COMMENT_REPLIES,
 } from '../../../../../../../services/queryKeys';
 import {
-  fetchExchangeDetail,
-  fetchComments,
-  fetchReplies,
-  createComment,
-  voteDiscussion,
-  voteComment
+    fetchExchangeDetail,
+    fetchComments,
+    fetchReplies,
+    createComment,
+    voteDiscussion,
+    voteComment
 } from '../../../../../../../services/communities';
 import RenderText from '../../../../../../../utils/autoCompleteInput/renderText';
 import { formatDateTime } from '../../../../../../../utils/formatDateTime';
@@ -43,524 +43,524 @@ import { timeAgo } from '../../../../../../../utils/convertDateTIme';
 const ELBOW_RADIUS = 8;
 
 export default function ExchangeDetail({ postId: propPostId, embedded = false, onClose }) {
-  const { exchangeId: routeId } = useParams();
-  const postId = propPostId || routeId;
-  const qc = useQueryClient();
+    const { exchangeId: routeId } = useParams();
+    const postId = propPostId || routeId;
+    const qc = useQueryClient();
 
-  // 1) Fetch post
-  const { data: post, isLoading: postLoading, isError: postError } = useQuery({
-    queryKey: EXCHANGE_DETAIL(postId),
-    queryFn: () => fetchExchangeDetail(postId),
-    enabled: !!postId
-  });
-
-  // 2) Fetch top-level comments
-  const {
-    data: commentsPages,
-    isLoading: commentsLoading,
-    fetchNextPage,
-    hasNextPage
-  } = useInfiniteQuery({
-    queryKey: EXCHANGE_COMMENTS(postId),
-    queryFn: ({ pageParam = 1 }) => fetchComments({ postId, pageParam }),
-    getNextPageParam: last => last.next
-      ? Number(new URL(last.next).searchParams.get('page'))
-      : undefined,
-    enabled: !!postId
-  });
-
-  // 3) Mutations
-  const replyMutation = useMutation({
-    mutationFn: ({ content, parentId }) =>
-      createComment({ postId, content, parent: parentId }),
-    onSuccess: (_data, { parentId }) => {
-      if (parentId) {
-     qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId));
-   } else {
-     qc.invalidateQueries(EXCHANGE_COMMENTS(postId));
-   }
-    }
-  });
-
-  const votePostMutation = useMutation({
-    mutationFn: ({ voteType }) =>
-      voteDiscussion({ postId, voteType }),
-    onSuccess: () => qc.invalidateQueries(EXCHANGE_DETAIL(postId))
-  });
-
-  // 4) Connector SVG state & refs
-  const boxRefs = useRef({});
-  const parentMap = useRef({});
-  const treeRef = useRef(null);
-  const [connectors, setConnectors] = useState([]);
-
-  // 5) Top-level reply UI
-  const [showPostReply, setShowPostReply] = useState(false);
-  const [postReplyContent, setPostReplyContent] = useState('');
-
-  // rebuild connector lines
-  useLayoutEffect(() => {
-    if (!treeRef.current || !commentsPages) return;
-    const treeRect = treeRef.current.getBoundingClientRect();
-    const newConns = [];
-
-    Object.entries(boxRefs.current).forEach(([id, ref]) => {
-      const pid = parentMap.current[id];
-      const pRef = boxRefs.current[pid];
-      if (!pid || !ref.current || !pRef?.current) return;
-      const pRect = pRef.current.getBoundingClientRect();
-      const cRect = ref.current.getBoundingClientRect();
-      newConns.push({
-        x1: pRect.left - treeRect.left + ELBOW_RADIUS,
-        y1: pRect.bottom - treeRect.top,
-        x2: cRect.left - treeRect.left + ELBOW_RADIUS,
-        y2: cRect.top - treeRect.top
-      });
+    // 1) Fetch post
+    const { data: post, isLoading: postLoading, isError: postError } = useQuery({
+        queryKey: EXCHANGE_DETAIL(postId),
+        queryFn: () => fetchExchangeDetail(postId),
+        enabled: !!postId
     });
 
-    setConnectors(newConns);
-  }, [commentsPages]);
+    // 2) Fetch top-level comments
+    const {
+        data: commentsPages,
+        isLoading: commentsLoading,
+        fetchNextPage,
+        hasNextPage
+    } = useInfiniteQuery({
+        queryKey: EXCHANGE_COMMENTS(postId),
+        queryFn: ({ pageParam = 1 }) => fetchComments({ postId, pageParam }),
+        getNextPageParam: last => last.next
+            ? Number(new URL(last.next).searchParams.get('page'))
+            : undefined,
+        enabled: !!postId
+    });
 
-  if (postLoading) return <div className="ed-loading">Loading post…</div>;
-  if (postError || !post) return <div className="ed-error">Post not found.</div>;
+    // 3) Mutations
+    const replyMutation = useMutation({
+        mutationFn: ({ content, parentId }) =>
+            createComment({ postId, content, parent: parentId }),
+        onSuccess: (_data, { parentId }) => {
+            if (parentId) {
+                qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId));
+            } else {
+                qc.invalidateQueries(EXCHANGE_COMMENTS(postId));
+            }
+        }
+    });
 
-  const allComments = commentsPages?.pages.flatMap(p => p.results) || [];
+    const votePostMutation = useMutation({
+        mutationFn: ({ voteType }) =>
+            voteDiscussion({ postId, voteType }),
+        onSuccess: () => qc.invalidateQueries(EXCHANGE_DETAIL(postId))
+    });
 
-  // handle top-level reply submit
-  const submitPostReply = () => {
-    replyMutation.mutate({ content: postReplyContent, parentId: null });
-    setPostReplyContent('');
-    setShowPostReply(false);
-  };
+    // 4) Connector SVG state & refs
+    const boxRefs = useRef({});
+    const parentMap = useRef({});
+    const treeRef = useRef(null);
+    const [connectors, setConnectors] = useState([]);
 
-  // common onReply callback
-  const onReply = (content, parentId) => {
-    replyMutation.mutate({ content, parentId });
-  };
+    // 5) Top-level reply UI
+    const [showPostReply, setShowPostReply] = useState(false);
+    const [postReplyContent, setPostReplyContent] = useState('');
 
-  return (
-    <div className={`ed-wrapper ${embedded ? 'ed-embedded' : 'ed-nonembedded'}`}>
-      {embedded && (
-        <div className="ed-topbar">
-          <button className="ed-iconbtn" onClick={onClose}><FiArrowLeft /></button>
-          <Link to={`/communities/e/${postId}`} className="ed-iconbtn"><FiExternalLink /></Link>
-        </div>
-      )}
+    // rebuild connector lines
+    useLayoutEffect(() => {
+        if (!treeRef.current || !commentsPages) return;
+        const treeRect = treeRef.current.getBoundingClientRect();
+        const newConns = [];
 
-      <div className="ed-content">
-        <div className="ed-main">
-          {/* HEADER */}
-          <header className="ed-header">
-            <h1 className="ed-title"><RenderText text={post.title} /></h1>
-            <div className="ed-meta">
-              <span><RenderText text={`u/${post.author.username}`} /></span>
-              <span className="ed-dot">•</span>
-              <span>{timeAgo(post.meta.created_at)}</span>
-              <span className="ed-dot">•</span>
-              <span>{formatDateTime(post.meta.created_at)}</span>
-              <div className="ed-community-chip">
-                <RenderText text={`c/${post.community.slug}`} />
-              </div>
-            </div>
-          </header>
+        Object.entries(boxRefs.current).forEach(([id, ref]) => {
+            const pid = parentMap.current[id];
+            const pRef = boxRefs.current[pid];
+            if (!pid || !ref.current || !pRef?.current) return;
+            const pRect = pRef.current.getBoundingClientRect();
+            const cRect = ref.current.getBoundingClientRect();
+            newConns.push({
+                x1: pRect.left - treeRect.left + ELBOW_RADIUS,
+                y1: pRect.bottom - treeRect.top,
+                x2: cRect.left - treeRect.left + ELBOW_RADIUS,
+                y2: cRect.top - treeRect.top
+            });
+        });
 
-          {/* POST CARD */}
-          <article className="ed-postcard ed-postcard-style">
-            <div className="ed-votebar">
-              <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
-                <button
-                  className={`vote-btn ${post.status.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-vote-btn`}
-                  onClick={() => votePostMutation.mutate({ voteType: 'upvote' })}
-                >
-                  <FaArrowUp className="icon-style" />
-                </button>
-                <div className="vote-count ed-exchange-vote-count">
-                  {formatCount(post.stats.net_votes_count) || 0}
+        setConnectors(newConns);
+    }, [commentsPages]);
+
+    if (postLoading) return <div className="ed-loading">Loading post…</div>;
+    if (postError || !post) return <div className="ed-error">Post not found.</div>;
+
+    const allComments = commentsPages?.pages.flatMap(p => p.results) || [];
+
+    // handle top-level reply submit
+    const submitPostReply = () => {
+        replyMutation.mutate({ content: postReplyContent, parentId: null });
+        setPostReplyContent('');
+        setShowPostReply(false);
+    };
+
+    // common onReply callback
+    const onReply = (content, parentId) => {
+        replyMutation.mutate({ content, parentId });
+    };
+
+    return (
+        <div className={`ed-wrapper ${embedded ? 'ed-embedded' : 'ed-nonembedded'}`}>
+            {embedded && (
+                <div className="ed-topbar">
+                    <button className="ed-iconbtn" onClick={onClose}><FiArrowLeft /></button>
+                    <Link to={`/communities/e/${postId}`} className="ed-iconbtn"><FiExternalLink /></Link>
                 </div>
-                <button
-                  className={`vote-btn ${post.status.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-vote-btn`}
-                  onClick={() => votePostMutation.mutate({ voteType: 'downvote' })}
-                >
-                  <FaArrowDown className="icon-style" />
-                </button>
-              </div>
-            </div>
-            <div className="ed-postbody">
-              <div className="ed-contentbody"><RenderText text={post.content} /></div>
-              <footer className="ed-postfooter">
-                <button className="ed-action-btn">
-                  <FiMessageSquare /> {post.stats.comments_count}
-                </button>
-                <button
-                  className="ed-action-btn"
-                  onClick={() => setShowPostReply(s => !s)}
-                >
-                  <FaReply /> Reply
-                </button>
-                <button className="ed-action-btn">
-                  <FiRepeat /> {post.stats.reposts_count}
-                </button>
-                <button className="ed-action-btn">
-                  <FiBookmark /> Save
-                </button>
-                <button className="ed-action-btn">
-                  <FiShare2 /> Share
-                </button>
-              </footer>
-
-              <div className="ed-reply-wrapper">
-                <div className={`ed-reply-box ${showPostReply ? 'ed-open' : ''}`}>
-                  <CustomEditor
-                    id="post-reply-editor"
-                    content={postReplyContent}
-                    onContentChange={setPostReplyContent}
-                    placeholder="Write your reply…"
-                    isOverlay={false}
-                    showToolbar
-                    isPlainText={false}
-                    supportMedia
-                    onImageUpload={() => {}}
-                  />
-                  <button
-                    className="ed-reply-submit-btn"
-                    onClick={submitPostReply}
-                    disabled={!postReplyContent.trim()}
-                  >
-                    Post Reply
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          {/* COMMENTS TREE */}
-          <section className="ed-comments">
-            <h2>Replies</h2>
-            {allComments.length === 0 && (
-              <div className="ed-no-comments">
-                <p>No replies yet. Be the first to comment!</p>
-              </div>
             )}
-            <div className="ed-comments-tree" ref={treeRef} style={{ position: 'relative' }}>
-              {commentsLoading && <div>Loading comments…</div>}
-              {allComments.map(c => (
-                <Comment
-                  key={c.id}
-                  comment={c}
-                  level={0}
-                  parentId={null}
-                  boxRefs={boxRefs}
-                  parentMap={parentMap}
-                  onReply={onReply}
-                  postId={postId}
-                />
-              ))}
-              {hasNextPage && (
-                <button className="ed-load-more" onClick={() => fetchNextPage()}>
-                  Load more comments
-                </button>
-              )}
-            </div>
-          </section>
-        </div>
 
-        {/* SIDEBAR */}
-        {!embedded && (
-          <aside className="ed-sidebar">
-            <div className="ed-sb-section">
-              <h3>Quick Actions</h3>
-              <button className="ed-sb-btn">
-                Follow <RenderText text={`u/${post.author.username}`} />
-              </button>
-              <button className="ed-sb-btn">Send Message</button>
-              <button className="ed-sb-btn">Save Post</button>
+            <div className="ed-content">
+                <div className="ed-main">
+                    {/* HEADER */}
+                    <header className="ed-header">
+                        <h1 className="ed-title"><RenderText text={post.title} /></h1>
+                        <div className="ed-meta">
+                            <span><RenderText text={`u/${post.author.username}`} /></span>
+                            <span className="ed-dot">•</span>
+                            <span>{timeAgo(post.meta.created_at)}</span>
+                            <span className="ed-dot">•</span>
+                            <span>{formatDateTime(post.meta.created_at)}</span>
+                            <div className="ed-community-chip">
+                                <RenderText text={`c/${post.community.slug}`} />
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* POST CARD */}
+                    <article className="ed-postcard ed-postcard-style">
+                        <div className="ed-votebar">
+                            <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
+                                <button
+                                    className={`vote-btn ${post.status.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-vote-btn`}
+                                    onClick={() => votePostMutation.mutate({ voteType: 'upvote' })}
+                                >
+                                    <FaArrowUp className="icon-style" />
+                                </button>
+                                <div className="vote-count ed-exchange-vote-count">
+                                    {formatCount(post.stats.net_votes_count) || 0}
+                                </div>
+                                <button
+                                    className={`vote-btn ${post.status.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-vote-btn`}
+                                    onClick={() => votePostMutation.mutate({ voteType: 'downvote' })}
+                                >
+                                    <FaArrowDown className="icon-style" />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="ed-postbody">
+                            <div className="ed-contentbody"><RenderText text={post.content} /></div>
+                            <footer className="ed-postfooter">
+                                <button className="ed-action-btn">
+                                    <FiMessageSquare /> {post.stats.comments_count}
+                                </button>
+                                <button
+                                    className="ed-action-btn"
+                                    onClick={() => setShowPostReply(s => !s)}
+                                >
+                                    <FaReply /> Reply
+                                </button>
+                                <button className="ed-action-btn">
+                                    <FiRepeat /> {post.stats.reposts_count}
+                                </button>
+                                <button className="ed-action-btn">
+                                    <FiBookmark /> Save
+                                </button>
+                                <button className="ed-action-btn">
+                                    <FiShare2 /> Share
+                                </button>
+                            </footer>
+
+                            <div className="ed-reply-wrapper">
+                                <div className={`ed-reply-box ${showPostReply ? 'ed-open' : ''}`}>
+                                    <CustomEditor
+                                        id="post-reply-editor"
+                                        content={postReplyContent}
+                                        onContentChange={setPostReplyContent}
+                                        placeholder="Write your reply…"
+                                        isOverlay={false}
+                                        showToolbar
+                                        isPlainText={false}
+                                        supportMedia
+                                        onImageUpload={() => { }}
+                                    />
+                                    <button
+                                        className="ed-reply-submit-btn"
+                                        onClick={submitPostReply}
+                                        disabled={!postReplyContent.trim()}
+                                    >
+                                        Post Reply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    {/* COMMENTS TREE */}
+                    <section className="ed-comments">
+                        <h2>Replies</h2>
+                        {allComments.length === 0 && (
+                            <div className="ed-no-comments">
+                                <p>No replies yet. Be the first to comment!</p>
+                            </div>
+                        )}
+                        <div className="ed-comments-tree" ref={treeRef} style={{ position: 'relative' }}>
+                            {commentsLoading && <div>Loading comments…</div>}
+                            {allComments.map(c => (
+                                <Comment
+                                    key={c.id}
+                                    comment={c}
+                                    level={0}
+                                    parentId={null}
+                                    boxRefs={boxRefs}
+                                    parentMap={parentMap}
+                                    onReply={onReply}
+                                    postId={postId}
+                                />
+                            ))}
+                            {hasNextPage && (
+                                <button className="ed-load-more" onClick={() => fetchNextPage()}>
+                                    Load more comments
+                                </button>
+                            )}
+                        </div>
+                    </section>
+                </div>
+
+                {/* SIDEBAR */}
+                {!embedded && (
+                    <aside className="ed-sidebar">
+                        <div className="ed-sb-section">
+                            <h3>Quick Actions</h3>
+                            <button className="ed-sb-btn">
+                                Follow <RenderText text={`u/${post.author.username}`} />
+                            </button>
+                            <button className="ed-sb-btn">Send Message</button>
+                            <button className="ed-sb-btn">Save Post</button>
+                        </div>
+                        <div className="ed-sb-section">
+                            <h3>Explore More</h3>
+                            <ul className="ed-sb-links">
+                                <li><Link to="#">Related Discussion</Link></li>
+                                <li><Link to="#">Hot Threads</Link></li>
+                                <li><Link to="#">New This Week</Link></li>
+                            </ul>
+                        </div>
+                        <div className="ed-sb-section">
+                            <h3>Community</h3>
+                            <p>Respectful dialogue. Stay on topic. Contribute meaningfully.</p>
+                            <button className="ed-sb-btn ed-join-btn">Join Community</button>
+                        </div>
+                    </aside>
+                )}
             </div>
-            <div className="ed-sb-section">
-              <h3>Explore More</h3>
-              <ul className="ed-sb-links">
-                <li><Link to="#">Related Discussion</Link></li>
-                <li><Link to="#">Hot Threads</Link></li>
-                <li><Link to="#">New This Week</Link></li>
-              </ul>
-            </div>
-            <div className="ed-sb-section">
-              <h3>Community</h3>
-              <p>Respectful dialogue. Stay on topic. Contribute meaningfully.</p>
-              <button className="ed-sb-btn ed-join-btn">Join Community</button>
-            </div>
-          </aside>
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 }
 
 function Comment({ comment, level, parentId, boxRefs, parentMap, onReply, postId }) {
-  const qc = useQueryClient();
-  const [showReplies, setShowReplies] = useState(false);
-  const [showReplyBox, setShowReplyBox] = useState(false);
-  const [replyContent, setReplyContent] = useState('');
-  const repliesRef = useRef(null);
-  const [spineHeight, setSpineHeight] = useState(0);
+    const qc = useQueryClient();
+    const [showReplies, setShowReplies] = useState(false);
+    const [showReplyBox, setShowReplyBox] = useState(false);
+    const [replyContent, setReplyContent] = useState('');
+    const repliesRef = useRef(null);
+    const [spineHeight, setSpineHeight] = useState(0);
 
-  const {
-   data: repliesPages,
-   isLoading: repliesInitialLoading,      // true only on first load
-   isFetching: repliesFetching,           // true on any refetch (including votes)
-   fetchNextPage,
-   hasNextPage
- } = 
-    useInfiniteQuery({
-      queryKey: EXCHANGE_COMMENT_REPLIES(comment.id),
-      queryFn: ({ pageParam = 1 }) => fetchReplies({ commentId: comment.id, pageParam }),
-      getNextPageParam: last =>
-        last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
-      enabled: showReplies
-    });
+    const {
+        data: repliesPages,
+        isLoading: repliesInitialLoading,      // true only on first load
+        isFetching: repliesFetching,           // true on any refetch (including votes)
+        fetchNextPage,
+        hasNextPage
+    } =
+        useInfiniteQuery({
+            queryKey: EXCHANGE_COMMENT_REPLIES(comment.id),
+            queryFn: ({ pageParam = 1 }) => fetchReplies({ commentId: comment.id, pageParam }),
+            getNextPageParam: last =>
+                last.next ? Number(new URL(last.next).searchParams.get('page')) : undefined,
+            enabled: showReplies
+        });
 
-const voteCommentMutation = useMutation({
-  mutationFn: ({ voteType }) =>
-    voteComment({ commentId: comment.id, voteType }),
+    const voteCommentMutation = useMutation({
+        mutationFn: ({ voteType }) =>
+            voteComment({ commentId: comment.id, voteType }),
 
-  onMutate: async ({ voteType }) => {
-    // 1) cancel both caches
-    await Promise.all([
-      qc.cancelQueries(EXCHANGE_COMMENT_REPLIES(parentId)),
-      qc.cancelQueries(EXCHANGE_COMMENTS(postId))
-    ])
+        onMutate: async ({ voteType }) => {
+            // 1) cancel both caches
+            await Promise.all([
+                qc.cancelQueries(EXCHANGE_COMMENT_REPLIES(parentId)),
+                qc.cancelQueries(EXCHANGE_COMMENTS(postId))
+            ])
 
-    // 2) snapshot both
-    const prevReplies  = qc.getQueryData(EXCHANGE_COMMENT_REPLIES(parentId))
-    const prevComments = qc.getQueryData(EXCHANGE_COMMENTS(postId))
+            // 2) snapshot both
+            const prevReplies = qc.getQueryData(EXCHANGE_COMMENT_REPLIES(parentId))
+            const prevComments = qc.getQueryData(EXCHANGE_COMMENTS(postId))
 
-    // 3a) update replies if it's a nested reply
-    if (parentId) {
-      qc.setQueryData(
-        EXCHANGE_COMMENT_REPLIES(parentId),
-        old => updatePages(old, prevReplies, comment.id, voteType)
-      )
-    }
+            // 3a) update replies if it's a nested reply
+            if (parentId) {
+                qc.setQueryData(
+                    EXCHANGE_COMMENT_REPLIES(parentId),
+                    old => updatePages(old, prevReplies, comment.id, voteType)
+                )
+            }
 
-    // 3b) always update top-level comments cache
-    qc.setQueryData(
-      EXCHANGE_COMMENTS(postId),
-      old => updatePages(old, prevComments, comment.id, voteType)
-    )
+            // 3b) always update top-level comments cache
+            qc.setQueryData(
+                EXCHANGE_COMMENTS(postId),
+                old => updatePages(old, prevComments, comment.id, voteType)
+            )
 
-    // 4) return both for rollback
-    return { prevReplies, prevComments }
-  },
+            // 4) return both for rollback
+            return { prevReplies, prevComments }
+        },
 
-  onError: (_err, _vars, context) => {
-    if (context.prevReplies)  qc.setQueryData(EXCHANGE_COMMENT_REPLIES(parentId), context.prevReplies)
-    if (context.prevComments) qc.setQueryData(EXCHANGE_COMMENTS(postId),     context.prevComments)
-  },
+        onError: (_err, _vars, context) => {
+            if (context.prevReplies) qc.setQueryData(EXCHANGE_COMMENT_REPLIES(parentId), context.prevReplies)
+            if (context.prevComments) qc.setQueryData(EXCHANGE_COMMENTS(postId), context.prevComments)
+        },
 
-  onSettled: () => {
-    qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId))
-    qc.invalidateQueries(EXCHANGE_COMMENTS(postId))
-  }
-})
-
-// helper to DRY up the pages‐mapping & fallback
-function updatePages(oldData, snapshot, targetId, voteType) {
-  const data = oldData ?? snapshot;
-
-  return {
-    ...data,
-    pages: data.pages.map(page => ({
-      ...page,
-      results: page.results.map(r => {
-        if (r.id !== targetId) return r;
-
-        const oldStatus = r.status.vote_status; // 'upvoted' | 'downvoted' | null
-        // 1) figure out net change
-        let delta;
-        if (voteType === 'upvote') {
-          delta = oldStatus === 'upvoted'
-            ? -1      // undo upvote
-            : oldStatus === 'downvoted'
-              ? 2     // remove downvote + add upvote
-              : 1;    // brand-new upvote
-        } else { // voteType === 'downvote'
-          delta = oldStatus === 'downvoted'
-            ? 1      // undo downvote
-            : oldStatus === 'upvoted'
-              ? -2    // remove upvote + add downvote
-              : -1;   // brand-new downvote
+        onSettled: () => {
+            qc.invalidateQueries(EXCHANGE_COMMENT_REPLIES(parentId))
+            qc.invalidateQueries(EXCHANGE_COMMENTS(postId))
         }
+    })
 
-        // 2) figure out new status
-        const newStatus =
-          oldStatus === voteType
-            ? null    // clicking same button clears your vote
-            : voteType;
+    // helper to DRY up the pages‐mapping & fallback
+    function updatePages(oldData, snapshot, targetId, voteType) {
+        const data = oldData ?? snapshot;
 
         return {
-          ...r,
-          stats: {
-            ...r.stats,
-            net_votes_count: r.stats.net_votes_count + delta
-          },
-          status: {
-            ...r.status,
-            vote_status: newStatus
-          }
+            ...data,
+            pages: data.pages.map(page => ({
+                ...page,
+                results: page.results.map(r => {
+                    if (r.id !== targetId) return r;
+
+                    const oldStatus = r.status.vote_status; // 'upvoted' | 'downvoted' | null
+                    // 1) figure out net change
+                    let delta;
+                    if (voteType === 'upvote') {
+                        delta = oldStatus === 'upvoted'
+                            ? -1      // undo upvote
+                            : oldStatus === 'downvoted'
+                                ? 2     // remove downvote + add upvote
+                                : 1;    // brand-new upvote
+                    } else { // voteType === 'downvote'
+                        delta = oldStatus === 'downvoted'
+                            ? 1      // undo downvote
+                            : oldStatus === 'upvoted'
+                                ? -2    // remove upvote + add downvote
+                                : -1;   // brand-new downvote
+                    }
+
+                    // 2) figure out new status
+                    const newStatus =
+                        oldStatus === voteType
+                            ? null    // clicking same button clears your vote
+                            : voteType;
+
+                    return {
+                        ...r,
+                        stats: {
+                            ...r.stats,
+                            net_votes_count: r.stats.net_votes_count + delta
+                        },
+                        status: {
+                            ...r.status,
+                            vote_status: newStatus
+                        }
+                    };
+                })
+            }))
         };
-      })
-    }))
-  };
-}
+    }
 
-  useLayoutEffect(() => {
-    if (!repliesRef.current) return setSpineHeight(0);
-    const recalc = () => {
-      const ctr = repliesRef.current.getBoundingClientRect();
-      const kids = Array.from(repliesRef.current.children)
-        .filter(el => el.classList.contains('ed-comment-level'));
-      if (!kids.length) return setSpineHeight(0);
+    useLayoutEffect(() => {
+        if (!repliesRef.current) return setSpineHeight(0);
+        const recalc = () => {
+            const ctr = repliesRef.current.getBoundingClientRect();
+            const kids = Array.from(repliesRef.current.children)
+                .filter(el => el.classList.contains('ed-comment-level'));
+            if (!kids.length) return setSpineHeight(0);
 
-      const minY = ctr.top + ELBOW_RADIUS;
-      const ys = kids.map(k => {
-        const box = k.querySelector('.ed-comment-box.ed-has-line');
-        return box
-          ? box.getBoundingClientRect().top + ELBOW_RADIUS
-          : minY;
-      });
-      const maxY = Math.max(...ys, minY);
-      setSpineHeight(Math.ceil(maxY - ctr.top) + 20);
+            const minY = ctr.top + ELBOW_RADIUS;
+            const ys = kids.map(k => {
+                const box = k.querySelector('.ed-comment-box.ed-has-line');
+                return box
+                    ? box.getBoundingClientRect().top + ELBOW_RADIUS
+                    : minY;
+            });
+            const maxY = Math.max(...ys, minY);
+            setSpineHeight(Math.ceil(maxY - ctr.top) + 20);
+        };
+        recalc();
+        const ro = new ResizeObserver(recalc);
+        ro.observe(repliesRef.current);
+        return () => ro.disconnect();
+    }, [repliesPages, showReplies]);
+
+    // register for connectors
+    const selfRef = useRef(null);
+    boxRefs.current[comment.id] = selfRef;
+    parentMap.current[comment.id] = parentId;
+
+    const replies = repliesPages?.pages.flatMap(p => p.results) || [];
+
+    const submitReply = () => {
+        onReply(replyContent, comment.id);
+        setReplyContent('');
+        setShowReplyBox(false);
     };
-    recalc();
-    const ro = new ResizeObserver(recalc);
-    ro.observe(repliesRef.current);
-    return () => ro.disconnect();
-  }, [repliesPages, showReplies]);
 
-  // register for connectors
-  const selfRef = useRef(null);
-  boxRefs.current[comment.id] = selfRef;
-  parentMap.current[comment.id] = parentId;
-
-  const replies = repliesPages?.pages.flatMap(p => p.results) || [];
-
-  const submitReply = () => {
-    onReply(replyContent, comment.id);
-    setReplyContent('');
-    setShowReplyBox(false);
-  };
-
-  return (
-    <div className="ed-comment-level" ref={selfRef}>
-      <div className={`ed-comment-box${level > 0 ? ' ed-has-line' : ''}`}>
-        <div className="ed-votebar">
-          <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
-            <button
-              className={`vote-btn ${comment.status.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
-              onClick={() => voteCommentMutation.mutate({ voteType: 'upvote' })}
-            >
-              <FaArrowUp className="icon-style" />
-            </button>
-            <div className="vote-count ed-exchange-comment-vote-count">
-              {formatCount(comment.stats.net_votes_count) || 0}
+    return (
+        <div className="ed-comment-level" ref={selfRef}>
+            <div className={`ed-comment-box${level > 0 ? ' ed-has-line' : ''}`}>
+                <div className="ed-votebar">
+                    <div className="ed-votebar-inner" onClick={e => e.stopPropagation()}>
+                        <button
+                            className={`vote-btn ${comment.status.vote_status === 'upvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
+                            onClick={() => voteCommentMutation.mutate({ voteType: 'upvote' })}
+                        >
+                            <FaArrowUp className="icon-style" />
+                        </button>
+                        <div className="vote-count ed-exchange-comment-vote-count">
+                            {formatCount(comment.stats.net_votes_count) || 0}
+                        </div>
+                        <button
+                            className={`vote-btn ${comment.status.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
+                            onClick={() => voteCommentMutation.mutate({ voteType: 'downvote' })}
+                        >
+                            <FaArrowDown className="icon-style" />
+                        </button>
+                    </div>
+                </div>
+                <div className="ed-postbody ed-comment-body">
+                    <div className="ed-comment-header">
+                        <span className="ed-comment-user">
+                            <RenderText text={`u/${comment.author.username}`} />
+                        </span>
+                        <span className="ed-comment-time">{timeAgo(comment.meta.created_at)}</span>
+                        <span className="ed-dot ed-comment-time">•</span>
+                        <span className="ed-comment-time">{formatDateTime(comment.meta.created_at)}</span>
+                    </div>
+                    <div className="ed-comment-text">
+                        <RenderText text={comment.content} />
+                    </div>
+                    <div className="ed-comment-actions">
+                        <button className="ed-action-btn">
+                            <FiMessageSquare /> {comment.stats.replies_count}
+                        </button>
+                        <button className="ed-action-btn" onClick={() => setShowReplyBox(s => !s)}>
+                            <FaReply /> Reply
+                        </button>
+                        <button className="ed-action-btn">
+                            <FiShare2 /> Share
+                        </button>
+                    </div>
+                    <div className="ed-reply-wrapper">
+                        <div className={`ed-reply-box ${showReplyBox ? 'ed-open' : ''}`}>
+                            <CustomEditor
+                                id={`reply-editor-${comment.id}`}
+                                content={replyContent}
+                                onContentChange={setReplyContent}
+                                placeholder="Write your reply…"
+                                isOverlay={false}
+                                showToolbar
+                                isPlainText={false}
+                                supportMedia
+                                onImageUpload={() => { }}
+                            />
+                            <button className="ed-reply-submit-btn" onClick={submitReply} disabled={!replyContent.trim()}>
+                                Post Reply
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button
-              className={`vote-btn ${comment.status.vote_status === 'downvoted' ? 'active' : ''} ed-exchange-comment-vote-btn`}
-              onClick={() => voteCommentMutation.mutate({ voteType: 'downvote' })}
-            >
-              <FaArrowDown className="icon-style" />
-            </button>
-          </div>
+            {/* ← show/hide replies button back outside the comment-box */}
+            {comment.stats.replies_count > 0 && (
+                <button
+                    className="ed-view-replies-btn"
+                    onClick={() => setShowReplies(s => !s)}
+                >
+                    {showReplies
+                        ? 'Hide replies'
+                        : `Show ${comment.stats.replies_count} repl${comment.stats.replies_count === 1 ? 'y' : 'ies'}`}
+                </button>
+            )}
+            {showReplies && (
+                <div className="ed-replies" ref={repliesRef}>
+                    <svg
+                        className="connector-spine"
+                        width={ELBOW_RADIUS}
+                        height={spineHeight}
+                        style={{ position: 'absolute', top: '-1.5rem', left: '-2rem' }}
+                    >
+                        <path
+                            d={`M${ELBOW_RADIUS / 2},${ELBOW_RADIUS} L${ELBOW_RADIUS / 2},${spineHeight}`}
+                            stroke="var(--ed-line)"
+                            strokeWidth="1"
+                            fill="none"
+                            strokeLinecap="round"
+                        />
+                    </svg>
+                    {repliesInitialLoading && <div>Loading…</div>}
+                    {replies.map(r => (
+                        <Comment
+                            key={r.id}
+                            comment={r}
+                            level={level + 1}
+                            parentId={comment.id}
+                            boxRefs={boxRefs}
+                            parentMap={parentMap}
+                            onReply={onReply}
+                            postId={postId}
+                        />
+                    ))}
+                    {hasNextPage && (
+                        <button className="ed-load-more" onClick={() => fetchNextPage()}>
+                            Load more replies
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
-        <div className="ed-postbody ed-comment-body">
-          <div className="ed-comment-header">
-            <span className="ed-comment-user">
-              <RenderText text={`u/${comment.author.username}`} />
-            </span>
-            <span className="ed-comment-time">{timeAgo(comment.meta.created_at)}</span>
-            <span className="ed-dot ed-comment-time">•</span>
-            <span className="ed-comment-time">{formatDateTime(comment.meta.created_at)}</span>
-          </div>
-          <div className="ed-comment-text">
-            <RenderText text={comment.content} />
-          </div>
-          <div className="ed-comment-actions">
-            <button className="ed-action-btn">
-              <FiMessageSquare /> {comment.stats.replies_count}
-            </button>
-            <button className="ed-action-btn" onClick={() => setShowReplyBox(s => !s)}>
-              <FaReply /> Reply
-            </button>
-            <button className="ed-action-btn">
-              <FiShare2 /> Share
-            </button>
-          </div>
-          <div className="ed-reply-wrapper">
-            <div className={`ed-reply-box ${showReplyBox ? 'ed-open' : ''}`}>
-              <CustomEditor
-                id={`reply-editor-${comment.id}`}
-                content={replyContent}
-                onContentChange={setReplyContent}
-                placeholder="Write your reply…"
-                isOverlay={false}
-                showToolbar
-                isPlainText={false}
-                supportMedia
-                onImageUpload={() => {}}
-              />
-              <button className="ed-reply-submit-btn" onClick={submitReply} disabled={!replyContent.trim()}>
-                Post Reply
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* ← show/hide replies button back outside the comment-box */}
-      {comment.stats.replies_count > 0 && (
-        <button
-          className="ed-view-replies-btn"
-          onClick={() => setShowReplies(s => !s)}
-        >
-          {showReplies
-            ? 'Hide replies'
-            : `Show ${comment.stats.replies_count} repl${comment.stats.replies_count === 1 ? 'y' : 'ies'}`}
-        </button>
-      )}
-      {showReplies && (
-        <div className="ed-replies" ref={repliesRef}>
-          <svg
-            className="connector-spine"
-            width={ELBOW_RADIUS}
-            height={spineHeight}
-            style={{ position: 'absolute', top: '-1.5rem', left: '-2rem' }}
-          >
-            <path
-              d={`M${ELBOW_RADIUS / 2},${ELBOW_RADIUS} L${ELBOW_RADIUS / 2},${spineHeight}`}
-              stroke="var(--ed-line)"
-              strokeWidth="1"
-              fill="none"
-              strokeLinecap="round"
-            />
-          </svg>
-          {repliesInitialLoading && <div>Loading…</div>}
-          {replies.map(r => (
-            <Comment
-              key={r.id}
-              comment={r}
-              level={level + 1}
-              parentId={comment.id}
-              boxRefs={boxRefs}
-              parentMap={parentMap}
-              onReply={onReply}
-              postId={postId}
-            />
-          ))}
-          {hasNextPage && (
-            <button className="ed-load-more" onClick={() => fetchNextPage()}>
-              Load more replies
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
+    );
 }

@@ -16,6 +16,7 @@
   --results-list-divider: 0.0625rem solid rgba(255,255,255,0.05);
   --results-list-hover-bg: rgba(255,255,255,0.05);
 
+  --username-input-field-text-color: white;
   --results-list-fg: #ddd;
 
   --submit-btn-bg: rgba(255,255,255,0.08);
@@ -41,6 +42,8 @@
   --results-list-divider: 0.0625rem solid #dde3ea;
   --results-list-hover-bg: #e7eef9;
   --results-list-fg: #445069;
+
+  --username-input-field-text-color: black;
 
   --submit-btn-bg: #e3f4fa;
   --submit-btn-hover-bg: #caebf7;
@@ -110,6 +113,7 @@
   font-size: 0.9em;
   flex-grow: 1;
   min-width: 7.5rem;
+  color: var(--username-input-field-text-color)
 }
 .recipient-bar .pill {
   display: flex;
@@ -171,6 +175,7 @@
   padding: 0.625rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
+  box-sizing: border-box;
 }
 .submit-btn:hover:not(:disabled) {
   background: var(--submit-btn-hover-bg);
