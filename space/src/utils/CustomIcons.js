@@ -40,6 +40,8 @@ export function TimelineIcon({ size = 36, color, accent, mode = "dark" }) {
     [52, 40],
   ];
 
+  const offsetY = 8;
+
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
       <defs>
@@ -48,6 +50,7 @@ export function TimelineIcon({ size = 36, color, accent, mode = "dark" }) {
           <stop offset="100%" stopColor={accent} />
         </linearGradient>
       </defs>
+      <g transform={`translate(0, -${offsetY})`}>
       <path
         d={pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]},${p[1]}`).join(" ")}
         stroke="url(#tlGrad)"
@@ -78,6 +81,7 @@ export function TimelineIcon({ size = 36, color, accent, mode = "dark" }) {
           />
         </g>
       ))}
+      </g>
     </svg>
   );
 }

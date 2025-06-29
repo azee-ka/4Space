@@ -7,6 +7,7 @@ import BasicInfo from "./tabs/basicInfo/basicInfo";
 import NotificationsTab from "./tabs/notifications/notifications";
 import MessagesControl from "./tabs/messagesControl/messagesControl";
 import UsernameHandleTab from "./tabs/usernameHandle/usernameHandle";
+import DeleteAccount from "./tabs/deleteAccount/deleteAccount";
 
 
 const Placeholder = () => <div style={{ padding: "20px", color: "#ccc" }}>Coming soon...</div>;
@@ -89,7 +90,7 @@ const Settings = () => {
         ],
         'Danger Zone': [
             { label: 'Deactivate Account', component: <Placeholder /> },
-            { label: 'Delete Account', component: <Placeholder /> },
+            { label: 'Delete Account', component: <DeleteAccount /> },
             { label: 'Reset All Settings', component: <Placeholder /> },
         ]
     };

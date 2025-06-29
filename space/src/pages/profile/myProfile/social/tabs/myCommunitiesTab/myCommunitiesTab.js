@@ -8,6 +8,10 @@ import { formatDateTime } from '../../../../../../utils/formatDateTime';
 import ProfilePicture from '../../../../../../utils/profilePicture/getProfilePicture';
 import RenderText from '../../../../../../utils/autoCompleteInput/renderText';
 import { useAuth } from '../../../../../../hooks/useAuth';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBookmark } from '@fortawesome/free-solid-svg-icons';
+import { timeAgo } from '../../../../../../utils/convertDateTIme';
+import { FiMessageCircle, FiShare2 } from 'react-icons/fi';
 
 const PAGE_SIZE = 20;
 
@@ -206,44 +210,67 @@ const MyCommunitiesTab = () => {
             </div>
           ) : (
             <div className="my-exchanges-list">
-              {exchanges.map(post => (
+{exchanges.map(post => (
                 <div
                   key={post.id}
-                  className="my-discussion-card"
+                  className="my-profile-exchange-card"
                   onClick={() => onExpandExchange(post.id)}
                 >
-                  <div className="my-discussion-vote-panel">
-                    <span className="vote-icon">▲</span>
-                    <span className="vote-count">{post.upvotes}</span>
-                    <span className="vote-icon">▼</span>
+                  <div
+                    className="my-profile-exchange-save"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <FontAwesomeIcon icon={faBookmark} />
                   </div>
-                  <div className="my-discussion-content">
-                    <div className="my-discussion-header">
-                      <div className="my-user-icon">
-                        <ProfilePicture src={post.author.profile_image} />
-                      </div>
-                      <div className="my-meta">
-                        <span className="username">@{post.author.username}</span>
-                        <span className="timestamp">
-                          {formatDateTime(post.created_at, true)}
-                        </span>
-                      </div>
+
+                  <div className="my-profile-exchange-content">
+                    <div
+                      className="my-profile-exchange-meta-top"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <RenderText
+                        className="my-profile-exchange-community"
+                        text={`c/${post.community_slug}`}
+                      />
+                      <span className="my-profile-exchange-dot">•</span>
+                      <span className="my-profile-exchange-timeago">
+                        {timeAgo(post.created_at)}
+                      </span>
+                      <span className="my-profile-exchange-dot">•</span>
+                      <span className="my-profile-exchange-datetime">
+                        {formatDateTime(post.created_at)}
+                      </span>
                     </div>
-                    <div className="my-discussion-body">
-                      <h4 className="my-discussion-title">{post.title}</h4>
-                      <div className="my-preview">
-                        <RenderText text={post.content} />
-                      </div>
+
+                    <h2 className="my-profile-exchange-title">
+                      <RenderText text={post.title} />
+                    </h2>
+
+                    <div className="my-profile-exchange-snippet">
+                      <RenderText text={post.content} />
                     </div>
-                    <div className="my-discussion-footer">
-                      <div className="my-action">
-                        <span className="my-comment-icon">💬</span>
-                        <span>{post.comments_count} comments</span>
-                      </div>
+
+                    <div
+                      className="my-profile-exchange-actions"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <button className="my-profile-exchange-vote-count-btn">
+                        {post.stats.net_votes_count}{' '}
+                        {`vote${post.stats.net_votes_count !== 1 ? 's' : ''}`}
+                      </button>
+                      <button className="my-profile-exchange-comment-count-btn">
+                        <FiMessageCircle className="my-profile-exchange-comment-icon" />
+                        {post.stats.comments_count}{' '}
+                        {`comment${post.stats.comments_count !== 1 ? 's' : ''}`}
+                      </button>
+                      <button className="my-profile-exchange-share-btn">
+                        <FiShare2 className="my-profile-exchange-share-icon" />
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
+
 
               {/* Sentinel for infinite scroll */}
               <div ref={sentinelRef} className="my-communities-sentinel" />

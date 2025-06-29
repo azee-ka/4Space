@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./exchangeBoard.css";
-import { FiMessageCircle, FiArrowUp, FiArrowDown } from "react-icons/fi";
+import { FiMessageCircle, FiArrowUp, FiArrowDown, FiShare2 } from "react-icons/fi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark, faPlus } from "@fortawesome/free-solid-svg-icons";
 import RenderText from "../../../../../../utils/autoCompleteInput/renderText";
@@ -9,6 +9,7 @@ import ExchangeDetail from "./exchangeDetail/exchangeDetail";
 import CreateDiscussionOverlay from "./createDiscussionOverlay/createDiscussionOverlay";
 import { useCommunity } from "../../../../../../context/CommunityContext";
 import { FaBookmark } from "react-icons/fa";
+import { timeAgo } from "../../../../../../utils/convertDateTIme";
 
 const Exchange = ({ communitySlug, community }) => {
   const { exchange } = useCommunity();
@@ -16,20 +17,20 @@ const Exchange = ({ communitySlug, community }) => {
   const [showForm, setShowForm] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
-useEffect(() => {
-  const handleHashChange = () => {
-    const hash = window.location.hash;
-    if (hash.startsWith("#exchange-")) {
-      setSelectedPostId(hash.replace("#exchange-", ""));
-    } else {
-      setSelectedPostId(null);
-    }
-  };
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith("#exchange-")) {
+        setSelectedPostId(hash.replace("#exchange-", ""));
+      } else {
+        setSelectedPostId(null);
+      }
+    };
 
-  handleHashChange(); // run once on mount
-  window.addEventListener("hashchange", handleHashChange);
-  return () => window.removeEventListener("hashchange", handleHashChange);
-}, []);
+    handleHashChange(); // run once on mount
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
 
   if (loading) return <div className="discussion-loading">Loading discussions…</div>;
@@ -54,46 +55,65 @@ useEffect(() => {
               No discussions yet. Be the first to start one.
             </div>
           ) : (
-            posts.map((post) => (
+            posts.map(post => (
               <div
                 className="discussion-card"
                 key={post.id}
                 onClick={() => {
                   setSelectedPostId(post.id);
-                  window.location.hash = `exchange-${post.id}`;
+                  window.location.hash = `#exchange-${post.id}`;
                 }}
               >
-                <div className="discussion-vote-panel-wrapper" onClick={(e) => e.stopPropagation()}>
-                <div className="discussion-vote-panel" onClick={(e) => e.stopPropagation()}>
-                  <FiArrowUp className="icon vote-icon" />
-                  <span className="vote-count">{post.upvotes}</span>
-                  <FiArrowDown className="icon vote-icon" />
-                </div>
-                <div className="save-discussion-post" onClick={(e) => e.stopPropagation()}>
-                  <FontAwesomeIcon icon={post?.saved ? faBookmark : faBookmark} />
-                  </div>
+                <div
+                  className="save-discussion-post"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <FontAwesomeIcon icon={faBookmark} />
                 </div>
 
                 <div className="discussion-content">
-                  <div className="discussion-community"  onClick={(e) => e.stopPropagation()}>
-                    <RenderText text={`c/${community?.slug}`} />
+                  {/* — Top meta: community + time ago + exact date */}
+                  <div
+                    className="discussion-meta-top"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <RenderText
+                      className="discussion-community"
+                      text={`c/${community?.slug}`}
+                    />
+                    <span className="discussion-dot">•</span>
+                    <span className="discussion-timeago">
+                      {timeAgo(post.meta.created_at)}
+                    </span>
+                    <span className="discussion-dot">•</span>
+                    <span className="discussion-datetime">
+                      {formatDateTime(post.meta.created_at)}
+                    </span>
                   </div>
+
                   <h2 className="discussion-title">
                     <RenderText text={post.title} />
                   </h2>
+
                   <div className="discussion-snippet">
                     <RenderText text={post.content} />
                   </div>
-                  <div className="discussion-footer" onClick={(e) => e.stopPropagation()}>
-                    <span className="footer-item">
-                      <RenderText text={`u/${post.author.username}`} />
-                    </span>
-                    <span>•</span>
-                    <span className="footer-item">{formatDateTime(post.created_at, true)}</span>
-                    <span>•</span>
-                    <span className="footer-item comments-count">
-                      <FiMessageCircle className="comment-icon" /> {post.comments_count}
-                    </span>
+
+                  {/* — Bottom actions: votes, comments, share */}
+                  <div
+                    className="discussion-actions"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <button className="discussion-vote-count-btn">
+                      {post.stats.net_votes_count} {`vote${post.stats.net_votes_count !== 1 ? 's' : ''}`}
+                    </button>
+                    <button className="discussion-comment-count-btn">
+                      <FiMessageCircle className="comment-icon" />
+                      {post.stats.comments_count} {`comment${post.stats.comments_count !== 1 ? 's' : ''}`}
+                    </button>
+                    <button className="discussion-share-btn">
+                      <FiShare2 />
+                    </button>
                   </div>
                 </div>
               </div>

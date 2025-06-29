@@ -1,20 +1,117 @@
 /* src/apps/community/tabs/general/exchangeBoard/exchangeBoard.css */
 
-/* Container */
+/* ==========
+   Color Variables
+   ========== */
+:root {
+  /* card backgrounds */
+  --discussion-card-bg: rgba(255,255,255,0.05);
+  --discussion-card-hover-bg: rgba(255,255,255,0.1);
+
+  /* vote panel (legacy) */
+  --vote-icon-color: #999;
+  --vote-count-color: #fff;
+
+  /* save icon */
+  --save-post-icon-color: white;
+
+  /* text & meta */
+  --discussion-community-color: #aaa;
+  --discussion-title-color: #eef;
+  --discussion-snippet-color: #bbb;
+  --discussion-footer-color: #b0b0b0;
+
+  /* comment icon */
+  --comment-icon-color: #48fffc;
+
+  /* empty state */
+  --empty-state-color: #aaa;
+
+  /* floating “new” button */
+  --floating-btn-bg: rgba(255,255,255,0.1);
+  --floating-btn-color: #fff;
+  --floating-btn-hover-bg: rgba(255,255,255,0.2);
+
+  --discussion-wrapper-title-text-color: white;
+
+  /* top-meta row */
+  --discussion-meta-top-color: rgba(183, 183, 183, 0.675);
+  --discussion-dot-color: rgba(183, 183, 183, 0.675);
+  --discussion-timeago-color: rgba(183, 183, 183, 0.675);
+  --discussion-datetime-color: rgba(183, 183, 183, 0.675);
+
+  /* action buttons under post */
+  --action-btn-bg: rgba(255,255,255,0.05);
+  --action-btn-color: #fff;
+  --action-btn-hover-bg: rgba(255,255,255,0.1);
+}
+
+/* -----------------------------
+   Light-mode variable overrides
+   ----------------------------- */
+[data-theme="light"] {
+  /* card backgrounds */
+  --discussion-card-bg: #ffffff;
+  --discussion-card-hover-bg: #aecce721;
+
+  /* legacy vote panel */
+  --vote-icon-color: #666666;
+  --vote-count-color: #333333;
+
+  --discussion-wrapper-title-text-color: black;
+
+    --save-post-icon-color: rgb(0, 156, 184);
+
+  /* community slug & title/snippet/footer text */
+  --discussion-community-color: #555555;
+  --discussion-title-color: #000000;
+  --discussion-snippet-color: #444444;
+  --discussion-footer-color: #555555;
+
+  /* top-meta row */
+  --discussion-meta-top-color: #555555;
+  --discussion-dot-color: #888888;
+  --discussion-timeago-color: #666666;
+  --discussion-datetime-color: #666666;
+
+  /* action buttons below post */
+  --action-btn-bg: #e6e6e6;
+  --action-btn-color: #333333;
+  --action-btn-hover-bg: #d5d5d5;
+
+  /* comment icon */
+  --comment-icon-color: #00c4c0;
+
+  /* empty state */
+  --empty-state-color: #777777;
+
+  /* floating “new” button */
+  --floating-btn-bg: #ffffff;
+  --floating-btn-color: #007aff;
+  --floating-btn-hover-bg: #e0f0ff;
+}
+
+
+/* ====================
+   Container & Wrapper
+   ==================== */
 .community-content-card .discussion-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 1rem 0.5rem 0 0.5rem;
 }
+
 .discussion-wrapper h3 {
   align-self: flex-start;
-  margin: 0 0 0.5rem 0rem;
+  margin: 0 0 0.5rem 0;
   font-size: 1.2rem;
-  color: var(--fg-primary);
+  color: var(--discussion-wrapper-title-text-color);
 }
 
-/* Feed */
+/* ========
+   Feed List
+   ======== */
 .discussion-feed {
   width: 100%;
   display: flex;
@@ -22,23 +119,28 @@
   gap: 1rem;
 }
 
-/* Card */
+/* ======
+   Card
+   ====== */
 .discussion-card {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(255,255,255,0.05);
+  background: var(--discussion-card-bg);
   border-radius: 0.5rem;
   transition: background 0.2s, transform 0.2s;
 }
+
 .discussion-card:hover {
-  background: rgba(255,255,255,0.1);
+  background: var(--discussion-card-hover-bg);
   transform: translateY(-2px);
   cursor: pointer;
 }
 
-
-.discussion-vote-panel-wrapper { 
+/* =================
+   (Legacy) Vote Panel
+   ================= */
+.discussion-vote-panel-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -46,107 +148,197 @@
   width: 2.5rem;
 }
 
-/* Vote panel */
-.discussion-vote-panel {    
+.discussion-vote-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 }
+
 .vote-icon {
   font-size: 1.2rem;
-  color: #999;
+  color: var(--vote-icon-color);
 }
+
 .vote-count {
   margin: 0.25rem 0;
   font-weight: 600;
-  color: #fff;
+  color: var(--vote-count-color);
 }
 
+/* ===================
+   Save Button (Icon)
+   =================== */
 .save-discussion-post {
   font-size: 1.2rem;
+  color: var(--save-post-icon-color);
 }
 
-/* Main content */
+/* =================
+   Main Content
+   ================= */
 .discussion-content {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* Community badge */
+/* ======================
+   Top Meta (new section)
+   ====================== */
+.discussion-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--discussion-meta-top-color);
+  margin-bottom: 0.5rem;
+}
+
 .discussion-community {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #aaa;
+  color: var(--discussion-community-color);
   text-transform: lowercase;
-  margin-bottom: 0.25rem;
 }
 
-/* Title */
+.discussion-dot {
+  font-size: 0.75rem;
+  color: var(--discussion-dot-color);
+}
+
+.discussion-timeago {
+  color: var(--discussion-timeago-color);
+}
+
+.discussion-datetime {
+  color: var(--discussion-datetime-color);
+}
+
+/* =========
+   Title
+   ========= */
 .discussion-content .discussion-title {
   margin: 0;
   font-size: 1.1rem !important;
   font-weight: 700;
   line-height: 1.3;
-  color: #eef;
+  color: var(--discussion-title-color);
 }
 
-/* Snippet */
+/* =========
+   Snippet
+   ========= */
 .discussion-snippet {
   font-size: 0.95rem;
-  color: #bbb;
+  color: var(--discussion-snippet-color);
   line-height: 0.5;
   display: -webkit-box;
   -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 0rem;
+  margin: 0;
   padding: 0 0 0.5rem 0;
 }
 
-/* Footer */
+/* ================
+   Bottom Footer
+   ================ */
 .discussion-footer {
   margin-top: auto;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: #b0b0b0;
+  color: var(--discussion-footer-color);
 }
+
 .footer-item {
   opacity: 0.8;
 }
+
 .comments-count {
   display: flex;
   align-items: center;
   gap: 0.15rem;
 }
-.comment-icon {
-  font-size: 1rem;
-  color: #48fffc;
+
+/* ======================
+   Action Buttons (new)
+   ====================== */
+.discussion-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: auto;
 }
 
-/* Empty */
+.discussion-vote-count-btn,
+.discussion-comment-count-btn,
+.discussion-share-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--action-btn-bg);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  font-size: 0.9rem;
+  color: var(--action-btn-color);
+}
+
+.discussion-vote-count-btn:hover,
+.discussion-comment-count-btn:hover,
+.discussion-share-btn:hover {
+  background: var(--action-btn-hover-bg);
+  transform: translateY(-1px) translateZ(0);
+}
+
+.discussion-vote-count-btn,
+.discussion-comment-count-btn,
+.discussion-share-btn,
+.comment-icon {
+  /* create a new composite layer for smooth transforms */
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-origin: center center;
+  /* seed a 3D context to avoid re-raster on hover */
+  transform: translateZ(0);
+}
+
+.comment-icon {
+  font-size: 1rem;
+  color: var(--comment-icon-color);
+  transform: translateZ(0);
+}
+
+/* ========
+   Empty State
+   ======== */
 .empty-state {
   text-align: center;
-  color: #aaa;
+  color: var(--empty-state-color);
   font-style: italic;
   padding: 2rem 0;
 }
 
-/* Floating button */
+/* ====================
+   Floating “New” Button
+   ==================== */
 .floating-discussion-btn {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
   width: 3.5rem;
   height: 3.5rem;
-  background: rgba(255,255,255,0.1);
+  background: var(--floating-btn-bg);
+  color: var(--floating-btn-color);
   border: none;
   border-radius: 50%;
-  color: #fff;
   font-size: 1.5rem;
   display: flex;
   align-items: center;
@@ -154,22 +346,9 @@
   transition: background 0.2s, transform 0.2s;
   z-index: 50;
 }
+
 .floating-discussion-btn:hover {
-  background: rgba(255,255,255,0.2);
+  background: var(--floating-btn-hover-bg);
   transform: scale(1.1);
   cursor: pointer;
 }
-
-/* Light theme overrides */
-[data-theme="light"] .discussion-wrapper h3      { color: #333; }
-[data-theme="light"] .discussion-card            { background: #f3f3f3; }
-[data-theme="light"] .discussion-card:hover      { background: #f5faff; }
-[data-theme="light"] .vote-icon                  { color: #ccc; }
-[data-theme="light"] .vote-count                 { color: #333; }
-[data-theme="light"] .discussion-community       { color: #888; }
-[data-theme="light"] .discussion-title           { color: #1a1a1a; }
-[data-theme="light"] .discussion-snippet         { color: #555; }
-[data-theme="light"] .discussion-footer          { color: #666; }
-[data-theme="light"] .empty-state                { color: #888; }
-[data-theme="light"] .floating-discussion-btn    { background: #e5f3ff; color: #1a73e8; }
-[data-theme="light"] .floating-discussion-btn:hover { background: #cfe8ff; }

@@ -1,0 +1,261 @@
+/* src/apps/community/tabs/general/deleteAccount.css */
+
+/* ===================== DARK THEME VARIABLES ===================== */
+:root {
+  /* page */
+  --del-bg: rgba(255, 0, 0, 0);
+  --del-section-bg: rgba(0, 128, 0, 0);
+  --del-section-padding: 1.125rem 0;
+  --del-section-border: 0.0625rem solid rgba(128, 128, 128, 0.5);
+
+  --del-header-color: rgb(199, 199, 199);
+  --del-header-font-size: 1.25rem;
+
+  --del-desc-color: rgb(181, 181, 181);
+  --del-desc-font-size: 0.9em;
+  --del-desc-padding: 0 0 1rem;
+
+  --del-btn-bg: rgba(231, 52, 52, 0.8);
+  --del-btn-border: 1px solid rgba(231, 52, 52, 0.8);
+  --del-btn-border-hover-color: rgba(231, 52, 52, 0);
+  --del-btn-padding: 0.5rem 1.5rem;
+  --del-btn-font-size: 1rem;
+  --del-btn-radius: 0.25rem;
+  --del-btn-hover-bg: rgba(255, 255, 255, 0.1);
+
+  --del-error-color: #f55;
+
+  /* modal glass panel (reuse createCommunity) */
+  --overlay-bg-blur: blur(1.25rem);
+  --overlay-container-bg: rgba(147,147,147,0.2);
+  --overlay-container-border: rgba(255,255,255,0.07);
+  --overlay-container-shadow: 0 0 1.75rem rgba(180,220,255,0.03);
+  --overlay-container-text: #e1f3fa;
+  --overlay-delete-account-modal-radius: 0.875rem;
+  --overlay-delete-account-modal-padding: 1.25rem 1.75rem;
+  --overlay-delete-account-modal-max-w: 600px;
+  --overlay-container-close-btn: gray;
+  --overlay-container-close-btn-hover: #fff;
+
+  /* confirmation input */
+  --confirmation-input-bg: rgba(255,255,255,0.1);
+  --confirmation-input-color: #fff;
+  --confirmation-input-border: 1px solid rgba(255,255,255,0);
+  --confirmation-input-focus: rgba(255,255,255,0.2);
+}
+
+/* ===================== LIGHT THEME OVERRIDES ===================== */
+[data-theme="light"] {
+  --del-section-bg: #ffffff00;
+  --del-section-border: 0.0625rem solid #bfbfbf99;
+
+  --del-header-color: #27607a;
+  --del-desc-color: #4e6a81;
+
+  --del-btn-bg: #e74c3c;
+  --del-btn-border: 1px solid #e74c3c;
+  --del-btn-border-hover-color: rgba(231, 52, 52, 0);
+
+  --overlay-bg-blur: blur(0.75rem);
+  --overlay-container-bg: #f8fcff;
+  --overlay-container-border: rgba(80,120,180,0.10);
+  --overlay-container-shadow: 0 0 1.75rem rgba(30,90,120,0.06);
+  --overlay-container-text: #274968;
+
+  --overlay-container-close-btn: rgb(29, 29, 29);
+  --overlay-container-close-btn-hover: rgba(55, 55, 55, 0.621);
+
+  --confirmation-input-bg: #fff;
+  --confirmation-input-color: #116489;
+  --confirmation-input-border: 1px solid rgba(80,120,180,0.2);
+  --confirmation-input-focus: rgba(0,160,220,0.25);
+}
+
+/* ===================== PAGE CONTAINER ===================== */
+.settings-delete-account {
+  background-color: var(--del-bg);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0.9375rem 0.625rem;
+  box-sizing: border-box;
+}
+
+/* ===================== SCHEDULED MESSAGE ===================== */
+.delete-scheduled-message {
+  background: rgba(231,52,52,0.1);
+  border: 1px solid rgba(231,52,52,0.8);
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  color: #e74c3c;
+  margin-bottom: 1rem;
+  font-size: var(--del-desc-font-size);
+}
+
+/* ===================== MAIN SECTION ===================== */
+.settings-delete-account section {
+  width: 100%;
+  background-color: var(--del-section-bg);
+  padding: var(--del-section-padding);
+  border-bottom: var(--del-section-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-delete-account h3 {
+  margin: 0;
+  font-size: var(--del-header-font-size);
+  color: var(--del-header-color);
+}
+
+.settings-delete-account p {
+  margin: 0;
+  padding: var(--del-desc-padding);
+  font-size: var(--del-desc-font-size);
+  color: var(--del-desc-color);
+  line-height: 1.4;
+}
+
+/* ===================== DELETE BUTTON & ERROR ===================== */
+.delete-btn {
+  all: unset;
+  padding: var(--del-btn-padding);
+  font-size: var(--del-btn-font-size);
+  border: var(--del-btn-border);
+  border-radius: var(--del-btn-radius);
+  background: var(--del-btn-bg);
+  color: #fff;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.2s;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: var(--del-btn-hover-bg);
+  border: 1px solid var(--del-btn-border-hover-color);
+}
+
+.delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-text {
+  margin-top: 0.5rem;
+  color: var(--del-error-color);
+}
+
+/* ===================== MODAL OVERLAY (GLASS EFFECT) ===================== */
+.delete-account-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: var(--overlay-bg-blur);
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1.75rem;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+/* ===================== MODAL CONTENT (PANEL) ===================== */
+.delete-account-modal-content {
+  position: relative;
+  background: var(--overlay-container-bg);
+  border: 1px solid var(--overlay-container-border);
+  box-shadow: var(--overlay-container-shadow);
+  color: var(--overlay-container-text);
+  border-radius: var(--overlay-delete-account-modal-radius);
+  padding: var(--overlay-delete-account-modal-padding);
+  max-width: var(--overlay-delete-account-modal-max-w);
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  text-align: left;
+}
+
+.delete-account-modal-close {
+  all: unset;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  color: var(--overlay-container-close-btn);
+  font-size: 2rem;
+  transition: color 0.2s;
+}
+.delete-account-modal-close:hover {
+  color: var(--overlay-container-close-btn-hover);
+}
+
+.delete-account-modal-content h4 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.delete-account-modal-content p {
+  font-size: var(--del-desc-font-size);
+  line-height: 1.4;
+}
+
+
+/* ===================== CONFIRMATION INPUT ===================== */
+.confirmation-input {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: var(--confirmation-input-border);
+  border-radius: var(--del-btn-radius);
+  background: var(--confirmation-input-bg);
+  color: var(--confirmation-input-color);
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  outline: none;
+    margin-bottom: 1rem;
+}
+.confirmation-input:focus {
+  border-color: var(--confirmation-input-focus);
+}
+
+/* ===================== MODAL BUTTONS ===================== */
+.delete-account-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.delete-account-modal-btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--del-btn-radius);
+  border: 1px solid var(--overlay-container-border);
+  background: transparent;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.delete-account-modal-btn.cancel {
+  color: var(--overlay-container-text);
+}
+.delete-account-modal-btn.cancel:hover {
+  background: var(--del-btn-hover-bg);
+}
+
+.delete-account-modal-btn.confirm {
+  background: var(--del-btn-bg);
+  border-color: var(--del-btn-bg);
+  color: #fff;
+}
+.delete-account-modal-btn.confirm:hover:not(:disabled) {
+  background: var(--del-btn-hover-bg);
+}
+.delete-account-modal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

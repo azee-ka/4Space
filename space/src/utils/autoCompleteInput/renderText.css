@@ -20,6 +20,11 @@ a {
 .community-link:hover {
     text-decoration: underline;
 }
+[data-theme="light"] .community-link {
+    color: #00bfa8bc;
+    text-decoration: none;
+    font-weight: bold;
+}
 
 .hashtag-link {
     color: #35edc8;
