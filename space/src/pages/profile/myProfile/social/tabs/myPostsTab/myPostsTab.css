@@ -33,17 +33,17 @@
 }
 
 .my-posts-tab-btn.active {
-  background: #262e39;
+  background: rgba(105, 105, 105, 0.426);
   color: #54dfff;
-  box-shadow: 0 0.1875rem 0.5rem rgba(0, 80, 120, 0.3);
   opacity: 1;
 }
 
 .my-posts-tab-btn:hover:not(.active) {
-  background: #22262e;
+  background: #8888882b;
   color: #7dfcff;
   opacity: 0.85;
 }
+
 
 .my-posts-loading,
 .my-posts-no-posts {
@@ -187,32 +187,6 @@
   border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.15);
   padding-bottom: 0.5rem;
   box-sizing: border-box;
-}
-
-.my-posts-tab-btn {
-  background: none;
-  border: none;
-  color: #b7e9ff;
-  font-size: 1.1em;
-  font-weight: 600;
-  padding: 0.5rem 1.25rem;
-  border-radius: 1.25rem;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-  opacity: 0.7;
-}
-
-.my-posts-tab-btn.active {
-  background: #262e39;
-  color: #54dfff;
-  box-shadow: 0 0.1875rem 0.5rem rgba(0, 80, 120, 0.3);
-  opacity: 1;
-}
-
-.my-posts-tab-btn:hover:not(.active) {
-  background: #22262e;
-  color: #7dfcff;
-  opacity: 0.85;
 }
 
 

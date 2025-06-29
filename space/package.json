@@ -74,6 +74,7 @@
     "react-router-dom": "^7.4.0",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.6.1",
+    "react-transition-group": "^4.4.5",
     "react-virtuoso": "^4.12.7",
     "react-xarrows": "^2.0.2",
     "remark-gfm": "^4.0.1",

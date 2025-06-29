@@ -53,6 +53,7 @@
   --del-desc-color: #4e6a81;
 
   --del-btn-bg: #e74c3c;
+--del-btn-hover-bg: rgba(52, 52, 52, 0.336);
   --del-btn-border: 1px solid #e74c3c;
   --del-btn-border-hover-color: rgba(231, 52, 52, 0);
 
@@ -122,18 +123,16 @@
   all: unset;
   padding: var(--del-btn-padding);
   font-size: var(--del-btn-font-size);
-  border: var(--del-btn-border);
   border-radius: var(--del-btn-radius);
   background: var(--del-btn-bg);
   color: #fff;
   cursor: pointer;
   width: fit-content;
-  transition: background 0.2s;
+  transition: all 0.3s;
 }
 
 .delete-btn:hover:not(:disabled) {
   background: var(--del-btn-hover-bg);
-  border: 1px solid var(--del-btn-border-hover-color);
 }
 
 .delete-btn:disabled {
@@ -186,7 +185,7 @@
   right: 1rem;
   cursor: pointer;
   color: var(--overlay-container-close-btn);
-  font-size: 2rem;
+  font-size: 1.5rem;
   transition: color 0.2s;
 }
 .delete-account-modal-close:hover {
@@ -248,14 +247,58 @@
 
 .delete-account-modal-btn.confirm {
   background: var(--del-btn-bg);
-  border-color: var(--del-btn-bg);
+  border: 1px solid var(--del-btn-border-hover-color);
   color: #fff;
+  transition: all 0.3s;
 }
 .delete-account-modal-btn.confirm:hover:not(:disabled) {
   background: var(--del-btn-hover-bg);
+  border: 1px solid var(--del-btn-border-hover-color);
 }
 .delete-account-modal-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+
+
+
+
+
+
+
+/* 1) Overlay fade on mount/unmount */
+.delete-modal-enter {
+  opacity: 0;
+}
+.delete-modal-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease-in;
+}
+.delete-modal-exit {
+  opacity: 1;
+}
+.delete-modal-exit-active {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+/* 2) Panel pop in/out */
+.delete-modal-enter .delete-account-modal-content {
+  transform: scale(0.8);
+  opacity: 0;
+}
+.delete-modal-enter-active .delete-account-modal-content {
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 200ms ease-out, opacity 200ms ease-out;
+}
+.delete-modal-exit .delete-account-modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+.delete-modal-exit-active .delete-account-modal-content {
+  transform: scale(0.8);
+  opacity: 0;
+  transition: transform 200ms ease-in, opacity 200ms ease-in;
+}

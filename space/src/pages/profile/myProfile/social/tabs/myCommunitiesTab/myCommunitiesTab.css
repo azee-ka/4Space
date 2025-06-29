@@ -32,14 +32,13 @@
 }
 
 .my-communities-tab-btn.active {
-  background: #262e39;
+  background: rgba(105, 105, 105, 0.426);
   color: #54dfff;
-  box-shadow: 0 0.1875rem 0.5rem rgba(0, 80, 120, 0.3);
   opacity: 1;
 }
 
 .my-communities-tab-btn:hover:not(.active) {
-  background: #22262e;
+  background: #8888882b;
   color: #7dfcff;
   opacity: 0.85;
 }
@@ -384,6 +383,7 @@
   flex: 1;
   display: flex; 
   flex-direction: column;
+  gap: 0.7rem;
 }
 
 .my-profile-exchange-meta-top {
@@ -416,7 +416,8 @@
 
 .my-profile-exchange-title {
   margin: 0;
-  font-size: 1.1rem;
+  margin-top: 0.4rem;
+  font-size: 1rem !important;
   font-weight: 700;
   color: var(--discussion-title-color);
 }
@@ -462,7 +463,6 @@
 .my-profile-exchange-comment-count-btn:hover,
 .my-profile-exchange-share-btn:hover {
   background: var(--action-btn-hover-bg);
-  transform: translateY(-1px) translateZ(0);
 }
 
 .my-profile-exchange-comment-icon {

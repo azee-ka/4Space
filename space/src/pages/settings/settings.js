@@ -29,7 +29,7 @@ const Settings = () => {
 
     const tabs = {
         'Account & Identity': [
-            { label: 'Basic Info', component: <BasicInfo /> },
+            { label: 'Basic Information', component: <BasicInfo /> },
             { label: 'Username & Handle', component: <UsernameHandleTab /> },
             { label: 'Profile Appearance', component: <ProfileAppearance handleStartCustomization={handleStartCustomization} /> },
             { label: 'Status / Mood', component: <Placeholder /> },

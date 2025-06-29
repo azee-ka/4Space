@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 // import { deleteUserAccount } from '../../../../services/settings';
 import './deleteAccount.css';
 import { FaTimes } from 'react-icons/fa';
+import { CSSTransition } from 'react-transition-group';
 
 const DeleteAccount = () => {
   const [showModal, setShowModal] = useState(false);
@@ -60,7 +61,13 @@ const DeleteAccount = () => {
         )}
       </section>
 
-      {showModal && (
+      {/* CSSTransition handles mount/unmount + class toggles */}
+      <CSSTransition
+        in={showModal}
+        timeout={200}
+        classNames="delete-modal"
+        unmountOnExit
+      >
         <div className="delete-account-modal-overlay" onClick={closeModal}>
           <div
             className="delete-account-modal-content"
@@ -101,7 +108,7 @@ const DeleteAccount = () => {
             </div>
           </div>
         </div>
-      )}
+        </CSSTransition>
     </div>
 );
 }
