@@ -1,13 +1,7 @@
-:root {
-  --modal-bg: rgba(24,24,24,0.80);
-  --modal-blur: blur(0.875rem);
-  --modal-border: 0.0625rem solid rgba(255,255,255,0.05);
-  --modal-radius: 0.75rem;
-  --modal-shadow: 0 0.125rem 0.75rem rgba(0,0,0,0.40);
-  --modal-header-fg: #e2e2e2;
-  --modal-header-icon: #aaa;
-  --modal-header-icon-hover: #fff;
+/* src/apps/community/tabs/general/createMessageOverlay.css */
 
+/* ─── Variables ─── */
+:root {
   --recipient-bar-bg: rgba(255,255,255,0.03);
   --recipient-bar-border: 0.0625rem solid rgba(255,255,255,0.08);
   --recipient-bar-pill-bg: rgba(255,255,255,0.10);
@@ -15,9 +9,9 @@
 
   --results-list-divider: 0.0625rem solid rgba(255,255,255,0.05);
   --results-list-hover-bg: rgba(255,255,255,0.05);
+  --results-list-fg: #ddd;
 
   --username-input-field-text-color: white;
-  --results-list-fg: #ddd;
 
   --submit-btn-bg: rgba(255,255,255,0.08);
   --submit-btn-hover-bg: rgba(255,255,255,0.12);
@@ -27,13 +21,6 @@
 }
 
 [data-theme="light"] {
-  --modal-bg: #fafdff;
-  --modal-blur: blur(0.5rem);
-  --modal-border: 0.0625rem solid #e3f0fa;
-  --modal-header-fg: #28344e;
-  --modal-header-icon: #8b8c8e;
-  --modal-header-icon-hover: #19253a;
-
   --recipient-bar-bg: #f2f5f9;
   --recipient-bar-border: 0.0625rem solid #dbeaf6;
   --recipient-bar-pill-bg: #e4eaf0;
@@ -52,89 +39,48 @@
   --submit-btn-disabled: 0.45;
 }
 
-.msg-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  background: rgba(0,0,0,0.33);
-  backdrop-filter: blur(0.625rem);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  top: 0; left: 0;
-}
-
-.msg-prompt {
-  width: 26.25rem;
-  max-width: 90%;
-  padding: 1.25rem;
-  background: var(--modal-bg);
-  border: var(--modal-border);
-  border-radius: var(--modal-radius);
-  backdrop-filter: var(--modal-blur);
-  box-shadow: var(--modal-shadow);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.prompt-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
-  font-size: 1em;
-  color: var(--modal-header-fg);
-}
-.prompt-header button {
-  all: unset;
-  color: var(--modal-header-icon);
-  font-size: 1.1em;
-  cursor: pointer;
-  padding: 0.25rem;
-  transition: color 0.2s;
-}
-.prompt-header button:hover {
-  color: var(--modal-header-icon-hover);
-}
-
+/* ─── Recipient Bar ─── */
 .recipient-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 0.375rem;
   background: var(--recipient-bar-bg);
+  width: 350px;
   padding: 0.5rem;
   border-radius: 0.5rem;
   border: var(--recipient-bar-border);
+  box-sizing: border-box;
 }
+
 .recipient-bar input {
   all: unset;
-  color: inherit;
-  font-size: 0.9em;
+  color: var(--username-input-field-text-color);
+  font-size: 0.9rem;
   flex-grow: 1;
   min-width: 7.5rem;
-  color: var(--username-input-field-text-color)
 }
+
 .recipient-bar .pill {
   display: flex;
   align-items: center;
   background: var(--recipient-bar-pill-bg);
   color: var(--recipient-bar-pill-fg);
-  font-size: 0.85em;
+  font-size: 0.85rem;
   padding: 0.25rem 0.625rem;
   border-radius: 62.4375rem;
   gap: 0.375rem;
 }
-.recipient-bar .pill svg {
+
+.recipient-bar .pill-remove {
   cursor: pointer;
-  font-size: 0.9em;
-  opacity: 0.7;
+  font-weight: bold;
   transition: opacity 0.18s;
 }
-.recipient-bar .pill svg:hover {
-  opacity: 1;
+.recipient-bar .pill-remove:hover {
+  opacity: 0.7;
 }
 
+/* ─── Results List ─── */
 .results-list {
   list-style: none;
   margin: 0;
@@ -143,19 +89,22 @@
   max-height: 11.25rem;
   overflow-y: auto;
 }
+
 .results-list li {
   display: flex;
   align-items: center;
   gap: 0.625rem;
   padding: 0.5rem 0.375rem;
-  font-size: 0.9em;
+  font-size: 0.9rem;
   cursor: pointer;
   color: var(--results-list-fg);
   transition: background 0.2s;
 }
+
 .results-list li:hover {
   background: var(--results-list-hover-bg);
 }
+
 .results-list li img {
   width: 2rem;
   height: 2rem;
@@ -163,11 +112,12 @@
   flex-shrink: 0;
 }
 
-.submit-btn {
+/* ─── Full-Width “Start” Button ─── */
+.modal-footer .submit-btn {
   all: unset;
   width: 100%;
   text-align: center;
-  font-size: 0.95em;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--submit-btn-fg);
   background: var(--submit-btn-bg);
@@ -177,11 +127,13 @@
   transition: background 0.2s, color 0.2s;
   box-sizing: border-box;
 }
-.submit-btn:hover:not(:disabled) {
+
+.modal-footer .submit-btn:hover:not(:disabled) {
   background: var(--submit-btn-hover-bg);
   color: var(--submit-btn-hover-fg);
 }
-.submit-btn:disabled {
+
+.modal-footer .submit-btn:disabled {
   opacity: var(--submit-btn-disabled);
   cursor: not-allowed;
 }
