@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './communitiesTab.css';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { USER_EXCHANGES, USER_COMMUNITIES } from '../../../../../services/queryKeys';
@@ -13,38 +13,41 @@ import { FiMessageCircle, FiShare2 } from 'react-icons/fi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookmark } from '@fortawesome/free-solid-svg-icons';
 import RenderText from '../../../../../utils/autoCompleteInput/renderText';
-import { useAuth } from '../../../../../hooks/useAuth';
 import ProfilePicture from '../../../../../utils/profilePicture/getProfilePicture';
 
 const PAGE_SIZE = 20;
 
 const CommunitiesTab = () => {
   const navigate = useNavigate();
-  const { authState } = useAuth();
+  // 1. pull the profile-name from the URL, not from authState
+  const { username } = useParams();
 
-  const getTabFromHash = () =>
-    window.location.hash.replace('#', '') === 'communities'
-      ? 'communities'
-      : 'exchanges';
-
+  // ── Tab state (persisted in hash) ──
+  const getTabFromHash = () => {
+    const h = window.location.hash.replace('#', '');
+    return h === 'communities' ? 'communities' : 'exchanges';
+  };
   const [activeTab, setActiveTab] = useState(getTabFromHash());
+
+  useEffect(() => {
+    const onHashChange = () => setActiveTab(getTabFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   useEffect(() => {
     if (!window.location.hash) {
       window.history.replaceState(null, '', '#exchanges');
       setActiveTab('exchanges');
     }
-    const onHash = () => setActiveTab(getTabFromHash());
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  const switchToTab = tab => {
-    window.location.hash = `#${tab}`;
-    setActiveTab(tab);
+  const switchToTab = (tabKey) => {
+    if (tabKey !== activeTab) {
+      window.location.hash = `#${tabKey}`;
+      setActiveTab(tabKey);
+    }
   };
-
-  const username = authState?.current?.user?.username;
 
   // ── Exchanges (infinite scroll) ──
   const {
@@ -58,12 +61,15 @@ const CommunitiesTab = () => {
     queryKey: USER_EXCHANGES(username),
     queryFn: ({ pageParam = 0 }) =>
       fetchUserExchanges({ username, pageParam, pageSize: PAGE_SIZE }),
-    getNextPageParam: lastPage => {
-      if (!lastPage.next) return undefined;
-      const url = new URL(lastPage.next, window.location.origin);
+    getNextPageParam: last => {
+      if (!last.next) return undefined;
+      const url = new URL(last.next, window.location.origin);
       return parseInt(url.searchParams.get('offset') || '0', 10);
     },
-    enabled: !!username && activeTab === 'exchanges'
+    enabled: !!username && activeTab === 'exchanges',
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
   // ── Communities (static list) ──
@@ -74,10 +80,10 @@ const CommunitiesTab = () => {
   } = useQuery({
     queryKey: USER_COMMUNITIES(username),
     queryFn: () => fetchUserCommunities(username),
-    enabled: !!username && activeTab === 'communities'
+    enabled: !!username && activeTab === 'communities',
   });
 
-  // — sentinel for infinite scroll —
+  // ── sentinel for infinite scroll ──
   const sentinelRef = useRef(null);
   useEffect(() => {
     if (!sentinelRef.current || !hasNextPage) return;
@@ -91,47 +97,55 @@ const CommunitiesTab = () => {
 
   const allExchanges = exchangesPages?.pages.flatMap(p => p.results) || [];
 
-  const onExpandExchange = id => navigate(`/communities/e/${id}`);
-  const onExpandCommunity = slug => navigate(`/communities/c/${slug}`);
+  const onExpandExchange = (id) => navigate(`/communities/e/${id}`);
+  const onExpandCommunity = (slug) => navigate(`/communities/c/${slug}`);
 
   return (
     <div className="other-communities-tab-container">
+      {/* Tabs Header */}
       <div className="other-communities-tabs-header">
         <button
-          className={`other-communities-tab-btn ${activeTab==='exchanges'?'active':''}`}
-          onClick={()=>switchToTab('exchanges')}
-        >Exchanges</button>
+          className={`other-communities-tab-btn ${activeTab === 'exchanges' ? 'active' : ''}`}
+          onClick={() => switchToTab('exchanges')}
+        >
+          Exchanges
+        </button>
         <button
-          className={`other-communities-tab-btn ${activeTab==='communities'?'active':''}`}
-          onClick={()=>switchToTab('communities')}
-        >Communities</button>
+          className={`other-communities-tab-btn ${activeTab === 'communities' ? 'active' : ''}`}
+          onClick={() => switchToTab('communities')}
+        >
+          Communities
+        </button>
       </div>
 
-      {activeTab==='exchanges' ? (
-        loadingExchanges && allExchanges.length===0 ? (
+      {/* Exchanges Tab */}
+      {activeTab === 'exchanges' ? (
+        loadingExchanges && allExchanges.length === 0 ? (
           <div className="other-communities-loading">Loading exchanges…</div>
         ) : errorExchanges ? (
           <div className="other-communities-no-data">Error loading exchanges.</div>
-        ) : allExchanges.length===0 ? (
-          <div className="other-communities-no-data">You haven’t created any exchanges yet.</div>
+        ) : allExchanges.length === 0 ? (
+          <div className="other-communities-no-data">
+            You haven’t created any exchanges yet.
+          </div>
         ) : (
           <div className="other-communities-exchanges-list">
-            {allExchanges.map(post=>(
+            {allExchanges.map(post => (
               <div
                 key={post.id}
                 className="other-communities-exchange-card"
-                onClick={()=>onExpandExchange(post.id)}
+                onClick={() => onExpandExchange(post.id)}
               >
                 <div
                   className="other-communities-exchange-save"
-                  onClick={e=>e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                 >
-                  <FontAwesomeIcon icon={faBookmark}/>
+                  <FontAwesomeIcon icon={faBookmark} />
                 </div>
                 <div className="other-communities-exchange-content">
                   <div
                     className="other-communities-exchange-meta-top"
-                    onClick={e=>e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   >
                     <RenderText
                       className="other-communities-exchange-community"
@@ -147,57 +161,67 @@ const CommunitiesTab = () => {
                     </span>
                   </div>
                   <h2 className="other-communities-exchange-title">
-                    <RenderText text={post.title}/>
+                    <RenderText text={post.title} />
                   </h2>
                   <div className="other-communities-exchange-snippet">
-                    <RenderText text={post.content}/>
+                    <RenderText text={post.content} />
                   </div>
                   <div
                     className="other-communities-exchange-actions"
-                    onClick={e=>e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   >
                     <button className="other-communities-exchange-comment-count-btn">
-                      <FiMessageCircle className="other-communities-exchange-comment-icon"/>
-                      {post.stats.comments_count} {post.stats.comments_count!==1?'comments':'comment'}
+                      <FiMessageCircle className="other-communities-exchange-comment-icon" />
+                      {post.stats.comments_count}{' '}
+                      {post.stats.comments_count !== 1 ? 'comments' : 'comment'}
                     </button>
                     <button className="other-communities-exchange-share-btn">
-                      <FiShare2 className="other-communities-exchange-share-icon"/>
+                      <FiShare2 className="other-communities-exchange-share-icon" />
                     </button>
                   </div>
                 </div>
               </div>
             ))}
-            <div ref={sentinelRef} className="other-communities-sentinel"/>
-            {isFetchingNextPage && <div className="other-communities-loading-more">Loading more…</div>}
+            <div ref={sentinelRef} className="other-communities-sentinel" />
+            {isFetchingNextPage && (
+              <div className="other-communities-loading-more">Loading more…</div>
+            )}
           </div>
         )
       ) : (
+        /* Communities Tab */
         loadingCommunities ? (
           <div className="other-communities-loading">Loading communities…</div>
         ) : errorCommunities ? (
           <div className="other-communities-no-data">Error loading communities.</div>
-        ) : communities.length===0 ? (
-          <div className="other-communities-no-data">You haven’t created any communities yet.</div>
+        ) : communities.length === 0 ? (
+          <div className="other-communities-no-data">
+            You haven’t created any communities yet.
+          </div>
         ) : (
           <div className="other-communities-list">
-            {communities.map(comm=>(
+            {communities.map(comm => (
               <div
                 key={comm.id}
                 className="other-community-lane"
-                onClick={()=>onExpandCommunity(comm.slug)}
+                onClick={() => onExpandCommunity(comm.slug)}
               >
                 <div className="lane-logo">
-                  <ProfilePicture src={comm.logo} isCommunity/>
+                  <ProfilePicture src={comm.logo} isCommunity />
                 </div>
                 <div className="lane-details">
                   <div className="lane-title-row">
                     <h3 className="lane-title">{comm.name}</h3>
-                    <span className="lane-category">{comm.category||'General'}</span>
+                    <span className="lane-category">
+                      {comm.category || 'General'}
+                    </span>
                   </div>
-                  <p className="lane-description">{comm.description||'No description provided.'}</p>
+                  <p className="lane-description">
+                    {comm.description || 'No description provided.'}
+                  </p>
                   <div className="lane-meta">
                     <span>{comm.type}</span>
-                    <span>{comm.members_count||0} members</span>
+                    <span>{comm.members_count || 0} members</span>
                     <span>{formatDateTime(comm.created_at)}</span>
                   </div>
                 </div>

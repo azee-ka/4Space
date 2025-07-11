@@ -46,7 +46,7 @@
   padding: 0.5rem;
   box-sizing: border-box;
   flex-shrink: 0;
-  border-right: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   z-index: 1;
 }
 
@@ -54,7 +54,7 @@
   margin: 0 0 0.75rem 0;
   font-size: 1rem;
   color: var(--text);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 0.5rem;
 }
 
@@ -81,7 +81,7 @@
 }
 
 .exchange-item button:hover {
-  background-color: rgba(255,255,255,0.05);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .exchange-votes {
@@ -133,11 +133,13 @@
 .community-sidebar-left::-webkit-scrollbar {
   width: 6px;
 }
+
 .community-sidebar-left::-webkit-scrollbar-thumb,
 .community-main-column::-webkit-scrollbar-thumb {
-  background-color: rgba(255,255,255,0.2);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
+
 .community-main-column::-webkit-scrollbar-track,
 .community-sidebar-left::-webkit-scrollbar-track {
   background: transparent;
@@ -161,7 +163,7 @@
   padding: 0.5rem 1rem;
   background-color: var(--card);
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
   z-index: 2;
   margin-right: 0.5rem;
@@ -187,9 +189,10 @@
   padding: 0.15rem 1rem;
   background-color: var(--card);
   backdrop-filter: blur(15px);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-right: 0.5rem;
 }
+
 .community-tabs-left {
   display: flex;
   gap: 0.5rem;
@@ -250,12 +253,13 @@
   width: 240px;
   min-width: 200px;
   max-width: 240px;
-  padding: 0.5rem;
+  padding: 1rem;
   background-color: var(--card);
   box-sizing: border-box;
   transition: all 0.3s;
 }
-.community-sidebar-right.community-home-right-sidebar{
+
+.community-sidebar-right.community-home-right-sidebar {
   width: 320px;
   max-width: 320px;
 }
@@ -272,29 +276,77 @@
 }
 
 /* === Common Utility Classes === */
-.community-info { display: flex; align-items: center; gap: 0.75rem; }
-.community-logo { width: 3rem; height: 3rem; border-radius: 50%; }
-.community-info h1 { margin: 0; font-size: 1.5rem; color: var(--text); }
-.community-subtitle { font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
-.community-dot { font-size: 1.2em; line-height: 1; }
-.community-actions { display: flex; gap: 0.5rem; }
+.community-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.community-logo {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+}
+
+.community-info h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.community-subtitle {
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.community-dot {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+.community-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .community-btn {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.375rem;
   font-size: 0.9rem;
   cursor: pointer;
-  background-color: var(--accent);
-  color: #fff;
-  transition: opacity 0.2s ease;
-}
-.community-btn:hover { opacity: 0.8; }
-.community-btn-leave { background-color: #ff5555; }
-.community-btn-invite {
+  /* background-color: var(--accent);
+  color: #fff; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.3s ease;
+
   background-color: var(--card);
   color: var(--accent);
   border: 1px solid var(--accent);
 }
+
+.community-btn:hover {
+  color: rgb(21, 21, 21);
+  background-color: var(--accent);
+}
+
+.community-btn-leave {
+  background-color: transparent;
+  color: #ff3f3f;
+  border: 1px solid #ff3f3f;
+}
+
+.community-btn-leave:hover {
+  background-color: #ff3f3f;
+  color: white;
+}
+
 
 /* === Placeholder === */
 .placeholder {
@@ -309,12 +361,14 @@
 .community-sidebar-right::-webkit-scrollbar {
   width: 6px;
 }
+
 .community-scrollable-content::-webkit-scrollbar-thumb,
 .community-main-column::-webkit-scrollbar-thumb,
 .community-sidebar-right::-webkit-scrollbar-thumb {
-  background-color: rgba(255,255,255,0.2);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
+
 .community-scrollable-content::-webkit-scrollbar-track,
 .community-main-column::-webkit-scrollbar-track,
 .community-sidebar-right::-webkit-scrollbar-track {
@@ -326,10 +380,12 @@
   .community-body {
     flex-direction: column;
   }
+
   .community-sidebar-left,
   .community-sidebar-right {
     display: none;
   }
+
   .community-main-column {
     width: 100%;
   }

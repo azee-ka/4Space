@@ -401,7 +401,7 @@ const saveAllChanges = async () => {
     };
 
     return (
-        <div className="community-card community-settings-wrapper">
+        <div className="community-home-card community-settings-wrapper">
             <div className="settings-header">
                 <h2>⚙️ Community Settings</h2>
                 <button className="back-btn" onClick={onBack}>← Back</button>

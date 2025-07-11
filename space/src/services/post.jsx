@@ -2,6 +2,35 @@ import apiCall from '../utils/api';
 
 // --- POST ---
 
+
+export const getCommentAsPost = async (commentId) => {
+  const res = await apiCall(`posts/post/comments/${commentId}/`);
+  const c = res.data;
+  console.log('post comments', c)
+  return {
+    post: {
+      id: c.id,
+      content: c.text,
+      media_files: [],
+    },
+    author: c.author,
+    meta: { created_at: c.created_at },
+    stats: {
+      net_votes_count: c.net_votes_count,
+      likes_count: c.likes_count,
+      comments_count: c.replies_count,
+      views_count: 0,
+    },
+    status: {
+      vote_status: c.vote_status,
+      like_status: c.like_status,
+    },
+    is_repost: false,
+    parent_post: null,
+  };
+};
+
+
 export const fetchPost = async (postId) => {
   const res = await apiCall(`posts/post/${postId}/`);
   return res.data;

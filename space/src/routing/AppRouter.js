@@ -32,26 +32,28 @@ import CreateCommunity from '../apps/communities/createCommunity/createCommunity
 import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
 import PublicationDetail from '../apps/communities/community/tabs/research/publicationsTab/publicationDetail/publicationDetail';
-import SpaceDashboard from '../apps/space/dashboard/dashboard';
-import Space from '../apps/space/space/space';
-import SpaceTools from '../apps/space/tools/tools';
-import SpaceProjects from '../apps/space/projects/projects';
-import SpacePortfolio from '../apps/space/portfolio/portfolio';
-import RichTextEditor from '../apps/space/tools/docsEditor/richEditor';
-import CodeEditor from '../apps/space/tools/ide/ide';
-import LaTeXEditor from '../apps/space/tools/latexEditor/latexEditor';
-import MarkdownEditor from '../apps/space/tools/markdownEditor/markdownEditor';
-import Calculator from '../apps/space/tools/calculator/calculator';
-import NotebookEditor from '../apps/space/tools/notebookEditor/notebookEditor';
+import SpaceDashboard from '../apps/space/workspace/dashboard/dashboard';
+import Space from '../apps/space/workspace/space/space';
+import SpaceTools from '../apps/space/workspace/tools/tools';
+import SpaceProjects from '../apps/space/workspace/projects/projects';
+import SpacePortfolio from '../apps/space/workspace/portfolio/portfolio';
+import RichTextEditor from '../apps/space/workspace/tools/docsEditor/richEditor';
+import CodeEditor from '../apps/space/workspace/tools/ide/ide';
+import LaTeXEditor from '../apps/space/workspace/tools/latexEditor/latexEditor';
+import MarkdownEditor from '../apps/space/workspace/tools/markdownEditor/markdownEditor';
+import Calculator from '../apps/space/workspace/tools/calculator/calculator';
+import NotebookEditor from '../apps/space/workspace/tools/notebookEditor/notebookEditor';
 import { DisplaySettingsProvider } from '../context/DisplaySettingsContext';
-import SpaceLibrary from '../apps/space/library/library';
+import SpaceLibrary from '../apps/space/workspace/library/library';
 import { CreateCommunityProvider } from '../context/CreateCommunityContext';
-import SpaceRepositories from '../apps/space/repositories/repositories';
-import RepositoryView from '../apps/space/repositories/repository/repositoryView';
+import SpaceRepositories from '../apps/space/workspace/repositories/repositories';
+import RepositoryView from '../apps/space/workspace/repositories/repository/repositoryView';
 import CommunityPage from '../apps/communities/community/community';
 import OauthCallback from '../pages/auth/OauthCallback';
 import useAppDataRefetcher from '../hooks/useAppDataRefetcher';
 import { HandlesProvider } from '../context/HandlesContext';
+import CommentThread from '../components/postUI/threadPost/CommentThread';
+import FinanceDashboard from '../apps/space/finance/dashboard/financeDashboard';
 
 
 
@@ -72,6 +74,7 @@ const AppRouter = () => {
         { name: 'Explore', path: '/explore', component: <Explore />, key: 'Explore' },
         { name: 'Create Post', path: '/create/post', component: <CreatePost />, key: 'CreatePost' },
         { name: 'Expand Post', path: '/posts/p/:postId', component: <Post />, key: 'ExpandPost' },
+        { name: 'Expand Post Comments', path: '/comments/:id', component: <CommentThread />, key: 'ExpandPostComments' },
 
         // Communities
         { name: 'Community Dasboard', path: '/communities', component: <CommunitiesDashboard />, key: 'Communities Dashboard' },
@@ -84,22 +87,27 @@ const AppRouter = () => {
 
 
         // Space
-        { name: 'Space', path: '/space/', component: <Space />, key: 'Space' },
-        { name: 'Space Dashboard', path: '/space/dashboard', component: <SpaceDashboard />, key: 'SpaceDashboard' },
-        { name: 'Space Portfolio', path: '/space/portfolio', component: <SpacePortfolio />, key: 'SpacePortfolio' },
-        { name: 'Space Projects', path: '/space/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
-        { name: 'Space Library', path: '/space/library', component: <SpaceLibrary />, key: 'SpaceLibrary' },
-        { name: 'Space Tools', path: '/space/tools', component: <SpaceTools />, key: 'SpaceTools' },
-        { name: 'Create Space', path: '/space/create', component: <SpaceProjects />, key: 'SpaceCreate' },
-        { name: 'Space Repositories', path: '/space/repositories', component: <SpaceRepositories />, key: 'SpaceRepositories' },
-        { name: 'Space Repository', path: '/space/repositories/r/:repositoryId', component: <RepositoryView />, key: 'RepositoryView' },
+        // Workspace sub-app
+{ name: 'Space Home', path: '/space/workspace', component: <Space />, key: 'SpaceHome' },
+{ name: 'Space Dashboard', path: '/space/workspace/dashboard', component: <SpaceDashboard />, key: 'SpaceDashboard' },
+{ name: 'Space Projects', path: '/space/workspace/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
+{ name: 'Space Library', path: '/space/workspace/library', component: <SpaceLibrary />, key: 'SpaceLibrary' },
+{ name: 'Space Tools', path: '/space/workspace/tools', component: <SpaceTools />, key: 'SpaceTools' },
+{ name: 'Create Space', path: '/space/workspace/create', component: <SpaceProjects />, key: 'SpaceCreate' },
+{ name: 'Space Repositories', path: '/space/workspace/repositories', component: <SpaceRepositories />, key: 'SpaceRepositories' },
+{ name: 'Space Repository', path: '/space/workspace/repositories/r/:repositoryId', component: <RepositoryView />, key: 'RepositoryView' },
 
-        { name: 'Rich Editor', path: '/space/project/:projectId/rich-editor', component: <RichTextEditor />, key: 'RichTextEditor' },
-        { name: 'Code Editor', path: '/space/project/:projectId/code-editor', component: <CodeEditor />, key: 'CodeEditor' },
-        { name: 'Latex Editor', path: '/space/project/:projectId/latex-editor', component: <LaTeXEditor />, key: 'LaTeXEditor' },
-        { name: 'Markdown Editor', path: '/space/project/:projectId/markdown-editor', component: <MarkdownEditor />, key: 'MarkdownEditor' },
-        { name: 'Notebook', path: '/space/project/:projectId/notebook', component: <NotebookEditor />, key: 'NotebookEditor' },
-        { name: 'Calculator', path: '/space/tools/calculator', component: <Calculator />, key: 'Calculator' },
+{ name: 'Rich Editor', path: '/space/workspace/project/:projectId/rich-editor', component: <RichTextEditor />, key: 'RichTextEditor' },
+{ name: 'Code Editor', path: '/space/workspace/project/:projectId/code-editor', component: <CodeEditor />, key: 'CodeEditor' },
+{ name: 'Latex Editor', path: '/space/workspace/project/:projectId/latex-editor', component: <LaTeXEditor />, key: 'LaTeXEditor' },
+{ name: 'Markdown Editor', path: '/space/workspace/project/:projectId/markdown-editor', component: <MarkdownEditor />, key: 'MarkdownEditor' },
+{ name: 'Notebook', path: '/space/workspace/project/:projectId/notebook', component: <NotebookEditor />, key: 'NotebookEditor' },
+{ name: 'Calculator', path: '/space/workspace/tools/calculator', component: <Calculator />, key: 'Calculator' },
+
+// Finance sub-app
+{ name: 'Finance Dashboard', path: '/space/finance/dashboard', component: <FinanceDashboard />, key: 'FinanceDashboard' },
+
+
 
 
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },

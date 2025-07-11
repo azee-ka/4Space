@@ -547,8 +547,9 @@
 }
 
 
-.expanded-post-interaction-container div {
-    width: 80%;
+.expanded-post-interaction-container button {
+    all: unset;
+    width: 42px;
     aspect-ratio: 1 / 1;
     display: flex;
     justify-content: center;
@@ -558,7 +559,7 @@
     transition: background-color 0.3s ease;
 }
 
-.expanded-post-interaction-container div:hover {
+.expanded-post-interaction-container button:hover {
     cursor: pointer;
     background-color: rgba(123, 123, 123, 0.496);
 }
@@ -571,6 +572,7 @@
 .expanded-post-interaction-container .icon-style {
     font-size: 1.5em;
     padding: 0.1em;
+    box-sizing: border-box;
 }
 
 .icon-style.hollow {

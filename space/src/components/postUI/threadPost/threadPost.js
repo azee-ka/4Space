@@ -15,6 +15,7 @@ import { useInfiniteScrollTrigger } from '../../../hooks/useInfiniteScrollTrigge
 import { Link, useNavigate } from 'react-router-dom';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { useTrackPostView } from '../../../hooks/useTrackPostView';
+import SaveToCollectionDropdown from '../../saveToCollectionDropdown/SaveToCollectionDropdown';
 
 const ThreadPost = () => {
     const {
@@ -67,9 +68,38 @@ const ThreadPost = () => {
 
     useTrackPostView(post?.id, !!post, setPost);
 
+
+    const [replyToggles, setReplyToggles] = useState({});  // commentId => boolean
+    const [nestedReplies, setNestedReplies] = useState({});  // commentId => reply text
+
+
+    const toggleReplyField = (commentId) => {
+        setReplyToggles(prev => ({
+            ...prev,
+            [commentId]: !prev[commentId]
+        }));
+    };
+
+    const handleNestedReplyChange = (commentId, value) => {
+        setNestedReplies(prev => ({
+            ...prev,
+            [commentId]: value
+        }));
+    };
+
+    const handleSubmitNestedReply = (commentId) => {
+        const reply = nestedReplies[commentId]?.trim();
+        if (!reply) return;
+        replyToComment(commentId, reply); // from context
+        setNestedReplies(prev => ({ ...prev, [commentId]: '' }));
+        setReplyToggles(prev => ({ ...prev, [commentId]: false }));
+    };
+
+
     const commentTextareaRef = useRef(null);
 
     const contentRef = useRef(null);
+
 
     useEffect(() => {
         const handler = handleSelection(contentRef);
@@ -228,7 +258,13 @@ const ThreadPost = () => {
                             </button>
                             <button className="action-btn"><FaEyeSlash /> Hide</button>
                             <button className="action-btn"><FaFlag /> Report</button>
-                            <button className="action-btn"><FaBookmark /> Bookmark</button>
+                            <SaveToCollectionDropdown
+                                contentType="threadpost" // or "threadpost", "comment", etc.
+                                objectId={post?.id}
+                                toggleContent={
+                                    <button className="action-btn"><FaBookmark /> Bookmark</button>
+                                }
+                            />
                             <button className="action-btn"><FaBell /> Notify</button>
                             <button className="action-btn"><FaLanguage /> Translate</button>
                             <button className="action-btn"><FaRobot /> Summarize</button>
@@ -321,12 +357,51 @@ const ThreadPost = () => {
                                             <span className="comment-like-count">{formatCount(comment.likes_count)}</span>
                                         )}
                                     </button>
-                                    <button className="comment-action-btn"><FaReply /> Reply</button>
+                                    <button
+                                        className="comment-action-btn"
+                                        onClick={() => toggleReplyField(comment.id)}
+                                    >
+                                        <FaReply /> Reply
+                                    </button>
+                                    <button
+  className="comment-action-btn"
+  onClick={() => navigate(`/comments/${comment.id}`)}
+>
+  <FaCommentDots /> View thread
+  {comment.replies_count > 0 && (
+    <span className="comment-like-count">{formatCount(comment.replies_count)}</span>
+  )}
+</button>
+
                                     <button className="comment-action-btn"><FaFlag /> Report</button>
-                                    <button className="comment-action-btn"><FaQuoteRight /> Quote</button>
-                                    <button className="comment-action-btn"><FaLanguage /> Translate</button>
-                                    <button className="comment-action-btn"><FaSmile /> React</button>
+                                    <button className="comment-action-btn"><FaQuoteRight /> Repost</button>
                                 </div>
+
+                                {replyToggles[comment.id] && (
+                                    <div className="thread-post-reply-container nested-reply-box">
+                                        <div className="thread-post-reply">
+                                            <EmojiButton
+                                                inputRef={null}
+                                                value={nestedReplies[comment.id] || ''}
+                                                onChange={(val) => handleNestedReplyChange(comment.id, val)}
+                                            />
+                                            <CustomTextarea
+                                                value={nestedReplies[comment.id] || ''}
+                                                onChange={(e) => handleNestedReplyChange(comment.id, e.target.value)}
+                                                placeholder="Write a reply..."
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        handleSubmitNestedReply(comment.id);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                        {(nestedReplies[comment.id] !== '' || nestedReplies[comment.id] === "<p><br></p>") &&
+                                            <button onClick={() => handleSubmitNestedReply(comment.id)}>Reply</button>
+                                        }
+                                    </div>
+                                )}
                             </div>
                         ))
                     ) : (

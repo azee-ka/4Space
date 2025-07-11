@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchMyPublications, uploadPublication } from '../../../../../../services/communities';
 import { MY_PUBLICATIONS } from '../../../../../../services/queryKeys';
 
-const PublicationsTab = ({ communityId }) => {
+const PublicationsTab = ({ communitySlug }) => {
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState('');
@@ -25,8 +25,8 @@ const PublicationsTab = ({ communityId }) => {
 
   // Fetch publications (React Query)
   const { data: publications = [], refetch, isLoading } = useQuery({
-    queryKey: MY_PUBLICATIONS(communityId),
-    queryFn: () => fetchMyPublications(communityId),
+    queryKey: MY_PUBLICATIONS(communitySlug),
+    queryFn: () => fetchMyPublications(communitySlug),
     enabled: activeTab === 'my-publications',
   });
 
@@ -34,10 +34,10 @@ const PublicationsTab = ({ communityId }) => {
   const mutation = useMutation({
     mutationFn: ({ title, abstract, file }) =>{
       console.log('SUBMITTING FILE:', file);
-      uploadPublication({ communityId, title, abstract, file })
+      uploadPublication({ communitySlug, title, abstract, file })
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(MY_PUBLICATIONS(communityId));
+      queryClient.invalidateQueries(MY_PUBLICATIONS(communitySlug));
       setTitle('');
       setAbstract('');
       setFile(null);
@@ -87,7 +87,7 @@ const PublicationsTab = ({ communityId }) => {
   }
 
   return (
-    <div className="publications-tab">
+    <div className="community-home-card publications-tab">
       <div className="tab-row">
         <button
           className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}

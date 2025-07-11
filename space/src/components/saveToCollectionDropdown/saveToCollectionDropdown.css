@@ -1,0 +1,51 @@
+/* src/components/saveToCollectionDropdown/saveToCollectionDropdown.css */
+
+.save-dropdown-list {
+  border: 1px solid var(--overlay-container-border);
+  border-radius: 0.5rem;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+
+  min-width: 12rem;
+  width: max-content;
+  max-width: 20rem;
+  max-height: 15rem;
+  overflow-y: auto;           
+  box-sizing: border-box;
+  background-color: rgba(87, 87, 87, 0.462);
+  backdrop-filter: blur(20px);
+}
+
+.save-dropdown-list li {
+  margin: 0;
+}
+
+.save-dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;               /* fill the available width */
+  padding: 0.5rem 1rem;
+  background: none;          /* leave your own bg/colors here */
+  border: none;
+  text-align: left;
+  color: var(--overlay-input-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-dropdown-item .checkmark {
+  margin-right: 0.5rem;
+  color: #54dfff;
+  font-weight: bold;
+}
+
+.save-dropdown-item:hover:not(:disabled) {
+  background: var(--overlay-select-hover);
+}
+
+.save-dropdown-item:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

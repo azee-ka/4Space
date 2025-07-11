@@ -2,5 +2,5 @@
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('src.central.collection.urls')),
+    path('collection/', include('src.central.collection.urls')),
 ]

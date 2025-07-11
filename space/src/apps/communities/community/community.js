@@ -34,16 +34,12 @@ function Community() {
   const [showInvite, setShowInvite] = useState(false);
 
   useEffect(() => {
-    fetchCommunityData();
-  }, [fetchCommunityData]);
-
-  useEffect(() => {
     if (!community?.tabs?.length) return;
     const raw = window.location.hash.replace("#", "");
     const key = raw.split("-")[0];
     const found = community.tabs.find(t => t.key === key);
     setSelectedTab(found || community.tabs[0]);
-  }, [community, setSelectedTab]);
+  }, [community?.tabs]);
 
   if (!community) return <div className="loading">Loading…</div>;
 
@@ -73,7 +69,7 @@ function Community() {
                     <div className="exchange-info">
                       <div className="exchange-title">
                         {post.title.length > 40
-                          ? post.title.slice(0,40) + "…"
+                          ? post.title.slice(0, 40) + "…"
                           : post.title}
                       </div>
                       <div className="exchange-meta">
@@ -112,29 +108,36 @@ function Community() {
                   <div className="community-subtitle">
                     <RenderText text={`c/${community.slug}`} />
                     <span className="community-dot">·</span>
-                    {community?.members_count} members
+                    {community?.members_count} {`member`}{community?.members_count > 1 ? 's' : ''}
                   </div>
                 </div>
               </div>
               <div className="community-actions">
-                <button
-                  onClick={handleJoinLeave}
-                  className={`community-btn ${
-                    community?.is_member
-                      ? "community-btn-leave"
-                      : "community-btn-join"
-                  }`}
-                >
-                  {community?.is_member ? "Leave" : "Join"}
-                </button>
+                {community?.permissions?.can_add_tabs && (
+                  <button
+                    className="community-btn"
+                    onClick={() => setShowAdd(true)}
+                  >
+                    <FontAwesomeIcon icon={faPlus} /> Add Tab
+                  </button>
+                )}
                 {community?.permissions?.can_invite_members && (
                   <button
                     onClick={() => setShowInvite(true)}
-                    className="community-btn community-btn-invite"
+                    className="community-btn"
                   >
                     <FontAwesomeIcon icon={faEnvelopeOpen} /> Invite
                   </button>
                 )}
+                <button
+                  onClick={handleJoinLeave}
+                  className={`community-btn ${community?.is_member
+                      ? "community-btn-leave"
+                      : "community-btn"
+                    }`}
+                >
+                  {community?.is_member ? "Leave" : "Join"}
+                </button>
               </div>
             </div>
 
@@ -144,9 +147,8 @@ function Community() {
                 {community?.tabs.map(tab => (
                   <button
                     key={tab.key}
-                    className={`community-tab ${
-                      selectedTab?.key === tab.key ? "active" : ""
-                    }`}
+                    className={`community-tab ${selectedTab?.key === tab.key ? "active" : ""
+                      }`}
                     onClick={() => {
                       setSelectedTab(tab);
                       window.history.replaceState(
@@ -160,21 +162,13 @@ function Community() {
                   </button>
                 ))}
               </div>
-              {community?.permissions?.can_add_tabs && (
-                <button
-                  className="community-btn-add"
-                  onClick={() => setShowAdd(true)}
-                >
-                  <FontAwesomeIcon icon={faPlus} /> Add Tab
-                </button>
-              )}
             </nav>
 
             {/* Content + Right Sidebar (scroll together) */}
             <div className="community-main-content-area">
               <main className="community-content">
                 {selectedTab &&
-                TAB_COMPONENTS_FLAT[selectedTab.key] ? (
+                  TAB_COMPONENTS_FLAT[selectedTab.key] ? (
                   React.createElement(
                     TAB_COMPONENTS_FLAT[selectedTab.key].Component,
                     {

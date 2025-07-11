@@ -13,12 +13,6 @@ export const fetchRequestConversations = async () => {
   return res.data;
 };
 
-// User search
-export const searchUsers = async (query) => {
-  const res = await apiCall(`search/user-search/?query=${query}`);
-  return res.data;
-};
-
 
 // Fetch conversation details
 export const fetchConversationDetails = async (conversationId) => {

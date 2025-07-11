@@ -1,0 +1,364 @@
+/* ---------------------------------------------------
+   Header & Create‐button
+   --------------------------------------------------- */
+.collections-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.collections-header h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #e6e6e6;
+  margin: 0;
+}
+.create-btn {
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  border: 0.0625rem solid var(--overlay-submit-border);
+  border-radius: 0.5625rem;
+  color: var(--overlay-submit-color);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
+.create-btn:hover {
+  background: var(--overlay-submit-bg-hover);
+  box-shadow: var(--overlay-submit-shadow-hover);
+  transform: translateY(-0.0625rem);
+}
+
+/* ---------------------------------------------------
+   Tabs (scoped to Collections)
+   --------------------------------------------------- */
+.my-collections-tabs-header {
+  display: flex;
+  gap: 0.75rem;
+  border-bottom: 0.0625rem solid rgba(255,255,255,0.15);
+  padding-bottom: 0.5rem;
+}
+.my-collections-tab-btn {
+  background: none;
+  border: none;
+  color: #b7e9ff;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  opacity: 0.7;
+}
+.my-collections-tab-btn.active {
+  background: rgba(105,105,105,0.426);
+  color: #54dfff;
+  opacity: 1;
+}
+.my-collections-tab-btn:hover:not(.active) {
+  background: #8888882b;
+  color: #7dfcff;
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------
+   Back Button
+   --------------------------------------------------- */
+.collections-back-btn {
+  margin-left: auto;
+  background: rgba(255,255,255,0.05);
+  border: 0.0625rem solid rgba(255,255,255,0.12);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  color: #ccc;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.collections-back-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* ---------------------------------------------------
+   Collections Grid
+   --------------------------------------------------- */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem,1fr));
+  gap: 1rem;
+}
+.collection-tile {
+  background: rgba(255,255,255,0.03);
+  border: 0.0625rem solid rgba(255,255,255,0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.collection-tile:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(0,228,255,0.3);
+}
+.collection-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #eef9ff;
+  margin-bottom: 0.25rem;
+}
+.collection-desc {
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-bottom: 0.5rem;
+}
+.collection-visibility {
+  font-size: 0.75rem;
+  color: #88f0ff;
+  background: rgba(255,255,255,0.05);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  display: inline-block;
+}
+
+/* ---------------------------------------------------
+   Inside‐collection list
+   --------------------------------------------------- */
+.collections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.collections-card {
+  background: rgba(255,255,255,0.03);
+  border: 0.0625rem solid rgba(255,255,255,0.1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: background 0.2s, border-color 0.2s;
+}
+.collections-card:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(0,228,255,0.3);
+}
+.collections-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #eef9ff;
+  margin-bottom: 0.25rem;
+}
+.collections-meta {
+  font-size: 0.85rem;
+  color: #ccc;
+}
+.collections-sentinel { height: 0.0625rem; }
+.collections-loading,
+.collections-no-data,
+.collections-loading-more {
+  text-align: center;
+  color: #b7e9ff;
+  margin: 1rem 0;
+  font-size: 1rem;
+}
+
+/* ---------------------------------------------------
+   Form fields (scoped)
+   --------------------------------------------------- */
+.mycol-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.mycol-form-label {
+  font-size: 0.88rem;
+  color: var(--overlay-label);
+}
+.mycol-form-input,
+.mycol-form-textarea {
+  background: transparent;
+  border: 0.0625rem solid var(--overlay-input-border);
+  border-radius: 0.5625rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9rem;
+  color: var(--overlay-input-color);
+  transition: border 0.2s;
+  outline: none;
+}
+.mycol-form-input:focus,
+.mycol-form-textarea:focus {
+  border-color: var(--overlay-input-focus);
+}
+.mycol-form-textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+.mycol-form-select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: 0.0625rem solid var(--overlay-input-border);
+  border-radius: 0.5625rem;
+  padding: 0.625rem 2.25rem 0.625rem 0.875rem;
+  font-size: 0.9rem;
+  color: var(--overlay-input-color);
+  background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='%23ccc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  outline: none;
+}
+.mycol-form-select:focus {
+  border-color: var(--overlay-input-focus);
+}
+
+/* ---------------------------------------------------
+   Toggle (step 1)
+   --------------------------------------------------- */
+   .mycol-step1 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+   }
+.mycol-options {
+  margin-top: 0.5rem;
+}
+.mycol-options-label {
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--overlay-input-color);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem
+}
+.mycol-options-label span {
+  width: 1rem;
+  height: 1rem;
+}
+.mycol-options-label span::after {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+/* 
+.mycol-options-label input[type="checkbox"] {
+  margin-right: 0.5rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--overlay-input-focus);
+} */
+
+/* ---------------------------------------------------
+   Collaborator search & list (step 2)
+   --------------------------------------------------- */
+.collab-group {
+  position: relative;
+}
+.mycol-collab-search {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9rem;
+  color: var(--overlay-input-color);
+  background: transparent;
+  border: 0.0625rem solid var(--overlay-input-border);
+  border-radius: 0.5625rem;
+  box-sizing: border-box;
+  outline: none;
+}
+.mycol-collab-search:focus {
+  border-color: var(--overlay-input-focus);
+}
+.mycol-collab-suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  background: var(--overlay-container-bg);
+  border: 0.0625rem solid var(--overlay-container-border);
+  border-radius: 0.5rem;
+  max-height: 8rem;
+  overflow-y: auto;
+  z-index: 200;
+}
+.mycol-collab-suggestions li {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: var(--overlay-input-color);
+}
+.mycol-collab-suggestions li:hover {
+  background: var(--overlay-select-hover);
+}
+.mycol-collab-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.mycol-collab-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 0.0625rem solid rgba(255,255,255,0.1);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+.mycol-collab-name {
+  font-size: 0.9rem;
+  color: var(--overlay-input-color);
+}
+.mycol-collab-permission-select {
+  appearance: none;
+  border: none;
+  background: rgba(255,255,255,0.05);
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  color: var(--overlay-input-color);
+  cursor: pointer;
+}
+.mycol-collab-remove {
+  all: unset;
+  cursor: pointer;
+  color: #f88;
+  font-size: 1rem;
+}
+
+/* ---------------------------------------------------
+   Modal footer buttons
+   --------------------------------------------------- */
+.mycol-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  box-sizing: border-box;
+}
+.mycol-cancel-btn,
+.mycol-back-btn,
+.mycol-continue-btn,
+.mycol-submit-btn {
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  border: 0.0625rem solid var(--overlay-submit-border);
+  border-radius: 0.5625rem;
+  color: var(--overlay-submit-color);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
+.mycol-continue-btn,
+.mycol-submit-btn {
+  background: var(--overlay-submit-bg-hover);
+}
+.mycol-cancel-btn:hover,
+.mycol-back-btn:hover,
+.mycol-continue-btn:hover,
+.mycol-submit-btn:hover {
+  background: var(--overlay-submit-bg-hover);
+  box-shadow: var(--overlay-submit-shadow-hover);
+  transform: translateY(-0.0625rem);
+}
+

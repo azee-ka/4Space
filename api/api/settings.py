@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'src.space.space',
     
     'src.settings',
+    'src.central.collection.apps.CollectionConfig',
     
     'rest_framework',
     'corsheaders',

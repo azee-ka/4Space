@@ -21,6 +21,7 @@ import CustomTextarea from '../../../../pages/messages/chatContainer/customTexta
 import { formatDateTime } from '../../../../utils/formatDateTime';
 import { formatCount } from '../../../../utils/formatCount';
 import { useInfiniteScrollTrigger } from '../../../../hooks/useInfiniteScrollTrigger';
+import SaveToCollectionDropdown from '../../../saveToCollectionDropdown/SaveToCollectionDropdown.jsx';
 
 const ExpandedPostOverlay = () => {
     const {
@@ -269,20 +270,26 @@ const ExpandedPostOverlay = () => {
                 </div>
             </div>
             <div className='expanded-post-interaction-container overlay' onClick={(e) => e.stopPropagation()}>
-                <div onClick={() => toggleLikeDislike('like')}>
+                <button onClick={() => toggleLikeDislike('like')}>
                     <img src={post?.status?.like_status === 'liked' ? liked : unliked} />
-                </div>
-                <div onClick={() => toggleLikeDislike('dislike')}>
+                </button>
+                <button onClick={() => toggleLikeDislike('dislike')}>
                     <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
-                </div>
-                <div onClick={() => toggleBookmark()}>
-                    <FaBookmark
-                        className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`}
-                    />
-                </div>
-                <div onClick={() => setShowPostMoreMenuOverlay(true)} >
+                </button>
+                <SaveToCollectionDropdown
+                    contentType="visualpost" // or "threadpost", "comment", etc.
+                    objectId={post?.id}
+                    toggleContent={
+                        <button
+                            className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`}
+                        >
+                            <FaBookmark />
+                        </button>
+                    }
+                />
+                <button onClick={() => setShowPostMoreMenuOverlay(true)} >
                     <FaEllipsisH className={`icon-style`} />
-                </div>
+                </button>
                 {post?.author?.username === authState?.user?.username &&
                     <div onClick={() => deletePost()} className='expanded-post-delete-post'>
                         <FaTrash className='icon-style' />

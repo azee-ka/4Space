@@ -1,14 +1,39 @@
+// src/components/post/expand/ExpandPostContext.jsx
+
 import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  POST_DETAIL, POST_COMMENTS, POST_REPOST, POST_QUOTE, POST_VOTE,
-  POST_LIKE_STATUS, POST_BOOKMARK, COMMENT_LIKES, COMMENT_VOTES, COMMENT_REPLY, POST_DELETE
+  POST_DETAIL,
+  POST_COMMENTS,
+  POST_REPOST,
+  POST_QUOTE,
+  POST_VOTE,
+  POST_LIKE_STATUS,
+  POST_BOOKMARK,
+  COMMENT_LIKES,
+  COMMENT_VOTES,
+  COMMENT_REPLY,
+  POST_DELETE,
 } from '../../../services/queryKeys';
 import {
-  fetchPost, fetchComments, repostPost, quotePost,
-  votePost, toggleLikeDislike, toggleBookmark, deletePost,
-  addComment, likeComment, voteComment, replyToComment,
+  fetchPost,
+  fetchComments,
+  repostPost,
+  quotePost,
+  votePost,
+  toggleLikeDislike,
+  toggleBookmark as postToggleBookmark,
+  deletePost,
+  addComment,
+  likeComment,
+  voteComment,
+  replyToComment,
 } from '../../../services/post';
+import { 
+  fetchMyCollections,
+  addItemToCollection,
+  removeItemFromCollection 
+} from '../../../services/collections';
 import VideoPlayer from '../../videoPlayer/videoPlayer';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +47,7 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
   const navigate = useNavigate();
   const { authState } = useAuth();
 
-  // UI/Modal state
+  // UI / modal state
   const [commentText, setCommentText] = useState('');
   const [commentReplyText, setCommentReplyText] = useState('');
   const [showQuoteModal, setShowQuoteModal] = useState(false);
@@ -33,18 +58,20 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
   const [repostLoading, setRepostLoading] = useState(false);
   const [repostSuccessId, setRepostSuccessId] = useState(null);
 
-  // Like/dislike overlays etc
+  // overlays
   const [showLikesOverlay, setShowLikesOverlay] = useState(false);
   const [showDislikesOverlay, setShowDislikesOverlay] = useState(false);
+
+  // media
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
-  // ---- QUOTE SELECTION logic ----
+  // quote‐selection
   const [showQuoteBtn, setShowQuoteBtn] = useState(false);
-  const [btnPos, setBtnPos] = useState(null); // {top, left}
+  const [btnPos, setBtnPos] = useState(null);
   const [selectedText, setSelectedText] = useState('');
   const [quoteSourceRef, setQuoteSourceRef] = useState(null);
 
-  // Post data
+  // ─── POST DETAIL ────────────────────────────────────────────────────────────
   const {
     data: post,
     isLoading: postLoading,
@@ -55,12 +82,14 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
     queryFn: () => fetchPost(postId),
     enabled: !!postId,
     staleTime: 30_000,
-    initialData: postData || undefined,
+    initialData: postData,
   });
+
+
 
   const isSelfPost = post?.author?.username === authState?.user?.username;
 
-  // Comments
+  // ─── COMMENTS ───────────────────────────────────────────────────────────────
   const {
     data: commentsPages = { pages: [], pageParams: [] },
     fetchNextPage,
@@ -70,15 +99,58 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
   } = useInfiniteQuery({
     queryKey: POST_COMMENTS(postId),
     queryFn: ({ pageParam = 0 }) => fetchComments({ postId, pageParam }),
-    getNextPageParam: (lastPage, pages) =>
-      lastPage?.results?.length === 0 ? undefined : pages.length,
+    getNextPageParam: (last, pages) =>
+      last.results.length === 0 ? undefined : pages.length,
     enabled: !!postId,
   });
 
   const comments = commentsPages.pages.flatMap(p => p.results || []);
   const commentsTotalCount = commentsPages.pages[0]?.count || 0;
 
-  // Mutations
+  // ─── COLLECTIONS & BOOKMARKS ────────────────────────────────────────────────
+  // ★ NEW: fetch user's collections with `contains` flags
+  const {
+    data: collections = [],
+    isLoading: collectionsLoading,
+  } = useQuery({
+    queryKey: ['myCollections', postId],
+    queryFn: () => fetchMyCollections({ contentType: 'post', objectId: postId }),
+    enabled: !!postId,
+  });
+
+  const addCollItem = useMutation({
+    mutationFn: addItemToCollection,
+    onSuccess: () => queryClient.invalidateQueries(['myCollections', postId]),
+  });
+
+  const removeCollItem = useMutation({
+    mutationFn: removeItemFromCollection,
+    onSuccess: () => queryClient.invalidateQueries(['myCollections', postId]),
+  });
+
+  const toggleCollectionItem = (collectionId, contains, visibility) => {
+    const payload = {
+      collection_id: collectionId,
+      content_type: 'post',
+      object_id: postId,
+      visibility,
+    };
+    if (contains) {
+      removeCollItem.mutate(payload);
+    } else {
+      addCollItem.mutate(payload);
+    }
+  };
+
+  // ★ NEW: bookmark via API
+  const bookmarkMutation = useMutation({
+    mutationKey: POST_BOOKMARK(postId),
+    mutationFn: ({ method }) => postToggleBookmark(postId, method),
+    onSuccess: () => queryClient.invalidateQueries(POST_DETAIL(postId)),
+  });
+  const toggleBookmark = method => bookmarkMutation.mutate({ method });
+
+  // ─── OTHER MUTATIONS ────────────────────────────────────────────────────────
   const likeDislikeMutation = useMutation({
     mutationKey: POST_LIKE_STATUS(postId),
     mutationFn: ({ toggle_type }) => toggleLikeDislike({ postId, toggle_type }),
@@ -99,10 +171,10 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
     },
   });
   const likeCommentMutation = useMutation({
-    mutationFn: (commentId) => likeComment(commentId),
-    onSuccess: (_, commentId) => {
+    mutationFn: cId => likeComment(cId),
+    onSuccess: (_, cId) => {
       queryClient.invalidateQueries(POST_COMMENTS(postId));
-      queryClient.invalidateQueries(COMMENT_LIKES(commentId));
+      queryClient.invalidateQueries(COMMENT_LIKES(cId));
     },
   });
   const voteCommentMutation = useMutation({
@@ -123,99 +195,79 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
     mutationKey: POST_REPOST(postId),
     mutationFn: () => repostPost(postId),
     onMutate: () => setRepostLoading(true),
-    onSuccess: (data) => {
+    onSuccess: data => {
       setRepostSuccessId(data.id);
       setRepostError('');
       setRepostLoading(false);
       queryClient.invalidateQueries(POST_DETAIL(postId));
     },
-    onError: (e) => {
-      setRepostError(e?.response?.data?.error || "Already reposted, or error.");
+    onError: e => {
+      setRepostError(e?.response?.data?.error || 'Already reposted, or error.');
       setRepostLoading(false);
-    }
+    },
   });
   const quoteMutation = useMutation({
     mutationKey: POST_QUOTE(postId),
-    mutationFn: ({ quote_text, quote_comment }) => quotePost({ postId, quote_text, quote_comment }),
-    onSuccess: (data) => {
+    mutationFn: ({ quote_text, quote_comment }) =>
+      quotePost({ postId, quote_text, quote_comment }),
+    onSuccess: data => {
       setShowQuoteModal(false);
       setQuoteComment('');
       setQuoteText('');
       navigate(`/posts/p/${data.id}`);
     },
-    onError: () => alert("Failed to quote"),
+    onError: () => alert('Failed to quote'),
   });
   const deleteMutation = useMutation({
     mutationKey: POST_DELETE(postId),
     mutationFn: () => deletePost(postId),
-    onSuccess: () => {
-      // Optionally navigate away, show a toast, etc.
-    },
-  });
-  const bookmarkMutation = useMutation({
-    mutationKey: POST_BOOKMARK(postId),
-    mutationFn: ({ method }) => toggleBookmark(postId, method),
-    onSuccess: () => queryClient.invalidateQueries(POST_DETAIL(postId)),
+    onSuccess: () => { /* navigate away if desired */ },
   });
 
   // --- Handlers as before ---
-
-  const toggleLikeDislikeHandler = (toggle_type) => likeDislikeMutation.mutate({ toggle_type });
-  const votePostHandler = (vote_type) => votePostMutation.mutate({ vote_type });
-  const addCommentHandler = () => {
-    if (!commentText.trim()) return;
-    addCommentMutation.mutate({ text: commentText });
-  };
-  const toggleCommentLikeHandler = (commentId) => likeCommentMutation.mutate(commentId);
-  const voteCommentHandler = (commentId, vote_type) => voteCommentMutation.mutate({ commentId, vote_type });
-  const replyToCommentHandler = (commentId) => {
-    if (!commentReplyText.trim()) return;
-    replyToCommentMutation.mutate({ commentId, text: commentReplyText });
-  };
-  const repostPostHandler = () => repostMutation.mutate();
-  const submitQuote = () => {
-    if (!quoteComment.trim()) return;
-    quoteMutation.mutate({ quote_text: quoteText, quote_comment: quoteComment });
-  };
-  const deletePostHandler = () => deleteMutation.mutate();
-  const toggleBookmarkHandler = (method) => bookmarkMutation.mutate({ method });
-  const loadMoreComments = fetchNextPage;
+  const toggleLikeDislikeHandler = t => likeDislikeMutation.mutate({ toggle_type: t });
+  const votePostHandler        = v => votePostMutation.mutate({ vote_type: v });
+  const addCommentHandler      = () => { if (commentText.trim()) addCommentMutation.mutate({ text: commentText }); };
+  const toggleCommentLike      = cId => likeCommentMutation.mutate(cId);
+  const voteCommentHandler     = (cId, v) => voteCommentMutation.mutate({ commentId: cId, vote_type: v });
+  const replyToCommentHandler  = cId => { if (commentReplyText.trim()) replyToCommentMutation.mutate({ commentId: cId, text: commentReplyText }); };
+  const repostPostHandler      = () => repostMutation.mutate();
+  const submitQuote            = () => { if (quoteComment.trim()) quoteMutation.mutate({ quote_text: quoteText, quote_comment: quoteComment }); };
+  const deletePostHandler      = () => deleteMutation.mutate();
+  const toggleBookmarkHandler  = m => toggleBookmark(m);
+  const loadMoreComments       = fetchNextPage;
 
   // Media nav
-  const navigateMedia = (direction) => {
+  const navigateMedia = direction => {
     if (!post?.post?.media_files) return;
-    setCurrentMediaIndex((prevIndex) => {
-      const maxIndex = post.post.media_files.length - 1;
-      if (direction === 'next' && prevIndex < maxIndex) return prevIndex + 1;
-      if (direction === 'prev' && prevIndex > 0) return prevIndex - 1;
-      return prevIndex;
+    setCurrentMediaIndex(prev => {
+      const max = post.post.media_files.length - 1;
+      if (direction === 'next' && prev < max) return prev + 1;
+      if (direction === 'prev' && prev > 0) return prev - 1;
+      return prev;
     });
   };
 
-  // Render media content
+  // Render media
   const renderMediaContent = () => {
     const mediaFile = post?.post?.media_files?.[currentMediaIndex];
     if (!mediaFile) return null;
-    if (mediaFile.media_type === 'video') {
-      return <VideoPlayer mediaFile={mediaFile} />;
-    } else {
-      return <img src={mediaFile.file} alt={mediaFile.id} />;
-    }
+    return mediaFile.media_type === 'video'
+      ? <VideoPlayer mediaFile={mediaFile} />
+      : <img src={mediaFile.file} alt={mediaFile.id} />;
   };
 
-  // Overlay helpers
+  // Overlay helper
   const handleCloseLikesOverlay = () => {
     setShowLikesOverlay(false);
     setShowDislikesOverlay(false);
   };
 
-  // ---- QUOTE SELECTION handler ----
-  // Function that returns a handler function for selection events
-  const handleSelection = useCallback((contentRef) => (e) => {
+  // Quote selection
+  const handleSelection = useCallback(contentRef => e => {
     const selection = window.getSelection();
     const text = selection.toString();
-
-    if (!contentRef?.current?.contains(selection.anchorNode) || !text.length) {
+    if (!contentRef?.current?.contains(selection.anchorNode) || !text) {
       setShowQuoteBtn(false);
       setSelectedText('');
       setBtnPos(null);
@@ -223,7 +275,6 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
       return;
     }
     document.querySelectorAll('[data-quote-anchor="true"]').forEach(el => el.remove());
-
     const range = selection.getRangeAt(0);
     const endRange = range.cloneRange();
     endRange.collapse(false);
@@ -233,54 +284,36 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
     span.style.width = '0';
     span.style.height = '0';
     endRange.insertNode(span);
-
     const rect = span.getBoundingClientRect();
-    setBtnPos({
-      top: rect.top + window.scrollY - 38,
-      left: rect.left + window.scrollX + rect.width / 2,
-    });
-
+    setBtnPos({ top: rect.top + window.scrollY - 38, left: rect.left + window.scrollX + rect.width/2 });
     setShowQuoteBtn(true);
     setSelectedText(text);
     setQuoteSourceRef(contentRef);
   }, []);
 
-  // ---- Context value ----
+  // ─── CONTEXT VALUE ─────────────────────────────────────────────────────────
   const value = {
-    post, refetchPost, postLoading, isSelfPost,
-    comments, commentsTotalCount, loadMoreComments, hasMore: hasNextPage, commentsLoading: isFetchingNextPage, refetchComments,
-    commentText, setCommentText,
-    commentReplyText, setCommentReplyText,
-    addComment: addCommentHandler,
-    deletePost: deletePostHandler,
-    votePost: votePostHandler,
-    toggleLikeDislike: toggleLikeDislikeHandler,
+    post, postLoading, postError, isSelfPost, refetchPost,
+    comments, commentsTotalCount, loadMoreComments, hasMoreComments: hasNextPage, commentsLoading: isFetchingNextPage, refetchComments,
+    collections, collectionsLoading, toggleCollectionItem,
     toggleBookmark: toggleBookmarkHandler,
-    toggleCommentLike: toggleCommentLikeHandler,
-    voteComment: voteCommentHandler,
-    replyToComment: replyToCommentHandler,
-    showLikesOverlay, setShowLikesOverlay,
-    showDislikesOverlay, setShowDislikesOverlay,
-    currentMediaIndex, setCurrentMediaIndex,
-    navigateMedia, renderMediaContent,
+    addComment: addCommentHandler,     commentText,    setCommentText,
+    replyToComment: replyToCommentHandler, commentReplyText, setCommentReplyText,
+    toggleLikeDislike: toggleLikeDislikeHandler, votePost: votePostHandler,
+    toggleCommentLike, voteComment: voteCommentHandler,
+    showLikesOverlay, setShowLikesOverlay, showDislikesOverlay, setShowDislikesOverlay,
+    currentMediaIndex, navigateMedia, renderMediaContent,
     handleCloseLikesOverlay,
-    // ---- QUOTE/SELECTION BUTTON LOGIC ----
-    handleSelection,
-    showQuoteBtn, setShowQuoteBtn,
-    btnPos, setBtnPos,
-    selectedText, setSelectedText,
-    showQuoteModal, setShowQuoteModal,
-    quoteText, setQuoteText,
-    quoteComment, setQuoteComment,
-    submitQuote,
-    showRepostModal, setShowRepostModal,
-    repostError, repostLoading, repostSuccessId,
-    repostPost: repostPostHandler,
+    showQuoteBtn, setShowQuoteBtn, btnPos, setBtnPos, selectedText, setSelectedText, handleSelection,
+    showQuoteModal, setShowQuoteModal, quoteText, setQuoteText, quoteComment, setQuoteComment, submitQuote,
+    showRepostModal, setShowRepostModal, repostError, repostLoading, repostSuccessId, repostPost: repostPostHandler,
+    deletePost: deletePostHandler,
   };
 
   return (
     <ExpandPostContext.Provider value={value}>
       {children}
+
       {showQuoteModal && (
         <QuoteModal
           post={post}
@@ -295,6 +328,7 @@ export const ExpandPostProvider = ({ children, postId, postData }) => {
           }}
         />
       )}
+
       {showRepostModal && (
         <RepostModal
           post={post}

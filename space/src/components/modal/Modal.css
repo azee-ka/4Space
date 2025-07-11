@@ -50,8 +50,8 @@
   color: var(--modal-text-color);
   border-radius: var(--modal-radius);
   padding: var(--modal-padding);
+width: 100%;
   max-width: var(--modal-max-width);
-  width: auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

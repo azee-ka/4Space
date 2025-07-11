@@ -1,11 +1,18 @@
+# src/collection/urls.py
+
 from django.urls import path
-from . import views
+from .views import (
+    list_collections,
+    create_collection,
+    add_item_to_collection,
+    remove_item_from_collection,
+    list_collection_items,
+)
 
 urlpatterns = [
-    path('collections/', views.list_collections, name='list_collections'),
-    path('collections/create/', views.create_collection, name='create_collection'),
-    path('collections/<int:collection_id>/', views.get_collection, name='get_collection'),
-    path('collections/<int:collection_id>/items/', views.add_collection_item, name='add_collection_item'),
-    path('collections/<int:collection_id>/items/<int:item_id>/', views.delete_collection_item, name='delete_collection_item'),
-    path('collections/<int:collection_id>/delete/', views.delete_collection, name='delete_collection'),
+    path('',                 list_collections,          name='list-collections'),
+    path('create/',          create_collection,        name='create-collection'),
+    path('add-item/',        add_item_to_collection,   name='add-item-to-collection'),
+    path('remove-item/',     remove_item_from_collection, name='remove-item-to-collection'),
+    path('<uuid:collection_id>/items/', list_collection_items, name='list-collection-items'),
 ]

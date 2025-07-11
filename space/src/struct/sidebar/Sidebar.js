@@ -1,31 +1,47 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faCog, faStream, faLayerGroup, faSearch, faVestPatches, faNetworkWired, faShareNodes, faCircleNodes } from '@fortawesome/free-solid-svg-icons';
+import {
+    faStream,
+    faLayerGroup,
+    faChevronDown,
+    faCircleNodes
+} from '@fortawesome/free-solid-svg-icons';
 
 function Sidebar({ isOpen, onClose }) {
     const navigate = useNavigate();
+    const [spaceDropdownOpen, setSpaceDropdownOpen] = useState(false);
 
     const options = [
         { icon: <FontAwesomeIcon icon={faStream} />, label: 'Home', path: '/', type: 'context' },
         { icon: <FontAwesomeIcon icon={faCircleNodes} />, label: 'Communities', path: '/communities', type: 'context' },
-        { icon: <FontAwesomeIcon icon={faLayerGroup} />, label: 'Space', path: '/space', type: 'context' },
     ];
 
+    // Dynamic sub-apps under "Space"
+    const spaceSubApps = [
+        { label: 'Workspace', path: '/space/workspace' },
+        { label: 'Finance / Investing', path: '/space/finance/dashboard' },
+        // You can add more sub-apps here...
+    ];
 
     const handleClick = (e, item) => {
-        e.preventDefault()
-        if (item.type === 'button') {
-            if (typeof item.onClick === 'function') {
-                item.onClick();
-            }
-        } else if (item.type === 'link') {
+        e.preventDefault();
+        if (item.type === 'context') {
             navigate(item.path);
-        } else if (item.type === 'context') {
-            navigate(item.path);
+            onClose();
         }
+    };
+
+    const handleSpaceClick = (e) => {
+        e.preventDefault();
+        navigate('/space/workspace'); // default
         onClose();
+    };
+
+    const toggleDropdown = (e) => {
+        e.stopPropagation();
+        setSpaceDropdownOpen((prev) => !prev);
     };
 
     return (
@@ -47,6 +63,39 @@ function Sidebar({ isOpen, onClose }) {
                                 </div>
                             </li>
                         ))}
+
+                        {/* Space Dropdown */}
+                        <li className='sidebar-menu-item' onClick={handleSpaceClick}>
+                            <div className='sidebar-menu-icon'>
+                                <FontAwesomeIcon icon={faLayerGroup} />
+                            </div>
+                            <div className='sidebar-menu--btn-space-group'>
+                                <div className='sidebar-menu-label'>Space</div>
+                                <div
+                                    className={`sidebar-menu-chevron ${spaceDropdownOpen ? 'open' : ''}`}
+                                    onClick={toggleDropdown}
+                                >
+                                    <FontAwesomeIcon icon={faChevronDown} />
+                                </div>
+                            </div>
+                        </li>
+
+                        {/* Animated Dropdown Submenu */}
+                        <div className={`sidebar-submenu-wrapper ${spaceDropdownOpen ? 'open' : ''}`}>
+                            <div className="sidebar-submenu-line"></div>
+                            {spaceSubApps.map((sub, idx) => (
+                                <li
+                                    key={`sub-${sub.label}-${idx}`}
+                                    className='sidebar-submenu-item'
+                                    onClick={() => {
+                                        navigate(sub.path);
+                                        onClose();
+                                    }}
+                                >
+                                    {sub.label}
+                                </li>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

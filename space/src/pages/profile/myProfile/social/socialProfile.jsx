@@ -7,7 +7,7 @@ import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import './socialProfile.css';
 import MyPostsTab from "./tabs/myPostsTab/myPostsTab";
 import MyCommunitiesTab from "./tabs/myCommunitiesTab/myCommunitiesTab";
-import CollectionsPostsTab from "./tabs/bookmarkedPostsTab/collectionsTab";
+import MyCollectionsTab from "./tabs/bookmarkedPostsTab/collectionsMyTab";
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import DropdownButton from '../../../../utils/popperButton/DropdownButton';
 import UserListOverlay from "../../../../components/userListOverlay/userListOverlay";
@@ -146,7 +146,7 @@ const SocialProfile = ({ profileInfo }) => {
           <section className="tab-section">
             {activeTab === 'posts' && <MyPostsTab />}
             {activeTab === 'communities' && <MyCommunitiesTab />}
-            {activeTab === 'collections' && <CollectionsPostsTab />}
+            {activeTab === 'collections' && <MyCollectionsTab />}
           </section>
         </main>
       </div>

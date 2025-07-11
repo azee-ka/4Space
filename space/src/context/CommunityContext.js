@@ -114,16 +114,19 @@ export const CommunityProvider = ({ slug, children }) => {
   const [communityState, setCommunity] = useState(null);
   const [selectedTab, setSelectedTab] = useState(null);
 
-  const { data: community, refetch: fetchCommunityData } = useQuery({
-    queryKey: COMMUNITY(slug),
-    queryFn: () => fetchCommunity(slug),
-    enabled: !!slug,
-    staleTime: 30_000,
-    onSuccess: data => {
-      setCommunity(data);
-      setSelectedTab(data.tabs?.[0] || null);
-    },
-  });
+const { data : community, refetch: fetchCommunityData } = useQuery({
+  queryKey: COMMUNITY(slug),
+  queryFn: () => fetchCommunity(slug),
+  enabled: !!slug,
+  staleTime: 30_000,
+  onSuccess: (data) => {
+    setCommunity(data);
+    if (!selectedTab && data.tabs?.length) {
+      setSelectedTab(data.tabs[0]);
+    }
+  },
+});
+
 
   const handleJoinLeave = useCallback(async () => {
     const current = communityState || community;
@@ -150,20 +153,31 @@ export const CommunityProvider = ({ slug, children }) => {
       addCommunityTabs({ communitySlug : slug, tabs }),
     onSuccess: () => qc.invalidateQueries(COMMUNITY(slug)),
   });
+
+  
+
+
   const addTabs = useCallback(
-    tabsToAdd => {
-      if (!tabsToAdd?.length) return;
-      setCommunity(prev => ({
-        ...prev,
-        tabs: [...(prev?.tabs || []), ...tabsToAdd],
-      }));
-      addTabsMutation.mutate(
-        { slug, tabs: tabsToAdd },
-        { onError: () => setCommunity(communityState || community) }
-      );
-    },
-    [addTabsMutation, community, slug, communityState]
-  );
+  async (tabsToAdd) => {
+    if (!tabsToAdd?.length) return;
+
+    const optimisticTabs = [...(communityState?.tabs || []), ...tabsToAdd];
+    setCommunity(prev => ({
+      ...prev,
+      tabs: optimisticTabs,
+    }));
+
+    try {
+      await addTabsMutation.mutateAsync({ slug, tabs: tabsToAdd });
+      const updated = await fetchCommunity(slug);
+      setCommunity(updated); // ensures sync with server
+    } catch {
+      setCommunity(communityState); // rollback
+    }
+  },
+  [addTabsMutation, communityState, slug]
+);
+
 
   const searchUsers = useCallback(
     async q => {

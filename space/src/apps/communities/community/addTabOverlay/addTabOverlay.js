@@ -45,21 +45,26 @@ const AddTabOverlay = ({ onClose }) => {
         ([key]) => key.toLowerCase().includes(search.toLowerCase())
     );
 
-    const handleSubmitNewTabs = async () => {
-        // Only tabs not already present
-        const newTabs = Object.values(selectedTabs).filter(tab => !existingTabKeys.has(tab.key)).map(tab => ({
-            key: tab.key,
-            label: tab.customLabel || tab.label || tab.key,
-        }));
+const handleSubmitNewTabs = async () => {
+  const newTabs = Object.values(selectedTabs)
+    .filter(tab => !existingTabKeys.has(tab.key))
+    .map(tab => ({
+      key: tab.key,
+      label: tab.customLabel || tab.label || tab.key,
+    }));
 
-        if (newTabs.length === 0) {
-            onClose();
-            return;
-        }
+  if (newTabs.length === 0) {
+    onClose();
+    return;
+  }
 
-        await addTabs(newTabs);
-        onClose();
-    };
+  try {
+    await addTabs(newTabs); // now waits for server update
+    onClose();
+  } catch (err) {
+    console.error("Failed to add tabs", err);
+  }
+};
 
     return (
         <div className="addtab-overlay" onClick={onClose}>

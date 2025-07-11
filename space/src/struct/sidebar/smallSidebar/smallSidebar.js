@@ -9,7 +9,7 @@ import { useCreatePostContext } from '../../../context/CreatePostContext';
 import ProfileMenuSidebar from './profileMenuSidebar.js/profileMenuSidebar';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
 import { useModeContext } from '../../../context/modeContext';
-import CreateSpaceTulip from '../../../apps/space/createSpaceTulip/createSpaceTulip';
+import CreateSpaceTulip from '../../../apps/space/workspace/createSpaceTulip/createSpaceTulip';
 import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
 import { useDevice } from '../../../context/DeviceContext';
 // import WorkspaceIcon from './WorkspaceIcon';

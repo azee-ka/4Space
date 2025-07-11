@@ -3,7 +3,8 @@ import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProfilePicture from "../../../utils/profilePicture/getProfilePicture";
 import { useMutation } from "@tanstack/react-query";
-import { searchUsers, createConversation } from "../../../services/messages";
+import { createConversation } from "../../../services/messages";
+import { searchUsers } from "../../../services/user";
 import Modal from "../../../components/modal/Modal";
 import "./createMessageOverlay.css";
 

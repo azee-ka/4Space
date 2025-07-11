@@ -51,7 +51,8 @@ const DropdownButton = ({
     }
 
     return (
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <>
+        {/* <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}> */}
             {renderToggle}
             {showDropdown &&
                 ReactDOM.createPortal(
@@ -64,7 +65,8 @@ const DropdownButton = ({
                     document.body
                 )
             }
-        </div>
+        {/*</div> */}
+        </>
     );
 };
 

@@ -102,6 +102,11 @@ export const USERNAME_HANDLES = ['usernameHandles'];
 
 
 // src/pages/profile
+export const MY_COLLECTIONS = ['myCollections'];
+export const COLLECTION_ITEMS = (collectionId, model) => ['collectionItems', collectionId, model];
+
+export const USER_COLLECTIONS = (username, type) => ['userCollections', username, type];
+
 export const PROFILE = (username) => ['profile', username || 'me'];
 export const USER_PROFILE_WITH_ID = (userId) => ['userProfile', userId];
 export const PROFILE_PROFESSIONAL = (username) => ['professionalProfile', username || 'me'];

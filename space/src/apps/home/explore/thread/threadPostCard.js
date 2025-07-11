@@ -18,6 +18,7 @@ import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import EmojiButton from "../../../../utils/editor/EmojiButton";
 import CustomTextarea from "../../../../pages/messages/chatContainer/customTextarea";
 import DropdownButton from "../../../../utils/popperButton/DropdownButton";
+import SaveToCollectionDropdown from "../../../../components/saveToCollectionDropdown/SaveToCollectionDropdown";
 
 const ThreadPostCard = ({ postId, index }) => {
 
@@ -298,9 +299,17 @@ const ThreadPostCard = ({ postId, index }) => {
         <div onClick={() => toggleLikeDislike('dislike')} className="float-btn">
           <img src={post?.status?.dislike_status === 'disliked' ? disliked : undisliked} />
         </div>
-        <div onClick={() => toggleBookmark()} className="float-btn">
-          <FaBookmark className={`icon-style ${postBookmarked ? 'filled' : 'hollow'}`} />
-        </div>
+        <SaveToCollectionDropdown
+                            contentType="threadpost" // or "threadpost", "comment", etc.
+                            objectId={post?.id}
+                            toggleContent={
+                                <button
+                                    className={`icon-style float-btn ${postBookmarked ? 'filled' : 'hollow'}`}
+                                >
+                                    <FaBookmark />
+                                </button>
+                            }
+                        />
         <div className="float-btn">
           <FaShareAlt className={`icon-style`} />
         </div>

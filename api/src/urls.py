@@ -12,4 +12,5 @@ urlpatterns = [
     path('community/', include('src.community.urls')),
     path('space/', include('src.space.urls')),
     path('settings/', include('src.settings.urls')),
+    path('', include('src.central.urls')),
 ]

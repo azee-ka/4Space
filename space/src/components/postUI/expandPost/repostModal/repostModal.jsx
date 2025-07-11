@@ -2,7 +2,7 @@ import React from 'react';
 import ProfilePicture from '../../../../utils/profilePicture/getProfilePicture';
 import RenderText from '../../../../utils/autoCompleteInput/renderText';
 import { FaRetweet } from 'react-icons/fa';
-
+import './repostModal.css';
 const RepostModal = ({
     post,
     repostError,
