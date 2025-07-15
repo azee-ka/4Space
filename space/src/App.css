@@ -5,6 +5,17 @@
   /* background: radial-gradient(circle at top, rgba(153, 102, 255, 0.133), rgba(153, 102, 255, 0)); */
   /* background: radial-gradient(circle at top, rgba(83, 135, 190, 0.157), rgba(14, 14, 14, 0)); */
     background: radial-gradient(circle at top, rgba(129, 66, 255, 0.06), rgba(153, 102, 255, 0));
+    position: relative;
+}
+
+.App::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--display-bg);
+  filter: var(--display-filter);
+  z-index: 0;
+  pointer-events: none;
 }
 
 :root {
@@ -15,15 +26,19 @@ html {
 }
 
 
-body::before {
+/* body::before {
   content: '';
   position: fixed;
   inset: 0;
   background: var(--display-bg);
   filter: var(--display-filter);
-  z-index: -1;            /* behind everything */
-  pointer-events: none;   /* clicks pass through */
+  z-index: -1;        
+  pointer-events: none; 
+} */
+body::before {
+  display: none !important;
 }
+
 
 a {
   color: white;

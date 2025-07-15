@@ -1,0 +1,39 @@
+/* strategyPage.css */
+
+.strategy-page {
+  padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.strategy-title {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.strategy-tabs {
+  display: flex;
+  border-bottom: 1px solid #cccccc;
+  margin-bottom: 1rem;
+}
+
+.strategy-tab {
+  padding: 0.5rem 1rem;
+  color: #444444;
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+
+.strategy-tab + .strategy-tab {
+  margin-left: 1rem;
+}
+
+.strategy-tab.active {
+  color: #000000;
+  border-bottom-color: #6f42c1;
+}
+
+.strategy-content {
+  padding-top: 1rem;
+}

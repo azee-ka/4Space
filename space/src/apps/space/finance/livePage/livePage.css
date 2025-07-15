@@ -1,0 +1,34 @@
+/* livePage.css */
+
+.live-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.live-tabs {
+  display: flex;
+  border-bottom: 1px solid #cccccc;
+  margin-bottom: 1rem;
+}
+
+.live-tab {
+  padding: 0.5rem 1rem;
+  color: #555555;
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+
+.live-tab + .live-tab {
+  margin-left: 1rem;
+}
+
+.live-tab.active {
+  color: #000000;
+  border-bottom-color: #dc3545;
+}
+
+.live-content {
+  padding: 1rem;
+}

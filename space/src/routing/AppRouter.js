@@ -54,6 +54,12 @@ import useAppDataRefetcher from '../hooks/useAppDataRefetcher';
 import { HandlesProvider } from '../context/HandlesContext';
 import CommentThread from '../components/postUI/threadPost/CommentThread';
 import FinanceDashboard from '../apps/space/finance/dashboard/financeDashboard';
+import TradePage from '../apps/space/finance/tradePage/tradePage';
+import StrategyPage from '../apps/space/finance/strategyPage/strategyPage';
+import ResearchPage from '../apps/space/finance/researchPage/researchPage';
+import PortfolioPage from '../apps/space/finance/portfolioPage/portfolioPage';
+import LivePage from '../apps/space/finance/livePage/livePage';
+import BacktestPage from '../apps/space/finance/backtestPage/backtestPage';
 
 
 
@@ -106,7 +112,12 @@ const AppRouter = () => {
 
 // Finance sub-app
 { name: 'Finance Dashboard', path: '/space/finance/dashboard', component: <FinanceDashboard />, key: 'FinanceDashboard' },
-
+{ name: 'Finance Trade', path: '/space/finance/trade', component: <TradePage />, key: 'FinanceTrade' },
+{ name: 'Finance Startegy', path: '/space/finance/startegy', component: <StrategyPage />, key: 'FinanceStartegy' },
+{ name: 'Finance Research', path: '/space/finance/research', component: <ResearchPage/>, key: 'FinanceResearch' },
+{ name: 'Finance Portfolio', path: '/space/finance/portfolio', component: <PortfolioPage />, key: 'FinancePortfolio' },
+{ name: 'Finance Live', path: '/space/finance/live', component: <LivePage />, key: 'FinanceLive' },
+{ name: 'Finance Backtest', path: '/space/finance/backtest', component: <BacktestPage />, key: 'FinanceBacktest' },
 
 
 

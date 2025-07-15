@@ -1,3 +1,4 @@
+// modeContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -6,29 +7,37 @@ const ModeContext = createContext();
 export const useModeContext = () => useContext(ModeContext);
 
 export const ModeProvider = ({ children }) => {
-    const [mode, setMode] = useState('home');
     const location = useLocation();
+    const [mode, setMode] = useState('home');           // main context: home, communities, space
+    const [subMode, setSubMode] = useState(null);       // e.g., workspace, finance
 
     useEffect(() => {
-        const neutralPaths = ['/messages', '/profile', '/settings']; // List of "neutral" pages
+        const { pathname } = location;
+        const neutralPaths = ['/messages', '/profile', '/settings'];
 
-        const isNeutralPage = neutralPaths.some(neutralPath => location.pathname.startsWith(neutralPath));
+        const isNeutralPage = neutralPaths.some(path => pathname.startsWith(path));
 
         if (!isNeutralPage) {
-            // Only change mode if not on a neutral page
-            if (location.pathname.includes('/communities')) {
+            if (pathname.includes('/communities')) {
                 setMode('communities');
-            } else if (location.pathname.includes('/space')) {
+                setSubMode(null);
+            } else if (pathname.startsWith('/space')) {
                 setMode('space');
+
+                // Determine subMode inside /space/
+                const spaceSegments = pathname.split('/'); // e.g., ['', 'space', 'finance', 'dashboard']
+                const maybeSubMode = spaceSegments[2] || 'workspace';
+                setSubMode(maybeSubMode); // workspace | finance | etc.
             } else {
                 setMode('home');
+                setSubMode(null);
             }
         }
-        // If on a neutral page, DO NOTHING, preserve previous mode.
+        // If on a neutral page, preserve previous mode/subMode.
     }, [location.pathname]);
 
     return (
-        <ModeContext.Provider value={{ mode, setMode }}>
+        <ModeContext.Provider value={{ mode, subMode, setMode, setSubMode }}>
             {children}
         </ModeContext.Provider>
     );

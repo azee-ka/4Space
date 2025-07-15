@@ -22,7 +22,6 @@ function Sidebar({ isOpen, onClose }) {
     const spaceSubApps = [
         { label: 'Workspace', path: '/space/workspace' },
         { label: 'Finance / Investing', path: '/space/finance/dashboard' },
-        // You can add more sub-apps here...
     ];
 
     const handleClick = (e, item) => {
@@ -46,6 +45,7 @@ function Sidebar({ isOpen, onClose }) {
 
     return (
         <div className={`sidebar-container ${isOpen ? '' : 'close'}`} onClick={(e) => e.stopPropagation()}>
+            <div className='sidebar-blur-bg'></div>
             <div className='sidebar-container-content'>
                 <div className='sidebar-container-content-inner'>
                     <div className='sidebar-menu'>

@@ -14,7 +14,7 @@ const tools = [
   {
     name: "Rich Text Editor",
     apiToolType: "richtext",
-    launchPath: "/space/project/{id}/rich-editor",
+    launchPath: "/space/workspace/project/{id}/rich-editor",
     description: "Modern doc editor with word-processor features.",
     icon: <FiFileText />,
     type: "Writer",
@@ -23,7 +23,7 @@ const tools = [
   {
     name: "Markdown Editor",
     apiToolType: "markdown",
-    launchPath: "/space/project/{id}/markdown-editor",
+    launchPath: "/space/workspace/project/{id}/markdown-editor",
     description: "Minimalist markdown with live preview.",
     icon: <FiEdit3 />,
     type: "Writer",
@@ -32,7 +32,7 @@ const tools = [
   {
     name: "LaTeX Editor",
     apiToolType: "latex",
-    launchPath: "/space/project/{id}/latex-editor",
+    launchPath: "/space/workspace/project/{id}/latex-editor",
     description: "Typeset academic papers with math & references.",
     icon: <FiLayers />,
     type: "Researcher",
@@ -41,7 +41,7 @@ const tools = [
   {
     name: "Code Editor",
     apiToolType: "code",
-    launchPath: "/space/project/{id}/code-editor",
+    launchPath: "/space/workspace/project/{id}/code-editor",
     description: "Lightweight IDE with syntax highlighting.",
     icon: <FiCode />,
     type: "Developer",
@@ -50,7 +50,7 @@ const tools = [
   {
     name: "Notebook Cell",
     apiToolType: "notebook",
-    launchPath: "/space/project/{id}/notebook",
+    launchPath: "/space/workspace/project/{id}/notebook",
     description: "Write and run code in a block-style format.",
     icon: <FiTerminal />,
     type: "Developer",
@@ -58,7 +58,7 @@ const tools = [
   },
   {
     name: "Advanced Calculator",
-    path: "/space/tools/calculator",
+    path: "/space/workspace/tools/calculator",
     description: "A scientific calculator with advanced math, graphing, history, and programmable expressions.",
     icon: <FaCalculator />,
     type: "Math",
@@ -66,7 +66,7 @@ const tools = [
   },
   {
     name: "Mind Map",
-    path: "/space/tools/mindmap",
+    path: "/space/workspace/tools/mindmap",
     description: "Visually map your thoughts and creative flows.",
     icon: <FiShare2 />,
     type: "Thinker",
@@ -74,7 +74,7 @@ const tools = [
   },
   {
     name: "Task Planner",
-    path: "/space/tools/tasks",
+    path: "/space/workspace/tools/tasks",
     description: "Plan personal or project-based to-dos.",
     icon: <FiCheckSquare />,
     type: "Planner",
@@ -82,7 +82,7 @@ const tools = [
   },
   {
     name: "PDF Annotator",
-    path: "/space/tools/pdf",
+    path: "/space/workspace/tools/pdf",
     description: "Highlight and comment on uploaded PDFs.",
     icon: <FiEdit />,
     type: "Researcher",
@@ -90,7 +90,7 @@ const tools = [
   },
   {
     name: "Portfolio Builder",
-    path: "/space/tools/portfolio",
+    path: "/space/workspace/tools/portfolio",
     description: "Curate your projects into a personal portfolio.",
     icon: <FiBriefcase />,
     type: "Professional",
@@ -98,7 +98,7 @@ const tools = [
   },
   {
     name: "Resume Generator",
-    path: "/space/tools/resume",
+    path: "/space/workspace/tools/resume",
     description: "Auto-generate resumes from your Space activity.",
     icon: <FiUser />,
     type: "Professional",

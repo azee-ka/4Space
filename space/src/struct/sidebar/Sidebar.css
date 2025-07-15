@@ -1,9 +1,9 @@
 .sidebar-container {
     position: fixed;
-    top: 0;
-    left: 0;
     width: 18.75rem;
     height: 100vh;
+    top: 0;
+    left: 0;
     z-index: 50;
 
     display: flex;
@@ -11,42 +11,33 @@
     justify-content: center;
     align-items: flex-start;
 
-    background-color: rgba(154, 154, 154, 0.01);
-    backdrop-filter: blur(1.6rem);
-    -webkit-backdrop-filter: blur(1.6rem);
+    background: transparent;
+    overflow: hidden; /* ensure blur background doesn't spill */
 
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
-
-    transition: transform 0.4s ease;
+    transition: transform 0.4s cubic-bezier(.77, 0, .175, 1);
     transform: translateX(0);
-
-    contain: layout style;
-    isolation: isolate;
     will-change: transform;
-    transform-style: preserve-3d; /* helps stabilize 3D transforms */
-    backface-visibility: hidden;
-    perspective: 1px; /* force 3D rendering context */
 }
 
-.sidebar-container::before {
-    content: '';
+.sidebar-blur-bg {
     position: absolute;
     inset: 0;
-    background-color: rgba(154, 154, 154, 0.1);
-    backdrop-filter: blur(1.6rem);
-    -webkit-backdrop-filter: blur(1.6rem);
-    z-index: -1;
+    background: rgba(154, 154, 154, 0.093);
+    backdrop-filter: blur(1.9rem);
+    z-index: 0;
     pointer-events: none;
-    transform: translateZ(0); /* stabilize blur layer */
-    backface-visibility: hidden;
 }
 
-/* Sidebar close state */
+/* Sidebar when closed */
 .sidebar-container.close {
     transform: translateX(-19.375rem);
 }
 
 .sidebar-container-content {
+    position: relative;
+    z-index: 1;
+
     margin-top: 5rem !important;
     height: 100%;
     width: 100%;
@@ -91,10 +82,9 @@
     justify-content: space-between;
     color: rgb(176, 176, 176);
     font-size: 1.05em;
-    background-color: transparent;
+    background-color: rgba(117, 117, 117, 0.0);
     border-radius: 0.375rem;
-    transition: background-color 0.25s ease, color 0.25s ease;
-    backface-visibility: hidden;
+    transition: all 0.3s ease;
 }
 
 .sidebar-menu-item:hover {
@@ -116,31 +106,32 @@
     transition: transform 0.3s ease;
     transform-origin: center;
 }
+
 .sidebar-menu-chevron.open {
     transform: rotate(180deg);
 }
 
 .sidebar-submenu-wrapper {
-    overflow: visible;
     opacity: 0;
     pointer-events: none;
-    transform: scaleY(0.95);
-    transform-origin: top;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    position: relative;
+    height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, height 0.3s ease;
     width: 100%;
-    backface-visibility: hidden;
+    position: relative;
+    transform: none;
 }
 
 .sidebar-submenu-wrapper.open {
     opacity: 1;
-    transform: scaleY(1);
+    height: auto;
     pointer-events: auto;
 }
 
+
 .sidebar-submenu-line {
     position: absolute;
-    left: 2.35rem;
+    left: 0.5rem;
     top: 0;
     bottom: 0;
     width: 1px;
@@ -149,22 +140,23 @@
 }
 
 .sidebar-submenu-item {
-    list-style-type: none;
+    list-style: none;
     position: relative;
-    z-index: 2;
+    z-index: 1;
 
-    margin-left: 2.8rem;
+    margin-left: 1rem;
     padding-left: 0.8rem;
 
     height: 2.2rem;
     line-height: 2.2rem;
     font-size: 0.95em;
     color: rgb(176, 176, 176);
-    background-color: transparent;
+    background-color: rgba(255, 0, 0, 0);
     border-radius: 0.375rem;
     transition: background-color 0.25s ease, color 0.25s ease;
     user-select: none;
-    backface-visibility: hidden;
+    flex: 1;
+
 }
 
 .sidebar-submenu-item:hover {
@@ -190,22 +182,12 @@
     }
 }
 
-/* ======================
-   LIGHT MODE OVERRIDES
-   ====================== */
+/* Light mode styles (no changes here) */
 [data-theme="light"] .sidebar-container {
     background: rgba(255, 255, 255, 0.98) !important;
-    box-shadow: 0 0.375rem 1.75rem 0.125rem rgba(128, 150, 180, 0.13), 0 0.0938rem 0.5rem 0 rgba(30, 40, 60, 0.06);
+    box-shadow: 0 0.375rem 1.75rem 0.125rem rgba(128, 150, 180, 0.13),
+        0 0.0938rem 0.5rem 0 rgba(30, 40, 60, 0.06);
     backdrop-filter: blur(1.5rem) !important;
-}
-
-[data-theme="light"] .sidebar-container-content,
-[data-theme="light"] .sidebar-container-content-inner {
-    background: none !important;
-}
-
-[data-theme="light"] .sidebar-menu {
-    background: none !important;
 }
 
 [data-theme="light"] .sidebar-menu-item {
@@ -219,20 +201,4 @@
     background: rgba(116, 116, 116, 0.17) !important;
     color: #1b2440 !important;
     box-shadow: 0 0.125rem 0.5rem 0 rgba(180, 200, 230, 0.12);
-}
-
-[data-theme="light"] .sidebar-menu-icon {
-    color: #22304d !important;
-}
-
-[data-theme="light"] .sidebar-menu-item:active {
-    background: rgba(45, 95, 238, 0.06) !important;
-}
-
-@media (max-width: 50rem) {
-    [data-theme="light"] .sidebar-container {
-        width: 16.875rem;
-        background: rgba(255, 255, 255, 0.98) !important;
-        box-shadow: 0 0.25rem 1rem 0 rgba(160, 180, 220, 0.11);
-    }
 }

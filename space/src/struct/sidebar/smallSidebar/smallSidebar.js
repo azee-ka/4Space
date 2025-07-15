@@ -1,19 +1,17 @@
 import { useRef, useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import './smallSidebar.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faPlus, faStream, faLayerGroup, faSearch, faChartBar, faGear, faUser, faChartLine, faUserGroup, faPenToSquare, faTools, faBook, faCodeBranch, faDiagramProject, faNetworkWired, faProjectDiagram, faDna, faSitemap, faSatellite, faSatelliteDish, faBraille, faNeuter } from '@fortawesome/free-solid-svg-icons';
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
+
 import SearchSidebar from '../searchSidebar/searchSidebar';
-import { useCreatePostContext } from '../../../context/CreatePostContext';
 import ProfileMenuSidebar from './profileMenuSidebar.js/profileMenuSidebar';
 import DropdownButton from '../../../utils/popperButton/DropdownButton';
-import { useModeContext } from '../../../context/modeContext';
 import CreateSpaceTulip from '../../../apps/space/workspace/createSpaceTulip/createSpaceTulip';
-import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
-import { useDevice } from '../../../context/DeviceContext';
-// import WorkspaceIcon from './WorkspaceIcon';
 
+import { useDevice } from '../../../context/DeviceContext';
+import { useModeContext } from '../../../context/modeContext';
+import { useDisplaySettings } from '../../../context/DisplaySettingsContext';
+import { useCreatePostContext } from '../../../context/CreatePostContext';
+import { useCreateCommunityContext } from '../../../context/CreateCommunityContext';
 
 import {
     WorkspaceIcon,
@@ -28,66 +26,122 @@ import {
     RepoIcon,
     ToolsIcon,
     SettingsIcon,
-    ProfileIcon
+    ProfileIcon,
+    FinanceDashboardIcon,
+    FinanceTradeIcon,
+    FinanceStrategyIcon,
+    FinanceResearchIcon,
+    FinancePortfolioIcon,
+    FinanceLiveIcon,
+    FinanceBacktestIcon
 } from '../../../utils/CustomIcons';
-import { useDisplaySettings } from '../../../context/DisplaySettingsContext';
-
-
 
 const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     const { isM } = useDevice();
-    const { mode } = useModeContext();
+    const { mode, subMode } = useModeContext();
     const { settings } = useDisplaySettings();
-    const theme = settings.themeMode;
     const { openCreatePostOverlay } = useCreatePostContext();
     const { openCreateCommunityOverlay } = useCreateCommunityContext();
+    const navigate = useNavigate();
+    const theme = settings.themeMode;
 
     const [createMenuOpen, setCreateMenuOpen] = useState(false);
     const plusBtnRef = useRef(null);
 
+    const handleClick = (item) => {
+        if (item.type === 'button' && typeof item.onClick === 'function') {
+            item.onClick();
+        } else if (item.type === 'link') {
+            navigate(item.path);
+        }
+    };
 
+    // --- MAIN CONTEXTS ---
     const homeIcons = [
-        { icon: <DashboardIcon mode={theme} />, label: 'Dasboard', path: '/dashboard', type: 'link' },
+        { icon: <DashboardIcon mode={theme} />, label: 'Dashboard', path: '/dashboard', type: 'link' },
         { icon: <TimelineIcon mode={theme} />, label: 'Timeline', path: '/timeline', type: 'link' },
         { icon: <ExploreIcon mode={theme} />, label: 'Explore', path: '/explore', type: 'link' },
-        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => setSearchSidebarOpen(prev => !prev), type: 'button' },
         { icon: <MessagesIcon mode={theme} />, label: 'Messages', path: '/messages', type: 'link' },
         { icon: <CreateIcon mode={theme} />, label: 'Create Post', onClick: () => openCreatePostOverlay(window.location.pathname), type: 'button' },
     ];
+
     const communitiesIcons = [
-        { icon: <DashboardIcon mode={theme} />, label: 'Communities Dasboard', path: '/communities/dashboard', type: 'link' },
+        { icon: <DashboardIcon mode={theme} />, label: 'Communities Dashboard', path: '/communities/dashboard', type: 'link' },
         { icon: <TimelineIcon mode={theme} />, label: 'Communities Timeline', path: '/communities/timeline', type: 'link' },
-        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
+        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => setSearchSidebarOpen(prev => !prev), type: 'button' },
         { icon: <MessagesIcon mode={theme} />, label: 'Messages', path: '/messages', type: 'link' },
         { icon: <CreateIcon mode={theme} />, label: 'Create Community', onClick: () => openCreateCommunityOverlay(window.location.pathname), type: 'button' },
     ];
-    const spaceIcons = [
-        { icon: <WorkspaceIcon mode={theme} />, label: 'Space', path: '/space/', type: 'link' },
-        { icon: <DashboardIcon mode={theme} />, label: 'Space Dashboard', path: '/space/dashboard', type: 'link' },
-        { icon: <ProjectsIcon mode={theme} />, label: 'Projects', path: '/space/projects', type: 'link' },
-        { icon: <LibraryIcon mode={theme} />, label: 'Library', path: '/space/library', type: 'link' },
-        { icon: <RepoIcon mode={theme} />, label: 'Repositories', path: '/space/repositories', type: 'link' },
-        { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => { searchSidebarOpen ? setSearchSidebarOpen(false) : setSearchSidebarOpen(true) }, type: 'button' },
-        {
-            type: 'dropdown',
-            component: (
-                <DropdownButton
-                    toggleContent={
-                        <button className="create-space-btn" ref={plusBtnRef}>
-                            <CreateIcon />
-                        </button>
-                    }
-                    placement="right"
-                >
-                    <CreateSpaceTulip anchorRef={plusBtnRef} onClose={() => setCreateMenuOpen(false)} />
-                </DropdownButton>
-            ),
-            label: 'Create Space',
-        },
-        { icon: <ToolsIcon />, label: 'Tools', path: '/space/tools', type: 'link' },
-    ];
 
-
+    // --- SPACE SUBCONTEXTS ---
+    const spaceSidebars = {
+        workspace: [
+            { icon: <WorkspaceIcon mode={theme} />, label: 'Space', path: '/space/workspace', type: 'link' },
+            { icon: <DashboardIcon mode={theme} />, label: 'Dashboard', path: '/space/workspace/dashboard', type: 'link' },
+            { icon: <ProjectsIcon mode={theme} />, label: 'Projects', path: '/space/workspace/projects', type: 'link' },
+            { icon: <LibraryIcon mode={theme} />, label: 'Library', path: '/space/workspace/library', type: 'link' },
+            { icon: <RepoIcon mode={theme} />, label: 'Repositories', path: '/space/workspace/repositories', type: 'link' },
+            { icon: <SearchIcon mode={theme} />, label: 'Search', onClick: () => setSearchSidebarOpen(prev => !prev), type: 'button' },
+            {
+                type: 'dropdown',
+                component: (
+                    <DropdownButton
+                        toggleContent={<button className="create-space-btn" ref={plusBtnRef}><CreateIcon /></button>}
+                        placement="right"
+                    >
+                        <CreateSpaceTulip anchorRef={plusBtnRef} onClose={() => setCreateMenuOpen(false)} />
+                    </DropdownButton>
+                ),
+                label: 'Create Space',
+            },
+            { icon: <ToolsIcon />, label: 'Tools', path: '/space/workspace/tools', type: 'link' },
+        ],
+        finance: [
+    {
+      icon: <FinanceDashboardIcon mode={theme} />,
+      label: 'Finance Dashboard',
+      path: '/space/finance/dashboard',
+      type: 'link',
+    },
+    {
+      icon: <FinanceTradeIcon mode={theme} />,
+      label: 'Finance Trade',
+      path: '/space/finance/trade',
+      type: 'link',
+    },
+    {
+      icon: <FinanceStrategyIcon mode={theme} />,
+      label: 'Finance Strategy',
+      path: '/space/finance/startegy',
+      type: 'link',
+    },
+    {
+      icon: <FinanceResearchIcon mode={theme} />,
+      label: 'Finance Research',
+      path: '/space/finance/research',
+      type: 'link',
+    },
+    {
+      icon: <FinancePortfolioIcon mode={theme} />,
+      label: 'Finance Portfolio',
+      path: '/space/finance/portfolio',
+      type: 'link',
+    },
+    {
+      icon: <FinanceLiveIcon mode={theme} />,
+      label: 'Finance Live',
+      path: '/space/finance/live',
+      type: 'link',
+    },
+    {
+      icon: <FinanceBacktestIcon mode={theme} />,
+      label: 'Finance Backtest',
+      path: '/space/finance/backtest',
+      type: 'link',
+    },
+  ],
+    };
 
     const bottomIcons = [
         { icon: <SettingsIcon />, label: 'Settings', path: '/settings', type: 'link' },
@@ -95,11 +149,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
             type: 'dropdown',
             component: (
                 <DropdownButton
-                    toggleContent={
-                        <button className="profile-menu-toggle">
-                            <ProfileIcon />
-                        </button>
-                    }
+                    toggleContent={<button className="profile-menu-toggle"><ProfileIcon /></button>}
                     placement="top-start"
                 >
                     <ProfileMenuSidebar />
@@ -109,31 +159,26 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
         }
     ];
 
-    const navigate = useNavigate();
+    // --- DETERMINE FINAL SIDEBAR CONTENT ---
+    let sidebarBtns;
 
-    const handleClick = (item) => {
-        if (item.type === 'button') {
-            if (typeof item.onClick === 'function') {
-                item.onClick();
-            }
-        } else if (item.type === 'link') {
-            navigate(item.path);
-        }
-    };
-
-    const sidebarBtns = mode === 'communities' ? communitiesIcons : mode === 'space' ? spaceIcons : homeIcons;
-
+    if (mode === 'communities') {
+        sidebarBtns = communitiesIcons;
+    } else if (mode === 'space') {
+        sidebarBtns = spaceSidebars[subMode] || spaceSidebars['workspace'];
+    } else {
+        sidebarBtns = homeIcons;
+    }
 
     const filteredSidebarBtns = isM
-        ? sidebarBtns.filter(item => item.label !== "Search")
+        ? sidebarBtns.filter(item => item.label !== 'Search')
         : sidebarBtns;
-
 
     return (
         <div className={`small-sidebar ${searchSidebarOpen ? 'search-sidebar-open' : ''}`}>
             <div className='small-sidebar-inner-menu'>
                 <div className="small-sidebar-top">
-                    {filteredSidebarBtns?.map((item, index) => (
+                    {filteredSidebarBtns.map((item, index) => (
                         <div
                             key={index}
                             className="small-sidebar-item"
@@ -142,20 +187,15 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                             {item.type === 'dropdown' ? (
                                 item.component
                             ) : item.type === 'button' ? (
-                                item.label === 'Create Space' ? (
-                                    <button ref={plusBtnRef}>{item.icon}</button>
-                                ) : (
-                                    <button>{item.icon}</button>
-                                )
+                                <button>{item.icon}</button>
                             ) : (
-                                // This is the change: use NavLink for links!
                                 <NavLink
                                     to={item.path}
                                     className={({ isActive }) =>
-                                        isActive ? "sidebar-link active" : "sidebar-link"
+                                        isActive ? 'sidebar-link active' : 'sidebar-link'
                                     }
                                     onClick={(e) => e.stopPropagation()}
-                                    end={item.path === "/" || item.path === "/space/"}
+                                    end={item.path === '/' || item.path === '/space/workspace'}
                                 >
                                     {item.icon}
                                 </NavLink>
@@ -167,7 +207,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
 
                 {!isM && (
                     <div className="small-sidebar-bottom">
-                        {bottomIcons?.map((item, index) => (
+                        {bottomIcons.map((item, index) => (
                             <div
                                 key={index}
                                 className="small-sidebar-item"
@@ -175,16 +215,14 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
                             >
                                 {item.type === 'dropdown' ? (
                                     item.component
-                                ) : item.type === 'button' ? (
-                                    <button onClick={item.onClick}>{item.icon}</button>
                                 ) : (
                                     <NavLink
                                         to={item.path}
                                         className={({ isActive }) =>
-                                            isActive ? "sidebar-link active" : "sidebar-link"
+                                            isActive ? 'sidebar-link active' : 'sidebar-link'
                                         }
                                         onClick={(e) => e.stopPropagation()}
-                                        end={item.path === "/" || item.path === "/space/"}
+                                        end={item.path === '/' || item.path === '/space/'}
                                     >
                                         {item.icon}
                                     </NavLink>
@@ -199,10 +237,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
             <SearchSidebar isOpen={searchSidebarOpen} onClose={() => setSearchSidebarOpen(false)} />
 
             {createMenuOpen && (
-                <CreateSpaceTulip
-                    anchorRef={plusBtnRef}
-                    onClose={() => setCreateMenuOpen(false)}
-                />
+                <CreateSpaceTulip anchorRef={plusBtnRef} onClose={() => setCreateMenuOpen(false)} />
             )}
         </div>
     );

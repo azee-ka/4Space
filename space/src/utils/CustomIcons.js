@@ -771,3 +771,128 @@ export function ControlCenterIcon({ size = 36, color, accent, mode = "dark" }) {
 }
 
 
+
+
+
+
+
+
+
+
+
+// Space Finance
+// ======= FINANCE DASHBOARD ICON =======
+export function FinanceDashboardIcon({ size=36, color, accent, mode='dark' }) {
+  const pal = getPalette(mode);
+  const c = color || pal.icon;
+  const a = accent || pal.accent;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
+         style={glowFilter(a, mode)}>
+      <defs>
+        <linearGradient id="finDashGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={c}/>
+          <stop offset="100%" stopColor={a}/>
+        </linearGradient>
+      </defs>
+      <rect x="8" y="16" width="10" height="32" fill="url(#finDashGrad)"/>
+      <rect x="26" y="24" width="10" height="24" fill="url(#finDashGrad)"/>
+      <rect x="44" y="12" width="10" height="36" fill="url(#finDashGrad)"/>
+      <line x1="8" y1="52" x2="54" y2="52"
+            stroke={a} strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// ======= FINANCE TRADE ICON =======
+export function FinanceTradeIcon({ size=36, color, mode='dark' }) {
+  const pal = getPalette(mode);
+  const c = color || pal.icon;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
+         style={glowFilter(c, mode)}>
+      <polyline points="16,40 32,24 48,40"
+                stroke={c} strokeWidth="4" fill="none" strokeLinecap="round"/>
+      <polyline points="16,32 32,48 48,32"
+                stroke={c} strokeWidth="4" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// ======= FINANCE STRATEGY ICON =======
+export function FinanceStrategyIcon({ size=36, color, mode='dark' }) {
+  const pal = getPalette(mode);
+  const c = color || pal.icon;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
+         style={glowFilter(c, mode)}>
+      <path d="M32 12 l12 40 l-24 0 Z"
+            fill={c} stroke={c} strokeWidth="2"/>
+      <circle cx="32" cy="32" r="6" fill="none" stroke="#000" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+// ======= FINANCE RESEARCH ICON =======
+export function FinanceResearchIcon({ size=36, color, mode='dark' }) {
+  const pal = getPalette(mode);
+  const c = color || pal.icon;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
+         style={glowFilter(c, mode)}>
+      <circle cx="24" cy="24" r="12" stroke={c} strokeWidth="4" fill="none"/>
+      <line x1="34" y1="34" x2="52" y2="52"
+            stroke={c} strokeWidth="4" strokeLinecap="round"/>
+      <polyline points="18,32 22,28 30,36"
+                stroke={c} strokeWidth="3" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// ======= FINANCE PORTFOLIO ICON =======
+export function FinancePortfolioIcon({ size=36, color, mode='dark' }) {
+  const pal = getPalette(mode);
+  const c = color || pal.icon;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
+         style={glowFilter(c, mode)}>
+      <rect x="12" y="20" width="40" height="24"
+            rx="4" stroke={c} strokeWidth="4" fill="none"/>
+      <rect x="26" y="16" width="12" height="8"
+            fill={c}/>
+      <line x1="32" y1="28" x2="32" y2="44"
+            stroke={c} strokeWidth="2"/>
+    </svg>
+  );
+}
+
+// ======= FINANCE LIVE ICON =======
+export function FinanceLiveIcon({ size=36, color, mode='dark' }) {
+  const pal = getPalette(mode);
+  const c = color || pal.accent;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
+         style={glowFilter(c, mode)}>
+      <circle cx="32" cy="32" r="24" stroke={c} strokeWidth="3"/>
+      <polygon points="28,22 44,32 28,42"
+               fill={c}/>
+    </svg>
+  );
+}
+
+// ======= FINANCE BACKTEST ICON =======
+export function FinanceBacktestIcon({ size=36, color, mode='dark' }) {
+  const pal = getPalette(mode);
+  const c = color || pal.icon;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none"
+         style={glowFilter(c, mode)}>
+      <circle cx="32" cy="32" r="22" stroke={c} strokeWidth="3"/>
+      <polyline points="20,40 32,24 44,40"
+                stroke={c} strokeWidth="4"
+                fill="none" strokeLinecap="round"/>
+      <line x1="32" y1="10" x2="32" y2="20"
+            stroke={c} strokeWidth="3" strokeLinecap="round"/>
+    </svg>
+  );
+}
