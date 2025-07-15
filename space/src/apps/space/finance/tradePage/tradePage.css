@@ -1,255 +1,550 @@
 /* tradePage.css */
 
-/* Dark mode (default) variables, inheriting from your SpaceDashboard theme */
-.trade-page {
-  --tp-bg-page: var(--bg-page);
-  --tp-bg-panel: var(--bg-panel);
-  --tp-border-panel: var(--border-panel);
-  --tp-blur-panel: var(--blur-panel);
-  --tp-bg-card: var(--bg-card);
-  --tp-border-card: var(--border-card);
-  --tp-blur-card: var(--blur-card);
-  --tp-shadow-card: var(--shadow-card);
-  --tp-border-card-hover: var(--border-card-hover);
-  --tp-bg-card-hover: var(--bg-card-hover);
-  --tp-shadow-card-hover: var(--shadow-card-hover);
-  --tp-text-main: var(--text-main);
-  --tp-text-title: var(--text-header);
-  --tp-text-subtitle: var(--text-subtitle);
-  --tp-text-user: var(--text-user);
-  --tp-text-user-value: var(--text-user-value);
-  --tp-btn-bg: var(--bg-btn);
-  --tp-btn-border: var(--border-btn);
-  --tp-btn-bg-hover: var(--bg-btn-hover);
-  --tp-btn-text: var(--text-action-btn);
-  --tp-btn-text-hover: var(--text-action-btn-hover);
-  --tp-btn-shadow-hover: var(--shadow-btn-hover);
-  --tp-accent: var(--text-card-title-underline);
-}
-
-/* Light‑mode overrides */
-[data-theme="light"] .trade-page {
-  --tp-bg-page: var(--bg-page);
-  --tp-bg-panel: var(--bg-panel);
-  --tp-border-panel: var(--border-panel);
-  --tp-blur-panel: var(--blur-panel);
-  --tp-bg-card: var(--bg-card);
-  --tp-border-card: var(--border-card);
-  --tp-blur-card: var(--blur-card);
-  --tp-shadow-card: var(--shadow-card);
-  --tp-border-card-hover: var(--border-card-hover);
-  --tp-bg-card-hover: var(--bg-card-hover);
-  --tp-shadow-card-hover: var(--shadow-card-hover);
-  --tp-text-main: var(--text-main);
-  --tp-text-title: var(--text-header);
-  --tp-text-subtitle: var(--text-subtitle);
-  --tp-text-user: var(--text-user);
-  --tp-text-user-value: var(--text-user-value);
-  --tp-btn-bg: var(--bg-btn);
-  --tp-btn-border: var(--border-btn);
-  --tp-btn-bg-hover: var(--bg-btn-hover);
-  --tp-btn-text: var(--text-action-btn);
-  --tp-btn-text-hover: var(--text-action-btn-hover);
-  --tp-btn-shadow-hover: var(--shadow-btn-hover);
-  --tp-accent: var(--text-card-title-underline);
-}
-
-/* Base layout */
-.trade-page {
+/* VARIABLES */
+.tp-container {
+  --tp-bg: rgba(106,106,106,0.045);
+  --tp-glass: rgba(255,255,255,0.05);
+  --tp-border: rgba(255,255,255,0.15);
+  --tp-text: #f0f0f5;
+  --tp-sub: #999aaa;
+  --tp-accent: #00ffa8;
+  --tp-up: #00ff8c;
+  --tp-down: #ff6b6b;
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  color: var(--tp-text-main);
-  font-family: 'Segoe UI', sans-serif;
-}
-
-/* Header */
-.trade-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8rem 1.5rem;
-  background: var(--tp-bg-panel);
-  border-bottom: var(--tp-border-panel);
-  backdrop-filter: var(--tp-blur-panel);
-}
-
-.trade-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--tp-text-title);
-}
-
-.account-balance {
-  font-size: 0.95rem;
-  color: var(--tp-text-user);
-}
-
-.account-balance span {
-  color: var(--tp-text-user-value);
-  font-weight: 600;
-}
-
-/* Tabs */
-.trade-tabs {
-  display: flex;
-  padding: 0rem 0.5rem;
-  background: var(--tp-bg-panel);
-  border-bottom: var(--tp-border-panel);
-  height: 40px;
-  box-sizing: border-box;
-}
-
-.trade-tab {
-  all: unset;
-  padding: 0rem 1rem;
-  margin-right: 0.5rem;
-  font-size: 0.95rem;
-  color: var(--tp-text-subtitle);
-  cursor: pointer;
-  position: relative;
-  transition: color 0.2s ease;
-  height: 100%;
-}
-
-.trade-tab:hover {
-  color: var(--tp-text-title);
-}
-
-.trade-tab.active {
-  color: var(--tp-text-title);
-}
-
-.trade-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0%;
-  right: 0%;
-  height: 0.12rem;
-  background: var(--tp-accent);
-  border-radius: 1rem;
-}
-
-/* Content */
-.trade-content {
-  flex: 1;
-  padding: 1.5rem 1rem;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-
-/* Grid of cards */
-.trade-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  gap: 1.5rem;
-}
-
-/* Card base */
-.trade-card {
-  position: relative;
+  background: var(--tp-bg);
+  color: var(--tp-text);
+  font-family: 'Inter', sans-serif;
   overflow: hidden;
-  border-radius: 1rem;
-  padding: 1.25rem;
-  background: var(--tp-bg-card);
-  border: var(--tp-border-card);
-  backdrop-filter: var(--tp-blur-card);
-  box-shadow: var(--tp-shadow-card);
-  transition: all 0.3s ease;
 }
 
-.trade-card:hover {
-  transform: translateY(-0.25rem);
-  border: var(--tp-border-card-hover);
-  background: var(--tp-bg-card-hover);
-  box-shadow: var(--tp-shadow-card-hover);
+/* HEADER */
+.tp-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  box-sizing: border-box;
+  background: var(--tp-glass);
+  border-bottom: 1px solid var(--tp-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 1rem 1rem 0 0;
 }
 
-.trade-card-blur {
-  content: '';
-  position: absolute;
-  top: -30%;
-  left: -30%;
-  width: 160%;
-  height: 160%;
-  background: var(--tp-bg-panel);
-  filter: var(--tp-blur-panel);
-  pointer-events: none;
-  z-index: 0;
+.tp-logo {
+  font-size: 1.6rem;
+  font-weight: 700;
 }
 
-.trade-card-content {
-  position: relative;
-  z-index: 1;
+.tp-summary, .tp-actions {
+  display: flex;
+  align-items: center;
+}
+
+.tp-summary div {
+  margin-right: 1.5rem;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
-.trade-card-title {
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
+.tp-summary span {
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--tp-text-title);
+  color: var(--tp-accent);
 }
 
-/* Placeholder */
-.placeholder {
+.tp-actions button {
+  margin-left: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: var(--tp-text);
+}
+
+/* BODY LAYOUT */
+.tp-body {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--tp-text-subtitle);
-  font-size: 0.9rem;
-  opacity: 0.6;
+  display: grid;
+  grid-template-columns: 18rem 1fr 20rem;
+  overflow: hidden;
 }
 
-/* Order form */
-.order-form {
+/* LEFT SIDEBAR */
+.tp-sidebar {
+  background: var(--tp-glass);
+  border-right: 1px solid var(--tp-border);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-search {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.tp-search input {
+  flex: 1;
+  padding: 0.6rem;
+  background: transparent;
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem 0 0 0.4rem;
+  color: var(--tp-text);
+}
+
+.tp-search button {
+  padding: 0 0.8rem;
+  background: var(--tp-accent);
+  border: none;
+  border-radius: 0 0.4rem 0.4rem 0;
+  color: #0e0e1e;
+  cursor: pointer;
+}
+
+.tp-watchlist {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tp-watchlist li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tp-watchlist li:hover,
+.tp-watchlist .tp-active {
+  background: var(--tp-border);
+}
+
+.tp-chat {
+  margin-top: 1rem;
+}
+
+.tp-chat-window {
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+}
+
+.tp-chat-window .bot {
+  background: rgba(255,255,255,0.1);
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.tp-chat-window .user {
+  background: rgba(0,255,140,0.2);
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  margin-bottom: 0.3rem;
+  align-self: flex-end;
+}
+
+.tp-chat-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tp-chat-input input {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--tp-border);
+  border-radius: 0.5rem;
+  color: var(--tp-text);
+}
+
+.tp-chat-input button {
+  padding: 0.5rem 1rem;
+  background: var(--tp-accent);
+  border: none;
+  border-radius: 0.5rem;
+  color: #0e0e1e;
+  cursor: pointer;
+}
+
+/* MAIN CONTENT */
+.tp-main {
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.tp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* PANELS */
+.tp-panel {
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+.tp-panel h5 {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 0.5rem;
+}
+
+
+.tp-drag-handle {
+  font-size: 0.9rem;
+  color: var(--tp-sub);
+  margin-bottom: 0.5rem;
+}
+
+/* CHART SECTION */
+.tp-chart-section {
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  position: relative;
+  min-height: 330px;
+  max-height: 360px;
+}
+
+.tp-chart-section .tp-price {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.tp-timeframe {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tp-timeframe button {
+  padding: 0.3rem 0.6rem;
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  cursor: pointer;
+  color: white;
+}
+
+.tp-timeframe .tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+/* METRICS */
+.tp-metrics {
+  display: flex;
+  gap: 1rem;
+}
+
+.tp-metrics div {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-metrics span:last-child {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.tp-up {
+  color: var(--tp-up);
+}
+
+.tp-down {
+  color: var(--tp-down);
+}
+
+/* HEATMAP */
+.tp-heatmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px,1fr));
+  gap: 0.5rem;
+}
+
+.tp-heat-cell {
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+/* NEWS */
+.tp-news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tp-news-list li {
+  margin-bottom: 0.5rem;
+}
+
+.tp-news-list a {
+  color: var(--tp-accent);
+  text-decoration: none;
+}
+
+/* FUNDAMENTALS */
+.tp-fundamentals {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tp-fundamentals td {
+  padding: 0.4rem 0;
+}
+
+/* RIGHT SIDEBAR */
+.tp-trade-aside {
+  /* background: var(--tp-glass); */
+  /* border-left: 1px solid var(--tp-border); */
+  padding: 1rem 1rem 1rem 0rem;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.form-group {
+.tp-order-panel form input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.6rem;
+  background: transparent;
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  color: var(--tp-text);
+}
+/* ORDER PANEL SPECIFICS */
+.tp-order-panel {
   display: flex;
   flex-direction: column;
+  gap: 0.8rem;
 }
 
-.form-group label {
-  font-size: 0.85rem;
-  color: var(--tp-text-subtitle);
-  margin-bottom: 0.25rem;
+/* unified input styling */
+.tp-order-input {
+  width: 100%;
+  padding: 0.6rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  color: var(--tp-text);
+  font-size: 1rem;
+  box-sizing: border-box;
 }
 
-.form-group input,
-.form-group select {
-  padding: 0.5rem;
-  background: var(--tp-bg-panel);
-  border: var(--tp-border-panel);
-  border-radius: 0.5rem;
-  color: var(--tp-text-main);
-  font-size: 0.95rem;
+/* order type buttons */
+.tp-order-types {
+  display: flex;
+  gap: 0.5rem;
 }
 
-.btn-submit {
-  all: unset;
-  padding: 0.75rem;
-  text-align: center;
-  background: var(--tp-btn-bg);
-  border: var(--tp-btn-border);
-  border-radius: 0.5rem;
-  color: var(--tp-btn-text);
-  font-weight: 600;
+.tp-order-types button {
+  flex: 1;
+  padding: 0.5rem 0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  color: var(--tp-text);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s;
 }
 
-.btn-submit:hover {
-  background: var(--tp-btn-bg-hover);
-  color: var(--tp-btn-text-hover);
-  box-shadow: var(--tp-btn-shadow-hover);
+.tp-order-types .tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+/* quick presets */
+.tp-quick-presets {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tp-quick-presets button {
+  flex: 1;
+  padding: 0.4rem 0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  color: var(--tp-text);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tp-quick-presets button:hover {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+/* submit */
+.tp-submit-btn {
+  padding: 0.7rem;
+  background: var(--tp-accent);
+  border: none;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  color: #0e0e1e;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tp-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tp-submit-btn:not(:disabled):hover {
+  background: #00e6a0;
+}
+
+.tp-order-types {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tp-order-types button {
+  flex: 1;
+  padding: 0.4rem;
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.tp-order-types .tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+.tp-quick-presets {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tp-quick-presets button {
+  flex: 1;
+  padding: 0.4rem;
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.tp-submit-btn {
+  width: 100%;
+  padding: 0.7rem;
+  background: var(--tp-accent);
+  border: none;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  color: #0e0e1e;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.tp-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* LIST PANELS */
+.tp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tp-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--tp-border);
+}
+
+/* ORDER BOOK */
+.tp-book {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tp-book th, .tp-book td {
+  padding: 0.4rem;
+  text-align: center;
+  border-bottom: 1px solid var(--tp-border);
+}
+
+/* Time & Sales uses .tp-list */
+
+/* SCROLLBAR */
+.tp-sidebar, .tp-trade-aside {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tp-accent) transparent;
+}
+
+.tp-sidebar::-webkit-scrollbar,
+.tp-trade-aside::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tp-sidebar::-webkit-scrollbar-thumb,
+.tp-trade-aside::-webkit-scrollbar-thumb {
+  background: var(--tp-accent);
+  border-radius: 3px;
+}
+
+
+
+
+/* tradePage.css */
+
+/* add this under PANELS */
+.tp-symbol-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+
+/* Metrics tweaks */
+.tp-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.tp-metric-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.tp-company-name {
+  font-size: 1rem;
+  color: var(--tp-sub);
+  margin-bottom: 0.5rem;
+}
+/* Sentiment meter & label already present above */
+
+/* Watchlist active highlight */
+.tp-watchlist li.tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
 }
