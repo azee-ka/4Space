@@ -195,6 +195,7 @@
   border-radius: 1rem;
   padding: 1rem;
   box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  box-sizing: border-box;
 }
 .tp-panel h5 {
     margin: 0;
@@ -217,8 +218,17 @@
   padding: 1rem;
   box-shadow: 0 8px 16px rgba(0,0,0,0.15);
   position: relative;
-  min-height: 330px;
-  max-height: 360px;
+  min-height: 340px;
+  max-height: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tp-chart-section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .tp-chart-section .tp-price {
@@ -232,21 +242,30 @@
 .tp-timeframe {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  /* margin-bottom: 0.5rem; */
 }
 
 .tp-timeframe button {
-  padding: 0.3rem 0.6rem;
+  padding: 0rem 0.6rem;
   background: var(--tp-glass);
   border: 1px solid var(--tp-border);
   border-radius: 0.4rem;
   cursor: pointer;
   color: white;
+  height: 100%;
 }
 
 .tp-timeframe .tp-active {
   background: var(--tp-accent);
   color: #0e0e1e;
+}
+
+.tp-chart-body {
+    flex: 1 1 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* height: 100%; */
 }
 
 /* METRICS */
@@ -522,7 +541,6 @@
   font-size: 1.2rem;
   font-weight: 600;
   text-align: left;
-  margin-bottom: 0.5rem;
 }
 
 /* Metrics tweaks */
@@ -539,7 +557,6 @@
 .tp-company-name {
   font-size: 1rem;
   color: var(--tp-sub);
-  margin-bottom: 0.5rem;
 }
 /* Sentiment meter & label already present above */
 
@@ -547,4 +564,75 @@
 .tp-watchlist li.tp-active {
   background: var(--tp-accent);
   color: #0e0e1e;
+}
+
+
+
+
+
+
+/* tradePage.css */
+
+/* CHART SECTION tweaks */
+.tp-chart-controls {
+  display: flex;
+  justify-content: space-between;
+  height: 28px;
+}
+
+/* chart type toggle */
+.tp-chart-type-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+.tp-chart-type-btn {
+  padding: 0rem 0.6rem;
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  cursor: pointer;
+  color: var(--tp-text);
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  height: 100%;
+}
+.tp-chart-type-btn.tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+/* make the x/y axes lines a little subtler */
+.tp-chart-section .tick {
+  color: var(--tp-sub);
+}
+.tp-chart-section .domain {
+  stroke: var(--tp-border);
+}
+
+/* ensure candlesticks have the right bar width */
+.tp-chart-section canvas {
+  user-select: none;
+}
+
+
+
+/* make the chart flexibly fill its panel */
+.tp-chart-body {
+  flex: 1;                  /* grow to fill remaining height */
+  position: relative;       
+}
+
+/* force the canvas to fill its wrapper */
+.tp-chart-body canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ensure the panel itself caps height */
+.tp-chart-section {
+  display: flex;
+  flex-direction: column;
+  /* these min/max ensure you never overflow */
+  min-height: 300px;
+  max-height: 360px;
 }
