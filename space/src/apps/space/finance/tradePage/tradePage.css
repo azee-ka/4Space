@@ -764,3 +764,26 @@
   padding: 0.4rem;
   cursor: pointer;
 }
+
+
+
+
+
+.tp-chart-body { 
+    position: relative; 
+    margin-top: 5px;
+}
+.tp-hover-info {
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  color: var(--tp-text);
+  background: rgba(0,0,0,0.4);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  z-index: 10;
+}
+
