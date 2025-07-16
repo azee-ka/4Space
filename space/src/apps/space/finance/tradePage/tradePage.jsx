@@ -1,5 +1,5 @@
 // TradePage.jsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "chartjs-adapter-date-fns";      // date adapter for time scale
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,7 +20,26 @@ import {
 } from "chartjs-chart-financial";
 import "./tradePage.css";
 
-// register controllers & elements
+// crosshair plugin for vertical hover line
+const crosshairPlugin = {
+  id: 'crosshair',
+  afterDraw: chart => {
+    const { ctx, tooltip, chartArea: { top, bottom } } = chart;
+    if (tooltip.getActiveElements().length) {
+      const [{ element }] = tooltip.getActiveElements();
+      const x = element.x;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#888";
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+};
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,31 +52,63 @@ ChartJS.register(
   OhlcController,
   OhlcElement,
   Tooltip,
-  Legend
+  Legend,
+  crosshairPlugin
 );
 
+// number of sample points for each timeframe
 const TIMEFRAMES = {
-  "1H": 60,
-  "1D": 390,
-  "1W": 5,
-  "1M": 22,
-  "6M": 26,
-  "1Y": 12,
-  "2Y": 24,
-  "5Y": 60,
+  "1H":  60,
+  "1D":  390,
+  "1W":  390,
+  "1M":  30,
+  "3M":  90,
+  "6M":  180,
+  "YTD": null,
+  "1Y":  365,
+  "2Y":  730,
+  "5Y":  1825,
+  "10Y": 3650,
   "MAX": 120
 };
+// user-configurable, in DAYS (supports fractional for sub-day):
+const TF_CONFIG = {
+  "1H":  { spanDays: 1/24,   resolutionDays: 1/1440 },  // 1 min
+  "1D":  { spanDays: 1,      resolutionDays: 1/480 },   // ~3 min
+  "1W":  { spanDays: 7,      resolutionDays: 30/1440 },  // 30 min
+  "1M":  { spanDays: 30,     resolutionDays: 0.5 },       // daily
+  "3M":  { spanDays: 90,     resolutionDays: 1 },
+  "6M":  { spanDays: 180,    resolutionDays: 1 },
+  "YTD": { spanDays: null,   resolutionDays: 1 },       // computed
+  "1Y":  { spanDays: 365,    resolutionDays: 1 },
+  "2Y":  { spanDays: 730,    resolutionDays: 5 },
+  "5Y":  { spanDays: 1825,   resolutionDays: 30 },
+  "10Y": { spanDays: 3650,   resolutionDays: 90 },
+  "MAX": { spanDays: 3650*2, resolutionDays: 365 }
+};
 
-const RESOLUTION = {
-  "1H":  { unit:"minute", stepSize:5 },
-  "1D":  { unit:"hour",   stepSize:1 },
-  "1W":  { unit:"day",    stepSize:1 },
-  "1M":  { unit:"week",   stepSize:1 },
-  "6M":  { unit:"month",  stepSize:1 },
-  "1Y":  { unit:"month",  stepSize:1 },
-  "2Y":  { unit:"month",  stepSize:3 },
-  "5Y":  { unit:"year",   stepSize:1 },
-  "MAX": { unit:"year",   stepSize:5 }
+// convert days → { unit, stepSize } for Chart.js time scale
+function getTickConfig(resDays) {
+  const totalMinutes = resDays * 24 * 60;
+  if (totalMinutes < 60) {
+    return { unit: "minute", stepSize: Math.max(1, Math.round(totalMinutes)) };
+  } else if (totalMinutes < 24 * 60) {
+    return { unit: "hour", stepSize: Math.max(1, Math.round(totalMinutes / 60)) };
+  } else if (totalMinutes < 30 * 24 * 60) {
+    return { unit: "day", stepSize: Math.max(1, Math.round(totalMinutes / (24 * 60))) };
+  } else if (totalMinutes < 365 * 24 * 60) {
+    return { unit: "month", stepSize: Math.max(1, Math.round(totalMinutes / (30 * 24 * 60))) };
+  } else {
+    return { unit: "year", stepSize: Math.max(1, Math.round(totalMinutes / (365 * 24 * 60))) };
+  }
+}
+
+// limit tick labels so they never overcrowd
+const MAX_TICKS = {
+  "1H":  8,  "1D":  8,  "1W":  7,
+  "1M": 10,  "3M": 10,  "6M": 10,
+  "YTD":10,  "1Y": 12,  "2Y": 12,
+  "5Y": 12,  "10Y":12,  "MAX":12
 };
 
 const MOCK_NEWS = [
@@ -202,108 +253,110 @@ function MainContent({ symbol }){
   );
 }
 
-function ChartSection({ symbol }) {
+export function ChartSection({ symbol }) {
   const [tf, setTf]     = useState("1D");
   const [type, setType] = useState("line");
 
-  // Build data & last price synchronously in useMemo
-  const { data, price } = useMemo(() => {
+  const { data, price, tickConfig } = useMemo(() => {
+    const cfg = TF_CONFIG[tf];
     const now = Date.now();
-    let start;
-    switch(tf) {
-      case "1H":  start = now -  60  *60*1000; break;
-      case "1D":  start = now -  24  *60*60*1000; break;
-      case "1W":  start = now -   7  *24*60*60*1000; break;
-      case "1M":  start = now -  30  *24*60*60*1000; break;
-      case "6M":  start = now - 182  *24*60*60*1000; break;
-      case "1Y":  start = now - 365  *24*60*60*1000; break;
-      case "2Y":  start = now -   2  *365*24*60*60*1000; break;
-      case "5Y":  start = now -   5  *365*24*60*60*1000; break;
-      case "MAX": start = now -  10  *365*24*60*60*1000; break;
-      default:    start = now;
+
+    // compute start timestamp
+    let spanDays = cfg.spanDays;
+    if (tf === "YTD") {
+      const yearStart = new Date(new Date().getFullYear(), 0, 1).getTime();
+      spanDays = (now - yearStart)/(1000*60*60*24);
     }
-    const span = now - start;
-    const pts  = TIMEFRAMES[tf];
-    const labels = Array.from({ length: pts }, (_, i) =>
-      new Date(start + (span * i) / (pts - 1))
+    const start = now - spanDays * 24*60*60*1000;
+    const pts   = Math.max(2, Math.round(spanDays / cfg.resolutionDays));
+
+    // build labels evenly spaced
+    const labels = Array.from({length: pts}, (_,i) =>
+      new Date(start + (now - start)*i/(pts-1))
     );
 
-    // FIX: build series in a loop so we can reference previous values
+    // synthetic price series
     const series = [];
-    for (let i = 0; i < labels.length; i++) {
-      if (i === 0) {
-        series.push(100 + Math.random() * 50);
-      } else {
-        const prev = series[i - 1];
-        series.push(parseFloat((prev * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2)));
+    labels.forEach((_,i) => {
+      if (i===0) series.push(100 + Math.random()*50);
+      else {
+        const p = series[i-1];
+        series.push(parseFloat((p*(1+(Math.random()-0.5)*0.01)).toFixed(2)));
       }
-    }
+    });
+    const lastPrice = series.at(-1).toFixed(2);
 
-    const lastPrice = series[series.length - 1].toFixed(2);
-
+    // assemble dataset
     let datasets;
-    if (type === "line") {
-      datasets = [{
+    if (type==="line") {
+      datasets = [{ 
         label: symbol,
-        data: labels.map((t, i) => ({ x: t, y: series[i] })),
-        borderColor: "#00FFA8",
-        backgroundColor: "transparent",
-        pointRadius: 0,
-        borderWidth: 2,
-        tension: 0
+        data: labels.map((t,i)=>({x:t,y:series[i]})),
+        borderColor:"#00FFA8",
+        backgroundColor:"transparent",
+        pointRadius:0, pointHoverRadius:4,
+        borderWidth:2, tension:0
       }];
     } else {
-      const ohlc = series.map((v, i) => {
-        const o = v;
-        const c = v + (Math.random() * 4 - 2);
-        const h = Math.max(o, c) + Math.random() * 2;
-        const l = Math.min(o, c) - Math.random() * 2;
-        return { x: labels[i], o, h, l, c };
+      const ohlc = series.map((v,i)=>{
+        const o=v, c=v+(Math.random()*4-2),
+              h=Math.max(o,c)+Math.random()*2,
+              l=Math.min(o,c)-Math.random()*2;
+        return {x:labels[i],o,h,l,c};
       });
-      datasets = [{
-        label: symbol,
-        data: ohlc,
-        color: { up: "#00FF8C", down: "#FF6B6B", unchanged: "#00FFA8" }
+      datasets=[{
+        label:symbol,data:ohlc,
+        color:{up:"#00FF8C",down:"#FF6B6B",unchanged:"#00FFA8"},
+        barThickness:"flex",maxBarThickness:12
       }];
     }
 
     return {
       data: { datasets },
-      price: lastPrice
+      price: lastPrice,
+      tickConfig: getTickConfig(cfg.resolutionDays)
     };
   }, [tf, type, symbol]);
 
-  const { unit, stepSize } = RESOLUTION[tf];
+  const maxTicks = MAX_TICKS[tf] || 10;
 
   const options = {
     maintainAspectRatio: false,
-    animation: { duration: 800, easing: "easeOutQuart" },
-    // disable only the x-axis tween (prevent tick interpolation errors)
-    animations: { x: { duration: 0 }, y: { duration: 800 } },
+    animation: { duration:800, easing:"easeOutQuart" },
+    animations: { x:{duration:0}, y:{duration:800} },
     plugins: {
-      legend: { display: false },
-      tooltip: {
-        enabled: true,
-        mode: "nearest",
-        intersect: false,
-        callbacks: {
-          label: ctx => `${symbol}: $${ctx.parsed.y.toFixed(2)}`
+      crosshair:{},
+      legend:{ display:false },
+      tooltip:{
+        enabled:true, mode:"nearest", intersect:false,
+        callbacks:{
+          label:ctx=>{
+            if(type==="candlestick"){
+              const {o,h,l,c}=ctx.parsed;
+              return [`Open: $${o}`, `High: $${h}`, `Low: $${l}`, `Close: $${c}`];
+            }
+            return `${symbol}: $${ctx.parsed.y}`;
+          }
         }
       }
     },
-    scales: {
-      x: {
-        type: "time",
-        time: { unit },
-        ticks: { stepSize, color: "#999999" },
-        grid:  { color: "#444444" }
+    scales:{
+      x:{
+        type:"time",
+        time: tickConfig,
+        ticks:{
+          autoSkip:true,
+          maxTicksLimit: maxTicks,
+          color:"#999999"
+        },
+        grid:{ color:"#444444" }
       },
-      y: {
-        ticks: { color: "#999999" },
-        grid:  { color: "#444444" }
+      y:{
+        ticks:{ color:"#999999" },
+        grid:{ color:"#444444" }
       }
     },
-    interaction: { mode: "nearest", axis: "x", intersect: false }
+    interaction:{ mode:"nearest", axis:"x", intersect:false }
   };
 
   return (
@@ -312,9 +365,7 @@ function ChartSection({ symbol }) {
         <div className="tp-chart-section-sub-header">
           <div>
             <div className="tp-symbol-header">{symbol}</div>
-            <div className="tp-company-name">
-              {COMPANY_NAMES[symbol] || "Unknown Company"}
-            </div>
+            <div className="tp-company-name">{COMPANY_NAMES[symbol]}</div>
           </div>
           <span className="tp-price">${price}</span>
         </div>
@@ -334,9 +385,7 @@ function ChartSection({ symbol }) {
                 key={t}
                 className={`tp-chart-type-btn${type===t ? " tp-active" : ""}`}
                 onClick={() => setType(t)}
-              >
-                {t==="line" ? "Line" : "Candle"}
-              </button>
+              >{t==="line"?"Line":"Candle"}</button>
             ))}
           </div>
         </div>
@@ -352,6 +401,7 @@ function ChartSection({ symbol }) {
     </section>
   );
 }
+
 
 function MetricsPanel({ symbol }){
   const price  = (100+Math.random()*50).toFixed(2);
