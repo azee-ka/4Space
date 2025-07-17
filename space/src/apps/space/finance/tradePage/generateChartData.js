@@ -36,6 +36,13 @@ export function generateChartData(tf, type, symbol, tick) {
   const first = clean[0] || 0, last = clean.at(-1) || first;
   const up = last >= first, color = up ? "#00FF8C" : "#FF6B6B";
 
+  // compute stable Y range
+const avg = clean.reduce((a, b) => a + b, 0) / clean.length;
+const paddingPercent = 0.05;
+const min = +(avg * (1 - paddingPercent)).toFixed(2);
+const max = +(avg * (1 + paddingPercent)).toFixed(2);
+
+
   let datasets;
   if (type === "line") {
     const pts = labels.map((t, i) => ({ x: t, y: series[i] })).filter(p => p.y != null);
@@ -88,5 +95,6 @@ export function generateChartData(tf, type, symbol, tick) {
       maxTicksLimit: MAX_TICKS[tf],
       color: "#999999",
     },
+    range: { min, max },
   };
 }
