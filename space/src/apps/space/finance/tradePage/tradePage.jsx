@@ -43,7 +43,7 @@ import "./tradePage.css";
 const crosshairPlugin = {
   id: "crosshair",
   afterDraw: chart => {
-    const x = chart.$hoverX;
+    const x = chart.options.plugins.crosshair?.hoverX;
     if (typeof x === "number") {
       const {
         ctx,
@@ -60,6 +60,7 @@ const crosshairPlugin = {
     }
   }
 };
+
 
 ChartJS.register(
   CategoryScale,
@@ -370,214 +371,230 @@ function MainContent({ symbol }) {
   );
 }
 
-export function ChartSection({ symbol }) {
-  const chartRef = useRef(null);
-  const [tf, setTf]       = useState("1D");
-  const [type, setType]   = useState("line");
-  const [hover, setHover] = useState({ x: null, time: "" });
 
-  // memoize data + config whenever tf/type/symbol change
+function ChartSection({ symbol }) {
+  const chartRef = useRef(null);
+  const [tf, setTf] = useState("1D");
+  const [type, setType] = useState("line");
+  const [hover, setHover] = useState({ x: null, time: "", price: null });
+
+  // live price every 3s (only 1D)
+  const [livePrice, setLivePrice] = useState(null);
+  useEffect(() => {
+    if (tf === "1D") {
+      setLivePrice(p => p ?? parseFloat(dataRef.current.price ?? 100));
+      const id = setInterval(() => {
+        setLivePrice(p => {
+          const base = p ?? 100;
+          return parseFloat((base * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2));
+        });
+      }, 3000);
+      return () => clearInterval(id);
+    }
+  }, [tf, symbol]);
+
+  // full chart rebuild every 5m (only 1D)
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (tf === "1D") {
+      const id = setInterval(() => setTick(t => t + 1), 5 * 60 * 1000);
+      return () => clearInterval(id);
+    }
+  }, [tf, symbol]);
+
+  // generate data
+  const dataRef = useRef({});
   const { data, price, openTime, closeTime, timeScale, tickScale } = useMemo(() => {
     const cfg = TF_CONFIG[tf];
     const now = Date.now();
-
     let labels = [], series = [], openTime = null, closeTime = null;
 
     if (tf === "1D") {
-      // ─── build 1D live labels & series ─────────────────────────────
-      const today = new Date();
-      openTime  = new Date(today.getFullYear(), today.getMonth(), today.getDate(),  9, 30).getTime();
-      closeTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16,  0).getTime();
-      const step  = 5 * 60 * 1000;
-      const count = Math.floor((closeTime - openTime) / step) + 1;
-      labels = Array.from({ length: count }, (_, i) => new Date(openTime + i * step));
-      let v = 100 + Math.random() * 50;
+      const d = new Date();
+      openTime = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 9, 30).getTime();
+      closeTime = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 16, 0).getTime();
+      const step = 5 * 60 * 1000, count = Math.floor((closeTime - openTime) / step) + 1;
+      labels = Array.from({ length: count }, (_, i) => new Date(openTime + i*step));
+      let v = 100 + Math.random()*50;
       series = labels.map(ts =>
         ts.getTime() <= now
-          ? (v = parseFloat((v * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2)))
+          ? (v = parseFloat((v*(1+(Math.random()-0.5)*0.01)).toFixed(2)))
           : null
       );
     } else {
-      // ─── build static labels for other TFs ───────────────────────────
-      const spanDays = tf === "YTD"
-        ? (now - new Date(new Date().getFullYear(), 0, 1).getTime()) / 86400000
+      const span = tf==="YTD"
+        ? (now - new Date(new Date().getFullYear(),0,1).getTime())/86400000
         : cfg.spanDays;
-      const start = now - spanDays * 86400000;
-      const pts   = Math.max(2, Math.round(spanDays / cfg.resolutionDays));
+      const start = now - span*86400000, pts = Math.max(2, Math.round(span/cfg.resolutionDays));
       labels = Array.from({ length: pts }, (_, i) =>
-        new Date(start + ((now - start) * i) / (pts - 1))
+        new Date(start + ((now-start)*i)/(pts-1))
       );
-      // ─── properly build static series ─────────────────────────────────
-      for (let i = 0; i < labels.length; i++) {
-        if (i === 0) {
-          series.push(100 + Math.random() * 50);
-        } else {
-          const prev = series[i - 1];
-          series.push(
-            parseFloat((prev * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2))
-          );
+      for (let i=0;i<labels.length;i++){
+        if (i===0) series.push(100+Math.random()*50);
+        else {
+          const p = series[i-1];
+          series.push(parseFloat((p*(1+(Math.random()-0.5)*0.01)).toFixed(2)));
         }
       }
     }
 
-    // ─── determine up/down & pick color ───────────────────────────────
-    const clean = series.filter(v => v != null);
-    const first = clean[0] ?? 0;
-    const last  = clean[clean.length - 1] ?? first;
-    const up    = last >= first;
-    const color = up ? "#00FF8C" : "#FF6B6B";
+    const clean = series.filter(v=>v!=null), first = clean[0]||0, last = clean[clean.length-1]||first;
+    const up = last>=first, color = up?"#00FF8C":"#FF6B6B";
 
-    // ─── build dataset (line vs. candle) ──────────────────────────────
     let datasets;
-    if (type === "line") {
-      const pts = labels
-        .map((t, i) => ({ x: t, y: series[i] }))
-        .filter(p => p.y != null);
-      if (tf === "1D") {
-        const liveX = Math.min(now, closeTime);
-        pts.push({ x: new Date(liveX), y: last });
+    if (type==="line") {
+      const pts = labels.map((t,i)=>({x:t,y:series[i]})).filter(p=>p.y!=null);
+      if (tf==="1D") {
+        pts.push({ x:new Date(Math.min(now,closeTime)), y:last });
       }
-      datasets = [{
-        label: symbol,
-        data: pts,
-        spanGaps: true,
-        borderColor: color,
-        backgroundColor: "transparent",
-        pointRadius: ctx => ctx.dataIndex === pts.length - 1 ? 6 : 0,
-        borderWidth: 2,
-        tension: 0
+      datasets=[{
+        label:symbol,
+        data:pts,
+        spanGaps:true,
+        borderColor:color,
+        backgroundColor:"transparent",
+        pointRadius:ctx=>(ctx.dataIndex===pts.length-1&&tf==="1D"?6:0),
+        borderWidth:2,
+        tension:0
       }];
     } else {
-      const ohlcData = labels.map((t, i) => {
-        const o = series[i] ?? last;
-        const c = o * (1 + (Math.random() - 0.5) * 0.02);
-        const h = Math.max(o, c) * (1 + Math.random() * 0.01);
-        const l = Math.min(o, c) * (1 - Math.random() * 0.01);
-        return { x: t, o, h, l, c };
+      const ohlc = labels.map((t,i)=>{
+        const o = series[i]||last;
+        const c = o*(1+(Math.random()-0.5)*0.02);
+        return {
+          x:t,
+          o,
+          h:Math.max(o,c)*(1+Math.random()*0.01),
+          l:Math.min(o,c)*(1-Math.random()*0.01),
+          c
+        };
       });
-      datasets = [{
-        label: symbol,
-        data: ohlcData,
-        color: { up: "#00FF8C", down: "#FF6B6B", unchanged: "#00FF8C" },
-        barThickness: "flex",
-        maxBarThickness: 12
+      datasets=[{
+        label:symbol,
+        data:ohlc,
+        color:{up:"#00FF8C",down:"#FF6B6B",unchanged:"#00FF8C"},
+        barThickness:"flex",
+        maxBarThickness:12
       }];
     }
 
-    // ─── configure scales ──────────────────────────────────────────────
-    const baseTick = getTickConfig(cfg.resolutionDays);
-    const unit     = cfg.tickUnit    || baseTick.unit;
-    const stepSize = cfg.tickStep    || baseTick.stepSize;
-    const fmtToken = (cfg.displayFormats && cfg.displayFormats[unit]) || DEFAULT_TOKENS[unit];
-    const timeScale = { unit, stepSize, displayFormats: { [unit]: fmtToken } };
-    const tickScale = {
-      source: tf === "1D" ? "auto" : "data",
-      autoSkip: true,
-      maxTicksLimit: MAX_TICKS[tf],
-      color: "#999999"
-    };
+    const base = getTickConfig(cfg.resolutionDays);
+    const unit = cfg.tickUnit||base.unit, stepSize=cfg.tickStep||base.stepSize;
+    const fmt = (cfg.displayFormats&&cfg.displayFormats[unit])||DEFAULT_TOKENS[unit];
+    const timeScale = { unit, stepSize, displayFormats:{[unit]:fmt} };
+    const tickScale = { source:tf==="1D"?"auto":"data", autoSkip:true, maxTicksLimit:MAX_TICKS[tf], color:"#999999" };
 
-    return {
-      data: { datasets },
-      price: last.toFixed(2),
-      openTime, closeTime,
-      timeScale, tickScale
-    };
-  }, [tf, type, symbol]);
+    dataRef.current.price = last.toFixed(2);
+    return { data:{datasets}, price:last.toFixed(2), openTime, closeTime, timeScale, tickScale };
+  },[tf,type,symbol,tick]);
 
-  const fmtHover = dt => format(dt, "MMM d, h:mm a");
+  // patch last point every 3s
+  useEffect(()=>{
+    const chart=chartRef.current;
+    if(chart&&tf==="1D"&&chart.data.datasets[0].data.length){
+      const ds=chart.data.datasets[0].data, i=ds.length-1;
+      ds[i]={ x:new Date(), y:livePrice };
+      chart.update("none");
+    }
+  },[livePrice,tf,type,symbol]);
+
+  const fmtHover = dt=>format(dt,"MMM d, h:mm a");
 
   const options = {
-    maintainAspectRatio: false,
-    animation: false,
+    maintainAspectRatio:false,
+    animation:false,
     plugins: {
-      crosshair: {},
-      legend: { display: false },
-      tooltip: { enabled: false }
-    },
-    interaction: { mode: "nearest", axis: "x", intersect: false },
-    scales: {
-      x: {
-        type: "time",
-        time: timeScale,
-        ticks: tickScale,
-        grid: { color: "#444444" },
-        ...(tf === "1D" ? { min: openTime, max: closeTime, bounds: "ticks" } : {})
+  crosshair: {
+    hoverX: null
+  },
+  legend: { display: false },
+  tooltip: { enabled: false }
+},
+    interaction:{ mode:"nearest", axis:"x", intersect:false },
+    scales:{
+      x:{ type:"time", time:timeScale, ticks:tickScale, grid:{color:"#444444"},
+          ...(tf==="1D"?{min:openTime,max:closeTime,bounds:"ticks"}:{})
       },
-      y: {
-        ticks: { color: "#999999" },
-        grid:  { color: "#444444" }
-      }
+      y:{ ticks:{color:"#999999"}, grid:{color:"#444444"} }
     },
     onHover: (e, items) => {
-      const chart = chartRef.current;
-      if (!chart) return;
-      const rect = chart.canvas.getBoundingClientRect();
-      let x = e.native.clientX - rect.left;
-      x = Math.max(chart.chartArea.left, Math.min(chart.chartArea.right, x));
-      chart.$hoverX = x;
-      if (items.length) {
-        const { x: dt } = data.datasets[0].data[items[0].index];
-        setHover({ x, time: fmtHover(dt) });
-      } else {
-        setHover({ x: null, time: "" });
-      }
-    },
+  const chart = chartRef.current;
+  if (!chart) return;
+
+  if (items.length) {
+    const idx = items[0].index;
+    const pt = data.datasets[0].data[idx];
+    const xPix = chart.scales.x.getPixelForValue(pt.x);
+
+    chart.options.plugins.crosshair.hoverX = xPix;
+    setHover({ x: xPix, time: fmtHover(pt.x), price: pt.y.toFixed(2) });
+    chart.update(); // force redraw to show crosshair
+  } else {
+    chart.options.plugins.crosshair.hoverX = null;
+    setHover({ x: null, time: "", price: null });
+    chart.update();
+  }
+},
     onLeave: () => {
-      const chart = chartRef.current;
-      if (chart) chart.$hoverX = null;
-      setHover({ x: null, time: "" });
-    }
+  const chart = chartRef.current;
+  if (chart) {
+    chart.options.plugins.crosshair.hoverX = null;
+    chart.update(); // important to fully redraw and remove the crosshair
+  }
+  setHover({ x: null, time: "", price: null });
+},
   };
 
   return (
     <section className="tp-chart-section tp-panel">
-      {/* header */}
       <div className="tp-chart-section-header">
         <div className="tp-chart-section-sub-header">
           <div>
             <div className="tp-symbol-header">{symbol}</div>
             <div className="tp-company-name">{COMPANY_NAMES[symbol]}</div>
           </div>
-          <span className="tp-price">${price}</span>
+          <span className="tp-price">
+            ${hover.price!=null
+              ?hover.price
+              :tf==="1D"&&livePrice!=null
+              ?livePrice.toFixed(2)
+              :price}
+          </span>
         </div>
         <div className="tp-chart-controls">
           <div className="tp-timeframe">
-            {Object.keys(TIMEFRAMES)
-              .filter(k => k !== "1H")
-              .map(k => (
-                <button
-                  key={k}
-                  className={tf === k ? "tp-active" : ""}
-                  onClick={() => setTf(k)}
-                >
-                  {k}
-                </button>
-              ))}
+            {Object.keys(TIMEFRAMES).filter(k=>"1H"!==k).map(k=>(
+              <button key={k} className={tf===k?"tp-active":""} onClick={()=>setTf(k)}>{k}</button>
+            ))}
           </div>
           <div className="tp-chart-type-buttons">
-            {["line", "candlestick"].map(t => (
-              <button
-                key={t}
-                className={`tp-chart-type-btn${type === t ? " tp-active" : ""}`}
-                onClick={() => setType(t)}
-              >
-                {t === "line" ? "Line" : "Candle"}
+            {["line","candlestick"].map(t=>(
+              <button key={t} className={`tp-chart-type-btn${type===t?" tp-active":""}`}
+                      onClick={()=>setType(t)}>
+                {t==="line"?"Line":"Candle"}
               </button>
             ))}
           </div>
         </div>
       </div>
-
-      {/* chart + floating time */}
-      <div className="tp-chart-body">
-        {hover.time && (
-          <div className="tp-hover-info" style={{ left: hover.x }}>
-            {hover.time}
-          </div>
-        )}
-        <Chart ref={chartRef} type={type} data={data} options={options} />
-      </div>
+<div
+  className="tp-chart-body"
+  onMouseLeave={() => {
+    const chart = chartRef.current;
+    if (chart) {
+      chart.options.plugins.crosshair.hoverX = null;
+      chart.update();
+    }
+    setHover({ x: null, time: "", price: null });
+  }}
+>
+  {hover.x != null && hover.time && (
+    <div className="tp-hover-info" style={{ left: hover.x }}>
+      {hover.time}
+    </div>
+  )}
+  <Chart ref={chartRef} type={type} data={data} options={options} />
+</div>
     </section>
   );
 }
