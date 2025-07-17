@@ -39,7 +39,7 @@ import {
 } from "chartjs-chart-financial";
 import "./tradePage.css";
 
-// ─── crosshair plugin ─────────────────────────────────────────────────────────
+// crosshair plugin
 const crosshairPlugin = {
   id: "crosshair",
   afterDraw: chart => {
@@ -77,34 +77,57 @@ ChartJS.register(
   crosshairPlugin
 );
 
-// ─── centralized timeframe & tick config ────────────────────────────────────
+// timeframes & config
+const TIMEFRAMES = {
+  "1H": 60,
+  "1D": 390,
+  "1W": 390,
+  "1M": 30,
+  "3M": 90,
+  "6M": 180,
+  YTD: null,
+  "1Y": 365,
+  "2Y": 730,
+  "5Y": 1825,
+  "10Y": 3650,
+  MAX: 120
+};
 const TF_CONFIG = {
-  "1D": { spanDays: 1, resolutionMinutes: 3 },
+  "1H": { spanDays: 1 / 24, resolutionDays: (1/4) / 1440 },
+  "1D": { spanDays: 1, resolutionDays: 3 / 1440 },
   "1W": {
     spanDays: 7,
-    resolutionMinutes: 30,
+    resolutionDays: 30 / 1440,
     tickUnit: "day",
     tickStep: 1,
     displayFormats: { day: "MMM d" }
   },
   "1M": {
     spanDays: 30,
-    resolutionMinutes: 720,
+    resolutionDays: 0.5,
     tickUnit: "week",
     tickStep: 1,
     displayFormats: { week: "MMM d" }
   },
-  "3M": { spanDays: 90, resolutionMinutes: 1440 },
-  "6M": { spanDays: 180, resolutionMinutes: 1440 },
-  YTD: { spanDays: null, resolutionMinutes: 1440 },
-  "1Y": { spanDays: 365, resolutionMinutes: 1440 },
-  "2Y": { spanDays: 730, resolutionMinutes: 7200 },
-  "5Y": { spanDays: 1825, resolutionMinutes: 43200 },
-  "10Y": { spanDays: 3650, resolutionMinutes: 129600 },
-  MAX: { spanDays: 3650 * 2, resolutionMinutes: 525600 }
+  "3M": { spanDays: 90, resolutionDays: 1 },
+  "6M": { spanDays: 180, resolutionDays: 1 },
+  YTD: { spanDays: null, resolutionDays: 1 },
+  "1Y": { spanDays: 365, resolutionDays: 1 },
+  "2Y": { spanDays: 730, resolutionDays: 5 },
+  "5Y": { spanDays: 1825, resolutionDays: 30 },
+  "10Y": { spanDays: 3650, resolutionDays: 90 },
+  MAX: { spanDays: 3650 * 2, resolutionDays: 365 }
 };
-
+function getTickConfig(resDays) {
+  const m = resDays * 24 * 60;
+  if (m < 60) return { unit: "minute", stepSize: Math.max(1, Math.round(m)) };
+  if (m < 1440) return { unit: "hour", stepSize: Math.max(1, Math.round(m / 60)) };
+  if (m < 43200) return { unit: "day", stepSize: Math.max(1, Math.round(m / 1440)) };
+  if (m < 525600) return { unit: "month", stepSize: Math.max(1, Math.round(m / 43200)) };
+  return { unit: "year", stepSize: Math.max(1, Math.round(m / 525600)) };
+}
 const MAX_TICKS = {
+  "1H": 8,
   "1D": 8,
   "1W": 7,
   "1M": 10,
@@ -117,61 +140,104 @@ const MAX_TICKS = {
   "10Y": 12,
   MAX: 12
 };
+const COMPANY_NAMES = {
+  AAPL: "Apple Inc.",
+  TSLA: "Tesla, Inc.",
+  MSFT: "Microsoft Corporation",
+  GOOG: "Alphabet Inc.",
+  AMZN: "Amazon.com, Inc."
+};
 
-function getScaleConfig(cfg, tf) {
-  let unit, step;
-  if (cfg.tickUnit) {
-    unit = cfg.tickUnit;
-    step = cfg.tickStep;
-  } else {
-    const m = cfg.resolutionMinutes;
-    if (m < 60) {
-      unit = "minute";
-      step = Math.round(m);
-    } else if (m < 1440) {
-      unit = "hour";
-      step = Math.round(m / 60);
-    } else if (m < 43200) {
-      unit = "day";
-      step = Math.round(m / 1440);
-    } else if (m < 525600) {
-      unit = "month";
-      step = Math.round(m / 43200);
-    } else {
-      unit = "year";
-      step = Math.round(m / 525600);
+// default date-fns format tokens
+const DEFAULT_TOKENS = {
+  minute: "h:mm a",
+  hour: "MMM d h a",
+  day: "MMM d",
+  week: "MMM d",
+  month: "MMM yyyy",
+  year: "yyyy"
+};
+
+// sparkline demo data
+function generateSparkData() {
+  const pts = 50;
+  const now = Date.now();
+  const start = now - 24 * 60 * 60 * 1000;
+  const labels = Array.from({ length: pts }, (_, i) =>
+    new Date(start + ((now - start) * i) / (pts - 1))
+  );
+  const series = [];
+  for (let i = 0; i < pts; i++) {
+    if (i === 0) series.push(100 + Math.random() * 50);
+    else {
+      const p = series[i - 1];
+      series.push(parseFloat((p * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2)));
     }
   }
-
-  const defaultFormats = {
-    minute: "h:mm a",
-    hour: "MMM d h a",
-    day: "MMM d",
-    week: "MMM d",
-    month: "MMM yyyy",
-    year: "yyyy"
+  const first = series[0];
+  const last = series[pts - 1];
+  const up = last >= first;
+  const changePct = (((last - first) / first) * 100).toFixed(2);
+  const data = {
+    datasets: [
+      {
+        data: series.map((v, i) => ({ x: labels[i], y: v })),
+        borderColor: up ? "#00FF8C" : "#FF6B6B",
+        backgroundColor: "transparent",
+        pointRadius: 0,
+        borderWidth: 1,
+        tension: 0.3
+      }
+    ]
   };
-  const fmt =
-    cfg.displayFormats && cfg.displayFormats[unit]
-      ? cfg.displayFormats[unit]
-      : defaultFormats[unit];
-
-  return {
-    time: {
-      unit,
-      stepSize: step,
-      displayFormats: { [unit]: fmt }
-    },
-    ticks: {
-      source: tf === "1D" ? "auto" : "data",
-      autoSkip: true,
-      maxTicksLimit: MAX_TICKS[tf],
-      color: "#999999"
-    }
-  };
+  return { data, up, changePct };
 }
 
-// ─── TradePage & all components ──────────────────────────────────────────────
+function Sparkline({ data, options }) {
+  return <Chart type="line" data={data} options={options} />;
+}
+
+function WatchlistItem({ sym, active, isEditing, onSelect, onRemove }) {
+  const { data, up, changePct } = useMemo(() => generateSparkData(), [sym]);
+  const sparkOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: { x: { display: false }, y: { display: false } },
+    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+  };
+  const isActive = sym === active;
+  const activeClass = isActive
+    ? up
+      ? "tp-active asset-up"
+      : "tp-active asset-down"
+    : "";
+  return (
+    <li className={`tp-watchlist-item ${activeClass}`} onClick={() => onSelect(sym)}>
+      <span className="tp-watchlist-symbol">{sym}</span>
+      <div className="tp-sparkline-container">
+        <div className="tp-sparkline">
+          <Sparkline data={data} options={sparkOptions} />
+        </div>
+        <span className={`tp-chip ${up ? "tp-chip-up" : "tp-chip-down"}`}>
+          {up ? "+" : ""}
+          {changePct}%
+        </span>
+      </div>
+      {isEditing && (
+        <span
+          className="tp-remove-icon"
+          onClick={e => {
+            e.stopPropagation();
+            onRemove(sym);
+          }}
+        >
+          <FontAwesomeIcon icon={faTimes} />
+        </span>
+      )}
+    </li>
+  );
+}
+
 export default function TradePage() {
   const [watchlist, setWatchlist] = useState(["AAPL", "TSLA", "MSFT"]);
   const [newSym, setNewSym] = useState("");
@@ -187,7 +253,6 @@ export default function TradePage() {
     }
     setNewSym("");
   };
-
   const removeSymbol = s => {
     const next = watchlist.filter(x => x !== s);
     setWatchlist(next);
@@ -253,20 +318,12 @@ function Header() {
     <header className="tp-header">
       <div className="tp-logo">4X Trading</div>
       <div className="tp-summary">
-        <div>
-          Total Value<span>$1,234,567</span>
-        </div>
-        <div>
-          Buying Power<span>$50,000</span>
-        </div>
+        <div>Total Value<span>$1,234,567</span></div>
+        <div>Buying Power<span>$50,000</span></div>
       </div>
       <div className="tp-actions">
-        <button>
-          <FontAwesomeIcon icon={faCog} />
-        </button>
-        <button>
-          <FontAwesomeIcon icon={faUser} />
-        </button>
+        <button><FontAwesomeIcon icon={faCog} /></button>
+        <button><FontAwesomeIcon icon={faUser} /></button>
       </div>
     </header>
   );
@@ -277,24 +334,14 @@ function ChatBot() {
   const [inTxt, setInTxt] = useState("");
   const send = () => {
     if (!inTxt) return;
-    setMsgs([
-      ...msgs,
-      { role: "user", text: inTxt },
-      { role: "bot", text: `🤖 Idea for "${inTxt}"` }
-    ]);
+    setMsgs([...msgs, { role: "user", text: inTxt }, { role: "bot", text: `🤖 Idea for "${inTxt}"` }]);
     setInTxt("");
   };
   return (
     <div className="tp-chat">
-      <h4>
-        <FontAwesomeIcon icon={faComments} /> TradeBot
-      </h4>
+      <h4><FontAwesomeIcon icon={faComments} /> TradeBot</h4>
       <div className="tp-chat-window">
-        {msgs.map((m, i) => (
-          <div key={i} className={m.role}>
-            {m.text}
-          </div>
-        ))}
+        {msgs.map((m, i) => <div key={i} className={m.role}>{m.text}</div>)}
       </div>
       <div className="tp-chat-input">
         <input
@@ -323,230 +370,190 @@ function MainContent({ symbol }) {
   );
 }
 
-function WatchlistItem({ sym, active, isEditing, onSelect, onRemove }) {
-  const { data, up, changePct } = useMemo(() => generateSparkData(), [sym]);
-  const sparkOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: { x: { display: false }, y: { display: false } },
-    plugins: { legend: { display: false }, tooltip: { enabled: false } }
-  };
-  const isActive = sym === active;
-  const activeClass = isActive
-    ? up
-      ? "tp-active asset-up"
-      : "tp-active asset-down"
-    : "";
-  return (
-    <li className={`tp-watchlist-item ${activeClass}`} onClick={() => onSelect(sym)}>
-      <span className="tp-watchlist-symbol">{sym}</span>
-      <div className="tp-sparkline-container">
-        <div className="tp-sparkline">
-          <Sparkline data={data} options={sparkOptions} />
-        </div>
-        <span className={`tp-chip ${up ? "tp-chip-up" : "tp-chip-down"}`}>
-          {up ? "+" : ""}
-          {changePct}%
-        </span>
-      </div>
-      {isEditing && (
-        <span
-          className="tp-remove-icon"
-          onClick={e => { e.stopPropagation(); onRemove(sym); }}
-        >
-          <FontAwesomeIcon icon={faTimes} />
-        </span>
-      )}
-    </li>
-  );
-}
-
-function Sparkline({ data, options }) {
-  return <Chart type="line" data={data} options={options} />;
-}
-
 export function ChartSection({ symbol }) {
   const chartRef = useRef(null);
+  const [tf, setTf]       = useState("1D");
+  const [type, setType]   = useState("line");
+  const [hover, setHover] = useState({ x: null, time: "" });
 
-  // 1️⃣ Core state
-  const [tf, setTf] = useState("1D");
-  const [type, setType] = useState("line");
-  const [hoverInfo, setHoverInfo] = useState({ x: null, time: "", price: "" });
-
-  // 2️⃣ Buckets + live price
-  const [labels, setLabels] = useState([]);     // array of Date()
-  const [series, setSeries] = useState([]);     // array of numbers|null
-  const [currentPrice, setCurrentPrice] = useState(100);
-
-  // Build 5-minute buckets when TF = 1D
-  useEffect(() => {
-    if (tf !== "1D") {
-      setLabels([]);
-      setSeries([]);
-      return;
-    }
-    const today   = new Date();
-    const openMs  = new Date(today.getFullYear(), today.getMonth(), today.getDate(),  9, 30).getTime();
-    const closeMs = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16,   0).getTime();
-    const bucketMs = 5 * 60 * 1000;
-    const cnt      = Math.floor((closeMs - openMs) / bucketMs) + 1;
-
-    // full array of Date from 9:30 → 16:00
-    const newLabels = Array.from({ length: cnt }, (_, i) =>
-      new Date(openMs + i * bucketMs)
-    );
-    setLabels(newLabels);
-
-    // seed past buckets with simulated data, future stay null
-    let v = 100 + Math.random() * 50;
-    const init = newLabels.map(ts =>
-      ts.getTime() <= Date.now()
-        ? (v = parseFloat((v * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2)))
-        : null
-    );
-    setSeries(init);
-    setCurrentPrice(init.filter(x => x != null).slice(-1)[0] ?? 100);
-  }, [tf]);
-
-  // Every 5s: generate a new live price, and if a bucket's time has passed, fill it
-  useEffect(() => {
-    if (tf !== "1D" || labels.length === 0) return;
-    const iv = setInterval(() => {
-      setCurrentPrice(prev =>
-        parseFloat((prev * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2))
-      );
-      setSeries(prev => {
-        const next = [...prev];
-        const now = Date.now();
-        const idx = labels.findIndex((dt, i) => next[i] == null && dt.getTime() <= now);
-        if (idx >= 0) next[idx] = currentPrice;
-        return next;
-      });
-    }, 5000);
-    return () => clearInterval(iv);
-  }, [tf, labels, currentPrice]);
-
-  // 3️⃣ Build data + derive lastPrice, openTime, closeTime
-  const { data, lastPrice, openTime, closeTime } = useMemo(() => {
-    let openTime = null, closeTime = null;
-    if (tf === "1D" && labels.length) {
-      openTime  = labels[0].getTime();
-      closeTime = labels[labels.length - 1].getTime();
-    }
-
+  // memoize data + config whenever tf/type/symbol change
+  const { data, price, openTime, closeTime, timeScale, tickScale } = useMemo(() => {
     const cfg = TF_CONFIG[tf];
-    const { time: scaleTime, ticks: scaleTicks } = getScaleConfig(cfg, tf);
+    const now = Date.now();
 
-    let datasets = [];
-    let firstVal, lastVal, color = "#00FF8C";
+    let labels = [], series = [], openTime = null, closeTime = null;
 
-    if (tf === "1D" && labels.length) {
+    if (tf === "1D") {
+      // ─── build 1D live labels & series ─────────────────────────────
+      const today = new Date();
+      openTime  = new Date(today.getFullYear(), today.getMonth(), today.getDate(),  9, 30).getTime();
+      closeTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16,  0).getTime();
+      const step  = 5 * 60 * 1000;
+      const count = Math.floor((closeTime - openTime) / step) + 1;
+      labels = Array.from({ length: count }, (_, i) => new Date(openTime + i * step));
+      let v = 100 + Math.random() * 50;
+      series = labels.map(ts =>
+        ts.getTime() <= now
+          ? (v = parseFloat((v * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2)))
+          : null
+      );
+    } else {
+      // ─── build static labels for other TFs ───────────────────────────
+      const spanDays = tf === "YTD"
+        ? (now - new Date(new Date().getFullYear(), 0, 1).getTime()) / 86400000
+        : cfg.spanDays;
+      const start = now - spanDays * 86400000;
+      const pts   = Math.max(2, Math.round(spanDays / cfg.resolutionDays));
+      labels = Array.from({ length: pts }, (_, i) =>
+        new Date(start + ((now - start) * i) / (pts - 1))
+      );
+      // ─── properly build static series ─────────────────────────────────
+      for (let i = 0; i < labels.length; i++) {
+        if (i === 0) {
+          series.push(100 + Math.random() * 50);
+        } else {
+          const prev = series[i - 1];
+          series.push(
+            parseFloat((prev * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2))
+          );
+        }
+      }
+    }
+
+    // ─── determine up/down & pick color ───────────────────────────────
+    const clean = series.filter(v => v != null);
+    const first = clean[0] ?? 0;
+    const last  = clean[clean.length - 1] ?? first;
+    const up    = last >= first;
+    const color = up ? "#00FF8C" : "#FF6B6B";
+
+    // ─── build dataset (line vs. candle) ──────────────────────────────
+    let datasets;
+    if (type === "line") {
       const pts = labels
         .map((t, i) => ({ x: t, y: series[i] }))
-        .filter(pt => pt.y != null);
-
-      firstVal = pts[0]?.y;
-      lastVal  = pts[pts.length - 1]?.y;
-      color    = lastVal >= firstVal ? "#00FF8C" : "#FF6B6B";
-
-      const liveX = Math.min(Date.now(), closeTime);
-      pts.push({ x: new Date(liveX), y: currentPrice });
-      // add null at close to force full span to 16:00
-      pts.push({ x: new Date(closeTime), y: null });
-
+        .filter(p => p.y != null);
+      if (tf === "1D") {
+        const liveX = Math.min(now, closeTime);
+        pts.push({ x: new Date(liveX), y: last });
+      }
       datasets = [{
         label: symbol,
         data: pts,
         spanGaps: true,
         borderColor: color,
-        pointRadius: ctx => (ctx.dataIndex === pts.length - 2 ? 6 : 0),
-        pointHoverRadius: 4,
+        backgroundColor: "transparent",
+        pointRadius: ctx => ctx.dataIndex === pts.length - 1 ? 6 : 0,
         borderWidth: 2,
         tension: 0
       }];
     } else {
-      // … your existing multi-day logic …
+      const ohlcData = labels.map((t, i) => {
+        const o = series[i] ?? last;
+        const c = o * (1 + (Math.random() - 0.5) * 0.02);
+        const h = Math.max(o, c) * (1 + Math.random() * 0.01);
+        const l = Math.min(o, c) * (1 - Math.random() * 0.01);
+        return { x: t, o, h, l, c };
+      });
+      datasets = [{
+        label: symbol,
+        data: ohlcData,
+        color: { up: "#00FF8C", down: "#FF6B6B", unchanged: "#00FF8C" },
+        barThickness: "flex",
+        maxBarThickness: 12
+      }];
     }
 
-    const lastPrice = tf === "1D" ? currentPrice : (lastVal ?? currentPrice);
+    // ─── configure scales ──────────────────────────────────────────────
+    const baseTick = getTickConfig(cfg.resolutionDays);
+    const unit     = cfg.tickUnit    || baseTick.unit;
+    const stepSize = cfg.tickStep    || baseTick.stepSize;
+    const fmtToken = (cfg.displayFormats && cfg.displayFormats[unit]) || DEFAULT_TOKENS[unit];
+    const timeScale = { unit, stepSize, displayFormats: { [unit]: fmtToken } };
+    const tickScale = {
+      source: tf === "1D" ? "auto" : "data",
+      autoSkip: true,
+      maxTicksLimit: MAX_TICKS[tf],
+      color: "#999999"
+    };
+
     return {
       data: { datasets },
-      lastPrice: lastPrice.toFixed(2),
-      openTime,
-      closeTime
+      price: last.toFixed(2),
+      openTime, closeTime,
+      timeScale, tickScale
     };
-  }, [tf, symbol, labels, series, currentPrice]);
+  }, [tf, type, symbol]);
 
-  // formatter for hover
-  const fmt = date => format(date, "MMM d, h:mm a");
-
-  // 4️⃣ Chart options
-  const { time: scaleTime, ticks: scaleTicks } = getScaleConfig(TF_CONFIG[tf], tf);
+  const fmtHover = dt => format(dt, "MMM d, h:mm a");
 
   const options = {
     maintainAspectRatio: false,
     animation: false,
-    plugins: { legend: { display: false }, tooltip: { enabled: false }, crosshair: {} },
+    plugins: {
+      crosshair: {},
+      legend: { display: false },
+      tooltip: { enabled: false }
+    },
     interaction: { mode: "nearest", axis: "x", intersect: false },
-
-    onHover: (evt, elements) => {
+    scales: {
+      x: {
+        type: "time",
+        time: timeScale,
+        ticks: tickScale,
+        grid: { color: "#444444" },
+        ...(tf === "1D" ? { min: openTime, max: closeTime, bounds: "ticks" } : {})
+      },
+      y: {
+        ticks: { color: "#999999" },
+        grid:  { color: "#444444" }
+      }
+    },
+    onHover: (e, items) => {
       const chart = chartRef.current;
       if (!chart) return;
       const rect = chart.canvas.getBoundingClientRect();
-      let x = evt.native.clientX - rect.left;
-      const { left, right } = chart.chartArea;
-      x = Math.min(Math.max(x, left), right);
-      const maxX = chart.scales.x.getPixelForValue(Date.now());
-      x = Math.min(x, maxX);
+      let x = e.native.clientX - rect.left;
+      x = Math.max(chart.chartArea.left, Math.min(chart.chartArea.right, x));
       chart.$hoverX = x;
-
-      if (elements.length) {
-        const pt = data.datasets[0].data[elements[0].index];
-        setHoverInfo({ x, time: fmt(pt.x), price: `$${pt.y.toFixed(2)}` });
+      if (items.length) {
+        const { x: dt } = data.datasets[0].data[items[0].index];
+        setHover({ x, time: fmtHover(dt) });
       } else {
-        setHoverInfo({ x: null, time: "", price: "" });
+        setHover({ x: null, time: "" });
       }
     },
     onLeave: () => {
       const chart = chartRef.current;
       if (chart) chart.$hoverX = null;
-      setHoverInfo({ x: null, time: "", price: "" });
-    },
-
-    scales: {
-      x: {
-        type: "time",
-        time: scaleTime,
-        // clamp to full market hours only for 1D
-        ...(tf === "1D" && { min: openTime, max: closeTime, bounds: "ticks" }),
-        ticks: scaleTicks,
-        grid: { color: "#444444" }
-      },
-      y: { ticks: { color: "#999999" }, grid: { color: "#444444" } }
+      setHover({ x: null, time: "" });
     }
   };
 
   return (
     <section className="tp-chart-section tp-panel">
+      {/* header */}
       <div className="tp-chart-section-header">
         <div className="tp-chart-section-sub-header">
           <div>
             <div className="tp-symbol-header">{symbol}</div>
             <div className="tp-company-name">{COMPANY_NAMES[symbol]}</div>
           </div>
-          <span className="tp-price">{hoverInfo.price || `$${lastPrice}`}</span>
+          <span className="tp-price">${price}</span>
         </div>
         <div className="tp-chart-controls">
           <div className="tp-timeframe">
-            {Object.keys(TF_CONFIG).map(key => (
-              <button
-                key={key}
-                className={tf === key ? "tp-active" : ""}
-                onClick={() => setTf(key)}
-              >
-                {key}
-              </button>
-            ))}
+            {Object.keys(TIMEFRAMES)
+              .filter(k => k !== "1H")
+              .map(k => (
+                <button
+                  key={k}
+                  className={tf === k ? "tp-active" : ""}
+                  onClick={() => setTf(k)}
+                >
+                  {k}
+                </button>
+              ))}
           </div>
           <div className="tp-chart-type-buttons">
             {["line", "candlestick"].map(t => (
@@ -562,13 +569,11 @@ export function ChartSection({ symbol }) {
         </div>
       </div>
 
-      <div
-        className="tp-chart-body"
-        onMouseLeave={() => setHoverInfo({ x: null, time: "", price: "" })}
-      >
-        {hoverInfo.time && (
-          <div className="tp-hover-info" style={{ left: hoverInfo.x }}>
-            {hoverInfo.time}
+      {/* chart + floating time */}
+      <div className="tp-chart-body">
+        {hover.time && (
+          <div className="tp-hover-info" style={{ left: hover.x }}>
+            {hover.time}
           </div>
         )}
         <Chart ref={chartRef} type={type} data={data} options={options} />
@@ -577,26 +582,30 @@ export function ChartSection({ symbol }) {
   );
 }
 
+
+
 function MetricsPanel({ symbol }) {
   const price = (100 + Math.random() * 50).toFixed(2);
   const volume = Math.floor(1e5 + Math.random() * 9e5).toLocaleString();
-  const change = (Math.random() * 2 - 1).toFixed(2) + "%";
+  const change = ((Math.random() * 2 - 1).toFixed(2)) + "%";
   return (
     <div className="tp-panel">
-      <h5><FontAwesomeIcon icon={faLayerGroup} /> Metrics — {symbol}</h5>
+      <h5>
+        <FontAwesomeIcon icon={faLayerGroup} /> Metrics — {symbol}
+      </h5>
       <div className="tp-metrics">
         <div><span>Price</span><span className="tp-metric-value">${price}</span></div>
         <div><span>Volume</span><span className="tp-metric-value">{volume}</span></div>
         <div>
           <span>Change</span>
-          <span className={`tp-metric-value ${change.startsWith("-") ? "tp-down" : "tp-up"}`}>{change}</span>
+          <span className={`tp-metric-value ${change.startsWith("-") ? "tp-down" : "tp-up"}`}>
+            {change}
+          </span>
         </div>
       </div>
     </div>
   );
 }
-
-
 
 function FundamentalsPanel({ symbol }) {
   return (
@@ -617,9 +626,7 @@ function FundamentalsPanel({ symbol }) {
 
 function SentimentPanel({ symbol }) {
   const [score, setScore] = useState(0);
-  useEffect(() => {
-    setScore(Math.floor(Math.random() * 100 - 50));
-  }, [symbol]);
+  useEffect(() => { setScore(Math.floor(Math.random() * 100 - 50)); }, [symbol]);
   return (
     <div className="tp-panel">
       <h5>
@@ -633,6 +640,214 @@ function SentimentPanel({ symbol }) {
         min="-100" max="100" low="0" high="0" optimum="100"
         value={score}
       />
+    </div>
+  );
+}
+
+function HeatmapPanel() {
+  const sectors = ['Tech', 'Finance', 'Energy', 'Health', 'Retail', 'Auto'];
+  return (
+    <div className="tp-panel">
+      <h5>
+        <FontAwesomeIcon icon={faLayerGroup} /> Sector Heatmap
+      </h5>
+      <div className="tp-heatmap">
+        {sectors.map((s, i) => (
+          <div
+            key={s}
+            className="tp-heat-cell"
+            style={{ background: `hsl(${i * 60},70%,${50 + Math.random() * 20}%)` }}
+          >
+            {s}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TradeSidebar({ symbol }) {
+  return (
+    <aside className="tp-trade-aside">
+      <OrderPanel symbol={symbol} />
+      <NewsPanel />
+      <PositionsPanel />
+      <OrdersHistoryPanel />
+      <Level2Panel />
+      <TimeAndSalesPanel />
+    </aside>
+  );
+}
+
+export function OrderPanel({ symbol }) {
+  const [type, setType] = useState("Market");
+  const [qty, setQty] = useState("");
+  const [limit, setLimit] = useState("");
+  const setPct = p => setQty(Math.floor((50000 * p) / 100));
+  const submit = e => {
+    e.preventDefault();
+    alert(`${type} ${qty} ${symbol}@${type === "Limit" ? limit : "MKT"}`);
+  };
+  return (
+    <div className="tp-panel tp-order-panel">
+      <h5>
+        <FontAwesomeIcon icon={faExchangeAlt} /> Order Entry — {symbol}
+      </h5>
+      <form onSubmit={submit}>
+        <div className="tp-order-types">
+          {["Market", "Limit", "Stop"].map(o => (
+            <button
+              key={o}
+              type="button"
+              className={type === o ? "tp-active" : ""}
+              onClick={() => setType(o)}
+            >
+              {o}
+            </button>
+          ))}
+        </div>
+        <input
+          className="tp-order-input"
+          type="number"
+          placeholder="Qty"
+          value={qty}
+          onChange={e => setQty(e.target.value)}
+        />
+        {type === "Limit" && (
+          <input
+            className="tp-order-input"
+            type="number"
+            placeholder="Limit Price"
+            value={limit}
+            onChange={e => setLimit(e.target.value)}
+          />
+        )}
+        <div className="tp-quick-presets">
+          {[10, 25, 50].map(p => (
+            <button key={p} type="button" onClick={() => setPct(p)}>
+              {p}%
+            </button>
+          ))}
+        </div>
+        <button className="tp-submit-btn" type="submit" disabled={!qty}>
+          {type} Order
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function NewsPanel() {
+  const MOCK_NEWS = [
+    { title: "Tech Stocks Rally Amid Earnings Beat", url: "#" },
+    { title: "Fed Holds Rates Steady", url: "#" },
+    { title: "New IPOs This Week", url: "#" },
+    { title: "Energy Sector Sees Interest", url: "#" }
+  ];
+  return (
+    <div className="tp-panel">
+      <h5>
+        <FontAwesomeIcon icon={faNewspaper} /> News
+      </h5>
+      <ul className="tp-news-list">
+        {MOCK_NEWS.map((a, i) => (
+          <li key={i}>
+            <a href={a.url}>{a.title}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PositionsPanel() {
+  const [pos] = useState([
+    { symbol: "AAPL", qty: 10, avg: 150.23 },
+    { symbol: "TSLA", qty: 5, avg: 650.50 }
+  ]);
+  return (
+    <div className="tp-panel">
+      <h5>
+        <FontAwesomeIcon icon={faListAlt} /> Positions
+      </h5>
+      <ul className="tp-list">
+        {pos.map(p => (
+          <li key={p.symbol}>
+            <span>{p.symbol}</span>
+            <span>{p.qty}</span>
+            <span>${p.avg}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function OrdersHistoryPanel() {
+  const [trades] = useState(["AAPL 5 @155.00", "TSLA 2 @670.00"]);
+  return (
+    <div className="tp-panel">
+      <h5>
+        <FontAwesomeIcon icon={faClock} /> Recent Trades
+      </h5>
+      <ul className="tp-list">
+        {trades.map((t, i) => (
+          <li key={i}>{t}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Level2Panel() {
+  const book = Array.from({ length: 5 }, (_, i) => ({
+    bid: (100 - (i + 1) * 0.2).toFixed(2),
+    ask: (100 + (i + 1) * 0.2).toFixed(2),
+    size: Math.floor(100 + Math.random() * 900)
+  }));
+  return (
+    <div className="tp-panel">
+      <h5>
+        <FontAwesomeIcon icon={faLayerGroup} /> Level-2
+      </h5>
+      <table className="tp-book">
+        <thead>
+          <tr>
+            <th>Bid</th>
+            <th>Size</th>
+            <th>Size</th>
+            <th>Ask</th>
+          </tr>
+        </thead>
+        <tbody>
+          {book.map((o, i) => (
+            <tr key={i}>
+              <td className="tp-down">{o.bid}</td>
+              <td>{o.size}</td>
+              <td>{o.size}</td>
+              <td className="tp-up">{o.ask}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TimeAndSalesPanel() {
+  const lines = Array.from({ length: 5 }, (_, i) =>
+    `${new Date(Date.now() - i * 60000).toLocaleTimeString()} • ${(100 + Math.random() * 50).toFixed(2)}`
+  );
+  return (
+    <div className="tp-panel">
+      <h5>
+        <FontAwesomeIcon icon={faClock} /> Time & Sales
+      </h5>
+      <ul className="tp-list">
+        {lines.map((l, i) => (
+          <li key={i}>{l}</li>
+        ))}
+      </ul>
     </div>
   );
 }
