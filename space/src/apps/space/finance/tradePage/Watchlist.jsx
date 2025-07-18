@@ -1,9 +1,30 @@
+// src/components/Watchlist.jsx
 import React, { useState, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes, faEdit, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Chart } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+} from "chart.js";
+import annotationPlugin from "chartjs-plugin-annotation";
 
-// sparkline demo data generator
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  annotationPlugin
+);
+
+// sparkline demo data generator, returns prevClose too
 function generateSparkData() {
   const pts = 50;
   const now = Date.now();
@@ -22,13 +43,16 @@ function generateSparkData() {
       );
     }
   }
-  const first = series[0];
-  const last = series[pts - 1];
-  const up = last >= first;
-  const changePct = (((last - first) / first) * 100).toFixed(2);
+  const prevClose = series[0];
+  const last = series[series.length - 1];
+  const up = last >= prevClose;
+  const changePct = (((last - prevClose) / prevClose) * 100).toFixed(2);
+
   const data = {
+    labels,
     datasets: [
       {
+        label: "price",
         data: series.map((v, i) => ({ x: labels[i], y: v })),
         borderColor: up ? "#00FF8C" : "#FF6B6B",
         backgroundColor: "transparent",
@@ -38,7 +62,8 @@ function generateSparkData() {
       },
     ],
   };
-  return { data, up, changePct };
+
+  return { data, up, changePct, prevClose };
 }
 
 function Sparkline({ data, options }) {
@@ -46,13 +71,46 @@ function Sparkline({ data, options }) {
 }
 
 function WatchlistItem({ sym, active, isEditing, onSelect, onRemove }) {
-  const { data, up, changePct } = useMemo(() => generateSparkData(), [sym]);
+  const { data, up, changePct, prevClose } = useMemo(
+    () => generateSparkData(),
+    [sym]
+  );
+
   const sparkOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    scales: { x: { display: false }, y: { display: false } },
-    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    scales: {
+      x: { display: false },
+      y: { display: false },
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false },
+      annotation: {
+        annotations: {
+          prevCloseLine: {
+            type: "line",
+            scaleID: "y",
+            value: prevClose,
+            borderColor: "rgba(136,136,136,0.6)",
+            borderDash: [2, 2],
+            borderWidth: 0.5,
+          },
+        },
+      },
+    },
+    elements: {
+      line: {
+        borderWidth: 1,
+        tension: 0.3,
+        capBezierPoints: true,
+      },
+      point: {
+        radius: 0,
+      },
+    },
   };
+
   const isActive = sym === active;
   const activeClass = isActive
     ? up
@@ -90,7 +148,12 @@ function WatchlistItem({ sym, active, isEditing, onSelect, onRemove }) {
   );
 }
 
-export default function Watchlist({ watchlist, setWatchlist, active, setActive }) {
+export default function Watchlist({
+  watchlist,
+  setWatchlist,
+  active,
+  setActive,
+}) {
   const [newSym, setNewSym] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [wlName, setWlName] = useState("My Watchlist");
