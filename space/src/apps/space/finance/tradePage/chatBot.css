@@ -1,0 +1,48 @@
+
+.tp-chat {
+  margin-top: 1rem;
+}
+
+.tp-chat-window {
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+}
+
+.tp-chat-window .bot {
+  background: rgba(255,255,255,0.1);
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.tp-chat-window .user {
+  background: rgba(0,255,140,0.2);
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+  margin-bottom: 0.3rem;
+  align-self: flex-end;
+}
+
+.tp-chat-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tp-chat-input input {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--tp-border);
+  border-radius: 0.5rem;
+  color: var(--tp-text);
+}
+
+.tp-chat-input button {
+  padding: 0.5rem 1rem;
+  background: var(--tp-accent);
+  border: none;
+  border-radius: 0.5rem;
+  color: #0e0e1e;
+  cursor: pointer;
+}

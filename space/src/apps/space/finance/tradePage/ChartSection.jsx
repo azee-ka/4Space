@@ -1,5 +1,6 @@
 // components/ChartSection.jsx
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import './chartSection.css';
 import "chartjs-adapter-date-fns";
 import { format } from "date-fns";
 import {
@@ -15,10 +16,10 @@ import {
 } from "chart.js";
 import annotationPlugin from "chartjs-plugin-annotation";
 import { Chart } from "react-chartjs-2";
-import crosshairPlugin from "./crosshairPlugin";
+import crosshairPlugin from "./utils/crosshairPlugin";
 import { CandlestickController, CandlestickElement } from "chartjs-chart-financial";
-import { TIMEFRAMES, COMPANY_NAMES } from "./chartConfig";
-import { generateChartData } from "./generateChartData";
+import { TIMEFRAMES, COMPANY_NAMES } from "./utils/chartConfig";
+import { generateChartData } from "./utils/generateChartData";
 
 // register Chart.js components & plugins
 ChartJS.register(

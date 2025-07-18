@@ -1,0 +1,267 @@
+/* CHART SECTION */
+.tp-chart-section {
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  position: relative;
+  min-height: 300px;
+  max-height: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tp-chart-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tp-chart-section-sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tp-company-name {
+  font-size: 1rem;
+  color: var(--tp-sub);
+}
+
+.tp-chart-section .tp-price {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.tp-timeframe {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.4) transparent;
+  height: calc(100% + 5px);
+  box-sizing: border-box;
+}
+
+.tp-timeframe::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tp-timeframe::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tp-timeframe::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.4);
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+.tp-timeframe::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255,255,255,0.6);
+}
+
+.tp-timeframe button {
+  padding: 0 0.6rem;
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  cursor: pointer;
+  color: var(--tp-text);
+  height: 100%;
+}
+
+.tp-timeframe .tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+.tp-chart-type-buttons {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.tp-chart-type-btn {
+  padding: 0 0.6rem;
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  cursor: pointer;
+  color: var(--tp-text);
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  height: 100%;
+}
+
+.tp-chart-type-btn.tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+.tp-chart-section .tick {
+  color: var(--tp-sub);
+}
+
+.tp-chart-section .domain {
+  stroke: var(--tp-border);
+}
+
+.tp-chart-section canvas {
+  user-select: none;
+}
+
+/* second chart section tweaks */
+.tp-chart-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: 360px;
+  overflow: hidden;
+}
+
+.tp-chart-body {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
+  position: relative;
+}
+
+.tp-chart-body canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* METRICS */
+.tp-metrics {
+  display: flex;
+  gap: 1rem;
+}
+
+.tp-metrics div {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-metric-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.tp-up {
+  color: var(--tp-up);
+}
+
+.tp-down {
+  color: var(--tp-down);
+}
+
+
+
+
+
+
+
+
+/* CHART SECTION tweaks */
+.tp-chart-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  height: 30px;
+}
+
+/* chart type toggle */
+.tp-chart-type-buttons {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.tp-chart-type-btn {
+  padding: 0 0.6rem;
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  cursor: pointer;
+  color: var(--tp-text);
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  height: 100%;
+}
+
+.tp-chart-type-btn.tp-active {
+  background: var(--tp-accent);
+  color: #0e0e1e;
+}
+
+/* make the x/y axes lines a little subtler */
+.tp-chart-section .tick {
+  color: var(--tp-sub);
+}
+
+.tp-chart-section .domain {
+  stroke: var(--tp-border);
+}
+
+/* ensure candlesticks have the right bar width */
+.tp-chart-section canvas {
+  user-select: none;
+}
+
+/* tradePage.css */
+
+/* CHART SECTION tweaks */
+.tp-chart-section {
+  display: flex;
+  flex-direction: column;
+  /* panel caps out at these heights as before */
+  min-height: 300px;
+  max-height: 360px;
+  /* ensure child can shrink inside */
+  overflow: hidden;        /* hide any tiny rounding errors */
+}
+
+.tp-chart-body {
+  flex: 1;                 /* grow to fill available space */
+  /* allow this flex‐child to shrink below its own content height */
+  min-height: 0;
+  position: relative;
+}
+
+/* force the canvas to exactly fill its wrapper (chartjs sees the right size) */
+.tp-chart-body canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+
+
+
+.tp-chart-body { 
+    position: relative; 
+    margin-top: 5px;
+}
+.tp-hover-info {
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  color: var(--tp-text);
+  background: rgba(0,0,0,0.4);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+
+

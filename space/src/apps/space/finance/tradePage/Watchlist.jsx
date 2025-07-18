@@ -1,5 +1,6 @@
 // src/components/Watchlist.jsx
 import React, { useState, useMemo } from "react";
+import './watchlist.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes, faEdit, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Chart } from "react-chartjs-2";

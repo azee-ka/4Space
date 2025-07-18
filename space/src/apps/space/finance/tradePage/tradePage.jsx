@@ -1,16 +1,17 @@
 // src/components/TradePage.jsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "chartjs-adapter-date-fns";
 import { format } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCog,
   faUser,
-  faExchangeAlt,
   faLayerGroup,
-  faNewspaper,
   faSmile,
+  faChartBar,
   faTable,
+  faExchangeAlt,
+  faNewspaper,
   faListAlt,
   faClock,
 } from "@fortawesome/free-solid-svg-icons";
@@ -32,11 +33,12 @@ import {
   OhlcController,
   OhlcElement,
 } from "chartjs-chart-financial";
-import "./tradePage.css";
+import "chartjs-plugin-annotation";
 
 import Watchlist from "./Watchlist";
 import ChatBot from "./ChatBot";
 import ChartSection from "./ChartSection";
+import "./tradePage.css";
 
 // crosshair plugin
 const crosshairPlugin = {
@@ -83,7 +85,6 @@ export default function TradePage() {
   return (
     <div className="tp-container">
       <Header />
-
       <div className="tp-body">
         <aside className="tp-sidebar">
           <Watchlist
@@ -94,9 +95,7 @@ export default function TradePage() {
           />
           <ChatBot />
         </aside>
-
         <MainContent symbol={active} />
-
         <TradeSidebar symbol={active} />
       </div>
     </div>
@@ -132,41 +131,143 @@ function MainContent({ symbol }) {
     <main className="tp-main">
       <ChartSection symbol={symbol} />
       <div className="tp-info-grid">
-        <MetricsPanel symbol={symbol} />
+        <CoreMetricsCard symbol={symbol} />
+        <AnalystRatingCard symbol={symbol} />
+        <SentimentAnalysisCard symbol={symbol} />
         <FundamentalsPanel symbol={symbol} />
-        <SentimentPanel symbol={symbol} />
         <HeatmapPanel />
       </div>
     </main>
   );
 }
 
-function MetricsPanel({ symbol }) {
-  const price = (100 + Math.random() * 50).toFixed(2);
-  const volume = Math.floor(1e5 + Math.random() * 9e5).toLocaleString();
-  const change = (Math.random() * 2 - 1).toFixed(2) + "%";
+// 1️⃣ Core metrics card
+function CoreMetricsCard({ symbol }) {
+  const price = useMemo(() => (100 + Math.random() * 50).toFixed(2), [symbol]);
+  const change = useMemo(() => (Math.random() * 2 - 1).toFixed(2), [symbol]);
+  const [low, high] = useMemo(() => {
+    const p = parseFloat(price);
+    return [(p * 0.985).toFixed(2), (p * 1.015).toFixed(2)];
+  }, [price]);
+  const volume = useMemo(
+    () => Math.floor(1e5 + Math.random() * 9e5).toLocaleString(),
+    [symbol]
+  );
+  const marketCap = useMemo(
+    () => `$${(50 + Math.random() * 450).toFixed(1)}B`,
+    [symbol]
+  );
+
   return (
-    <div className="tp-panel">
+    <div className="tp-panel tp-wide-card">
       <h5>
-        <FontAwesomeIcon icon={faLayerGroup} /> Metrics — {symbol}
+        <FontAwesomeIcon icon={faLayerGroup} /> {symbol} Snapshot
       </h5>
-      <div className="tp-metrics">
+      <div className="tp-core-metrics">
         <div>
           <span>Price</span>
           <span className="tp-metric-value">${price}</span>
+        </div>
+        <div>
+          <span>Change</span>
+          <span
+            className={`tp-metric-value ${
+              change < 0 ? "tp-down" : "tp-up"
+            }`}
+          >
+            {change}%
+          </span>
+        </div>
+        <div>
+          <span>Day Range</span>
+          <span className="tp-metric-value">
+            ${low}–${high}
+          </span>
         </div>
         <div>
           <span>Volume</span>
           <span className="tp-metric-value">{volume}</span>
         </div>
         <div>
-          <span>Change</span>
+          <span>Market Cap</span>
+          <span className="tp-metric-value">{marketCap}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 2️⃣ Analyst ratings card
+function AnalystRatingCard({ symbol }) {
+  const buy = useMemo(() => 40 + Math.random() * 20, [symbol]);
+  const hold = useMemo(() => 30 + Math.random() * 15, [symbol]);
+  const sell = useMemo(() => 100 - buy - hold, [buy, hold]);
+
+  return (
+    <div className="tp-panel tp-wide-card">
+      <h5>
+        <FontAwesomeIcon icon={faChartBar} /> Analyst Ratings
+      </h5>
+      <div className="tp-rating-breakdown">
+        {[
+          { label: "Buy", pct: buy, color: "tp-up" },
+          { label: "Hold", pct: hold, color: "tp-sub" },
+          { label: "Sell", pct: sell, color: "tp-down" },
+        ].map((r) => (
+          <div key={r.label} className="tp-rating-row">
+            <span>{r.label}</span>
+            <div className="tp-bar-bg">
+              <div
+                className={`tp-bar-fill ${r.color}`}
+                style={{ width: `${r.pct}%` }}
+              />
+            </div>
+            <span>{r.pct.toFixed(0)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 3️⃣ Sentiment analysis card
+function SentimentAnalysisCard({ symbol }) {
+  const social = useMemo(() => Math.floor(Math.random() * 200 - 100), [
+    symbol,
+  ]);
+  const insider = useMemo(() => (Math.random() * 10 - 5).toFixed(1), [
+    symbol,
+  ]);
+  const newsSent = useMemo(() => Math.floor(Math.random() * 100), [symbol]);
+
+  return (
+    <div className="tp-panel tp-wide-card">
+      <h5>
+        <FontAwesomeIcon icon={faSmile} /> Sentiment Analysis
+      </h5>
+      <div className="tp-sentiment-detail">
+        <div className="tp-sentiment-meter-row">
+          <span>Overall</span>
+          <meter
+            min="-100"
+            max="100"
+            value={social}
+            className={social < 0 ? "tp-down" : "tp-up"}
+          />
+          <span>{social}%</span>
+        </div>
+        <div>
+          <span>News Mood</span>
+          <span className="tp-metric-value">{newsSent}%</span>
+        </div>
+        <div>
+          <span>Insider Net</span>
           <span
             className={`tp-metric-value ${
-              change.startsWith("-") ? "tp-down" : "tp-up"
+              insider < 0 ? "tp-down" : "tp-up"
             }`}
           >
-            {change}
+            {insider}%
           </span>
         </div>
       </div>
@@ -174,6 +275,7 @@ function MetricsPanel({ symbol }) {
   );
 }
 
+// Fundamentals panel
 function FundamentalsPanel({ symbol }) {
   return (
     <div className="tp-panel">
@@ -200,33 +302,7 @@ function FundamentalsPanel({ symbol }) {
   );
 }
 
-function SentimentPanel({ symbol }) {
-  const [score, setScore] = useState(0);
-  useEffect(() => {
-    setScore(Math.floor(Math.random() * 100 - 50));
-  }, [symbol]);
-  return (
-    <div className="tp-panel">
-      <h5>
-        <FontAwesomeIcon icon={faSmile} /> Sentiment — {symbol}
-      </h5>
-      <div className={`tp-sentiment-label ${score >= 0 ? "tp-up" : "tp-down"}`}>
-        {score >= 0 ? "+" : ""}
-        {score}%
-      </div>
-      <meter
-        className="tp-sentiment-meter"
-        min="-100"
-        max="100"
-        low="0"
-        high="0"
-        optimum="100"
-        value={score}
-      />
-    </div>
-  );
-}
-
+// Heatmap panel
 function HeatmapPanel() {
   const sectors = ["Tech", "Finance", "Energy", "Health", "Retail", "Auto"];
   return (
@@ -251,6 +327,7 @@ function HeatmapPanel() {
   );
 }
 
+// Sidebar with panels
 function TradeSidebar({ symbol }) {
   return (
     <aside className="tp-trade-aside">

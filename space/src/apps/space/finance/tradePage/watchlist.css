@@ -1,0 +1,160 @@
+/* LEFT SIDEBAR */
+.tp-sidebar {
+  background: var(--tp-glass);
+  border-right: 1px solid var(--tp-border);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-search {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.tp-search input {
+  flex: 1;
+  padding: 0.6rem;
+  background: transparent;
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem 0 0 0.4rem;
+  color: var(--tp-text);
+}
+
+.tp-search button {
+  padding: 0 0.8rem;
+  background: var(--tp-accent);
+  border: none;
+  border-radius: 0 0.4rem 0.4rem 0;
+  color: #0e0e1e;
+  cursor: pointer;
+}
+
+.tp-watchlist {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tp-watchlist li {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  box-sizing: border-box;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 0.9rem;
+}
+
+.tp-watchlist li:hover {
+  background: var(--tp-border);
+}
+
+
+
+
+
+
+
+
+
+
+/* --- SIDEBAR / WATCHLIST MODIFICATIONS --- */
+
+/* only show delete icon when in edit mode */
+.tp-sidebar .tp-remove-icon {
+  display: none;
+}
+
+.tp-sidebar.editing .tp-remove-icon {
+  display: inline-block;
+}
+
+/* watchlist layout: ticker, sparkline, percent chip */
+.tp-watchlist li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid rgba(128, 128, 128, 0);
+}
+
+/* fixed width for ticker */
+.tp-watchlist-symbol {
+  width: 3rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+/* sparkline container */
+.tp-sparkline-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* sparkline */
+.tp-sparkline {
+  width: 50px;
+  height: 30px;
+}
+
+/* percent chip */
+.tp-chip {
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #0e0e1e;
+}
+
+.tp-chip-up {
+  background: var(--tp-up);
+}
+
+.tp-chip-down {
+  background: var(--tp-down);
+}
+
+
+/* active variants */
+/* .tp-watchlist .tp-active.asset-up {
+  background: var(--tp-up);
+  color: #0e0e1e;
+}
+
+.tp-watchlist .tp-active.asset-down {
+  background: var(--tp-down);
+  color: #0e0e1e;
+} */
+
+/* watchlist header */
+.tp-watchlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.tp-wl-name-input {
+  background: transparent;
+  border: 1px solid var(--tp-border);
+  color: var(--tp-text);
+  padding: 0.4rem;
+  border-radius: 0.4rem;
+}
+
+.tp-edit-btn {
+  background: var(--tp-glass);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.4rem;
+  padding: 0.4rem;
+  cursor: pointer;
+}
