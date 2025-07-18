@@ -1,5 +1,6 @@
 // components/ChartSection.jsx
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import "chartjs-adapter-date-fns";
 import { format } from "date-fns";
 import {
   Chart as ChartJS,
@@ -15,6 +16,7 @@ import {
 import annotationPlugin from "chartjs-plugin-annotation";
 import { Chart } from "react-chartjs-2";
 import crosshairPlugin from "./crosshairPlugin";
+import { CandlestickController, CandlestickElement } from "chartjs-chart-financial";
 import { TIMEFRAMES, COMPANY_NAMES } from "./chartConfig";
 import { generateChartData } from "./generateChartData";
 
@@ -26,6 +28,8 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  CandlestickController,
+  CandlestickElement,
   Tooltip,
   Legend,
   crosshairPlugin,
@@ -37,8 +41,8 @@ export default function ChartSection({ symbol }) {
   const prevCloseRef = useRef(null);
 
   // core state
-  const [tf, setTf] = useState("1D");
-  const [type, setType] = useState("line");
+  const [tf, setTf] = useState("1D");               // timeframe
+  const [type, setType] = useState("line");         // "line" or "candlestick"
   const [hover, setHover] = useState({ x: null, time: "", price: null });
   const [livePrice, setLivePrice] = useState(null);
   const [tick, setTick] = useState(0);
@@ -112,8 +116,10 @@ export default function ChartSection({ symbol }) {
       if (prevCloseRef.current == null) prevCloseRef.current = yVals[0];
       const prevClose = prevCloseRef.current;
       const anchor = priceAnchor ?? prevClose;
-      const sMin = anchor * (1 - bufferPct), sMax = anchor * (1 + bufferPct);
-      const minVal = Math.min(...yVals), maxVal = Math.max(...yVals);
+      const sMin = anchor * (1 - bufferPct),
+            sMax = anchor * (1 + bufferPct);
+      const minVal = Math.min(...yVals),
+            maxVal = Math.max(...yVals);
       return { yMin: Math.min(sMin, minVal), yMax: Math.max(sMax, maxVal) };
     }
     return { yMin: null, yMax: null };
@@ -133,10 +139,14 @@ export default function ChartSection({ symbol }) {
     if (!chart) return null;
     const xVal = chart.scales.x.getValueForPixel(xPix);
     const ds = baseData.datasets[0].data;
-    let best = ds[0], bestDt = Math.abs(new Date(best.x).getTime() - xVal);
+    let best = ds[0],
+        bestDt = Math.abs(new Date(best.x).getTime() - xVal);
     for (const p of ds) {
       const dt = Math.abs(new Date(p.x).getTime() - xVal);
-      if (dt < bestDt) { bestDt = dt; best = p; }
+      if (dt < bestDt) {
+        bestDt = dt;
+        best = p;
+      }
     }
     return best;
   }
@@ -148,7 +158,7 @@ export default function ChartSection({ symbol }) {
     const rect = chart.canvas.getBoundingClientRect();
     const xPix = e.clientX - rect.left;
 
-    // if a selection exists, clear it immediately
+    // clear existing selection
     if (selectStart && !dragging) {
       setSelectStart(null);
       setSelectEnd(null);
@@ -182,7 +192,6 @@ export default function ChartSection({ symbol }) {
     });
   };
 
-  // clear selection on mouse up
   const onMouseUp = () => {
     setDragging(false);
     setSelectStart(null);
@@ -194,14 +203,18 @@ export default function ChartSection({ symbol }) {
     }
   };
 
-  // build a fresh copy of your line dataset each time
+  // build dataset (line with selection logic, or raw candles)
   const mainDataset = useMemo(() => {
+    if (type === "candlestick") {
+      return baseData.datasets[0];
+    }
+
     const src = baseData.datasets[0];
     const defaultBorder = src.borderColor;
     const defaultPoint = src.pointBackgroundColor || defaultBorder;
     const startTS = selectStart?.xValue;
-    const endTS = selectEnd?.xValue;
-    const delta = (selectEnd?.price ?? 0) - (selectStart?.price ?? 0);
+    const endTS   = selectEnd?.xValue;
+    const delta   = (selectEnd?.price ?? 0) - (selectStart?.price ?? 0);
 
     const ds = {
       label: src.label,
@@ -213,46 +226,40 @@ export default function ChartSection({ symbol }) {
       borderColor: src.borderColor,
       pointRadius: src.pointRadius,
       pointHoverRadius: src.pointHoverRadius,
-    };
-
-    // unified segment callback
-    ds.segment = {
-      borderColor: ctx => {
-        const x0 = ctx.p0.parsed.x;
-        const x1 = ctx.p1.parsed.x;
+      segment: {
+        borderColor: ctx => {
+          const x0 = ctx.p0.parsed.x;
+          const x1 = ctx.p1.parsed.x;
+          if (
+            startTS != null &&
+            endTS != null &&
+            x0 >= startTS &&
+            x1 <= endTS
+          ) {
+            return delta >= 0 ? "#0f0" : "#f44";
+          }
+          return defaultBorder;
+        }
+      },
+      pointBackgroundColor: ctx => {
+        const x = new Date(ctx.parsed.x).getTime();
         if (
           startTS != null &&
           endTS != null &&
-          x0 >= startTS &&
-          x1 <= endTS
+          x >= startTS &&
+          x <= endTS
         ) {
           return delta >= 0 ? "#0f0" : "#f44";
         }
-        return defaultBorder;
+        return defaultPoint;
       }
-    };
-
-    // unified point-color callback
-    ds.pointBackgroundColor = ctx => {
-      const x = new Date(ctx.parsed.x).getTime();
-      if (
-        startTS != null &&
-        endTS != null &&
-        x >= startTS &&
-        x <= endTS
-      ) {
-        return delta >= 0 ? "#0f0" : "#f44";
-      }
-      return defaultPoint;
     };
     ds.pointBorderColor = ds.pointBackgroundColor;
-
     return ds;
-  }, [baseData, selectStart, selectEnd]);
+  }, [baseData, selectStart, selectEnd, type]);
 
-  // annotations (prev‐close, start/end, label)
+  // annotations
   const annotations = {};
-
   if (tf === "1D" && prevCloseRef.current != null) {
     annotations.prevCloseLine = {
       type: "line",
@@ -273,7 +280,7 @@ export default function ChartSection({ symbol }) {
     };
   }
   if (selectStart && selectEnd) {
-    const δ = selectEnd.price - selectStart.price;
+    const δ   = selectEnd.price - selectStart.price;
     const pct = (δ / selectStart.price) * 100;
     annotations.endLine = {
       type: "line",
@@ -287,13 +294,14 @@ export default function ChartSection({ symbol }) {
       xValue: selectEnd.xValue,
       yValue: selectEnd.price,
       backgroundColor: δ >= 0 ? "#0f0" : "#f44",
-      content: [`${δ>=0?"+":""}${δ.toFixed(2)} (${pct.toFixed(2)}%)`],
+      content: [`${δ >= 0 ? "+" : ""}${δ.toFixed(2)} (${pct.toFixed(2)}%)`],
       position: "start",
       yAdjust: -10,
       font: { size: 12 },
     };
   }
 
+  // chart options
   const options = {
     maintainAspectRatio: false,
     animation: false,
@@ -310,12 +318,12 @@ export default function ChartSection({ symbol }) {
         time: timeScale,
         ticks: tickScale,
         grid: { display: false },
-        ...(tf==="1D" && { min: openTime, max: closeTime, bounds: "ticks" }),
+        ...(tf === "1D" && { min: openTime, max: closeTime, bounds: "ticks" }),
       },
       y: {
         ticks: { color: "#999" },
         grid: { display: false },
-        ...(tf==="1D" && { min: yMin, max: yMax }),
+        ...(tf === "1D" && { min: yMin, max: yMax }),
       },
     },
     onHover: (e, items) => {
@@ -333,21 +341,23 @@ export default function ChartSection({ symbol }) {
         });
         chart.update("none");
       } else {
-        chart.options.plugins.crosshair.hoverX = null;
+        if (chartRef.current) {
+          chartRef.current.options.plugins.crosshair.hoverX = null;
+          chartRef.current.update("none");
+        }
         setHover({ x: null, time: "", price: null });
-        chart.update("none");
       }
     },
     onLeave: () => {
+      setDragging(false);
+      setHover({ x: null, time: "", price: null });
+      setSelectStart(null);
+      setSelectEnd(null);
       const chart = chartRef.current;
       if (chart) {
         chart.options.plugins.crosshair.hoverX = null;
         chart.update("none");
       }
-      setHover({ x: null, time: "", price: null });
-      setDragging(false);
-      setSelectStart(null);
-      setSelectEnd(null);
     },
   };
 
@@ -423,7 +433,7 @@ export default function ChartSection({ symbol }) {
         <Chart
           ref={chartRef}
           type={type}
-          data={{ datasets: [mainDataset] }}
+          data={type === "candlestick" ? baseData : { datasets: [mainDataset] }}
           options={options}
         />
       </div>
