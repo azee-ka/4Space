@@ -1,6 +1,6 @@
-// components/ChartSection.jsx
+// src/components/ChartSection.jsx
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import './chartSection.css';
+import "./chartSection.css";
 import "chartjs-adapter-date-fns";
 import { format } from "date-fns";
 import {
@@ -21,7 +21,66 @@ import { CandlestickController, CandlestickElement } from "chartjs-chart-financi
 import { TIMEFRAMES, COMPANY_NAMES } from "./utils/chartConfig";
 import { generateChartData } from "./utils/generateChartData";
 
-// register Chart.js components & plugins
+// Custom plugin: draws & animates the live‐price dot at the last data‐point
+const liveDotPlugin = {
+  id: "liveDot",
+  beforeInit: chart => {
+    // store start time
+    chart.__pulseStart = performance.now();
+  },
+  afterDraw: chart => {
+    const cfg = chart.config.options.plugins.liveDot;
+    // only run if enabled and we have a value
+    if (!cfg?.enabled || cfg.value == null) return;
+
+    // find the last point in the first dataset
+    const meta = chart.getDatasetMeta(0);
+    const points = meta.data;
+    if (!points.length) return;
+    const lastPoint = points[points.length - 1];
+    const x = lastPoint.x;
+    const y = lastPoint.y;
+
+    const now = performance.now();
+    // full cycle length (glow + wait)
+    const cycle   = cfg.cycle   ?? 3000;  // total time per cycle (ms)
+    // actual glow duration within each cycle
+    const glowLen = cfg.glowLen ??  300;  // glow duration (ms)
+
+    // where are we in the cycle?
+    const elapsed = (now - chart.__pulseStart) % cycle;
+
+    // only animate halo during the glow period
+    if (elapsed <= glowLen) {
+      const t = elapsed / glowLen;   // normalized [0…1]
+
+      const innerR = 6;
+      const outerR = innerR + 4 * t;
+      const ctx = chart.ctx;
+
+      // draw outer pulsing halo
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, outerR, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(0,255,168,${1 - t})`;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // draw inner solid dot
+    const ctx2 = chart.ctx;
+    ctx2.save();
+    ctx2.beginPath();
+    ctx2.arc(x, y, 6, 0, 2 * Math.PI);
+    ctx2.fillStyle = "#00ffa8";
+    ctx2.fill();
+    ctx2.restore();
+
+    // queue next frame
+    requestAnimationFrame(() => chart.draw());
+  },
+};
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -34,7 +93,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   crosshairPlugin,
-  annotationPlugin
+  annotationPlugin,
+  liveDotPlugin
 );
 
 export default function ChartSection({ symbol }) {
@@ -42,20 +102,20 @@ export default function ChartSection({ symbol }) {
   const prevCloseRef = useRef(null);
 
   // core state
-  const [tf, setTf] = useState("1D");               // timeframe
-  const [type, setType] = useState("line");         // "line" or "candlestick"
+  const [tf, setTf] = useState("1D");
+  const [type, setType] = useState("line");
   const [hover, setHover] = useState({ x: null, time: "", price: null });
   const [livePrice, setLivePrice] = useState(null);
   const [tick, setTick] = useState(0);
   const dataRef = useRef({});
   const [priceAnchor, setPriceAnchor] = useState(null);
 
-  // selection state
+  // selection
   const [selectStart, setSelectStart] = useState(null);
-  const [selectEnd, setSelectEnd]     = useState(null);
-  const [dragging, setDragging]       = useState(false);
+  const [selectEnd, setSelectEnd] = useState(null);
+  const [dragging, setDragging] = useState(false);
 
-  // 1D live-price polling and anchor logic
+  // 1D polling
   useEffect(() => {
     if (tf !== "1D") return;
     setLivePrice(p => p ?? parseFloat(dataRef.current.price ?? 100));
@@ -67,6 +127,7 @@ export default function ChartSection({ symbol }) {
     return () => clearInterval(id);
   }, [tf, symbol]);
 
+  // anchor logic
   const bufferPct = 0.05;
   useEffect(() => {
     if (tf !== "1D" || livePrice == null) return;
@@ -76,14 +137,14 @@ export default function ChartSection({ symbol }) {
     }
   }, [livePrice, tf, priceAnchor]);
 
-  // static data refresh every 5m
+  // static refresh
   useEffect(() => {
     if (tf !== "1D") return;
     const id = setInterval(() => setTick(t => t + 1), 300000);
     return () => clearInterval(id);
   }, [tf, symbol]);
 
-  // generate base data
+  // generate data
   const {
     data: baseData,
     price: staticPrice,
@@ -97,7 +158,7 @@ export default function ChartSection({ symbol }) {
     return r;
   }, [tf, type, symbol, tick]);
 
-  // patch livePrice into last point
+  // patch livePrice
   useEffect(() => {
     if (tf !== "1D") return;
     const chart = chartRef.current;
@@ -109,7 +170,7 @@ export default function ChartSection({ symbol }) {
 
   const fmtHover = dt => format(dt, "MMM d, h:mm a");
 
-  // compute y-axis bounds and prev-close
+  // y bounds
   const { yMin, yMax } = useMemo(() => {
     const pts = baseData.datasets[0].data;
     const yVals = pts.map(p => p.y ?? p.c).filter(v => v != null);
@@ -119,14 +180,14 @@ export default function ChartSection({ symbol }) {
       const anchor = priceAnchor ?? prevClose;
       const sMin = anchor * (1 - bufferPct),
             sMax = anchor * (1 + bufferPct);
-      const minVal = Math.min(...yVals),
-            maxVal = Math.max(...yVals);
-      return { yMin: Math.min(sMin, minVal), yMax: Math.max(sMax, maxVal) };
+      return {
+        yMin: Math.min(sMin, Math.min(...yVals)),
+        yMax: Math.max(sMax, Math.max(...yVals)),
+      };
     }
     return { yMin: null, yMax: null };
   }, [baseData, tf, priceAnchor]);
 
-  // price to show in header
   const displayPrice =
     hover.price != null
       ? hover.price
@@ -134,32 +195,23 @@ export default function ChartSection({ symbol }) {
       ? livePrice.toFixed(2)
       : staticPrice;
 
-  // nearest data‐point helper
+  // nearest point
   function nearestPoint(xPix) {
     const chart = chartRef.current;
     if (!chart) return null;
     const xVal = chart.scales.x.getValueForPixel(xPix);
-    const ds = baseData.datasets[0].data;
-    let best = ds[0],
-        bestDt = Math.abs(new Date(best.x).getTime() - xVal);
-    for (const p of ds) {
-      const dt = Math.abs(new Date(p.x).getTime() - xVal);
-      if (dt < bestDt) {
-        bestDt = dt;
-        best = p;
-      }
-    }
-    return best;
+    return baseData.datasets[0].data.reduce((best, p) => {
+      const d = Math.abs(new Date(p.x).getTime() - xVal);
+      return d < Math.abs(new Date(best.x).getTime() - xVal) ? p : best;
+    });
   }
 
-  // mouse event handlers
+  // mouse handlers
   const onMouseDown = e => {
     const chart = chartRef.current;
     if (!chart) return;
     const rect = chart.canvas.getBoundingClientRect();
     const xPix = e.clientX - rect.left;
-
-    // clear existing selection
     if (selectStart && !dragging) {
       setSelectStart(null);
       setSelectEnd(null);
@@ -167,18 +219,16 @@ export default function ChartSection({ symbol }) {
       chart.update("none");
       return;
     }
-
     const p = nearestPoint(xPix);
     if (!p) return;
     setSelectStart({
       xValue: new Date(p.x).getTime(),
       price: p.y ?? p.c,
-      pixelX: xPix
+      pixelX: xPix,
     });
     setSelectEnd(null);
     setDragging(true);
   };
-
   const onMouseMove = e => {
     if (!dragging) return;
     const chart = chartRef.current;
@@ -189,10 +239,9 @@ export default function ChartSection({ symbol }) {
     setSelectEnd({
       xValue: new Date(p.x).getTime(),
       price: p.y ?? p.c,
-      pixelX: xPix
+      pixelX: xPix,
     });
   };
-
   const onMouseUp = () => {
     setDragging(false);
     setSelectStart(null);
@@ -203,21 +252,30 @@ export default function ChartSection({ symbol }) {
       chart.update("none");
     }
   };
+  const onMouseLeave = () => {
+    setDragging(false);
+    setHover({ x: null, time: "", price: null });
+    setSelectStart(null);
+    setSelectEnd(null);
+    const chart = chartRef.current;
+    if (chart) {
+      chart.options.plugins.crosshair.hoverX = null;
+      chart.update("none");
+    }
+  };
 
-  // build dataset (line with selection logic, or raw candles)
+  // build dataset
   const mainDataset = useMemo(() => {
     if (type === "candlestick") {
       return baseData.datasets[0];
     }
-
     const src = baseData.datasets[0];
     const defaultBorder = src.borderColor;
     const defaultPoint = src.pointBackgroundColor || defaultBorder;
     const startTS = selectStart?.xValue;
-    const endTS   = selectEnd?.xValue;
-    const delta   = (selectEnd?.price ?? 0) - (selectStart?.price ?? 0);
-
-    const ds = {
+    const endTS = selectEnd?.xValue;
+    const delta = (selectEnd?.price ?? 0) - (selectStart?.price ?? 0);
+    return {
       label: src.label,
       data: src.data,
       spanGaps: src.spanGaps,
@@ -225,8 +283,8 @@ export default function ChartSection({ symbol }) {
       tension: src.tension,
       backgroundColor: src.backgroundColor,
       borderColor: src.borderColor,
-      pointRadius: src.pointRadius,
-      pointHoverRadius: src.pointHoverRadius,
+      pointRadius: 0,
+      pointHoverRadius: 0,
       segment: {
         borderColor: ctx => {
           const x0 = ctx.p0.parsed.x;
@@ -240,7 +298,7 @@ export default function ChartSection({ symbol }) {
             return delta >= 0 ? "#0f0" : "#f44";
           }
           return defaultBorder;
-        }
+        },
       },
       pointBackgroundColor: ctx => {
         const x = new Date(ctx.parsed.x).getTime();
@@ -253,10 +311,9 @@ export default function ChartSection({ symbol }) {
           return delta >= 0 ? "#0f0" : "#f44";
         }
         return defaultPoint;
-      }
+      },
+      pointBorderColor: ctx => ctx.dataset.pointBackgroundColor(ctx),
     };
-    ds.pointBorderColor = ds.pointBackgroundColor;
-    return ds;
   }, [baseData, selectStart, selectEnd, type]);
 
   // annotations
@@ -281,7 +338,7 @@ export default function ChartSection({ symbol }) {
     };
   }
   if (selectStart && selectEnd) {
-    const δ   = selectEnd.price - selectStart.price;
+    const δ = selectEnd.price - selectStart.price;
     const pct = (δ / selectStart.price) * 100;
     annotations.endLine = {
       type: "line",
@@ -305,12 +362,18 @@ export default function ChartSection({ symbol }) {
   // chart options
   const options = {
     maintainAspectRatio: false,
-    animation: false,
+    animation: true,
     plugins: {
       crosshair: { hoverX: null },
       legend: { display: false },
       tooltip: { enabled: false },
       annotation: { annotations },
+      liveDot: {
+        enabled: tf === "1D",
+        value: livePrice,
+        cycle: 4000, // total ms between pulses
+        glowLen: 400 // ms pulse duration
+      },
     },
     interaction: { mode: "nearest", axis: "x", intersect: false },
     scales: {
@@ -338,7 +401,7 @@ export default function ChartSection({ symbol }) {
         setHover({
           x: xPix,
           time: fmtHover(pt.x),
-          price: (pt.y ?? pt.c).toFixed(2)
+          price: (pt.y ?? pt.c).toFixed(2),
         });
         chart.update("none");
       } else {
@@ -349,22 +412,11 @@ export default function ChartSection({ symbol }) {
         setHover({ x: null, time: "", price: null });
       }
     },
-    onLeave: () => {
-      setDragging(false);
-      setHover({ x: null, time: "", price: null });
-      setSelectStart(null);
-      setSelectEnd(null);
-      const chart = chartRef.current;
-      if (chart) {
-        chart.options.plugins.crosshair.hoverX = null;
-        chart.update("none");
-      }
-    },
+    onLeave: onMouseLeave,
   };
 
   return (
     <section className="tp-chart-section tp-panel">
-      {/* header & controls */}
       <div className="tp-chart-section-header">
         <div className="tp-chart-section-sub-header">
           <div>
@@ -374,7 +426,6 @@ export default function ChartSection({ symbol }) {
           <span className="tp-price">${displayPrice}</span>
         </div>
         <div className="tp-chart-controls">
-          {/* timeframes */}
           <div className="tp-timeframe">
             {Object.keys(TIMEFRAMES)
               .filter(k => k !== "1H")
@@ -393,38 +444,25 @@ export default function ChartSection({ symbol }) {
                 </button>
               ))}
           </div>
-          {/* line/candle toggle */}
           <div className="tp-chart-type-buttons">
-            {["line","candlestick"].map(t => (
+            {["line", "candlestick"].map(t => (
               <button
                 key={t}
-                className={`tp-chart-type-btn${type===t?" tp-active":""}`}
-                onClick={()=>setType(t)}
+                className={`tp-chart-type-btn${type === t ? " tp-active" : ""}`}
+                onClick={() => setType(t)}
               >
-                {t==="line"?"Line":"Candle"}
+                {t === "line" ? "Line" : "Candle"}
               </button>
             ))}
           </div>
         </div>
       </div>
-
-      {/* the chart */}
       <div
         className="tp-chart-body"
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
-        onMouseLeave={() => {
-          setDragging(false);
-          setHover({ x: null, time: "", price: null });
-          setSelectStart(null);
-          setSelectEnd(null);
-          const chart = chartRef.current;
-          if (chart) {
-            chart.options.plugins.crosshair.hoverX = null;
-            chart.update("none");
-          }
-        }}
+        onMouseLeave={onMouseLeave}
       >
         {hover.x != null && hover.time && (
           <div className="tp-hover-info" style={{ left: hover.x }}>
