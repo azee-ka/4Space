@@ -25,58 +25,47 @@ import { generateChartData } from "./utils/generateChartData";
 const liveDotPlugin = {
   id: "liveDot",
   beforeInit: chart => {
-    // store start time
     chart.__pulseStart = performance.now();
   },
   afterDraw: chart => {
     const cfg = chart.config.options.plugins.liveDot;
-    // only run if enabled and we have a value
     if (!cfg?.enabled || cfg.value == null) return;
 
-    // find the last point in the first dataset
     const meta = chart.getDatasetMeta(0);
     const points = meta.data;
     if (!points.length) return;
-    const lastPoint = points[points.length - 1];
-    const x = lastPoint.x;
-    const y = lastPoint.y;
+    const { x, y } = points[points.length - 1];
 
-    const now = performance.now();
-    // full cycle length (glow + wait)
-    const cycle   = cfg.cycle   ?? 3000;  // total time per cycle (ms)
-    // actual glow duration within each cycle
-    const glowLen = cfg.glowLen ??  300;  // glow duration (ms)
+    const innerColor = cfg.colorHex;
+    const rgb        = cfg.colorRgb;
 
-    // where are we in the cycle?
+    const now     = performance.now();
+    const cycle   = cfg.cycle   ?? 3000;
+    const glowLen = cfg.glowLen ??  300;
+
     const elapsed = (now - chart.__pulseStart) % cycle;
-
-    // only animate halo during the glow period
     if (elapsed <= glowLen) {
-      const t = elapsed / glowLen;   // normalized [0…1]
-
+      const t = elapsed / glowLen;
       const innerR = 6;
       const outerR = innerR + 4 * t;
       const ctx = chart.ctx;
 
-      // draw outer pulsing halo
       ctx.save();
       ctx.beginPath();
       ctx.arc(x, y, outerR, 0, 2 * Math.PI);
-      ctx.fillStyle = `rgba(0,255,168,${1 - t})`;
+      ctx.fillStyle = `rgba(${rgb},${1 - t})`;
       ctx.fill();
       ctx.restore();
     }
 
-    // draw inner solid dot
     const ctx2 = chart.ctx;
     ctx2.save();
     ctx2.beginPath();
     ctx2.arc(x, y, 6, 0, 2 * Math.PI);
-    ctx2.fillStyle = "#00ffa8";
+    ctx2.fillStyle = innerColor;
     ctx2.fill();
     ctx2.restore();
 
-    // queue next frame
     requestAnimationFrame(() => chart.draw());
   },
 };
@@ -188,6 +177,14 @@ export default function ChartSection({ symbol }) {
     return { yMin: null, yMax: null };
   }, [baseData, tf, priceAnchor]);
 
+  // determine up/down and colors
+  const anchor = priceAnchor ?? baseData.datasets[0].data[0]?.y ?? staticPrice;
+  const isUp   = livePrice >= anchor;
+  const upHex  = "#00ffa8";
+  const dnHex  = "#f44";
+  const colorHex = isUp ? upHex : dnHex;
+  const colorRgb = isUp ? "0,255,168" : "244,68,68";
+
   const displayPrice =
     hover.price != null
       ? hover.price
@@ -195,7 +192,7 @@ export default function ChartSection({ symbol }) {
       ? livePrice.toFixed(2)
       : staticPrice;
 
-  // nearest point
+  // nearest point helper
   function nearestPoint(xPix) {
     const chart = chartRef.current;
     if (!chart) return null;
@@ -264,17 +261,18 @@ export default function ChartSection({ symbol }) {
     }
   };
 
-  // build dataset
+  // build line/candle dataset
   const mainDataset = useMemo(() => {
     if (type === "candlestick") {
       return baseData.datasets[0];
     }
     const src = baseData.datasets[0];
-    const defaultBorder = src.borderColor;
-    const defaultPoint = src.pointBackgroundColor || defaultBorder;
+    const defaultBorder = colorHex;
+    const defaultPoint  = colorHex;
     const startTS = selectStart?.xValue;
-    const endTS = selectEnd?.xValue;
-    const delta = (selectEnd?.price ?? 0) - (selectStart?.price ?? 0);
+    const endTS   = selectEnd?.xValue;
+    const delta   = (selectEnd?.price ?? 0) - (selectStart?.price ?? 0);
+
     return {
       label: src.label,
       data: src.data,
@@ -282,7 +280,7 @@ export default function ChartSection({ symbol }) {
       borderWidth: src.borderWidth,
       tension: src.tension,
       backgroundColor: src.backgroundColor,
-      borderColor: src.borderColor,
+      borderColor: defaultBorder,
       pointRadius: 0,
       pointHoverRadius: 0,
       segment: {
@@ -298,7 +296,7 @@ export default function ChartSection({ symbol }) {
             return delta >= 0 ? "#0f0" : "#f44";
           }
           return defaultBorder;
-        },
+        }
       },
       pointBackgroundColor: ctx => {
         const x = new Date(ctx.parsed.x).getTime();
@@ -312,9 +310,9 @@ export default function ChartSection({ symbol }) {
         }
         return defaultPoint;
       },
-      pointBorderColor: ctx => ctx.dataset.pointBackgroundColor(ctx),
+      pointBorderColor: ctx => ctx.dataset.pointBackgroundColor(ctx)
     };
-  }, [baseData, selectStart, selectEnd, type]);
+  }, [baseData, selectStart, selectEnd, type, colorHex]);
 
   // annotations
   const annotations = {};
@@ -325,7 +323,7 @@ export default function ChartSection({ symbol }) {
       yMax: prevCloseRef.current,
       borderColor: "#888",
       borderDash: [4, 4],
-      borderWidth: 1,
+      borderWidth: 1
     };
   }
   if (selectStart) {
@@ -334,7 +332,7 @@ export default function ChartSection({ symbol }) {
       xMin: selectStart.xValue,
       xMax: selectStart.xValue,
       borderColor: "#555",
-      borderWidth: 1,
+      borderWidth: 1
     };
   }
   if (selectStart && selectEnd) {
@@ -345,7 +343,7 @@ export default function ChartSection({ symbol }) {
       xMin: selectEnd.xValue,
       xMax: selectEnd.xValue,
       borderColor: δ >= 0 ? "#0f0" : "#f44",
-      borderWidth: 1,
+      borderWidth: 1
     };
     annotations.changeLabel = {
       type: "label",
@@ -355,7 +353,7 @@ export default function ChartSection({ symbol }) {
       content: [`${δ >= 0 ? "+" : ""}${δ.toFixed(2)} (${pct.toFixed(2)}%)`],
       position: "start",
       yAdjust: -10,
-      font: { size: 12 },
+      font: { size: 12 }
     };
   }
 
@@ -371,9 +369,11 @@ export default function ChartSection({ symbol }) {
       liveDot: {
         enabled: tf === "1D",
         value: livePrice,
-        cycle: 4000, // total ms between pulses
-        glowLen: 400 // ms pulse duration
-      },
+        cycle: 4000,
+        glowLen: 400,
+        colorHex,
+        colorRgb
+      }
     },
     interaction: { mode: "nearest", axis: "x", intersect: false },
     scales: {
@@ -382,13 +382,13 @@ export default function ChartSection({ symbol }) {
         time: timeScale,
         ticks: tickScale,
         grid: { display: false },
-        ...(tf === "1D" && { min: openTime, max: closeTime, bounds: "ticks" }),
+        ...(tf === "1D" && { min: openTime, max: closeTime, bounds: "ticks" })
       },
       y: {
         ticks: { color: "#999" },
         grid: { display: false },
-        ...(tf === "1D" && { min: yMin, max: yMax }),
-      },
+        ...(tf === "1D" && { min: yMin, max: yMax })
+      }
     },
     onHover: (e, items) => {
       const chart = chartRef.current;
@@ -401,7 +401,7 @@ export default function ChartSection({ symbol }) {
         setHover({
           x: xPix,
           time: fmtHover(pt.x),
-          price: (pt.y ?? pt.c).toFixed(2),
+          price: (pt.y ?? pt.c).toFixed(2)
         });
         chart.update("none");
       } else {
@@ -412,7 +412,7 @@ export default function ChartSection({ symbol }) {
         setHover({ x: null, time: "", price: null });
       }
     },
-    onLeave: onMouseLeave,
+    onLeave: onMouseLeave
   };
 
   return (
@@ -472,7 +472,11 @@ export default function ChartSection({ symbol }) {
         <Chart
           ref={chartRef}
           type={type}
-          data={type === "candlestick" ? baseData : { datasets: [mainDataset] }}
+          data={
+            type === "candlestick"
+              ? baseData
+              : { datasets: [mainDataset] }
+          }
           options={options}
         />
       </div>
