@@ -1,5 +1,5 @@
 // src/components/TradePage.jsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import "chartjs-adapter-date-fns";
 import { format } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,7 +9,6 @@ import {
   faLayerGroup,
   faSmile,
   faChartBar,
-  faTable,
   faExchangeAlt,
   faNewspaper,
   faListAlt,
@@ -108,10 +107,12 @@ function Header() {
       <div className="tp-logo">4X Trading</div>
       <div className="tp-summary">
         <div>
-          Total Value<span>$1,234,567</span>
+          Total Value
+          <span>$1,234,567</span>
         </div>
         <div>
-          Buying Power<span>$50,000</span>
+          Buying Power
+          <span>$50,000</span>
         </div>
       </div>
       <div className="tp-actions">
@@ -130,18 +131,20 @@ function MainContent({ symbol }) {
   return (
     <main className="tp-main">
       <ChartSection symbol={symbol} />
-      <div className="tp-info-grid">
+
+      <div className="tp-info-top">
         <CoreMetricsCard symbol={symbol} />
+        <HeatmapPanel />
+      </div>
+
+      <div className="tp-info-bottom">
         <AnalystRatingCard symbol={symbol} />
         <SentimentAnalysisCard symbol={symbol} />
-        <FundamentalsPanel symbol={symbol} />
-        <HeatmapPanel />
       </div>
     </main>
   );
 }
 
-// 1️⃣ Core metrics card
 function CoreMetricsCard({ symbol }) {
   const price = useMemo(() => (100 + Math.random() * 50).toFixed(2), [symbol]);
   const change = useMemo(() => (Math.random() * 2 - 1).toFixed(2), [symbol]);
@@ -153,58 +156,93 @@ function CoreMetricsCard({ symbol }) {
     () => Math.floor(1e5 + Math.random() * 9e5).toLocaleString(),
     [symbol]
   );
+  const peRatio = useMemo(() => (10 + Math.random() * 30).toFixed(1), [
+    symbol,
+  ]);
+  const yieldPct = useMemo(() => (Math.random() * 5).toFixed(2) + "%", [
+    symbol,
+  ]);
   const marketCap = useMemo(
-    () => `$${(50 + Math.random() * 450).toFixed(1)}B`,
+    () => `$${(50 + Math.random() * 150).toFixed(1)}B`,
     [symbol]
   );
+  const week52Low = useMemo(() => (price * 0.7).toFixed(2), [price]);
+  const week52High = useMemo(() => (price * 1.3).toFixed(2), [price]);
+
+  const cells = [
+    { label: "Price", value: `$${price}` },
+    {
+      label: "Change",
+      value: `${change}%`,
+      className: change < 0 ? "tp-down" : "tp-up",
+    },
+    { label: "Day Range", value: `$${low}–${high}` },
+    { label: "Volume", value: volume },
+    { label: "P/E Ratio", value: peRatio },
+    { label: "Yield", value: yieldPct },
+    { label: "Market Cap", value: marketCap },
+    { label: "52W Range", value: `$${week52Low}–$${week52High}` },
+  ];
 
   return (
-    <div className="tp-panel tp-wide-card">
+    <div className="tp-panel tp-snapshot-card">
       <h5>
         <FontAwesomeIcon icon={faLayerGroup} /> {symbol} Snapshot
       </h5>
       <div className="tp-core-metrics">
-        <div>
-          <span>Price</span>
-          <span className="tp-metric-value">${price}</span>
-        </div>
-        <div>
-          <span>Change</span>
-          <span
-            className={`tp-metric-value ${
-              change < 0 ? "tp-down" : "tp-up"
-            }`}
-          >
-            {change}%
-          </span>
-        </div>
-        <div>
-          <span>Day Range</span>
-          <span className="tp-metric-value">
-            ${low}–${high}
-          </span>
-        </div>
-        <div>
-          <span>Volume</span>
-          <span className="tp-metric-value">{volume}</span>
-        </div>
-        <div>
-          <span>Market Cap</span>
-          <span className="tp-metric-value">{marketCap}</span>
-        </div>
+        {cells.map((c) => (
+          <div key={c.label}>
+            <span>{c.label}</span>
+            <span className={`tp-metric-value ${c.className || ""}`}>
+              {c.value}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-// 2️⃣ Analyst ratings card
+function HeatmapPanel() {
+  const sectors = ["Tech", "Finance", "Energy", "Health", "Retail", "Auto"];
+  const data = sectors.map((s) => ({
+    label: s,
+    value: Number((Math.random() * 10 - 5).toFixed(1)),
+  }));
+
+  return (
+    <div className="tp-panel tp-heatmap-card">
+      <h5>
+        <FontAwesomeIcon icon={faLayerGroup} /> Sector Performance
+      </h5>
+      <div className="tp-heatmap-list">
+        {data.map((d) => (
+          <div key={d.label} className="tp-rating-row">
+            <span>{d.label}</span>
+            <div className="tp-bar-bg">
+              <div
+                className={`tp-bar-fill ${d.value < 0 ? "tp-down" : "tp-up"}`}
+                style={{ width: `${Math.abs(d.value)}%` }}
+              />
+            </div>
+            <span>
+              {d.value < 0 ? "" : "+"}
+              {d.value}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AnalystRatingCard({ symbol }) {
   const buy = useMemo(() => 40 + Math.random() * 20, [symbol]);
   const hold = useMemo(() => 30 + Math.random() * 15, [symbol]);
   const sell = useMemo(() => 100 - buy - hold, [buy, hold]);
 
   return (
-    <div className="tp-panel tp-wide-card">
+    <div className="tp-panel tp-rating-card">
       <h5>
         <FontAwesomeIcon icon={faChartBar} /> Analyst Ratings
       </h5>
@@ -230,7 +268,6 @@ function AnalystRatingCard({ symbol }) {
   );
 }
 
-// 3️⃣ Sentiment analysis card
 function SentimentAnalysisCard({ symbol }) {
   const social = useMemo(() => Math.floor(Math.random() * 200 - 100), [
     symbol,
@@ -241,7 +278,7 @@ function SentimentAnalysisCard({ symbol }) {
   const newsSent = useMemo(() => Math.floor(Math.random() * 100), [symbol]);
 
   return (
-    <div className="tp-panel tp-wide-card">
+    <div className="tp-panel tp-sentiment-card">
       <h5>
         <FontAwesomeIcon icon={faSmile} /> Sentiment Analysis
       </h5>
@@ -263,9 +300,7 @@ function SentimentAnalysisCard({ symbol }) {
         <div>
           <span>Insider Net</span>
           <span
-            className={`tp-metric-value ${
-              insider < 0 ? "tp-down" : "tp-up"
-            }`}
+            className={`tp-metric-value ${insider < 0 ? "tp-down" : "tp-up"}`}
           >
             {insider}%
           </span>
@@ -275,59 +310,6 @@ function SentimentAnalysisCard({ symbol }) {
   );
 }
 
-// Fundamentals panel
-function FundamentalsPanel({ symbol }) {
-  return (
-    <div className="tp-panel">
-      <h5>
-        <FontAwesomeIcon icon={faTable} /> Fundamentals — {symbol}
-      </h5>
-      <table className="tp-fundamentals">
-        <tbody>
-          <tr>
-            <td>PE Ratio</td>
-            <td>25.4</td>
-          </tr>
-          <tr>
-            <td>Yield</td>
-            <td>1.2%</td>
-          </tr>
-          <tr>
-            <td>Market Cap</td>
-            <td>$1.5T</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// Heatmap panel
-function HeatmapPanel() {
-  const sectors = ["Tech", "Finance", "Energy", "Health", "Retail", "Auto"];
-  return (
-    <div className="tp-panel">
-      <h5>
-        <FontAwesomeIcon icon={faLayerGroup} /> Sector Heatmap
-      </h5>
-      <div className="tp-heatmap">
-        {sectors.map((s, i) => (
-          <div
-            key={s}
-            className="tp-heat-cell"
-            style={{
-              background: `hsl(${i * 60},70%,${50 + Math.random() * 20}%)`,
-            }}
-          >
-            {s}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Sidebar with panels
 function TradeSidebar({ symbol }) {
   return (
     <aside className="tp-trade-aside">

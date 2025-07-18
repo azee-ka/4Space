@@ -18,15 +18,15 @@ export const TF_CONFIG = {
   "1H": { spanDays: 1 / 24, resolutionDays: 1 / 4 / 1440 },
   "1D": { spanDays: 1, resolutionDays: 3 / 1440 },
   "1W": { spanDays: 7, resolutionDays: 30 / 1440, tickUnit: "day", tickStep: 1, displayFormats: { day: "MMM d" } },
-  "1M": { spanDays: 30, resolutionDays: 0.5, tickUnit: "week", tickStep: 1, displayFormats: { week: "MMM d" } },
+  "1M": { spanDays: 30, resolutionDays: 0.3, tickUnit: "week", tickStep: 1, displayFormats: { week: "MMM d" } },
   "3M": { spanDays: 90, resolutionDays: 1 },
   "6M": { spanDays: 180, resolutionDays: 1 },
   YTD: { spanDays: null, resolutionDays: 1 },
   "1Y": { spanDays: 365, resolutionDays: 1 },
   "2Y": { spanDays: 730, resolutionDays: 5 },
-  "5Y": { spanDays: 1825, resolutionDays: 30 },
-  "10Y": { spanDays: 3650, resolutionDays: 90 },
-  MAX: { spanDays: 3650 * 2, resolutionDays: 365 },
+  "5Y": { spanDays: 1825, resolutionDays: 15 },
+  "10Y": { spanDays: 3650, resolutionDays: 30 },
+  MAX: { spanDays: 3650 * 2, resolutionDays: 50 },
 };
 
 export const MAX_TICKS = {
