@@ -74,13 +74,15 @@ INSTALLED_APPS = [
     'src.organization',
     'src.community',
     
-    'src.space.projects',
-    'src.space.library',
-    'src.space.repos',
-    'src.space.space',
+    'src.space.workspace.projects',
+    'src.space.workspace.library',
+    'src.space.workspace.repos',
+    'src.space.workspace.space',
     
     'src.settings',
     'src.central.collection.apps.CollectionConfig',
+    
+    'src.space.finance.trade',
     
     'rest_framework',
     'corsheaders',

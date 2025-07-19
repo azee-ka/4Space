@@ -8,7 +8,7 @@ urlpatterns = [
     
     path('tools/<uuid:project_id>/latex/render/', views.render_latex_pdf, name="render_latex_pdf"),
 
-    path("", include("src.space.projects.ide.urls")),
+    path("", include("src.space.workspace.projects.ide.urls")),
     
-    path("tools/", include("src.space.projects.calculator.urls")),
+    path("tools/", include("src.space.workspace.projects.calculator.urls")),
 ]
