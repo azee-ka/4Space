@@ -11,19 +11,19 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import Watchlist
 from .serializers import WatchlistSerializer
 
-CSV_DIR = Path(settings.BASE_DIR) / "data" / "top100"
+CSV_DIR = Path(settings.BASE_DIR) / "data" / "top100_intraday"
 
 # How many calendar days to show per timeframe
 SPAN_DAYS = {
-    "1W": 7,
-    "1M": 30,
-    "3M": 90,
+    "1W":   7,
+    "1M":  30,
+    "3M":  90,
     "6M": 180,
-    "YTD": None,  # compute below
+    "YTD": None,    # handled specially
     "1Y": 365,
     "2Y": 730,
-    "5Y": 1825/4,
-    "10Y": 3650/8,
+    "5Y": 1825,
+    "10Y": 3650,
 }
 
 
@@ -32,49 +32,42 @@ SPAN_DAYS = {
 def chart_data(request):
     sym = request.GET.get("symbol", "").upper()
     tf  = request.GET.get("tf", "1D").upper()
-
     today = datetime.date.today()
-    # 1D we treat specially (live‐dot, jitter, etc)
+
+    # ─── Compute cutoff ─────────────────────────────────────────
     if tf == "1D":
         cutoff = today - datetime.timedelta(days=1)
-    # compute calendar‐day span
     elif tf in SPAN_DAYS and SPAN_DAYS[tf] is not None:
-        span = SPAN_DAYS[tf]
-        cutoff = today - datetime.timedelta(days=span)
+        cutoff = today - datetime.timedelta(days=SPAN_DAYS[tf])
     elif tf == "YTD":
         cutoff = datetime.date(today.year, 1, 1)
     else:  # MAX
         cutoff = datetime.date.min
 
-    # load the per‐ticker CSV
+    # ─── Load CSV & locate “Close” column ───────────────────────
     csv_path = CSV_DIR / f"{sym}.csv"
     if not csv_path.exists():
-        raise Http404(f"No CSV for {sym} at {csv_path}")
-
-    # read and locate your multi‐row header
+        raise Http404(f"No CSV for {sym}")
     lines = csv_path.read_text().splitlines()
     if len(lines) < 4:
         raise Http404(f"{sym}.csv too short")
 
     header0 = lines[0].split(",")
     header1 = lines[1].split(",")
-
-    # find the first "Close" column under our ticker
     close_idxs = [
         i for i, (typ, tickr) in enumerate(zip(header0, header1))
-        if tickr.upper() == sym and typ == "Close"
+        if typ.strip().lower() == "close" and tickr.upper() == sym
     ]
     if not close_idxs:
         raise Http404(f"No Close column for {sym}")
+    ci = close_idxs[0]
 
-    # parse all the CSV rows into (date, price)
     all_points = []
     for row in lines[3:]:
         parts = row.split(",")
-        if len(parts) <= close_idxs[0]:
+        if len(parts) <= ci:
             continue
-        d = parts[0].strip()
-        c = parts[ close_idxs[0] ].strip()
+        d, c = parts[0].strip(), parts[ci].strip()
         if not d or not c:
             continue
         try:
@@ -84,38 +77,52 @@ def chart_data(request):
             continue
         all_points.append((dt, price))
 
-    # if it's a 1D timeframe, we just return *all* of those points after cutoff
+    # ─── Build the raw daily series ─────────────────────────────
     if tf == "1D":
+        # just return all 1D points
         data = [
             {"x": dt.isoformat(), "y": price}
             for dt, price in all_points
             if dt >= cutoff
+        ] or [
+            {"x": dt.isoformat(), "y": price}
+            for dt, price in all_points
         ]
-        # fall back to everything if the slice is empty
-        if not data:
-            data = [{"x": dt.isoformat(), "y": price} for dt, price in all_points]
 
-    # for everything else except MAX, build a calendar‐daily series
     elif tf != "MAX":
-        # rebuild a map for quick lookup
+        # generate every calendar day, with gaps (None)
         price_map = {dt: price for dt, price in all_points}
-        # for YTD, override span
-        if tf == "YTD":
-            span = (today - cutoff).days
-        # # days between cutoff and today, inclusive
-        total_days = (today - cutoff).days + 1
+        num_days = (today - cutoff).days + 1
         data = []
-        for i in range(total_days):
+        last_price = None
+        for i in range(num_days):
             day = cutoff + datetime.timedelta(days=i)
-            # get price if exists, else None
-            data.append({
-                "x": day.isoformat(),
-                "y": price_map.get(day)  # null on weekends
-            })
+            if day in price_map:
+                last_price = price_map[day]
+            # fill weekends/holidays with last known
+            if last_price is not None:
+                data.append({"x": day.isoformat(), "y": last_price})
+        # at this point data covers _every_ day from cutoff→today
 
-    # for MAX, just send every data point we have
-    else:
+    else:  # MAX
+        # full history, one point per actual CSV row
         data = [{"x": dt.isoformat(), "y": price} for dt, price in all_points]
+
+    # ─── Down-sample only for very long spans ────────────────────
+    if tf in ("5Y", "10Y", "MAX"):
+        # ensure no nulls
+        data = [pt for pt in data if pt["y"] is not None]
+
+        if tf == "5Y":
+            data = [pt for idx, pt in enumerate(data) if idx % 5 == 0]
+        elif tf == "10Y":
+            data = [pt for idx, pt in enumerate(data) if idx % 4 == 0]
+        else:  # MAX
+            data = [pt for idx, pt in enumerate(data) if idx % 7 == 0]
+
+        # always end on the very last available
+        if data:
+            data.append(data[-1])
 
     return JsonResponse({
         "datasets": [

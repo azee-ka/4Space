@@ -162,7 +162,7 @@ export default function ChartSection({ symbol }) {
               label: symbol,
               data: histData,
               spanGaps: true,
-              borderWidth: 2,
+              borderWidth: 1.5,
               tension: 0.3,
               backgroundColor: "transparent",
             },
