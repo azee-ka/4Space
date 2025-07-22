@@ -1,5 +1,12 @@
 // src/components/ChartSection.jsx
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
+import { useQuery } from "@tanstack/react-query";
 import "./chartSection.css";
 import "chartjs-adapter-date-fns";
 import { format } from "date-fns";
@@ -20,36 +27,34 @@ import crosshairPlugin from "./utils/crosshairPlugin";
 import { CandlestickController, CandlestickElement } from "chartjs-chart-financial";
 import { TIMEFRAMES, COMPANY_NAMES } from "./utils/chartConfig";
 import { generateChartData } from "./utils/generateChartData";
+import { fetchChartData } from "../../../../services/trade";
 
-// Custom plugin: draws & animates the live‐price dot at the last data‐point
+// live-dot plugin (unchanged)…
 const liveDotPlugin = {
   id: "liveDot",
   beforeInit: (chart) => {
     chart.__pulseStart = performance.now();
   },
   afterDraw: (chart) => {
+    if (!chart.ctx) return;
     const cfg = chart.config.options.plugins.liveDot;
     if (!cfg?.enabled || cfg.value == null) return;
-
     const meta = chart.getDatasetMeta(0);
-    const points = meta.data;
-    if (!points.length) return;
-    const { x, y } = points[points.length - 1];
-
+    const pts = meta.data;
+    if (!pts.length) return;
+    const { x, y } = pts[pts.length - 1];
     const innerColor = cfg.colorHex;
     const rgb = cfg.colorRgb;
-
     const now = performance.now();
     const cycle = cfg.cycle ?? 3000;
     const glowLen = cfg.glowLen ?? 300;
-
     const elapsed = (now - chart.__pulseStart) % cycle;
+
     if (elapsed <= glowLen) {
       const t = elapsed / glowLen;
       const innerR = 6;
       const outerR = innerR + 4 * t;
       const ctx = chart.ctx;
-
       ctx.save();
       ctx.beginPath();
       ctx.arc(x, y, outerR, 0, 2 * Math.PI);
@@ -65,8 +70,6 @@ const liveDotPlugin = {
     ctx2.fillStyle = innerColor;
     ctx2.fill();
     ctx2.restore();
-
-    requestAnimationFrame(() => chart.draw());
   },
 };
 
@@ -90,7 +93,7 @@ export default function ChartSection({ symbol }) {
   const chartRef = useRef(null);
   const prevCloseRef = useRef(null);
 
-  // core state
+  // ─── CORE STATE ─────────────────────────────────────────────
   const [tf, setTf] = useState("1D");
   const [type, setType] = useState("line");
   const [hover, setHover] = useState({ x: null, time: "", price: null });
@@ -104,50 +107,80 @@ export default function ChartSection({ symbol }) {
   const [selectEnd, setSelectEnd] = useState(null);
   const [dragging, setDragging] = useState(false);
 
-  // 1D polling: small jitter around the last reported livePrice
+  // ─── 1D “LIVE” JITTER & TICK ────────────────────────────────
   useEffect(() => {
     if (tf !== "1D") return;
-    // seed livePrice from your static data
     const seed = parseFloat(dataRef.current.price ?? 100);
     setLivePrice((p) => (typeof p === "number" ? p : seed));
-    const id = setInterval(() => {
+    const id1 = setInterval(() => {
       setLivePrice((p) => {
         const prev = typeof p === "number" ? p : seed;
-        return parseFloat(((prev) * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2));
+        return parseFloat(
+          ((prev) * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2)
+        );
       });
     }, 3000);
-    return () => clearInterval(id);
+    const id2 = setInterval(() => setTick((t) => t + 1), 300000);
+    return () => {
+      clearInterval(id1);
+      clearInterval(id2);
+    };
   }, [tf, symbol]);
 
-  // static refresh: bump `tick` every 5 minutes → re-generate data
-  useEffect(() => {
-    if (tf !== "1D") return;
-    const id = setInterval(() => setTick((t) => t + 1), 300000);
-    return () => clearInterval(id);
-  }, [tf, symbol]);
-
-  // generate data
+  // ─── FAKE-DATA FOR 1D ───────────────────────────────────────
   const {
-    data: baseData,
-    price: staticPrice,
-    openTime,
-    closeTime,
-    timeScale,
-    tickScale,
+    data: fakeData,
+    price: fakePrice,
+    openTime: fakeOpen,
+    closeTime: fakeClose,
+    timeScale: fakeTS,
+    tickScale: fakeTick,
   } = useMemo(() => {
     const r = generateChartData(tf, type, symbol, tick);
     dataRef.current.price = r.price;
     return r;
   }, [tf, type, symbol, tick]);
 
-  // **sync livePrice to staticPrice on every tick** (and parseFloat it)
   useEffect(() => {
-    if (tf === "1D") {
-      setLivePrice(parseFloat(staticPrice));
-    }
-  }, [tick, tf, staticPrice]);
+    if (tf === "1D") setLivePrice(parseFloat(fakePrice));
+  }, [tick, tf, fakePrice]);
 
-  // anchor logic for Y-axis padding
+  // ─── HISTORICAL DATA VIA REACT-QUERY ────────────────────────
+  const { data: histData = [], isLoading, isError } = useQuery({
+    queryKey: ["chartData", symbol, tf],
+    queryFn: () => fetchChartData(symbol, tf),
+    enabled: tf !== "1D",
+  });
+
+  // ─── BASE DATA SELECTION ────────────────────────────────────
+  const baseData =
+    tf === "1D"
+      ? fakeData
+      : {
+          datasets: [
+            {
+              label: symbol,
+              data: histData,
+              spanGaps: true,
+              borderWidth: 2,
+              tension: 0.3,
+              backgroundColor: "transparent",
+            },
+          ],
+        };
+
+  // derive staticPrice
+  const lastReal = histData.slice(-1)[0]?.y;
+  const staticPrice =
+    tf === "1D" ? fakePrice : lastReal?.toFixed(2) ?? fakePrice;
+
+  // open/close, scales for 1D
+  const openTime = tf === "1D" ? fakeOpen : undefined;
+  const closeTime = tf === "1D" ? fakeClose : undefined;
+  const xTimeScale = tf === "1D" ? fakeTS : {};
+  const xTickScale = tf === "1D" ? fakeTick : {};
+
+  // ─── PRICE-ANCHOR PADDING FOR 1D ───────────────────────────
   const bufferPct = 0.05;
   useEffect(() => {
     if (tf !== "1D" || livePrice == null) return;
@@ -157,60 +190,44 @@ export default function ChartSection({ symbol }) {
     }
   }, [livePrice, tf, priceAnchor]);
 
-  // patch livePrice into last data‐point
+  // patch live dot into fakeData for 1D
   useEffect(() => {
     if (tf !== "1D") return;
     const chart = chartRef.current;
-    const ds = chart?.data.datasets[0].data;
+    const ds = chart?.data.datasets[0]?.data;
     if (!ds?.length) return;
     ds[ds.length - 1] = { x: new Date(), y: livePrice };
-    chart.update("none");
+    chart.draw();
   }, [livePrice, tf]);
 
   const fmtHover = (dt) => format(dt, "MMM d, h:mm a");
 
-  // y bounds
+  // compute yMin/yMax for 1D
   const { yMin, yMax } = useMemo(() => {
     const pts = baseData.datasets[0].data;
-    const yVals = pts.map((p) => p.y ?? p.c).filter((v) => v != null);
-    if (tf === "1D") {
+    if (tf === "1D" && pts.length) {
+      const yVals = pts.map((p) => p.y ?? p.c).filter((v) => v != null);
       if (prevCloseRef.current == null) prevCloseRef.current = yVals[0];
       const prevClose = prevCloseRef.current;
       const anchor = priceAnchor ?? prevClose;
-      const sMin = anchor * (1 - bufferPct),
-        sMax = anchor * (1 + bufferPct);
-      return {
-        yMin: Math.min(sMin, ...yVals),
-        yMax: Math.max(sMax, ...yVals),
-      };
+      const sMin = anchor * (1 - bufferPct);
+      const sMax = anchor * (1 + bufferPct);
+      return { yMin: Math.min(sMin, ...yVals), yMax: Math.max(sMax, ...yVals) };
     }
     return { yMin: null, yMax: null };
   }, [baseData, tf, priceAnchor]);
 
-  // UP/DOWN colour driven by staticPrice vs. prevClose
-  // ────────────────────────────────────────────────────────────
-  // 1) Grab the very first data‐point (opening price) of the current tf
-  // 2) Compare current price (live for 1D, static for others) to that open
-  const dataPoints = baseData.datasets[0].data;
-  const firstPoint = dataPoints[0];
-  const openPrice = firstPoint?.y  // line-chart
-                   ?? firstPoint?.o // candlestick‐chart
-                   ?? parseFloat(staticPrice);
-
-  const currentPrice = tf === "1D"
-    ? livePrice
-    : parseFloat(staticPrice);
-
+  // color logic
+  const firstPt = baseData.datasets[0].data[0] || {};
+  const openPrice = firstPt.y ?? firstPt.o ?? parseFloat(staticPrice);
+  const currentPrice = tf === "1D" ? livePrice : parseFloat(staticPrice);
   const isUp = currentPrice >= openPrice;
-
-  // hex + rgb for our liveDot & line coloring
-  const upHex  = "#00ffa8";
-  const dnHex  = "#f44";
+  const upHex = "#00ffa8";
+  const dnHex = "#f44";
   const colorHex = isUp ? upHex : dnHex;
   const colorRgb = isUp ? "0,255,168" : "244,68,68";
 
-
-  // displayPrice: now safe to call toFixed on livePrice
+  // display price
   const displayPrice =
     hover.price != null
       ? hover.price
@@ -218,99 +235,63 @@ export default function ChartSection({ symbol }) {
       ? livePrice.toFixed(2)
       : staticPrice;
 
-  // nearest point helper
+  // nearest-point helper
   function nearestPoint(xPix) {
     const chart = chartRef.current;
     if (!chart) return null;
     const xVal = chart.scales.x.getValueForPixel(xPix);
     return baseData.datasets[0].data.reduce((best, p) => {
       const d = Math.abs(new Date(p.x).getTime() - xVal);
-      return d < Math.abs(new Date(best.x).getTime() - xVal) ? p : best;
-    });
+      return d < Math.abs(new Date(best.x).getTime()) ? p : best;
+    }, baseData.datasets[0].data[0] || {});
   }
 
-  // mouse handlers (unchanged)...
-  const onMouseDown = (e) => {
-    const chart = chartRef.current;
-    if (!chart) return;
-    const rect = chart.canvas.getBoundingClientRect();
-    const xPix = e.clientX - rect.left;
-    if (selectStart && !dragging) {
-      setSelectStart(null);
-      setSelectEnd(null);
-      chart.options.plugins.crosshair.hoverX = null;
-      chart.update("none");
-      return;
-    }
-    const p = nearestPoint(xPix);
-    if (!p) return;
-    setSelectStart({
-      xValue: new Date(p.x).getTime(),
-      price: p.y ?? p.c,
-      pixelX: xPix,
-    });
-    setSelectEnd(null);
-    setDragging(true);
-  };
-  const onMouseMove = (e) => {
-    if (!dragging) return;
-    const chart = chartRef.current;
-    const rect = chart.canvas.getBoundingClientRect();
-    const xPix = e.clientX - rect.left;
-    const p = nearestPoint(xPix);
-    if (!p) return;
-    setSelectEnd({
-      xValue: new Date(p.x).getTime(),
-      price: p.y ?? p.c,
-      pixelX: xPix,
-    });
-  };
-  const onMouseUp = () => {
-    setDragging(false);
-    setSelectStart(null);
-    setSelectEnd(null);
-    const chart = chartRef.current;
-    if (chart) {
-      chart.options.plugins.crosshair.hoverX = null;
-      chart.update("none");
-    }
-  };
-  const onMouseLeave = () => {
-    setDragging(false);
-    setHover({ x: null, time: "", price: null });
-    setSelectStart(null);
-    setSelectEnd(null);
-    const chart = chartRef.current;
-    if (chart) {
-      chart.options.plugins.crosshair.hoverX = null;
-      chart.update("none");
-    }
-  };
+  // ─── HOVER HANDLER (useCallback) ───────────────────────────
+  const handleHover = useCallback(
+    (_e, items) => {
+      const chart = chartRef.current;
+      if (!chart) return;
+      if (items.length) {
+        const { datasetIndex, index } = items[0];
+        const pt = chart.data.datasets[datasetIndex].data[index];
+        const xPix = chart.scales.x.getPixelForValue(pt.x);
+        const newTime = fmtHover(pt.x);
+        const newPrice = (pt.y ?? pt.c).toFixed(2);
 
-  // build line/candle dataset (unchanged aside from colorHex injection)…
+        setHover((prev) =>
+          prev.x === xPix && prev.time === newTime && prev.price === newPrice
+            ? prev
+            : { x: xPix, time: newTime, price: newPrice }
+        );
+
+        chart.options.plugins.crosshair.hoverX = xPix;
+        chart.draw();
+      } else {
+        setHover((prev) =>
+          prev.x === null ? prev : { x: null, time: "", price: null }
+        );
+        chart.options.plugins.crosshair.hoverX = null;
+        chart.draw();
+      }
+    },
+    [fmtHover]
+  );
+
+  // ─── MAIN DATASET BUILDER ───────────────────────────────────
   const mainDataset = useMemo(() => {
-    if (type === "candlestick") {
-      return baseData.datasets[0];
-    }
     const src = baseData.datasets[0];
-    const defaultBorder = colorHex;
-    const defaultPoint = colorHex;
+    if (type === "candlestick") return src;
     const startTS = selectStart?.xValue;
     const endTS = selectEnd?.xValue;
     const delta = (selectEnd?.price ?? 0) - (selectStart?.price ?? 0);
-
     return {
-      label: src.label,
-      data: src.data,
-      spanGaps: src.spanGaps,
-      borderWidth: src.borderWidth,
-      tension: src.tension,
-      backgroundColor: src.backgroundColor,
-      borderColor: defaultBorder,
+      ...src,
+      borderColor: colorHex,
       pointRadius: 0,
       pointHoverRadius: 0,
       segment: {
         borderColor: (ctx) => {
+          if (!ctx.p0?.parsed || !ctx.p1?.parsed) return colorHex;
           const x0 = ctx.p0.parsed.x;
           const x1 = ctx.p1.parsed.x;
           if (
@@ -321,10 +302,11 @@ export default function ChartSection({ symbol }) {
           ) {
             return delta >= 0 ? "#0f0" : "#f44";
           }
-          return defaultBorder;
+          return colorHex;
         },
       },
       pointBackgroundColor: (ctx) => {
+        if (!ctx.parsed || ctx.parsed.x == null) return colorHex;
         const x = new Date(ctx.parsed.x).getTime();
         if (
           startTS != null &&
@@ -334,13 +316,13 @@ export default function ChartSection({ symbol }) {
         ) {
           return delta >= 0 ? "#0f0" : "#f44";
         }
-        return defaultPoint;
+        return colorHex;
       },
       pointBorderColor: (ctx) => ctx.dataset.pointBackgroundColor(ctx),
     };
   }, [baseData, selectStart, selectEnd, type, colorHex]);
 
-  // annotations (unchanged)…
+  // ─── ANNOTATIONS ──────────────────────────────────────────
   const annotations = {};
   if (tf === "1D" && prevCloseRef.current != null) {
     annotations.prevCloseLine = {
@@ -383,71 +365,136 @@ export default function ChartSection({ symbol }) {
     };
   }
 
-  // chart options (unchanged)…
-  const options = {
-    maintainAspectRatio: false,
-    animation: { duration: 300, easing: "linear" },
-    plugins: {
-      crosshair: { hoverX: null },
-      legend: { display: false },
-      tooltip: { enabled: false },
-      annotation: { annotations },
-      liveDot: {
-        enabled: tf === "1D",
-        value: livePrice,
-        cycle: 2500,
-        glowLen: 600,
-        colorHex,
-        colorRgb,
+  // ─── MEMOIZED OPTIONS ──────────────────────────────────────
+  const options = useMemo(
+    () => ({
+      maintainAspectRatio: false,
+      animation: { duration: 300, easing: "linear" },
+      plugins: {
+        crosshair: { hoverX: null },
+        legend: { display: false },
+        tooltip: { enabled: false },
+        annotation: { annotations },
+        liveDot: {
+          enabled: tf === "1D",
+          value: livePrice,
+          cycle: 2500,
+          glowLen: 600,
+          colorHex,
+          colorRgb,
+        },
       },
-    },
-    interaction: { mode: "nearest", axis: "x", intersect: false },
-    scales: {
-      x: {
-        type: "time",
-        time: timeScale,
-        ticks: tickScale,
-        grid: { display: false },
-        ...(tf === "1D" && { min: openTime, max: closeTime, bounds: "ticks" }),
+      interaction: { mode: "nearest", axis: "x", intersect: false },
+      scales: {
+        x: {
+          type: "time",
+          time: xTimeScale,
+          ticks: xTickScale,
+          grid: { display: false },
+          ...(tf === "1D" && { min: openTime, max: closeTime, bounds: "ticks" }),
+        },
+        y: {
+          ticks: { color: "#999" },
+          grid: { display: false },
+          ...(tf === "1D" && { min: yMin, max: yMax }),
+        },
       },
-      y: {
-        ticks: { color: "#999" },
-        grid: { display: false },
-        ...(tf === "1D" && { min: yMin, max: yMax }),
-      },
-    },
-    onHover: (e, items) => {
-      const chart = chartRef.current;
-      if (!chart) return;
-      if (items.length) {
-        const { datasetIndex, index } = items[0];
-        const pt = chart.data.datasets[datasetIndex].data[index];
-        const xPix = chart.scales.x.getPixelForValue(pt.x);
-        chart.options.plugins.crosshair.hoverX = xPix;
-        setHover({
-          x: xPix,
-          time: fmtHover(pt.x),
-          price: (pt.y ?? pt.c).toFixed(2),
-        });
-        chart.update("none");
-      } else {
-        if (chartRef.current) {
-          chartRef.current.options.plugins.crosshair.hoverX = null;
-          chartRef.current.update("none");
+      onHover: handleHover,
+      onLeave: (_e) => {
+        const chart = chartRef.current;
+        setHover((prev) =>
+          prev.x === null ? prev : { x: null, time: "", price: null }
+        );
+        if (chart) {
+          chart.options.plugins.crosshair.hoverX = null;
+          chart.draw();
         }
-        setHover({ x: null, time: "", price: null });
-      }
-    },
-    onLeave: onMouseLeave,
+      },
+    }),
+    [
+      tf,
+      livePrice,
+      colorHex,
+      colorRgb,
+      annotations,
+      xTimeScale,
+      xTickScale,
+      openTime,
+      closeTime,
+      yMin,
+      yMax,
+      handleHover,
+    ]
+  );
+
+  // ─── MOUSE HANDLERS (unchanged) ────────────────────────────
+  const onMouseDown = (e) => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    const rect = chart.canvas.getBoundingClientRect();
+    const xPix = e.clientX - rect.left;
+    if (selectStart && !dragging) {
+      setSelectStart(null);
+      setSelectEnd(null);
+      chart.options.plugins.crosshair.hoverX = null;
+      chart.draw();
+      return;
+    }
+    const p = nearestPoint(xPix);
+    if (!p) return;
+    setSelectStart({
+      xValue: new Date(p.x).getTime(),
+      price: p.y ?? p.c,
+      pixelX: xPix,
+    });
+    setSelectEnd(null);
+    setDragging(true);
+  };
+  const onMouseMove = (e) => {
+    if (!dragging) return;
+    const chart = chartRef.current;
+    const rect = chart.canvas.getBoundingClientRect();
+    const xPix = e.clientX - rect.left;
+    const p = nearestPoint(xPix);
+    if (!p) return;
+    setSelectEnd({
+      xValue: new Date(p.x).getTime(),
+      price: p.y ?? p.c,
+      pixelX: xPix,
+    });
+  };
+  const onMouseUp = () => {
+    setDragging(false);
+    setSelectStart(null);
+    setSelectEnd(null);
+    const chart = chartRef.current;
+    if (chart) {
+      chart.options.plugins.crosshair.hoverX = null;
+      chart.draw();
+    }
+  };
+  const onMouseLeave = () => {
+    setDragging(false);
+    setHover({ x: null, time: "", price: null });
+    setSelectStart(null);
+    setSelectEnd(null);
+    const chart = chartRef.current;
+    if (chart) {
+      chart.options.plugins.crosshair.hoverX = null;
+      chart.draw();
+    }
   };
 
   return (
     <section className="tp-chart-section tp-panel">
+      {/* Header & controls (unchanged) */}
       <div className="tp-chart-section-header">
         <div className="tp-chart-section-sub-header">
           <div>
             <div className="tp-symbol-header">{symbol}</div>
-            <div className="tp-company-name">{COMPANY_NAMES[symbol]}</div>
+            <div className="tp-company-name">
+              {COMPANY_NAMES[symbol]}
+            </div>
           </div>
           <span className="tp-price">${displayPrice}</span>
         </div>
@@ -474,7 +521,9 @@ export default function ChartSection({ symbol }) {
             {["line", "candlestick"].map((t) => (
               <button
                 key={t}
-                className={`tp-chart-type-btn${type === t ? " tp-active" : ""}`}
+                className={`tp-chart-type-btn${
+                  type === t ? " tp-active" : ""
+                }`}
                 onClick={() => setType(t)}
               >
                 {t === "line" ? "Line" : "Candle"}
@@ -483,6 +532,8 @@ export default function ChartSection({ symbol }) {
           </div>
         </div>
       </div>
+
+      {/* Chart body */}
       <div
         className="tp-chart-body"
         onMouseDown={onMouseDown}
@@ -490,17 +541,41 @@ export default function ChartSection({ symbol }) {
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseLeave}
       >
-        {hover.x != null && hover.time && (
-          <div className="tp-hover-info" style={{ left: hover.x }}>
+        {/* only render hover info when x is finite */}
+        {hover.time && Number.isFinite(hover.x) && (
+          <div
+            className="tp-hover-info"
+            style={{ left: hover.x }}
+          >
             {hover.time}
           </div>
         )}
-        <Chart
-          ref={chartRef}
-          type={type}
-          data={type === "candlestick" ? baseData : { datasets: [mainDataset] }}
-          options={options}
-        />
+
+        {tf === "1D" ? (
+          <Chart
+            ref={chartRef}
+            type={type}
+            data={
+              type === "candlestick" ? baseData : { datasets: [mainDataset] }
+            }
+            options={options}
+          />
+        ) : isLoading ? (
+          <div className="tp-chart-loading">
+            Loading historical data…
+          </div>
+        ) : isError ? (
+          <div className="tp-chart-error">Error loading data</div>
+        ) : (
+          <Chart
+            ref={chartRef}
+            type={type}
+            data={
+              type === "candlestick" ? baseData : { datasets: [mainDataset] }
+            }
+            options={options}
+          />
+        )}
       </div>
     </section>
   );

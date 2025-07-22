@@ -20,7 +20,7 @@ class PriceBar(models.Model):
 
 class Watchlist(models.Model):
     user      = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        settings.AUTH_PROFILE_MODEL,
         on_delete=models.CASCADE,
         related_name="watchlists"
     )

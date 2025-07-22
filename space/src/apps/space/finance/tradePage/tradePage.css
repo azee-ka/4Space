@@ -440,6 +440,8 @@
   border-radius: 0.4rem;
   color: var(--tp-text);
   font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
 }
 
 .tp-order-types {

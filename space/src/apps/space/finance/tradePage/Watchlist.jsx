@@ -1,5 +1,6 @@
 // src/components/Watchlist.jsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import './watchlist.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes, faEdit, faCheck } from "@fortawesome/free-solid-svg-icons";
@@ -15,6 +16,12 @@ import {
 } from "chart.js";
 import annotationPlugin from "chartjs-plugin-annotation";
 
+import {
+  fetchWatchlists,
+  createWatchlist,
+  updateWatchlist,
+} from "../../../../services/trade";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,7 +32,7 @@ ChartJS.register(
   annotationPlugin
 );
 
-// sparkline demo data generator, returns prevClose too
+// sparkline demo data generator (unchanged)
 function generateSparkData() {
   const pts = 50;
   const now = Date.now();
@@ -80,10 +87,7 @@ function WatchlistItem({ sym, active, isEditing, onSelect, onRemove }) {
   const sparkOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    scales: {
-      x: { display: false },
-      y: { display: false },
-    },
+    scales: { x: { display: false }, y: { display: false } },
     plugins: {
       legend: { display: false },
       tooltip: { enabled: false },
@@ -101,14 +105,8 @@ function WatchlistItem({ sym, active, isEditing, onSelect, onRemove }) {
       },
     },
     elements: {
-      line: {
-        borderWidth: 1,
-        tension: 0.3,
-        capBezierPoints: true,
-      },
-      point: {
-        radius: 0,
-      },
+      line: { borderWidth: 1, tension: 0.3, capBezierPoints: true },
+      point: { radius: 0 },
     },
   };
 
@@ -149,29 +147,100 @@ function WatchlistItem({ sym, active, isEditing, onSelect, onRemove }) {
   );
 }
 
-export default function Watchlist({
-  watchlist,
-  setWatchlist,
-  active,
-  setActive,
-}) {
+export default function Watchlist({ active, setActive }) {
+  const queryClient = useQueryClient();
+
+  // 1) load all watchlists
+  const { data: watchlists = [] } = useQuery({
+    queryKey: ["watchlists"],
+    queryFn: fetchWatchlists,
+  });
+
+  // 2) mutations
+  const createMutation = useMutation({
+    mutationFn: createWatchlist,
+    onSuccess: (newWL) => {
+      // invalidate so the list refetches
+      queryClient.invalidateQueries({ queryKey: ["watchlists"] });
+      // set this newly created list as current
+      setCurrent({
+        id: newWL.id,
+        name: newWL.name,
+        symbols: newWL.items.map(i => i.symbol),
+      });
+      setActive(newWL.items[0]?.symbol || "");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateWatchlist,
+    onSuccess: (upd) => {
+      queryClient.invalidateQueries({ queryKey: ["watchlists"] });
+      setCurrent({
+        id: upd.id,
+        name: upd.name,
+        symbols: upd.items.map(i => i.symbol),
+      });
+    },
+  });
+
+  // local “current” state
+  const [current, setCurrent] = useState({
+    id: null,
+    name: "My Watchlist",
+    symbols: [],
+  });
   const [newSym, setNewSym] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [wlName, setWlName] = useState("My Watchlist");
 
+  // 3) when watchlists load, pick first
+  useEffect(() => {
+    if (watchlists.length > 0) {
+      const wl = watchlists[0];
+      setCurrent({
+        id: wl.id,
+        name: wl.name,
+        symbols: wl.items.map(i => i.symbol),
+      });
+      setActive(wl.items[0]?.symbol || "");
+    }
+  }, [watchlists, setActive]);
+
+  // helper to persist create vs update
+  const persist = (wl) => {
+    const payload = { name: wl.name, symbols: wl.symbols };
+    if (wl.id) {
+      updateMutation.mutate({ id: wl.id, ...payload });
+    } else {
+      createMutation.mutate(payload);
+    }
+  };
+
+  // add symbol
   const addSymbol = () => {
     const s = newSym.trim().toUpperCase();
-    if (s && !watchlist.includes(s)) {
-      setWatchlist([s, ...watchlist]);
+    if (s && !current.symbols.includes(s)) {
+      const next = { ...current, symbols: [s, ...current.symbols] };
+      setCurrent(next);
+      persist(next);
       setActive(s);
     }
     setNewSym("");
   };
 
-  const removeSymbol = (s) => {
-    const next = watchlist.filter((x) => x !== s);
-    setWatchlist(next);
-    if (s === active) setActive(next[0] || "");
+  // remove symbol
+  const removeSymbol = (sym) => {
+    const nextSymbols = current.symbols.filter(x => x !== sym);
+    const next = { ...current, symbols: nextSymbols };
+    setCurrent(next);
+    persist(next);
+    if (active === sym) setActive(nextSymbols[0] || "");
+  };
+
+  // save renamed list
+  const saveName = () => {
+    setIsEditing(false);
+    persist(current);
   };
 
   return (
@@ -180,11 +249,13 @@ export default function Watchlist({
         {isEditing ? (
           <input
             className="tp-wl-name-input"
-            value={wlName}
-            onChange={(e) => setWlName(e.target.value)}
+            value={current.name}
+            onChange={e => setCurrent({ ...current, name: e.target.value })}
+            onBlur={saveName}
+            onKeyDown={e => e.key === "Enter" && saveName()}
           />
         ) : (
-          <h4 className="tp-wl-name">{wlName}</h4>
+          <h4 className="tp-wl-name">{current.name}</h4>
         )}
         <button
           className={`tp-edit-btn ${isEditing ? "tp-up" : "tp-accent"}`}
@@ -198,8 +269,8 @@ export default function Watchlist({
         <input
           placeholder="Add symbol"
           value={newSym}
-          onChange={(e) => setNewSym(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addSymbol()}
+          onChange={e => setNewSym(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && addSymbol()}
         />
         <button className="tp-add-btn" onClick={addSymbol}>
           <FontAwesomeIcon icon={faPlus} />
@@ -207,7 +278,7 @@ export default function Watchlist({
       </div>
 
       <ul className="tp-watchlist">
-        {watchlist.map((sym) => (
+        {current.symbols.map(sym => (
           <WatchlistItem
             key={sym}
             sym={sym}

@@ -2,5 +2,5 @@
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('src.space.finance.trade.urls')),
+    path('trade/', include('src.space.finance.trade.urls')),
 ]
