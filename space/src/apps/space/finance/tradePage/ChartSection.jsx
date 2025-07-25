@@ -30,7 +30,7 @@ import { TIMEFRAMES, COMPANY_NAMES } from "./utils/chartConfig";
 import { generateChartData } from "./utils/generateChartData";
 import { fetchChartData } from "../../../../services/trade";
 
-// live-dot plugin (unchanged)…
+// live-dot plugin (unchanged)
 const liveDotPlugin = {
   id: "liveDot",
   beforeInit: (chart) => {
@@ -39,8 +39,7 @@ const liveDotPlugin = {
   afterDraw: (chart) => {
     const cfg = chart.config.options.plugins.liveDot;
     if (!chart.ctx || !cfg?.enabled || cfg.value == null) return;
-    const meta = chart.getDatasetMeta(0);
-    const pts = meta.data;
+    const pts = chart.getDatasetMeta(0).data;
     if (!pts.length) return;
     const { x, y } = pts[pts.length - 1];
     const { colorHex, colorRgb, cycle = 3000, glowLen = 300 } = cfg;
@@ -109,7 +108,7 @@ export default function ChartSection({ symbol }) {
     const chart = chartRef.current;
     if (!chart) return null;
     const dataArr = chart.data.datasets[0]?.data;
-    if (!dataArr || !dataArr.length) return null;
+    if (!dataArr?.length) return null;
     let nearest = dataArr[0];
     let minD = Math.abs(new Date(nearest.x).getTime() - xValue);
     for (let i = 1; i < dataArr.length; i++) {
@@ -231,12 +230,10 @@ export default function ChartSection({ symbol }) {
   const mainDataset = useMemo(() => {
     if (type === "candlestick") return baseData.datasets[0];
 
-    // compute trueDelta only if both endpoints exist
     const sVal = selectStart ? getNearestPrice(selectStart.xValue) : null;
     const eVal = selectEnd ? getNearestPrice(selectEnd.xValue) : null;
     const trueDelta = sVal != null && eVal != null ? eVal - sVal : null;
 
-    // define min/max X so we handle both forward & backward drags
     const minX =
       selectStart && selectEnd
         ? Math.min(selectStart.xValue, selectEnd.xValue)
@@ -318,24 +315,58 @@ export default function ChartSection({ symbol }) {
       const δ =
         getNearestPrice(selectEnd.xValue) -
         getNearestPrice(selectStart.xValue);
-      const pct =
-        (δ / getNearestPrice(selectStart.xValue)) * 100;
+      const pct = (δ / getNearestPrice(selectStart.xValue)) * 100;
+
       ann.endLine = {
         type: "line",
         xMin: selectEnd.xValue,
         xMax: selectEnd.xValue,
         borderColor: δ >= 0 ? "#0f0" : "#f44",
         borderWidth: 1,
+        animation: false,
       };
       ann.changeLabel = {
         type: "label",
-        xValue: selectEnd.xValue,
+        xValue: selectEnd.xValue + 10,
         yValue: getNearestPrice(selectEnd.xValue),
-        backgroundColor: δ >= 0 ? "#0f0" : "#f44",
+        backgroundColor: "black",
+        color: δ >= 0 ? "#0f0" : "#f44",
+        borderColor: δ >= 0 ? "#0f0" : "#f44",
+        borderWidth: 1,
+        borderRadius: 10,
+        padding: 4,
         content: [`${δ >= 0 ? "+" : ""}${δ.toFixed(2)} (${pct.toFixed(2)}%)`],
-        position: "start",
-        yAdjust: -10,
+        position: (ctx, opts) => {
+          const chart = ctx.chart;
+          const xPixel = chart.scales.x.getPixelForValue(opts.xValue);
+          const mid = (chart.chartArea.left + chart.chartArea.right) / 2;
+          return xPixel < mid ? "start" : "end";
+        },
+        xAdjust: (ctx, opts) => {
+          const chart = ctx.chart;
+          const content = Array.isArray(opts.content) ? opts.content[0] : opts.content;
+          const textWidth = chart.ctx.measureText(content).width;
+          const margin = 6;
+          // if positioned on the left of the point, shift left by width + margin; else shift right by margin
+          return opts.position === 'start' ? -textWidth - margin : margin;
+        },
+        yAdjust: (ctx, opts) => {
+          const chart = ctx.chart;
+          const yPx = chart.scales.y.getPixelForValue(opts.yValue);
+          const { top, bottom } = chart.chartArea;
+          const fontSize = (opts.font && opts.font.size) || 12;
+          const height = fontSize;
+          const padding = 6;
+          if (yPx - height - padding < top) {
+            return top - (yPx - height - padding);
+          }
+          if (yPx + padding > bottom) {
+            return bottom - (yPx + padding) - height;
+          }
+          return -height - 2;
+        },
         font: { size: 12 },
+        animation: false,
       };
     }
     return ann;
@@ -427,7 +458,7 @@ export default function ChartSection({ symbol }) {
       const { left, right } = chart.chartArea;
       const xValue = chart.scales.x.getValueForPixel(xPix);
 
-      // hover
+      // hover crosshair
       if (xPix < left || xPix > right) {
         setHover({ x: null, time: "", price: null });
       } else {
@@ -442,14 +473,16 @@ export default function ChartSection({ symbol }) {
         );
       }
 
-      // dragging → update selectEnd
-      if (dragging && selectStart) {
+      // always update the interval “end” crosshair so it never lags
+      if (selectStart) {
         const xVal2 = chart.scales.x.getValueForPixel(xPix);
         const p2 = chart.scales.y.getValueForPixel(yPix);
         setSelectEnd({ xValue: xVal2, price: p2, pixelX: xPix });
+        // force immediate redraw without animation so endLine follows cursor exactly
+        chart.update('none');
       }
     },
-    [dragging, selectStart]
+    [selectStart]
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -467,7 +500,7 @@ export default function ChartSection({ symbol }) {
       const xPix = e.clientX - rect.left;
       const yPix = e.clientY - rect.top;
 
-      // clear existing interval on second click
+      // clear on second click
       if (selectStart && !dragging) {
         setSelectStart(null);
         setSelectEnd(null);
@@ -475,7 +508,7 @@ export default function ChartSection({ symbol }) {
         return;
       }
 
-      // begin new interval
+      // set initial anchor
       const xValue = chart.scales.x.getValueForPixel(xPix);
       const price = chart.scales.y.getValueForPixel(yPix);
       setSelectStart({ xValue, price, pixelX: xPix });
@@ -488,7 +521,7 @@ export default function ChartSection({ symbol }) {
   const handleMouseUp = useCallback(() => {
     if (dragging) {
       setDragging(false);
-      // clear both on mouse up:
+      // <-- clear interval selection immediately on mouse-up:
       setSelectStart(null);
       setSelectEnd(null);
     }
@@ -504,7 +537,6 @@ export default function ChartSection({ symbol }) {
 
   return (
     <section className="tp-chart-section tp-panel">
-      {/* Header & controls */}
       <div className="tp-chart-section-header">
         <div className="tp-chart-section-sub-header">
           <div>
@@ -546,7 +578,6 @@ export default function ChartSection({ symbol }) {
         </div>
       </div>
 
-      {/* Chart body */}
       <div
         className="tp-chart-body"
         onMouseMove={handleMouseMove}
