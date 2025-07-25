@@ -132,7 +132,20 @@ export default function ChartSection({ symbol }) {
     const idJitter = setInterval(() => {
       setLivePrice((prev) => {
         const base = typeof prev === "number" ? prev : seed;
-        return parseFloat((base * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2));
+        const newPrice = parseFloat((base * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2));
+        // update dataset's last point
+        const chart = chartRef.current;
+        if (chart) {
+          const ds = chart.data.datasets[0].data;
+          if (ds && ds.length) {
+            const lastIdx = ds.length - 1;
+            const pt = ds[lastIdx];
+            if ("y" in pt) pt.y = newPrice;
+            else if ("c" in pt) pt.c = newPrice;
+            chart.update("none");
+          }
+        }
+        return newPrice;
       });
     }, 3000);
     // regenerate full data (tick) every 5 minutes
