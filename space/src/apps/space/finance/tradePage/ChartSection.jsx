@@ -126,19 +126,20 @@ export default function ChartSection({ symbol }) {
   useEffect(() => {
     if (tf !== "1D") return;
     const seed = parseFloat(dataRef.current.price ?? 100);
+    // initialize livePrice to the seed or existing
     setLivePrice((p) => (typeof p === "number" ? p : seed));
-    const id1 = setInterval(() => {
-      setLivePrice((p) => {
-        const prev = typeof p === "number" ? p : seed;
-        return parseFloat(
-          (prev * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2)
-        );
+    // jitter the live dot every 3s
+    const idJitter = setInterval(() => {
+      setLivePrice((prev) => {
+        const base = typeof prev === "number" ? prev : seed;
+        return parseFloat((base * (1 + (Math.random() - 0.5) * 0.01)).toFixed(2));
       });
     }, 3000);
-    const id2 = setInterval(() => setTick((t) => t + 1), 300000);
+    // regenerate full data (tick) every 5 minutes
+    const idTick = setInterval(() => setTick((t) => t + 1), 300000);
     return () => {
-      clearInterval(id1);
-      clearInterval(id2);
+      clearInterval(idJitter);
+      clearInterval(idTick);
     };
   }, [tf, symbol]);
 
@@ -455,13 +456,37 @@ export default function ChartSection({ symbol }) {
       const rect = chart.canvas.getBoundingClientRect();
       const xPix = e.clientX - rect.left;
       const yPix = e.clientY - rect.top;
-      const { left, right } = chart.chartArea;
+      const { left, right, top, bottom } = chart.chartArea;
+
+      // determine right boundary at last data point
+      const dataArr = chart.data.datasets[0]?.data || [];
+      const minDataPix = left;
+      let maxDataPix = right;
+      if (dataArr.length) {
+        const lastPt = dataArr[dataArr.length - 1];
+        const lastX = lastPt.x instanceof Date ? lastPt.x : new Date(lastPt.x);
+        maxDataPix = chart.scales.x.getPixelForValue(lastX);
+      }
+
       const xValue = chart.scales.x.getValueForPixel(xPix);
 
       // hover crosshair
-      if (xPix < left || xPix > right) {
+      if (xPix < minDataPix) {
         setHover({ x: null, time: "", price: null });
+      } else if (xPix > maxDataPix) {
+        // pin to last data point
+        const lastPt = dataArr[dataArr.length - 1];
+        const ptTime = new Date(lastPt.x);
+        const ptPrice = lastPt.y ?? lastPt.c;
+        const newTime = format(ptTime, "MMM d, h:mm a");
+        const newPrice = ptPrice.toFixed(2);
+        setHover((prev) =>
+          prev.x === maxDataPix && prev.time === newTime && prev.price === newPrice
+            ? prev
+            : { x: maxDataPix, time: newTime, price: newPrice }
+        );
       } else {
+        // existing hover logic
         const time = new Date(xValue);
         const price = chart.scales.y.getValueForPixel(yPix);
         const newTime = format(time, "MMM d, h:mm a");
@@ -473,11 +498,13 @@ export default function ChartSection({ symbol }) {
         );
       }
 
-      // always update the interval “end” crosshair so it never lags
+      // always update the interval “end” crosshair so it never lags, clamped within data bounds
       if (selectStart) {
-        const xVal2 = chart.scales.x.getValueForPixel(xPix);
-        const p2 = chart.scales.y.getValueForPixel(yPix);
-        setSelectEnd({ xValue: xVal2, price: p2, pixelX: xPix });
+        const clampedXPix = Math.max(minDataPix, Math.min(xPix, maxDataPix));
+        const clampedYPix = Math.max(top, Math.min(yPix, bottom));
+        const xVal2 = chart.scales.x.getValueForPixel(clampedXPix);
+        const p2 = chart.scales.y.getValueForPixel(clampedYPix);
+        setSelectEnd({ xValue: xVal2, price: p2, pixelX: clampedXPix });
         // force immediate redraw without animation so endLine follows cursor exactly
         chart.update('none');
       }
@@ -499,6 +526,22 @@ export default function ChartSection({ symbol }) {
       const rect = chart.canvas.getBoundingClientRect();
       const xPix = e.clientX - rect.left;
       const yPix = e.clientY - rect.top;
+      const { left, right, top, bottom } = chart.chartArea;
+      // determine selection boundary at last data point
+      const dataArr = chart.data.datasets[0]?.data || [];
+      const minDataPix = left;
+      let maxDataPix = right;
+      if (dataArr.length) {
+        const lastPt = dataArr[dataArr.length - 1];
+        const lastX = lastPt.x instanceof Date ? lastPt.x : new Date(lastPt.x);
+        maxDataPix = chart.scales.x.getPixelForValue(lastX);
+      }
+      // ignore clicks outside the data area
+      if (xPix < minDataPix || xPix > maxDataPix || yPix < top || yPix > bottom) {
+        return;
+      }
+      const clampedXPix = Math.max(minDataPix, Math.min(xPix, maxDataPix));
+      const clampedYPix = Math.max(top, Math.min(yPix, bottom));
 
       // clear on second click
       if (selectStart && !dragging) {
@@ -509,9 +552,9 @@ export default function ChartSection({ symbol }) {
       }
 
       // set initial anchor
-      const xValue = chart.scales.x.getValueForPixel(xPix);
-      const price = chart.scales.y.getValueForPixel(yPix);
-      setSelectStart({ xValue, price, pixelX: xPix });
+      const xValue = chart.scales.x.getValueForPixel(clampedXPix);
+      const price = chart.scales.y.getValueForPixel(clampedYPix);
+      setSelectStart({ xValue, price, pixelX: clampedXPix });
       setSelectEnd(null);
       setDragging(true);
     },
