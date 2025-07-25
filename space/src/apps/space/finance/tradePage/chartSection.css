@@ -30,10 +30,21 @@
   color: var(--tp-sub);
 }
 
+.tp-symbol-price-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+.tp-change {
+    font-size: 0.9rem;
+}
+
 .tp-chart-section .tp-price {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+  /* position: absolute; */
+  /* top: 1rem; */
+  /* right: 1rem; */
   font-size: 1.2rem;
   font-weight: 700;
 }
@@ -165,11 +176,6 @@
 
 
 
-
-
-
-
-
 /* CHART SECTION tweaks */
 .tp-chart-controls {
   display: flex;
@@ -263,5 +269,10 @@
   z-index: 10;
 }
 
-
-
+.tp-price-change {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  font-size: 0.6rem;
+}

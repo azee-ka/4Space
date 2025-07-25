@@ -584,6 +584,16 @@ export default function ChartSection({ symbol }) {
   }, [dragging]);
 
   // ─── RENDER ───────────────────────────────────────────────
+  // ─── PRICE CHANGE INFO ────────────────────────────────────
+  const changeInfo = useMemo(() => {
+    const dataArr = baseData.datasets[0].data;
+    if (!dataArr.length) return null;
+    const firstVal = dataArr[0].y ?? dataArr[0].c;
+    const lastVal = dataArr[dataArr.length - 1].y ?? dataArr[dataArr.length - 1].c;
+    const change = lastVal - firstVal;
+    const pct = (change / firstVal) * 100;
+    return { change, pct };
+  }, [baseData]);
   const displayPrice =
     hover.price != null
       ? hover.price
@@ -599,7 +609,20 @@ export default function ChartSection({ symbol }) {
             <div className="tp-symbol-header">{symbol}</div>
             <div className="tp-company-name">{COMPANY_NAMES[symbol]}</div>
           </div>
-          <span className="tp-price">${displayPrice}</span>
+          <div className="tp-symbol-price-group">
+          {changeInfo && (
+            <span
+              className="tp-change"
+              style={{ color: changeInfo.change >= 0 ? "#0f0" : "#f44" }}
+            >
+              {changeInfo.change >= 0 ? "+" : ""}
+              {changeInfo.change.toFixed(2)} (
+              {changeInfo.pct >= 0 ? "+" : ""}
+              {changeInfo.pct.toFixed(2)}%)
+            </span>
+          )}
+            <span className="tp-price">${displayPrice}</span>
+            </div>
         </div>
         <div className="tp-chart-controls">
           <div className="tp-timeframe">
