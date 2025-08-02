@@ -196,14 +196,35 @@ export default function ChartSection({ symbol }) {
   // ─── BASE DATA & SCALES ──────────────────────────────────
   const baseData = useMemo(() => {
     if (tf === "1D") return fakeData;
+    // for week and month, plot only active timestamps as categories
+    if (tf === "1W" || tf === "1M") {
+      const filtered = histData.filter((pt) => pt.y != null || pt.c != null);
+      const labels = filtered.map((pt) => pt.x);
+      const values = filtered.map((pt) => pt.y ?? pt.c);
+      return {
+        labels,
+        datasets: [
+          {
+            label: symbol,
+            data: values,
+            spanGaps: false,
+            borderWidth: 1.5,
+            tension: 0,
+            backgroundColor: "transparent",
+          },
+        ],
+      };
+    }
+    // filter out points where both y and c are null
+    const filtered = histData.filter((pt) => pt.y != null || pt.c != null);
     return {
       datasets: [
         {
           label: symbol,
-          data: histData,
-          spanGaps: true,
+          data: filtered,
+          spanGaps: false,
           borderWidth: 1.5,
-          tension: 0.3,
+          tension: 0,
           backgroundColor: "transparent",
         },
       ],
@@ -298,10 +319,17 @@ export default function ChartSection({ symbol }) {
     };
   }, [baseData, type, selectStart, selectEnd, colorHex, getNearestPrice]);
 
-  const chartData = useMemo(
-    () => (type === "candlestick" ? baseData : { datasets: [mainDataset] }),
-    [baseData, mainDataset, type]
-  );
+  const chartData = useMemo(() => {
+    if (type === "candlestick") return baseData;
+    // for 1W/1M we already have labels in baseData
+    if (tf === "1W" || tf === "1M") {
+      return {
+        labels: baseData.labels,
+        datasets: [mainDataset],
+      };
+    }
+    return { datasets: [mainDataset] };
+  }, [baseData, mainDataset, type, tf]);
 
   // ─── ANNOTATIONS ──────────────────────────────────────────
   const annotations = useMemo(() => {
@@ -424,18 +452,30 @@ export default function ChartSection({ symbol }) {
       },
       interaction: { mode: "nearest", axis: "x", intersect: false },
       scales: {
-        x: {
-          type: "time",
-          distribution: tf === "1D" ? "linear" : "series",
-          time: xTimeScale,
-          ticks: xTickScale,
-          grid: { display: false },
-          ...(tf === "1D" && {
-            min: openTime,
-            max: closeTime,
-            bounds: "ticks",
-          }),
-        },
+        x: tf === "1D"
+          ? {
+              type: "time",
+              distribution: "linear",
+              time: xTimeScale,
+              ticks: xTickScale,
+              grid: { display: false },
+              bounds: "ticks",
+              min: openTime,
+              max: closeTime,
+            }
+          : tf === "1W" || tf === "1M"
+          ? {
+              type: "category",
+              labels: baseData.labels,
+              grid: { display: false },
+            }
+          : {
+              type: "time",
+              distribution: "series",
+              time: xTimeScale,
+              ticks: xTickScale,
+              grid: { display: false },
+            },
         y: {
           ticks: { color: "#999" },
           grid: { display: false },
@@ -459,6 +499,7 @@ export default function ChartSection({ symbol }) {
     selectStart,
     selectEnd,
     getNearestPrice,
+    baseData.labels,
   ]);
 
   // ─── HANDLERS ─────────────────────────────────────────────
