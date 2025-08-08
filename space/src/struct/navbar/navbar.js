@@ -109,7 +109,7 @@ const Navbar = ({
               className='navbar-search-field'
               value={navbarSearchValue}
               onChange={(e) => setNavbarSearchValue(e.target.value)}
-              placeholder='Search'
+              placeholder='Ask Agent'
             />
           </div>
         </div>
