@@ -8,7 +8,7 @@ import { searchUsers } from "../../../services/user";
 import Modal from "../../../components/modal/Modal";
 import "./createMessageOverlay.css";
 
-const CreateMessageOverlay = ({ onClose }) => {
+const CreateMessageOverlay = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -69,12 +69,12 @@ const CreateMessageOverlay = ({ onClose }) => {
 
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       title="New Chat"
       footer={footer}
       size="md"
-      // maxWidth={"600px"}
+      maxWidth={"500px"}
     >
       <div className="recipient-bar">
         {selected.map((r) => (

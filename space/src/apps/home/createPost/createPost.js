@@ -24,7 +24,7 @@ const CreatePost = () => {
     const navigate = useNavigate();
     const { authState } = useAuth();
     const imageUploadRef = useRef(null);
-    const { closeCreatePostOverlay: onClose } = useCreatePostContext();
+    const { closeCreatePostOverlay: onClose, showCreatePostOverlay } = useCreatePostContext();
 
     const [showMediaPreview, setShowMediaPreview] = useState(false);
     const [selectedMediaFiles, setSelectedMediaFiles] = useState([]);
@@ -70,8 +70,10 @@ const CreatePost = () => {
     });
 
     useEffect(() => {
+        if(showCreatePostOverlay) {
         window.history.pushState(null, '', '/create/post');
-    }, []);
+        }
+    }, [showCreatePostOverlay]);
 
     const handleImageUpload = (fn) => {
         imageUploadRef.current = fn;
@@ -218,13 +220,13 @@ const CreatePost = () => {
 
     return (
         <Modal
-            isOpen={true}
+            isOpen={showCreatePostOverlay}
             onClose={onClose}
             title="Create Post"
             subHeader={!showMediaPreview ? subHeader : undefined}
             footer={!showMediaPreview ? footer : undefined}
             size="lg"
-            maxHeight="800px"
+            maxHeight={"600px"}
         >
             {showMediaPreview ? (
                 <MediaPreview

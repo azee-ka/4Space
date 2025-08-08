@@ -49,46 +49,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
         conversation.save()
 
     async def evaluate_participants(self, conversation, sender):
-        participants = await sync_to_async(list)(Participant.objects.filter(conversation=conversation))
-        is_group_chat = len(participants) > 2
+        participants = await sync_to_async(list)(
+            Participant.objects.filter(conversation=conversation).select_related("user")
+        )
+        is_group_chat = len(participants) > 2  # kept only if you need this flag elsewhere
 
         for participant in participants:
-            participant_user = await sync_to_async(lambda: participant.user)()
-            if participant_user == sender or participant.status == 'blocked':
+            # Skip the sender and anyone already blocked
+            participant_user = participant.user
+            if participant_user.id == sender.id or participant.status == 'blocked':
                 continue
 
-            message_settings = await sync_to_async(lambda: participant_user.message_settings)()
+            # Get message settings for the participant (recipient)
+            message_settings = participant_user.message_settings
 
-            if is_group_chat:
-                allow_messages = await sync_to_async(lambda: (
-                    message_settings.allow_messages_from_others == 'allow' or
-                    (sender in participant_user.followers.all() and
-                     message_settings.allow_messages_from_followers == 'allow')
-                ))()
-                if allow_messages:
-                    participant.status = 'invited'
-                else:
-                    allow_requests = await sync_to_async(lambda: (
-                        message_settings.allow_messages_from_others == 'requests' or
-                        (sender in participant_user.followers.all() and
-                         message_settings.allow_messages_from_followers == 'requests')
-                    ))()
-                    participant.status = 'invited' if allow_requests else 'added'
-            else:
-                allow_messages = await sync_to_async(lambda: (
-                    message_settings.allow_messages_from_others == 'allow' or
-                    (sender in participant_user.followers.all() and
-                     message_settings.allow_messages_from_followers == 'allow')
-                ))()
-                if allow_messages:
-                    participant.status = 'active'
-                else:
-                    allow_requests = await sync_to_async(lambda: (
-                        message_settings.allow_messages_from_others == 'requests' or
-                        (sender in participant_user.followers.all() and
-                         message_settings.allow_messages_from_followers == 'requests')
-                    ))()
-                    participant.status = 'invited' if allow_requests else 'added'
+            # Efficient follower check (avoid materializing all followers)
+            sender_is_follower = await sync_to_async(
+                lambda: participant_user.followers.filter(pk=sender.pk).exists()
+            )()
+
+            # Pick the relevant policy based on relationship
+            policy = (
+                message_settings.allow_messages_from_followers
+                if sender_is_follower
+                else message_settings.allow_messages_from_others
+            )
+
+            # Decide status based on policy
+            if policy == 'allow':
+                # Recipient allows messages outright — make them active (not a request)
+                participant.status = 'active'
+                participant.invitation_sent_at = None
+            elif policy == 'requests':
+                # Recipient accepts requests — put in Requests and timestamp it
+                participant.status = 'invited'
+                participant.invitation_sent_at = now()
+            else:  # 'no-requests'
+                # Keep them hidden in the thread (no request should surface)
+                participant.status = 'added'
+                participant.invitation_sent_at = None
 
             await sync_to_async(participant.save)()
 

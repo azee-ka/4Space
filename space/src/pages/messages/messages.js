@@ -61,7 +61,6 @@ const Messages = () => {
                 <MessageInbox setShowCreateMessageOverlay={setShowOverlay} />
               </div>
 
-              {/* <div className="chat-pane"> */}
                 {conversationId ? (
                   <ChatContainer conversationId={conversationId} />
                 ) : (
@@ -69,13 +68,12 @@ const Messages = () => {
                     <p>Select a conversation to begin</p>
                   </div>
                 )}
-              {/* </div> */}
             </>
           )}
         </main>
       </div>
     </div>
-        {showOverlay && <CreateMessageOverlay onClose={() => setShowOverlay(false)} />}
+        {<CreateMessageOverlay isOpen={showOverlay} onClose={() => setShowOverlay(false)} />}
     </>
   );
 };

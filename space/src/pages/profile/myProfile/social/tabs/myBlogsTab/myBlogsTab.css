@@ -158,7 +158,7 @@
 
 
 /* Quill editor wrapper */
-.editor {
+.my-blogs-tab .editor {
   min-height: 300px;
   max-height: 460px;
   overflow-y: auto;
@@ -167,7 +167,7 @@
 }
 
 /* Override default Quill snow container */
-.editor .ql-container.ql-snow {
+.my-blogs-tab .editor .ql-container.ql-snow {
   border: none;
   box-shadow: none;
   padding: 1rem;
@@ -175,7 +175,7 @@
 }
 
 /* Quill editable area */
-.editor .ql-editor {
+.my-blogs-tab .editor .ql-editor {
   padding: 1rem;
   min-height: 280px;
   max-height: 480px;

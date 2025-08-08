@@ -11,16 +11,16 @@ export const CreatePostProvider = ({ children }) => {
     const navigate = useNavigate();
 
     const openCreatePostOverlay = (originalPreviousUrl) => {
-            setOriginalUrlBeforeCreatePostOverlay(originalPreviousUrl);
-            setShowCreatePostOverlay(true);
+        setOriginalUrlBeforeCreatePostOverlay(originalPreviousUrl);
+        setShowCreatePostOverlay(true);
     };
 
     const closeCreatePostOverlay = () => {
         setShowCreatePostOverlay(false);
-        if(originalUrlBeforeCreatePostOverlay) {
+        if (originalUrlBeforeCreatePostOverlay) {
             navigate(originalUrlBeforeCreatePostOverlay);
         } else {
-            navigate('/')
+            navigate('/');
         }
     };
 
@@ -34,7 +34,7 @@ export const CreatePostProvider = ({ children }) => {
             }}
         >
             {children}
-            {showCreatePostOverlay && <CreatePost />}
+            { <CreatePost />}
         </CreatePostContext.Provider>
     );
 };

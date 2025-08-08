@@ -16,6 +16,51 @@ import uuid
 
 
 
+# Helper function to evaluate participant statuses for conversation requests
+def _evaluate_participants_for_conversation(conversation, sender):
+    """
+    Mirror the WS logic: set participant.status based on the recipient's MessageSettings
+    and relationship to the sender. This ensures the first message surfaces in Requests
+    when appropriate.
+    """
+    participants = Participant.objects.filter(conversation=conversation).select_related("user")
+    for participant in participants:
+        # Skip the sender and anyone already blocked
+        participant_user = participant.user
+        if participant_user.id == sender.id or participant.status == 'blocked':
+            continue
+
+        # Get message settings for the participant (recipient)
+        message_settings = participant_user.message_settings
+
+        # Efficient follower check
+        sender_is_follower = participant_user.followers.filter(pk=sender.pk).exists()
+
+        # Select the relevant policy based on relationship
+        policy = (
+            message_settings.allow_messages_from_followers
+            if sender_is_follower
+            else message_settings.allow_messages_from_others
+        )
+
+        # Decide status based on policy
+        if policy == 'allow':
+            # Recipient allows messages outright — make them active (not a request)
+            participant.status = 'active'
+            participant.invitation_sent_at = None
+        elif policy == 'requests':
+            # Recipient accepts requests — put in Requests and timestamp it
+            participant.status = 'invited'
+            if not participant.invitation_sent_at:
+                participant.invitation_sent_at = now()
+        else:  # 'no-requests'
+            # Keep them hidden in the thread (no request should surface)
+            participant.status = 'added'
+            participant.invitation_sent_at = None
+
+        participant.save(update_fields=['status', 'invitation_sent_at'])
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_reaction(request, message_uuid):
@@ -332,6 +377,11 @@ def create_message(request):
         uuid=data.get('conversation'),
         participant_records__user=request.user
     )
+
+    # If this is the first message in the conversation, evaluate recipient statuses
+    # so non-followers with 'requests' policy appear in Requests.
+    if not conversation.messages.exists():
+        _evaluate_participants_for_conversation(conversation, request.user)
 
     parent_uuid = data.get('parent_message_uuid')
     parent = None

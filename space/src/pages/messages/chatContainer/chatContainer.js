@@ -33,6 +33,7 @@ import {
 import { FaEllipsisV, FaPaperPlane } from "react-icons/fa";
 import "./chatContainer.css";
 import { formatDateTime } from "../../../utils/formatDateTime";
+import { useDevice } from "../../../context/DeviceContext";
 
 // Helper to check emoji-only
 function isEmojiOnlyMessage(text) {
@@ -122,6 +123,7 @@ const ChatContainer = ({ conversationId }) => {
   const centerPanelRef = useRef(null);
   const scrollRef = useRef();
   const queryClient = useQueryClient();
+  const { isM, isD } = useDevice();
 
   const [input, setInput] = useState("");
   const [userScrolledUp, setUserScrolledUp] = useState(false);
@@ -375,7 +377,7 @@ const ChatContainer = ({ conversationId }) => {
         {isLoading ? (
           <div className="chat-loading">Loading messages…</div>
         ) : (
-          [...messages].reverse().map((msg, i, arr) => (
+          (isD ? messages : [...messages].reverse()).map((msg, i, arr) => (
             <div key={msg.uuid} className={`chat-bubble-row-wrapper ${isOwn(msg) ? "own" : "other"}`}>
               <ChatMessage
                 message={msg}
