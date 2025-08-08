@@ -11,6 +11,7 @@ import MyCollectionsTab from "./tabs/bookmarkedPostsTab/collectionsMyTab";
 import ProfilePicture from "../../../../utils/profilePicture/getProfilePicture";
 import DropdownButton from '../../../../utils/popperButton/DropdownButton';
 import UserListOverlay from "../../../../components/userListOverlay/userListOverlay";
+import MyBlogsTab from "./tabs/myBlogsTab/myBlogsTab";
 
 const SocialProfile = ({ profileInfo }) => {
   const location = useLocation();
@@ -23,12 +24,13 @@ const SocialProfile = ({ profileInfo }) => {
     { key: 'posts', label: 'My Posts' },
     { key: 'communities', label: 'My Communities' },
     { key: 'collections', label: 'My Collections' },
+    { key: 'blogs', label: 'My Blogs' },
   ];
 
   const getTabFromSearch = () => {
     const params = new URLSearchParams(location.search);
     const t = params.get('tab');
-    if (t === 'communities' || t === 'collections') return t;
+    if (t === 'communities' || t === 'collections' || t === 'blogs') return t;
     return 'posts';
   };
 
@@ -147,6 +149,7 @@ const SocialProfile = ({ profileInfo }) => {
             {activeTab === 'posts' && <MyPostsTab />}
             {activeTab === 'communities' && <MyCommunitiesTab />}
             {activeTab === 'collections' && <MyCollectionsTab />}
+            {activeTab === 'blogs' && <MyBlogsTab />}
           </section>
         </main>
       </div>

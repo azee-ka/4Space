@@ -230,18 +230,36 @@ export default function ChartSection({ symbol }) {
   // ─── MAIN DATASET with selection styling ──────────────────
   const mainDataset = useMemo(() => {
     if (type === "candlestick") return baseData.datasets[0];
+    const dataset = baseData.datasets[0];
+    const dataArr = dataset.data || [];
+    // if no data yet (e.g., loading), return the base dataset unmodified
+    if (dataArr.length === 0) {
+      return {
+        ...dataset,
+        borderColor: "#00ffa8",
+        pointBackgroundColor: "#00ffa8",
+        pointRadius: 0,
+        pointHoverRadius: 0,
+      };
+    }
     const s = selectStart, e = selectEnd;
+    // compute overall timeframe color based on start vs end
+    const allData = dataArr;
+    const wholeStartVal = allData[0].y ?? allData[0].c;
+    const wholeEndVal = allData[allData.length - 1].y ?? allData[allData.length - 1].c;
+    const wholeDiff = wholeEndVal - wholeStartVal;
+    const wholeColor = wholeDiff >= 0 ? "#00ffa8" : "#f44";
     const startVal = s ? getNearestPrice(s.xValue) : null;
     const endVal = e ? getNearestPrice(e.xValue) : null;
     const diff = s && e ? endVal - startVal : null;
-    const colorHex = "#00ffa8";
+    const colorHex = wholeColor;
     // determine selection bounds for highlighting (support dragging backwards)
     const minX = s && e ? Math.min(s.xValue, e.xValue) : null;
     const maxX = s && e ? Math.max(s.xValue, e.xValue) : null;
     // determine default border color based on selection or overall direction
     const defaultBorderColor = diff != null
       ? (diff >= 0 ? "#0f0" : "#f44")
-      : (baseData.datasets[0].borderColor || colorHex);
+      : wholeColor;
     return {
       ...baseData.datasets[0],
       borderColor: defaultBorderColor,
@@ -253,6 +271,34 @@ export default function ChartSection({ symbol }) {
           }
           return colorHex;
         },
+      },
+      // --- Gradient fill under the line ---
+      fill: "start",
+      backgroundColor: (context) => {
+        const chart = context.chart;
+        // Guard against undefined chartArea on initial layout
+        if (!chart.chartArea) {
+          return 'rgba(0,0,0,0)';
+        }
+        const { ctx } = chart;
+        const { top, bottom } = chart.chartArea;
+        const gradient = ctx.createLinearGradient(0, top, 0, bottom);
+        // parse hex color
+        const hex = colorHex.replace('#', '');
+        let r, g, b;
+        if (hex.length === 3) {
+          r = parseInt(hex[0] + hex[0], 16);
+          g = parseInt(hex[1] + hex[1], 16);
+          b = parseInt(hex[2] + hex[2], 16);
+        } else {
+          r = parseInt(hex.substr(0, 2), 16);
+          g = parseInt(hex.substr(2, 2), 16);
+          b = parseInt(hex.substr(4, 2), 16);
+        }
+        // 20% opacity at top, fade to transparent at bottom
+        gradient.addColorStop(0, `rgba(${r},${g},${b},0.2)`);
+        gradient.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        return gradient;
       },
       pointBackgroundColor: ctx => {
         // New implementation per instructions
@@ -407,13 +453,14 @@ export default function ChartSection({ symbol }) {
             : axisConfig
             ? {
                 type: "time",
-                distribution: "series",
+                distribution: "linear",
                 time: {
                   unit: axisConfig.unit,
                   displayFormats: axisConfig.displayFormats,
                 },
                 ticks: {
-                  source: "auto",
+                  color: "#999",
+                  source: "data",
                   autoSkip: true,
                   maxTicksLimit: axisConfig.maxTicksLimit,
                 },
@@ -534,13 +581,10 @@ export default function ChartSection({ symbol }) {
         {hover.time && Number.isFinite(hover.x) && (
           <div className="tp-hover-info" style={{ left: hover.x }}>{hover.time}</div>
         )}
-        {tf==="1D" ? (
-          <MemoChart ref={chartRef} type={type} data={chartData} options={options}/>
-        ) : isLoading ? (
-          <div className="tp-chart-loading">Loading historical data…</div>
-        ) : isError ? (
+        {tf !== "1D" && isError && (
           <div className="tp-chart-error">Error loading data</div>
-        ) : (
+        )}
+        {(tf === "1D" || !isError) && (
           <MemoChart ref={chartRef} type={type} data={chartData} options={options}/>
         )}
       </div>

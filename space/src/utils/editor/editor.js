@@ -183,18 +183,21 @@ const CustomEditor = forwardRef(
         {showToolbar && (
           <div className="toolbar">
             <button
+              type='button'
               onClick={() => applyFormat("bold")}
               className={`button ${formats.bold ? "active" : ""}`}
             >
               <FontAwesomeIcon icon={faBold} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("italic")}
               className={`button ${formats.italic ? "active" : ""}`}
             >
               <FontAwesomeIcon icon={faItalic} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("underline")}
               className={`button ${
                 formats.underline ? "active" : ""
@@ -203,6 +206,7 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faUnderline} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("strike")}
               className={`button ${
                 formats.strike ? "active" : ""
@@ -211,6 +215,7 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faStrikethrough} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("list", "ordered")}
               className={`button ${
                 formats.list === "ordered" ? "active" : ""
@@ -219,6 +224,7 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faListOl} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("list", "bullet")}
               className={`button ${
                 formats.list === "bullet" ? "active" : ""
@@ -227,6 +233,7 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faListUl} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("align", "")}
               className={`button ${
                 !formats.align ? "active" : ""
@@ -235,6 +242,7 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faAlignLeft} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("align", "center")}
               className={`button ${
                 formats.align === "center" ? "active" : ""
@@ -243,6 +251,7 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faAlignCenter} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("align", "right")}
               className={`button ${
                 formats.align === "right" ? "active" : ""
@@ -251,12 +260,14 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faAlignRight} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("code")}
               className={`button ${formats.code ? "active" : ""}`}
             >
               <FontAwesomeIcon icon={faCode} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("script", "super")}
               className={`button ${
                 formats.script === "super" ? "active" : ""
@@ -265,6 +276,7 @@ const CustomEditor = forwardRef(
               <FontAwesomeIcon icon={faSuperscript} />
             </button>
             <button
+              type='button'
               onClick={() => applyFormat("script", "sub")}
               className={`button ${
                 formats.script === "sub" ? "active" : ""
@@ -274,6 +286,7 @@ const CustomEditor = forwardRef(
             </button>
             {supportMedia && (
               <button
+                type='button'
                 onClick={insertImage}
                 className="button"
               >
