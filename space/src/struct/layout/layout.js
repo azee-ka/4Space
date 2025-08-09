@@ -32,6 +32,14 @@ function Layout({ children }) {
 
     const location = useLocation();
 
+    const isFourChatStandalone = location.pathname === '/4chat';
+    const isFourChatEmbedded = location.pathname === '/messages/4chat';
+    const isFourChatAny = isFourChatStandalone || isFourChatEmbedded;
+
+    const isHomePublic = !isAuthenticated && location.pathname === '/';
+    const defaultShowNavbar = !isHomePublic;
+    const showNavbar = isFourChatStandalone ? isAuthenticated : defaultShowNavbar;
+
     const fullScreenRoutes = [
         '/rich-editor',
         '/latex-editor',
@@ -75,104 +83,97 @@ function Layout({ children }) {
         );
     }
 
-    if(isD || isT) {
-    return (
-        <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
-            {!(!isAuthenticated && window.location.pathname === '/') &&
-            <div className='layout-navbar'>
-                <Navbar
-                    sidebarOpen={sidebarOpen}
-                    setSidebarOpen={setSidebarOpen}
-                    profileData={profileData}
-                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
-                />
-            </div>
-            }
-
-            <div className={`layout-page ${(!isAuthenticated && window.location.pathname === '/') ? 'no-nav': ''}`}>
-                {isAuthenticated &&
-
-                    <div className='layout-small-sidebar'>
-                        <SmallSidebar
-                            searchSidebarOpen={searchSidebarOpen}
-                            setSearchSidebarOpen={setSearchSidebarOpen}
-                        />
-                    </div>
-                }
-                <div className={`layout-page-content ${isAuthenticated ? 'sidebar' : ''}`}>
-                    {children}
-                </div>
-            </div>
-            {isAuthenticated &&
-                <Sidebar
-                    isOpen={sidebarOpen}
-                    onClose={handleSidebarClose}
-                />
-            }
-            {isAuthenticated &&
-                <NotificationSidebar
-                    notificationSidebarOpen={notificationSidebarOpen}
-                    notificationIdForSidebar={notificationIdForSidebar}
-                    setNotificationIdForSidebar={setNotificationIdForSidebar}
-                    handleNotificationSidebarClose={handleNotificationSidebarClose}
-                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
-                />
-            }
-            {expandPostIdReciever && <Post />}
-        </div>
-    ) 
-    }
-
-
-
-
-
-
-    if(isM) {
+    if (isD || isT) {
         return (
-        <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
-            <div className='layout-navbar'>
-                <Navbar
-                    sidebarOpen={sidebarOpen}
-                    setSidebarOpen={setSidebarOpen}
-                    profileData={profileData}
-                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
-                />
-            </div>
-
-            <div className='layout-page'>
-                <div className={`layout-page-content ${isAuthenticated ? 'sidebar' : ''}`}>
-                    {children}
-                </div>
-                {isAuthenticated &&
-
-                    <div className='layout-small-sidebar'>
-                        <SmallSidebar
-                            searchSidebarOpen={searchSidebarOpen}
-                            setSearchSidebarOpen={setSearchSidebarOpen}
-                        // setCreateSpaceOpen={setCreateSpaceOpen}
+            <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
+                {showNavbar && (
+                    <div className='layout-navbar'>
+                        <Navbar
+                            sidebarOpen={sidebarOpen}
+                            setSidebarOpen={setSidebarOpen}
+                            profileData={profileData}
+                            handleNotificationSidebarOpen={handleNotificationSidebarOpen}
                         />
                     </div>
-                }
+                )}
+
+                <div className={`layout-page ${showNavbar ? '' : 'no-nav'}`}>
+                    {isAuthenticated && (
+                        <div className='layout-small-sidebar'>
+                            <SmallSidebar
+                                searchSidebarOpen={searchSidebarOpen}
+                                setSearchSidebarOpen={setSearchSidebarOpen}
+                            />
+                        </div>
+                    )}
+                    <div className={`layout-page-content ${isAuthenticated ? 'sidebar' : ''}`}>
+                        {children}
+                    </div>
+                </div>
+                {isAuthenticated && (
+                    <Sidebar
+                        isOpen={sidebarOpen}
+                        onClose={handleSidebarClose}
+                    />
+                )}
+                {isAuthenticated && (
+                    <NotificationSidebar
+                        notificationSidebarOpen={notificationSidebarOpen}
+                        notificationIdForSidebar={notificationIdForSidebar}
+                        setNotificationIdForSidebar={setNotificationIdForSidebar}
+                        handleNotificationSidebarClose={handleNotificationSidebarClose}
+                        handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+                    />
+                )}
+                {expandPostIdReciever && <Post />}
             </div>
-            {isAuthenticated &&
-                <Sidebar
-                    isOpen={sidebarOpen}
-                    onClose={handleSidebarClose}
-                />
-            }
-            {isAuthenticated &&
-                <NotificationSidebar
-                    notificationSidebarOpen={notificationSidebarOpen}
-                    notificationIdForSidebar={notificationIdForSidebar}
-                    setNotificationIdForSidebar={setNotificationIdForSidebar}
-                    handleNotificationSidebarClose={handleNotificationSidebarClose}
-                    handleNotificationSidebarOpen={handleNotificationSidebarOpen}
-                />
-            }
-            {expandPostIdReciever && <Post />}
-        </div>
-    )  
+        )
+    }
+    if (isM) {
+        return (
+            <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
+                {showNavbar && (
+                    <div className='layout-navbar'>
+                        <Navbar
+                            sidebarOpen={sidebarOpen}
+                            setSidebarOpen={setSidebarOpen}
+                            profileData={profileData}
+                            handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+                        />
+                    </div>
+                )}
+
+                <div className='layout-page'>
+                    <div className={`layout-page-content ${isAuthenticated ? 'sidebar' : ''}`}>
+                        {children}
+                    </div>
+                    {isAuthenticated && (
+                        <div className='layout-small-sidebar'>
+                            <SmallSidebar
+                                searchSidebarOpen={searchSidebarOpen}
+                                setSearchSidebarOpen={setSearchSidebarOpen}
+                            />
+                        </div>
+                    )}
+                </div>
+                {isAuthenticated && (
+                    <Sidebar
+                        isOpen={sidebarOpen}
+                        onClose={handleSidebarClose}
+                    />
+                )}
+                {isAuthenticated && (
+                    <NotificationSidebar
+                        notificationSidebarOpen={notificationSidebarOpen}
+                        notificationIdForSidebar={notificationIdForSidebar}
+                        setNotificationIdForSidebar={setNotificationIdForSidebar}
+                        handleNotificationSidebarClose={handleNotificationSidebarClose}
+                        handleNotificationSidebarOpen={handleNotificationSidebarOpen}
+                    />
+                )}
+                {expandPostIdReciever && <Post />}
+            </div>
+        )
     }
 }
 

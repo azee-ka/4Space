@@ -1,0 +1,625 @@
+:root {
+  --fchat-bg : #0a0b0f;
+  --fchat-surface : rgba(255, 255, 255, 0.06);
+  --fchat-surface-2 : rgba(255, 255, 255, 0.08);
+  --fchat-glass : rgba(255, 255, 255, 0.08);
+  --fchat-border : rgba(255, 255, 255, 0.12);
+  --fchat-muted : #9aa0a6;
+  --fchat-text : #e6e6e6;
+  --fchat-cyan : #22d3ee;
+  --fchat-lime : #a3e635;
+  --fchat-rose : #fb7185;
+  --fchat-amber : #fbbf24;
+  --fchat-primary : #7c3aed;
+  --fchat-primary-2 : #06b6d4;
+  --fchat-radius : 14px;
+  --fchat-radius-sm : 10px;
+  --fchat-shadow-lg : 0 10px 40px rgba(0, 0, 0, 0.35);
+  --fchat-shadow-md : 0 6px 24px rgba(0, 0, 0, 0.3);
+  --fchat-grid-color : rgba(255, 255, 255, 0.06);
+  --fchat-glow-primary : rgba(124, 58, 237, 0.45);
+  --fchat-glow-cyan : rgba(6, 182, 212, 0.35);
+  --fchat-backdrop-blur : 5px;
+  --fchat-backdrop-blur-sm : 10px;
+}
+
+
+[data-theme="light"] .fchat * {
+  --fchat-bg : #f6f7fb;
+  color : #0b0b10;
+}
+
+.fchat-theme-light {
+  --fchat-bg : #f6f7fb;
+  color : #0b0b10;
+}
+
+.fchat * {
+  box-sizing : border-box;
+}
+
+.fchat {
+  height : 100%;
+  width : 100%;
+  display : flex;
+  flex-direction : column;
+  gap : 16px;
+  padding : 16px;
+  position : relative;
+  color : var(--fchat-text);
+  background : var(--fchat-bg);
+  isolation : isolate;
+  overflow : hidden;
+  /* min-height : 100dvh; */
+  box-sizing : border-box;
+}
+.fchat.fchat-bordered {
+    gap: 0;
+    padding: 0;
+}
+
+.fchat::before {
+  content : "";
+  position : absolute;
+  inset : 0;
+  z-index : -3;
+  background : var(--global-gradient, radial-gradient(1200px 1200px at 10% -10%, rgba(124, 58, 237, 0.25), transparent 60%), radial-gradient(800px 800px at 100% 0%, rgba(6, 182, 212, 0.25), transparent 60%));
+  filter : saturate(115%);
+}
+
+.fchat::after {
+  content : "";
+  position : absolute;
+  inset : 0;
+  z-index : -2;
+  background-image : linear-gradient(var(--fchat-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--fchat-grid-color) 1px, transparent 1px);
+  background-size : 32px 32px, 32px 32px;
+  opacity : 0.35;
+  pointer-events : none;
+}
+
+
+.fchat-glass {
+  background : var(--fchat-glass);
+  border : 1px solid var(--fchat-border);
+  border-radius : var(--fchat-radius);
+  backdrop-filter : blur(var(--fchat-backdrop-blur));
+  -webkit-backdrop-filter : blur(var(--fchat-backdrop-blur));
+  box-shadow : var(--fchat-shadow-md);
+}
+
+.fchat-header {
+  display : flex;
+  align-items : center;
+  justify-content : space-between;
+  gap : 12px;
+  padding : 12px 16px;
+  box-sizing: border-box;
+  height : 65px;
+}
+
+.fchat-header.fchat-bordered {
+    border-bottom: 1px solid rgba(128, 128, 128, 0.43);
+}
+
+.fchat-brand {
+  display : flex;
+  align-items : center;
+  gap : 12px;
+}
+
+.fchat-logo {
+  width : 44px;
+  height : 44px;
+  border-radius : 12px;
+  display : grid;
+  place-items : center;
+  font-weight : 800;
+  font-size : 20px;
+  color : white;
+  background : linear-gradient(135deg, var(--fchat-primary), var(--fchat-primary-2));
+  box-shadow : 0 0 28px var(--fchat-glow-primary);
+}
+
+.fchat-h1 {
+  margin : 0;
+  font-size : 18px;
+  letter-spacing : 0.6px;
+}
+
+.fchat-sub {
+  color : var(--fchat-muted);
+}
+
+.fchat-actions {
+  display : flex;
+  gap : 8px;
+  align-items : center;
+}
+
+.fchat-status-badge {
+  display : inline-flex;
+  gap : 8px;
+  align-items : center;
+  padding : 6px 10px;
+  border : 1px solid var(--fchat-border);
+  border-radius : 999px;
+  font-size : 12px;
+  color : inherit;
+  background : rgba(255, 255, 255, 0.05);
+  box-shadow : 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+}
+
+.fchat-status-dot {
+  width : 8px;
+  height : 8px;
+  border-radius : 999px;
+  display : inline-block;
+  box-shadow : 0 0 12px currentColor;
+}
+
+.fchat-btn {
+  border : 1px solid var(--fchat-border);
+  background : rgba(255, 255, 255, 0.04);
+  color : inherit;
+  padding : 8px 12px;
+  border-radius : var(--fchat-radius-sm);
+  cursor : pointer;
+  transition : transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  will-change : transform;
+}
+
+.fchat-btn:hover {
+  transform : translateY(-1px);
+  background : rgba(255, 255, 255, 0.07);
+  box-shadow : 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.fchat-btn:active {
+  transform : translateY(0);
+}
+
+.fchat-btn-primary {
+  background : linear-gradient(135deg, var(--fchat-primary), var(--fchat-primary-2));
+  border-color : transparent;
+  color : white;
+  box-shadow : 0 0 24px var(--fchat-glow-primary);
+}
+
+.fchat-btn-warning {
+  border-color : rgba(255, 255, 255, 0.18);
+}
+
+.fchat-btn-danger {
+  background : rgba(251, 113, 133, 0.15);
+  border-color : rgba(251, 113, 133, 0.35);
+  color : #ffdce1;
+  box-shadow : 0 0 22px rgba(251, 113, 133, 0.25);
+}
+
+.fchat-btn-ghost {
+  background : rgba(255, 255, 255, 0.04);
+}
+
+.fchat-btn-wide {
+  width : 100%;
+}
+
+.fchat-content {
+  flex : 1 1 auto;
+  min-height : 0;
+  display : grid;
+  grid-template-columns : 360px 1fr;
+  gap : 16px;
+}
+
+.fchat-content.fchat-bordered {
+    gap: 0;
+}
+
+@media (max-width : 1100px) {
+  .fchat-content {
+    grid-template-columns : 1fr;
+  }
+}
+
+.fchat-sidebar {
+  padding : 16px;
+  display : flex;
+  flex-direction : column;
+  gap : 16px;
+  min-height : 0;
+  overflow-y: auto;
+}
+
+.fchat-sidebar.fchat-bordered {
+    border-right: 1px solid rgba(128, 128, 128, 0.43);
+}
+
+.fchat-muted {
+  color : var(--fchat-muted);
+  font-size : 12px;
+}
+
+.fchat-h3 {
+  margin : 0;
+  font-size : 14px;
+  letter-spacing : 0.4px;
+}
+
+.fchat-field {
+  display : flex;
+  flex-direction : column;
+  gap : 8px;
+}
+
+.fchat-label {
+  font-size : 12px;
+  color : var(--fchat-muted);
+}
+
+.fchat-row {
+  display : flex;
+  align-items : center;
+  gap : 8px;
+}
+
+.fchat-input {
+  flex : 1 1 auto;
+  border : 1px solid var(--fchat-border);
+  border-radius : var(--fchat-radius-sm);
+  background : rgba(0, 0, 0, 0.25);
+  color : inherit;
+  padding : 10px 12px;
+  outline : none;
+  transition : box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.fchat-input:focus {
+  border-color : rgba(124, 58, 237, 0.55);
+  box-shadow : 0 0 0 3px rgba(124, 58, 237, 0.25);
+}
+
+.fchat-select {
+  border : 1px solid var(--fchat-border);
+  border-radius : var(--fchat-radius-sm);
+  background : rgba(0, 0, 0, 0.25);
+  color : inherit;
+  padding : 10px 12px;
+  outline : none;
+  appearance : none;
+}
+
+.fchat-chips {
+  display : flex;
+  gap : 8px;
+  flex-wrap : wrap;
+}
+
+.fchat-chip {
+  padding : 6px 10px;
+  border : 1px solid var(--fchat-border);
+  border-radius : 999px;
+  background : rgba(255, 255, 255, 0.04);
+  color : inherit;
+  cursor : pointer;
+  transition : transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.fchat-chip:hover {
+  transform : translateY(-1px);
+  box-shadow : 0 10px 18px rgba(0, 0, 0, 0.2);
+}
+
+.fchat-chip.is-active {
+  background : rgba(124, 58, 237, 0.22);
+  border-color : rgba(124, 58, 237, 0.6);
+  box-shadow : 0 0 20px var(--fchat-glow-primary);
+}
+
+.fchat-panel {
+  border : 1px solid var(--fchat-border);
+  border-radius : var(--fchat-radius-sm);
+  padding : 10px;
+  display : flex;
+  flex-direction : column;
+  gap : 10px;
+  background : rgba(255, 255, 255, 0.04);
+  box-shadow : var(--fchat-shadow-md);
+}
+
+.fchat-toggle {
+  width : 44px;
+  height : 26px;
+  border-radius : 999px;
+  background : rgba(255, 255, 255, 0.12);
+  border : 1px solid var(--fchat-border);
+  position : relative;
+  transition : background 0.2s ease, border-color 0.2s ease;
+}
+
+.fchat-toggle::after {
+  content : "";
+  position : absolute;
+  top : 2px;
+  left : 2px;
+  width : 20px;
+  height : 20px;
+  border-radius : 999px;
+  background : white;
+  transition : left 0.2s ease, box-shadow 0.2s ease;
+  box-shadow : 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.fchat-toggle.is-on {
+  background : linear-gradient(135deg, var(--fchat-primary), var(--fchat-primary-2));
+  border-color : transparent;
+  box-shadow : 0 0 18px var(--fchat-glow-primary);
+}
+
+.fchat-toggle.is-on::after {
+  left : 20px;
+}
+
+.fchat-grid-2 {
+  display : grid;
+  grid-template-columns : 1fr 1fr;
+  gap : 12px;
+}
+
+@media (max-width : 760px) {
+  .fchat-grid-2 {
+    grid-template-columns : 1fr;
+  }
+}
+
+.fchat-chat {
+  display : flex;
+  flex-direction : column;
+  min-height : 0;
+  overflow : hidden;
+}
+
+.fchat-chat {
+  min-height : 0;
+}
+
+.fchat-chat-head {
+  display : flex;
+  align-items : center;
+  gap : 12px;
+  padding : 14px 16px;
+  border-bottom : 1px solid var(--fchat-border);
+}
+
+.fchat-avatar {
+  width : 42px;
+  height : 42px;
+  border-radius : 12px;
+  display : grid;
+  place-items : center;
+  background : rgba(255, 255, 255, 0.06);
+  box-shadow : 0 0 24px var(--fchat-glow-cyan), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.fchat-who .fchat-name {
+  font-weight : 700;
+}
+
+.fchat-who .fchat-sub {
+  font-size : 12px;
+  color : var(--fchat-muted);
+}
+
+.fchat-head-actions {
+  margin-left : auto;
+  display : flex;
+  gap : 8px;
+}
+
+.fchat-chat-log {
+  flex : 1 1 auto;
+  overflow : auto;
+  padding : 16px;
+  display : flex;
+  flex-direction : column;
+  gap : 10px;
+  background : linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+  min-height : 0;
+}
+
+.fchat-empty {
+  text-align : center;
+  margin-top : 10vh;
+}
+
+.fchat-empty-big {
+  font-size : 22px;
+  margin-bottom : 6px;
+}
+
+.fchat-msg {
+  max-width : 72%;
+  display : flex;
+  flex-direction : column;
+  gap : 6px;
+}
+
+.fchat-bubble {
+  padding : 12px 14px;
+  border-radius : 16px;
+  border : 1px solid var(--fchat-border);
+  background : rgba(255, 255, 255, 0.06);
+  box-shadow : inset 0 0 0 1px rgba(255, 255, 255, 0.03), 0 10px 26px rgba(0, 0, 0, 0.22);
+  backdrop-filter : blur(var(--fchat-backdrop-blur-sm));
+  -webkit-backdrop-filter : blur(var(--fchat-backdrop-blur-sm));
+}
+
+.fchat-me .fchat-bubble {
+  background : linear-gradient(135deg, rgba(124, 58, 237, 0.45), rgba(6, 182, 212, 0.35));
+  border-color : transparent;
+  box-shadow : 0 0 24px var(--fchat-glow-primary);
+  color : white;
+}
+
+.fchat-partner .fchat-bubble {
+  background : rgba(255, 255, 255, 0.06);
+}
+
+.fchat-system {
+  align-self : center;
+  max-width : 90%;
+}
+
+.fchat-system .fchat-bubble {
+  background : rgba(255, 255, 255, 0.04);
+  font-size : 12px;
+  color : var(--fchat-muted);
+}
+
+.fchat-time {
+  align-self : flex-end;
+  color : var(--fchat-muted);
+  font-size : 11px;
+}
+
+.fchat-typing {
+  display : flex;
+  gap : 4px;
+  align-items : center;
+  padding : 2px 8px;
+}
+
+.fchat-typing-dot {
+  width : 6px;
+  height : 6px;
+  border-radius : 999px;
+  background : var(--fchat-muted);
+  opacity : 0.6;
+  animation : fchat-pulse 1s infinite ease-in-out;
+}
+
+.fchat-typing-dot:nth-child(2) {
+  animation-delay : 0.15s;
+}
+
+.fchat-typing-dot:nth-child(3) {
+  animation-delay : 0.3s;
+}
+
+@keyframes fchat-pulse {
+  0% {
+    transform : translateY(0);
+    opacity : 0.3;
+  }
+  50% {
+    transform : translateY(-2px);
+    opacity : 1;
+  }
+  100% {
+    transform : translateY(0);
+    opacity : 0.3;
+  }
+}
+
+.fchat-composer {
+  display : flex;
+  gap : 10px;
+  padding : 12px;
+  border-top : 1px solid var(--fchat-border);
+  background : linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+}
+
+.fchat-composer.is-disabled textarea {
+  opacity : 0.7;
+  cursor : not-allowed;
+}
+
+.fchat-inputarea {
+  flex : 1 1 auto;
+  resize : none;
+  border : 1px solid var(--fchat-border);
+  border-radius : 12px;
+  padding : 10px 12px;
+  background : rgba(0, 0, 0, 0.25);
+  color : inherit;
+  outline : none;
+  max-height : 160px;
+  transition : border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fchat-inputarea:focus {
+  border-color : rgba(6, 182, 212, 0.55);
+  box-shadow : 0 0 0 3px rgba(6, 182, 212, 0.25);
+}
+
+.fchat-composer-actions {
+  display : flex;
+  align-items : center;
+  gap : 8px;
+}
+
+.fchat-count {
+  font-size : 12px;
+  color : var(--fchat-muted);
+  padding-right : 4px;
+  min-width : 54px;
+  text-align : right;
+}
+
+.fchat-footer {
+  display : flex;
+  align-items : center;
+  justify-content : space-between;
+  gap : 12px;
+  padding : 0 4px 8px;
+  color : var(--fchat-muted);
+  font-size : 12px;
+}
+
+.fchat-toolbar {
+  position : sticky;
+  bottom : 8px;
+  display : none;
+  align-items : center;
+  justify-content : space-between;
+  gap : 12px;
+  padding : 10px 12px;
+  background : rgba(20, 20, 24, 0.35);
+  border : 1px solid var(--fchat-border);
+  border-radius : 12px;
+  backdrop-filter : blur(10px);
+  -webkit-backdrop-filter : blur(10px);
+  box-shadow : var(--fchat-shadow-md);
+  z-index : 5;
+}
+
+.fchat-toolbar-left {
+  display : flex;
+  align-items : center;
+  gap : 8px;
+}
+
+.fchat-toolbar-right {
+  display : flex;
+  align-items : center;
+  gap : 8px;
+}
+
+@media (max-width : 980px) {
+  .fchat-toolbar {
+    display : flex;
+  }
+}
+/* ===== Authenticated: disable page background gradients and grid ===== */
+.fchat.fchat-no-bg {
+  background : transparent !important;
+}
+
+.fchat.fchat-no-bg::before {
+  content : none !important;
+}
+
+.fchat.fchat-no-bg::after {
+  content : none !important;
+}

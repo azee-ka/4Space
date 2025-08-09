@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaInbox, FaUserPlus, FaPlus } from "react-icons/fa";
+import { FaInbox, FaUserPlus, FaPlus, FaUserSecret, FaRandom } from "react-icons/fa";
 import CreateMessageOverlay from "./createMessage/createMessageOverlay";
 import MessageInbox from "./inbox/inbox";
 import MessageRequests from "./requests/requests";
 import ChatContainer from "./chatContainer/chatContainer";
 import "./messages.css";
+import Anon4Chat from "./anonChat/4chat";
 
 const Messages = () => {
   const [showOverlay, setShowOverlay] = useState(false);
@@ -47,12 +48,20 @@ const Messages = () => {
             </button>
             <div className="tooltip">New Chat</div>
           </div>
+          <div className="messages-sidebar-item">
+            <button onClick={() => navigate("/messages/4chat")}>
+              < FaRandom/>
+            </button>
+            <div className="tooltip">4Chat</div>
+          </div>
         </aside>
 
         <main className="messages-main">
           {isRequests ? (
             <MessageRequests />
           ) : (
+          isInbox ?
+            (
             <>
               <div className="inbox-pane">
                 <div className="messages-header-bar">
@@ -69,6 +78,9 @@ const Messages = () => {
                   </div>
                 )}
             </>
+            ) : (
+              <Anon4Chat />
+            )
           )}
         </main>
       </div>

@@ -60,6 +60,7 @@ import ResearchPage from '../apps/space/finance/researchPage/researchPage';
 import PortfolioPage from '../apps/space/finance/portfolioPage/portfolioPage';
 import LivePage from '../apps/space/finance/livePage/livePage';
 import BacktestPage from '../apps/space/finance/backtestPage/backtestPage';
+import Anon4Chat from '../pages/messages/anonChat/4chat';
 
 
 
@@ -128,6 +129,8 @@ const AppRouter = () => {
         { name: 'Messages', path: '/messages', component: <Messages />, key: 'Messages' },
         { name: 'Messages', path: '/messages/inbox', component: <Messages />, key: 'Messages' },
         { name: 'Messages', path: '/messages/requests', component: <Messages />, key: 'Messages' },
+        { name: 'Messages', path: '/messages/4chat', component: <Messages />, key: 'Messages' },
+        { name: 'Messages', path: '/4chat', component: <Anon4Chat />, key: 'Messages' },
         { name: 'Messages', path: '/messages/inbox/c/:conversationId', component: <Messages />, key: 'Messages' },
         { name: 'Messages', path: '/messages/requests/c/:conversationId', component: <Messages />, key: 'Messages' },
     ];
@@ -143,6 +146,8 @@ const AppRouter = () => {
         { name: 'Profile', path: '/profile/:username', component: <Profile />, key: 'Profile' },
 
         { name: 'Calculator', path: '/space/tools/calculator', component: <Calculator />, key: 'Calculator' },
+
+        { name: 'Messages', path: '/4chat', component: <Anon4Chat />, key: 'Messages' },
     ];
 
 

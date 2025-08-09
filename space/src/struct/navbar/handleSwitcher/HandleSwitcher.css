@@ -1,5 +1,5 @@
 :root {
-  --hs-bg-toggle: rgba(195, 195, 195, 0.08);
+  --hs-bg-toggle: rgba(195, 195, 195, 0.1);
   --hs-border-toggle: rgba(195, 195, 195, 0.12);
   --hs-bg-toggle-hover: rgba(255, 255, 255, 0.12);
   --hs-border-toggle-hover: rgba(255, 255, 255, 0.14);
@@ -55,8 +55,9 @@
   align-items: center;
   gap: 0.5rem;
   background: var(--hs-bg-toggle);
-  backdrop-filter: blur(1px);
-  border: 1px solid var(--hs-border-toggle);
+  backdrop-filter: blur(5px);
+  /* border: 1px solid var(--hs-border-toggle); */
+  border: 0;
   color: var(--hs-color-toggle);
   padding: 0.7rem 1.3rem;
   border-radius: 999px;
