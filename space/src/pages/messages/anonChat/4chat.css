@@ -1,8 +1,8 @@
 :root {
-  --fchat-bg : #0a0b0f;
-  --fchat-surface : rgba(255, 255, 255, 0.06);
+  --fchat-bg : #0a0b0f00;
+  --fchat-surface : rgba(160, 160, 160, 0.06);
   --fchat-surface-2 : rgba(255, 255, 255, 0.08);
-  --fchat-glass : rgba(255, 255, 255, 0.08);
+  --fchat-glass : rgba(118, 118, 118, 0.08);
   --fchat-border : rgba(255, 255, 255, 0.12);
   --fchat-muted : #9aa0a6;
   --fchat-text : #e6e6e6;
@@ -19,7 +19,7 @@
   --fchat-grid-color : rgba(255, 255, 255, 0.06);
   --fchat-glow-primary : rgba(124, 58, 237, 0.45);
   --fchat-glow-cyan : rgba(6, 182, 212, 0.35);
-  --fchat-backdrop-blur : 5px;
+  --fchat-backdrop-blur : 0px;
   --fchat-backdrop-blur-sm : 10px;
 }
 

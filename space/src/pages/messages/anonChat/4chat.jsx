@@ -11,6 +11,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useLocation } from "react-router-dom";
 import DisplayMenu from "../../../struct/navbar/displayMenu/displayMenu";
 import { ControlCenterIcon } from "../../../utils/CustomIcons";
+import { defaultSettings } from "../../../context/DisplaySettingsContext";
 
 /**
  * 4Chat — anonymous random chat UI (frontend wired to your useWebSocket)
@@ -50,6 +51,109 @@ const Badge = ({ status }) => {
       {cfg.label}
     </span>
   );
+};
+
+// ---------- Guest display helpers (mirror of DisplayMenu guest apply) ----------
+const GUEST_DEFAULTS = {
+  themeMode      : 'dark',
+  gradient       : 'linear',        // linear with tight falloff
+  linearAngle    : '128deg',        // points from top-left toward bottom-right
+  gradientColors : [
+    { color: '#7c3aed', alpha: 0.20 }, // vivid purple, concentrated near origin
+    { color: '#22d3ee', alpha: 0.14 }, // cyan/blue
+    { color: '#10b981', alpha: 0.05 }, // greenish accent
+    { color: '#000000', alpha: 0.0 }, // transparent tail (not used by linear, but safe)
+  ],
+
+  // UI feel
+  fontSize       : '1.00em',
+  padding        : 'medium',
+  animations     : true,
+
+  // Pop & clarity (more contrast as requested)
+  brightness     : 0.98,
+  contrast       : 1.15,
+  saturation     : 1.12,
+};
+
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+const toRgba = (hex, a = 1) => {
+  try {
+    const h = hex.replace('#', '');
+    const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const n = parseInt(full, 16);
+    const r = (n >> 16) & 255;
+    const g = (n >> 8) & 255;
+    const b = n & 255;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  } catch {
+    return `rgba(124, 58, 237, ${a})`;
+  }
+};
+
+const computeGuestGradient = (s) => {
+  const src = (s.gradientColors?.length ? s.gradientColors : defaultSettings.gradientColors).slice(0, 4);
+  const cols = src.map(gc => toRgba(gc.color, gc.alpha));
+  const c0 = cols[0] ?? 'rgba(124,58,237,0.35)';
+  const c1 = cols[1] ?? c0;
+  const c2 = cols[2] ?? c1;
+
+  if (s.gradient === 'linear') {
+    const angle = s.linearAngle || '135deg';
+    return `linear-gradient(${angle}, ${c0} 0%, ${c1} 35%, ${c2} 65%, rgba(0,0,0,0) 100%)`;
+  }
+
+  const fallbackPos = defaultSettings.radialPosition || '50% 0%';
+  const [px, py] = (s.radialPosition || fallbackPos).split(/\s+/);
+  const pos = `${px || '50%'} ${py || '0%'}`;
+
+  const sxPct = clamp(
+    Number.isFinite(+s.radialSizeX) ? +s.radialSizeX : (defaultSettings.radialSizeX ?? 85),
+    30,
+    120
+  );
+  const syPct = clamp(
+    Number.isFinite(+s.radialSizeY) ? +s.radialSizeY : (defaultSettings.radialSizeY ?? 70),
+    30,
+    120
+  );
+
+  return `radial-gradient(${sxPct}% ${syPct}% at ${pos},
+    ${c0} 0%,
+    ${c0} 18%,
+    ${c1} 28%,
+    ${c2} 48%,
+    rgba(0,0,0,0) 68%)`;
+};
+
+const setGuestEffectsStyle = (settings, { selector = 'html' } = {}) => {
+  const id = 'guest-display-fx';
+  let tag = document.getElementById(id);
+  if (!tag) {
+    tag = document.createElement('style');
+    tag.id = id;
+    document.head.appendChild(tag);
+  }
+  const b = Number.isFinite(+settings.brightness) ? +settings.brightness : 1;
+  const c = Number.isFinite(+settings.contrast)   ? +settings.contrast   : 1;
+  const s = Number.isFinite(+settings.saturation) ? +settings.saturation : 1;
+  tag.textContent = `
+    ${selector} {
+      filter: brightness(${b}) contrast(${c}) saturate(${s});
+    }
+  `;
+};
+
+const applyGuestDisplay = (settings) => {
+  const root = document.documentElement;
+  root.style.setProperty('--global-gradient', computeGuestGradient(settings));
+  const effectiveTheme =
+    settings.themeMode === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : (settings.themeMode || 'system');
+  root.setAttribute('data-theme', effectiveTheme);
+  setGuestEffectsStyle(settings, { selector: 'html' });
 };
 
 // --------------------------- Socket Session ----------------------------
@@ -166,6 +270,44 @@ const FourChat = () => {
     sendTyping: () => {},
     next: () => {},
   });
+
+  // On load for guests: hydrate and apply local display settings; keep in sync
+  useEffect(() => {
+    if (isAuthenticated) return;
+
+    const loadAndApply = () => {
+      try {
+        const raw = localStorage.getItem('displaySettings:guest');
+const s = raw ? { ...GUEST_DEFAULTS, ...JSON.parse(raw) } : { ...GUEST_DEFAULTS };
+applyGuestDisplay(s);
+if (s?.themeMode) setTheme(s.themeMode === 'light' ? 'light' : 'dark');
+      } catch {
+        applyGuestDisplay(defaultSettings);
+        setTheme((defaultSettings.themeMode === 'light') ? 'light' : 'dark');
+      }
+    };
+
+    loadAndApply();
+
+    const onGuestChange = (e) => {
+      const s = e.detail;
+      if (s) {
+        applyGuestDisplay(s);
+        if (s?.themeMode) setTheme(s.themeMode === 'light' ? 'light' : 'dark');
+      }
+    };
+    window.addEventListener('guestDisplaySettingsChanged', onGuestChange);
+
+    const onStorage = (e) => {
+      if (e.key === 'displaySettings:guest') loadAndApply();
+    };
+    window.addEventListener('storage', onStorage);
+
+    return () => {
+      window.removeEventListener('guestDisplaySettingsChanged', onGuestChange);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [isAuthenticated]);
 
   const pushMsg = useCallback((msg) => {
     setMessages((prev) => [
@@ -348,21 +490,23 @@ const FourChat = () => {
               Connect ⚡
             </button>
           )}
-          
-          {!isAuthenticated &&
+
+          {!isAuthenticated && (
             <div
-          className="display-settings-menu"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <DisplayMenu
-            toggleContent={
-              <button aria-label="Display settings">
-                <ControlCenterIcon />
-              </button>
-            }
-          />
-        </div>
-        }
+              className="display-settings-menu"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DisplayMenu
+  toggleContent={
+    <button aria-label="Display settings">
+      <ControlCenterIcon />
+    </button>
+  }
+  guestMode={!isAuthenticated}
+  defaultsOverride={GUEST_DEFAULTS}
+/>
+            </div>
+          )}
         </div>
       </header>
 

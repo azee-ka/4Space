@@ -18,7 +18,7 @@ const Messages = () => {
     location.pathname.startsWith("/messages/inbox") ||
     location.pathname === "/messages";
   const isRequests = location.pathname.startsWith("/messages/requests");
-
+  const is4Chat = location.pathname.startsWith("/messages/4chat");
   return (
     <>
     <div className="messages-layout">
@@ -49,7 +49,9 @@ const Messages = () => {
             <div className="tooltip">New Chat</div>
           </div>
           <div className="messages-sidebar-item">
-            <button onClick={() => navigate("/messages/4chat")}>
+            <button 
+              className={is4Chat ? "active" : ""}
+              onClick={() => navigate("/messages/4chat")}>
               < FaRandom/>
             </button>
             <div className="tooltip">4Chat</div>
