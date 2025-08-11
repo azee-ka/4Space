@@ -124,8 +124,8 @@ const applyGuest = (settings, baseDefaults = defaultSettings) => {
   } catch {}
 };
 
-function useGuestDisplaySettings(baseDefaults = defaultSettings) {
-  const [settings, setSettings] = useState(() => {
+function useGuestDisplaySettings(baseDefaults = defaultSettings, enabled = true) {
+    const [settings, setSettings] = useState(() => {
     try {
       const raw = localStorage.getItem(GUEST_STORAGE_KEY);
       return raw ? { ...baseDefaults, ...JSON.parse(raw) } : { ...baseDefaults };
@@ -136,21 +136,24 @@ function useGuestDisplaySettings(baseDefaults = defaultSettings) {
 
   const loaded = true;
 
-  const apply = (next) => {
-    applyGuest(next || settings, baseDefaults);
-  };
+const apply = (next) => {
+  if (!enabled) return;
+  applyGuest(next || settings, baseDefaults);
+};
 
-  const saveSettings = async (s) => {
-    const next = s || settings;
-    localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(next));
-    applyGuest(next, baseDefaults);
-  };
+const saveSettings = async (s) => {
+  const next = s || settings;
+  if (!enabled) return;             // don't write or apply if disabled
+  localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(next));
+  applyGuest(next, baseDefaults);
+};
 
   // Apply once on mount to sync CSS vars and filter
-  useEffect(() => {
-    applyGuest(settings, baseDefaults);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+useEffect(() => {
+  if (!enabled) return;
+  applyGuest(settings, baseDefaults);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [enabled]);
 
   return { settings, setSettings, apply, loaded, saveSettings };
 }
@@ -162,7 +165,7 @@ function DisplayMenuPanel({ onClose, guestMode = false, defaultsOverride }) {
 
   // Call BOTH hooks every render; pick the driver after to satisfy Rules of Hooks
   const ctxDriver   = useDisplaySettings();
-  const guestDriver = useGuestDisplaySettings(baseDefaults);
+const guestDriver = useGuestDisplaySettings(baseDefaults, !!guestMode);
 
   const driver = guestMode ? guestDriver : ctxDriver;
   const { settings, setSettings, apply, loaded, saveSettings } = driver;
