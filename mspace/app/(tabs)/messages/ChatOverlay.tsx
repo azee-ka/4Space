@@ -16,7 +16,6 @@ import {
   Animated,
   Easing,
   Dimensions,
-  KeyboardAvoidingView,
   Platform,
   TextInput,
   Modal,
@@ -25,6 +24,7 @@ import {
   Alert,
   ImageBackground,
   Keyboard,
+  InteractionManager,
 } from "react-native";
 
 import * as Haptics from "expo-haptics";
@@ -177,11 +177,12 @@ function isEmojiOnlyMessage(text: string) {
 const GLASS = {
   blurBtn: Platform.select({ ios: 14, android: 8, default: 12 }),
   blurHeader: Platform.select({ ios: 22, android: 10, default: 16 }),
-  blurFooter: Platform.select({ ios: 16, android: 8, default: 12 }),
-  strokeSoft: "rgba(255,255,255,0.14)",
+  // slightly less frosty footer for readability
+  blurFooter: Platform.select({ ios: 12, android: 7, default: 10 }),
+  strokeSoft: "rgba(255,255,255,0.18)",
   sheen: "rgba(255,255,255,0.22)",
-  fillGhost: "rgba(255,255,255,0.06)",
-  fillSolid: "rgba(255,255,255,0.12)",
+  fillGhost: "rgba(255,255,255,0.05)",
+  fillSolid: "rgba(255,255,255,0.14)",
 };
 
 function GlassPressable({
@@ -489,10 +490,18 @@ export default function ChatOverlay({
     { uri: string; type: string; name: string }[]
   >([]);
   const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
-  const [inputHeight, setInputHeight] = useState(44);
+    // input sizing constants to avoid bounce
+const INPUT_MIN_HEIGHT = 20; // smaller when empty
+const INPUT_MAX_HEIGHT = 140;
+
+const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
 
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const [justSent, setJustSent] = useState(false);
+
+  // dynamic sizing for footer + keyboard lift
+  const [footerHeight, setFooterHeight] = useState(0);
+  const [keyboardLift, setKeyboardLift] = useState(0);
 
   // lanes / mode / theme
   const [lanes, setLanes] = useState<Lane[]>([]);
@@ -520,13 +529,13 @@ export default function ChatOverlay({
   const bubbleRefs = useRef<Record<string, View | null>>({});
   const loadingOlderRef = useRef(false); // prevent duplicate loads near top
   const onEndReachedCalledDuringMomentum = useRef(false);
+  const isUserDraggingRef = useRef(false);
 
   // --- bubbly effects & swipe-to-time/reply maps ---
   const msgScales = useRef<Record<string, Animated.Value>>({}).current;
   const msgOpacities = useRef<Record<string, Animated.Value>>({}).current;
   const msgPanX = useRef<Record<string, Animated.Value>>({}).current;
   const seenMsgsRef = useRef<Set<string>>(new Set());
-  const footerPulse = useRef(new Animated.Value(0)).current;
 
   const ensureAnimFor = useCallback(
     (id: string, isOwn: boolean) => {
@@ -561,11 +570,6 @@ export default function ChatOverlay({
     },
     [msgScales, msgOpacities]
   );
-
-  const footerScale = footerPulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.03],
-  });
 
   const OPEN_TOP = insets.top + 16;
   const SHEET_OFFSET = SCREEN_HEIGHT - OPEN_TOP;
@@ -951,9 +955,7 @@ export default function ChatOverlay({
 
   const handleLine = useMemo(
     () =>
-      shownPeople
-        .map((u: any) => `@${usernameOf(u) || "unknown"}`)
-        .join(", "),
+      shownPeople.map((u: any) => `@${usernameOf(u) || "unknown"}`).join(", "),
     [shownPeople]
   );
 
@@ -969,24 +971,6 @@ export default function ChatOverlay({
     if (!activeLaneId) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    // bubbly pulse on send
-    Animated.sequence([
-      Animated.spring(footerPulse, {
-        toValue: 1,
-        useNativeDriver: true,
-        stiffness: 280,
-        damping: 14,
-        mass: 0.4,
-      }),
-      Animated.spring(footerPulse, {
-        toValue: 0,
-        useNativeDriver: true,
-        stiffness: 280,
-        damping: 16,
-        mass: 0.5,
-      }),
-    ]).start();
 
     const optimistic: MessageType = {
       uuid: `temp-${Date.now()}`,
@@ -1016,7 +1000,7 @@ export default function ChatOverlay({
     };
 
     setInput("");
-    setInputHeight(44);
+setInputHeight(INPUT_MIN_HEIGHT);
     setAttachmentsToSend([]);
     setReplyingTo(null);
     setLaneDrafts((prev) => ({
@@ -1063,9 +1047,7 @@ export default function ChatOverlay({
 
       setMessages((prev) =>
         prev.map((m) =>
-          m.uuid === optimistic.uuid
-            ? { ...newMessage, context: activeLaneId }
-            : m
+          m.uuid === optimistic.uuid ? { ...newMessage, context: activeLaneId } : m
         )
       );
     } catch {
@@ -1190,44 +1172,92 @@ export default function ChatOverlay({
     }
   };
 
-  /* overlay tracking + keyboard pulsing */
+  /* overlay tracking + keyboard handling */
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
-      setKeyboardVisible(true);
-      Animated.sequence([
-        Animated.spring(footerPulse, {
-          toValue: 1,
-          useNativeDriver: true,
-          stiffness: 260,
-          damping: 16,
-          mass: 0.5,
-        }),
-        Animated.spring(footerPulse, {
-          toValue: 0,
-          useNativeDriver: true,
-          stiffness: 260,
-          damping: 16,
-          mass: 0.5,
-        }),
-      ]).start();
-    });
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardVisible(false);
-      Animated.spring(footerPulse, {
-        toValue: 0,
-        useNativeDriver: true,
-        stiffness: 260,
-        damping: 18,
-        mass: 0.6,
-      }).start();
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [footerPulse]);
   const keyboardWasOpen = useRef(false);
+
+  // smooth footer raise/lower with keyboard + elastic input drag
+  const footerTranslate = useRef(new Animated.Value(0)).current;
+  const inputDrag = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+
+  useEffect(() => {
+    const bottomPad = Math.max(0, insets.bottom - 4);
+
+    const animateTo = (lift: number, duration = 260) =>
+      Animated.timing(footerTranslate, {
+        toValue: -lift, // negative Y to lift the footer with keyboard
+        duration,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+
+    const ensureLatestVisible = (delay = 0) => {
+      if (!userScrolledUp && flatListRef.current) {
+        const fn = () =>
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+        if (delay > 0) setTimeout(fn, delay);
+        else requestAnimationFrame(fn);
+      }
+    };
+
+    const willShow = Keyboard.addListener('keyboardWillShow', (e: any) => {
+      setKeyboardVisible(true);
+      const h = e.endCoordinates?.height ?? 0;
+      const d = e.duration ?? 260;
+      const lift = Math.max(0, h - bottomPad);
+      setKeyboardLift(lift);
+      animateTo(lift, d);
+      ensureLatestVisible(Math.min(200, d));
+    });
+
+    const willHide = Keyboard.addListener('keyboardWillHide', (e: any) => {
+      setKeyboardVisible(false);
+      const d = e.duration ?? 220;
+      setKeyboardLift(0);
+      isUserDraggingRef.current = false;
+      animateTo(0, d);
+      // after footer settles, keep latest anchored if user was at bottom
+      setTimeout(() => {
+        if (!userScrolledUp && flatListRef.current) {
+          flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+        }
+      }, Math.min(200, d));
+    });
+
+    // Android fallback
+    const didShow = Keyboard.addListener('keyboardDidShow', (e: any) => {
+      if (!keyboardVisible) {
+        setKeyboardVisible(true);
+        const h = e.endCoordinates?.height ?? 0;
+        const lift = Math.max(0, h - bottomPad);
+        setKeyboardLift(lift);
+        animateTo(lift, 240);
+        ensureLatestVisible(120);
+      }
+    });
+
+    const didHide = Keyboard.addListener('keyboardDidHide', () => {
+      if (keyboardVisible) {
+        setKeyboardVisible(false);
+        setKeyboardLift(0);
+        isUserDraggingRef.current = false;
+        animateTo(0, 220);
+        // run after interactions to avoid jank
+        InteractionManager.runAfterInteractions(() => {
+          if (!userScrolledUp && flatListRef.current) {
+            flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+          }
+        });
+      }
+    });
+
+    return () => {
+      willShow.remove();
+      willHide.remove();
+      didShow.remove();
+      didHide.remove();
+    };
+  }, [footerTranslate, keyboardVisible, insets.bottom, userScrolledUp]);
 
   const clampX = (x: number, width: number) => {
     const minX = 12;
@@ -1240,18 +1270,28 @@ export default function ChatOverlay({
     return Math.max(topBound, Math.min(y, bottomBound));
   };
 
+  const lastScrollYRef = useRef(0);
+
   const onScroll = (e: any) => {
     const { contentOffset } = e.nativeEvent;
-    const nearBottom = contentOffset.y <= 50; // inverted list
+    const y = contentOffset.y;
+    const nearBottom = y <= 50; // inverted list
     setUserScrolledUp(!nearBottom);
+
+    // In an inverted list, y decreases while scrolling down toward bottom (latest)
+    // In an inverted list, y increases when you scroll UP to older messages
+    if (keyboardVisible && isUserDraggingRef.current && y > lastScrollYRef.current + 8) {
+      Keyboard.dismiss();
+    }
+    lastScrollYRef.current = y;
 
     if (focusedMessage) {
       const ref = bubbleRefs.current[focusedMessage.uuid];
       if (ref) {
-        ref.measureInWindow((x, y, w, h) => {
+        ref.measureInWindow((x, winY, w, h) => {
           setOverlayLayout({
             x: clampX(x, w),
-            y: clampY(y, h),
+            y: clampY(winY, h),
             width: w,
             height: h,
           });
@@ -1565,7 +1605,10 @@ export default function ChatOverlay({
         >
           <Animated.View
             style={{
-              transform: [{ translateX: bubbleTranslateX }, { scale: msgScales[item.uuid] }],
+              transform: [
+                { translateX: bubbleTranslateX },
+                { scale: msgScales[item.uuid] },
+              ],
               opacity: msgOpacities[item.uuid],
             }}
           >
@@ -1619,7 +1662,9 @@ export default function ChatOverlay({
                   <Text
                     style={[
                       styles.emojiText,
-                      own ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
+                      own
+                        ? { alignSelf: "flex-end" }
+                        : { alignSelf: "flex-start" },
                       { color: own ? theme.textOnOwn : theme.textOnOther },
                     ]}
                   >
@@ -1651,7 +1696,9 @@ export default function ChatOverlay({
               )}
 
               {/* elastic time chip revealed when pulling left */}
-              <Animated.View style={[styles.timeChip, { opacity: timeOpacity }]}>
+              <Animated.View
+                style={[styles.timeChip, { opacity: timeOpacity }]}
+              >
                 <Text style={styles.timeChipText}>
                   {msgDate.toLocaleTimeString([], {
                     hour: "numeric",
@@ -2078,16 +2125,31 @@ export default function ChatOverlay({
               onEndReachedThreshold={0.1}
               maintainVisibleContentPosition={{
                 minIndexForVisible: 1,
+                autoscrollToTopThreshold: 20,
               }}
               windowSize={10}
               maxToRenderPerBatch={20}
               initialNumToRender={20}
+              onContentSizeChange={() => {
+                if (!userScrolledUp) {
+                  requestAnimationFrame(() => {
+                    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                  });
+                }
+              }}
               removeClippedSubviews
+              onScrollBeginDrag={() => { isUserDraggingRef.current = true; }}
+              onScrollEndDrag={() => { isUserDraggingRef.current = false; }}
+              onMomentumScrollEnd={() => { isUserDraggingRef.current = false; }}
               contentContainerStyle={{
                 paddingHorizontal: 14,
-                paddingTop: 16,
-                paddingBottom: 8,
+                // Inverted list: top === visual bottom (latest). Only add space for keyboard lift; footer is already in layout.
+                paddingTop: (keyboardVisible ? keyboardLift : 0) + 2,
+                // Small pad for the visual top (older messages)
+                paddingBottom: 12,
               }}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
               ListFooterComponent={() =>
                 loadingOlder ? (
                   <ActivityIndicator
@@ -2104,11 +2166,9 @@ export default function ChatOverlay({
             />
 
             {/* Footer */}
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
-              keyboardVerticalOffset={Platform.select({ ios: 40, android: 80 })}
-            >
+            <Animated.View style={{ transform: [{ translateY: footerTranslate }] }}>
               <View
+                onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
                 style={[
                   styles.chatFooter,
                   { paddingBottom: Math.max(0, insets.bottom - 4) },
@@ -2231,21 +2291,6 @@ export default function ChatOverlay({
                   </View>
                 ) : (
                   <View style={styles.footerWrap}>
-                    <BlurView
-                      intensity={GLASS.blurFooter}
-                      tint="dark"
-                      style={styles.footerBlur}
-                    />
-                    <LinearGradient
-                      colors={[
-                        "rgba(255,255,255,0.08)",
-                        "rgba(255,255,255,0.02)",
-                      ]}
-                      start={{ x: 0.2, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={StyleSheet.absoluteFill}
-                    />
-
                     {replyingTo && (
                       <View style={styles.replyingBanner}>
                         <GlassPressable
@@ -2275,12 +2320,7 @@ export default function ChatOverlay({
                       </View>
                     )}
 
-                    <Animated.View
-                      style={[
-                        styles.writeContainer,
-                        { transform: [{ scale: footerScale }] },
-                      ]}
-                    >
+                    <View style={styles.writeContainer}>
                       <GlassPressable
                         onPress={() => {
                           Haptics.selectionAsync();
@@ -2290,68 +2330,207 @@ export default function ChatOverlay({
                         }}
                         radius={18}
                         padH={10}
-                        padV={6}
+                        padV={8}
                         variant="solid"
                         style={{ marginRight: 8 }}
                       >
                         <MaterialIcons name="add" size={20} color="#EFFFFF" />
                       </GlassPressable>
 
-                      <View style={styles.inputShell}>
-                        <TextInput
-                          ref={inputRef}
-                          style={[
-                            styles.chatInput,
+                      {/* Elastic, bubbly input */}
+                      <PanGestureHandler
+                        activeOffsetX={[-5, 5]}
+                        activeOffsetY={[-5, 5]}
+                        onGestureEvent={Animated.event(
+                          [
                             {
-                              minHeight: 44,
-                              height: Math.min(Math.max(44, inputHeight), 140),
-                              maxHeight: 140,
+                              nativeEvent: {
+                                translationX: inputDrag.x,
+                                translationY: inputDrag.y,
+                              },
+                            },
+                          ],
+                          { useNativeDriver: true }
+                        )}
+                        onHandlerStateChange={(e) => {
+                          const st = (e as any).nativeEvent.state;
+                          if (
+                            st === GestureState.END ||
+                            st === GestureState.CANCELLED ||
+                            st === GestureState.FAILED
+                          ) {
+                            Animated.spring(inputDrag, {
+                              toValue: { x: 0, y: 0 },
+                              useNativeDriver: true,
+                              stiffness: 300,
+                              damping: 20,
+                              mass: 0.4,
+                            }).start();
+                          }
+                        }}
+                      >
+                        <Animated.View
+                          style={[
+                            styles.inputShell,
+                            {
+                              transform: [
+                                {
+                                  translateX: inputDrag.x.interpolate({
+                                    inputRange: [-100, 100],
+                                    outputRange: [-6, 6],
+                                    extrapolate: "clamp",
+                                  }),
+                                },
+                                {
+                                  translateY: inputDrag.y.interpolate({
+                                    inputRange: [-80, 80],
+                                    outputRange: [-4, 4],
+                                    extrapolate: "clamp",
+                                  }),
+                                },
+                                {
+                                  scaleX: inputDrag.x.interpolate({
+                                    inputRange: [-80, 0, 80],
+                                    outputRange: [1.04, 1, 1.04],
+                                    extrapolate: "clamp",
+                                  }),
+                                },
+                                {
+                                  scaleY: inputDrag.y.interpolate({
+                                    inputRange: [-60, 0, 60],
+                                    outputRange: [1.02, 1, 1.02],
+                                    extrapolate: "clamp",
+                                  }),
+                                },
+                              ],
                             },
                           ]}
-                          placeholder={`Message${
-                            lanes.find((l) => l.id === activeLaneId)?.title
-                              ? ` ${
-                                  lanes.find((l) => l.id === activeLaneId)
-                                    ?.title
-                                }`
-                              : ""
-                          }`}
-                          placeholderTextColor="#99AAB0"
-                          value={input}
-                          onChangeText={(t) => {
-                            setInput(t);
-                            if (activeLaneId) {
-                              setLaneDrafts((prev) => ({
-                                ...prev,
-                                [activeLaneId]: {
-                                  input: t,
-                                  attachments:
-                                    prev[activeLaneId]?.attachments ?? [],
-                                  replyingToUuid: replyingTo?.uuid || null,
-                                },
-                              }));
-                            }
-                          }}
-                          multiline
-                          onContentSizeChange={(e) =>
-                            setInputHeight(e.nativeEvent.contentSize.height)
-                          }
-                          returnKeyType="send"
-                          onSubmitEditing={() => {
-                            if (input.trim() || attachmentsToSend.length)
-                              handleSend();
-                          }}
-                        />
-                      </View>
+                        >
+                          <BlurView
+                            intensity={GLASS.blurFooter}
+                            tint="dark"
+                            style={styles.footerBlur}
+                          />
+                          <LinearGradient
+                            colors={[
+                              "rgba(255,255,255,0.08)",
+                              "rgba(255,255,255,0.02)",
+                            ]}
+                            start={{ x: 0.2, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFill}
+                          />
+
+                          {/* drag-follow sheen */}
+                          <Animated.View
+                            pointerEvents="none"
+                            style={[
+                              StyleSheet.absoluteFill,
+                              {
+                                opacity: inputDrag.x.interpolate({
+                                  inputRange: [-40, 0, 40],
+                                  outputRange: [0.35, 0, 0.35],
+                                  extrapolate: "clamp",
+                                }),
+                              },
+                            ]}
+                          >
+                            <Animated.View
+                              style={{
+                                position: "absolute",
+                                top: 0,
+                                bottom: 0,
+                                width: 80,
+                                transform: [
+                                  {
+                                    translateX: inputDrag.x.interpolate({
+                                      inputRange: [-120, 120],
+                                      outputRange: [-24, 24],
+                                      extrapolate: "clamp",
+                                    }),
+                                  },
+                                ],
+                              }}
+                            >
+                              <LinearGradient
+                                colors={[
+                                  "rgba(255,255,255,0)",
+                                  GLASS.sheen,
+                                  "rgba(255,255,255,0)",
+                                ]}
+                                start={{ x: 0, y: 0.2 }}
+                                end={{ x: 1, y: 0.8 }}
+                                style={StyleSheet.absoluteFill}
+                              />
+                            </Animated.View>
+                          </Animated.View>
+
+                          <TextInput
+                            ref={inputRef}
+                            style={[
+                              styles.chatInput,
+                              {
+                                minHeight: INPUT_MIN_HEIGHT,
+                                height: Math.min(Math.max(INPUT_MIN_HEIGHT, inputHeight), INPUT_MAX_HEIGHT),
+                                maxHeight: INPUT_MAX_HEIGHT,
+                                paddingTop: 2,
+                                paddingBottom: 2,
+                                fontSize: 16,
+                                lineHeight: 20,
+                                textAlignVertical: Platform.OS === "android" ? "center" : "top",
+                              },
+                            ]}
+                            placeholder={`Message${
+                              lanes.find((l) => l.id === activeLaneId)?.title
+                                ? ` ${
+                                    lanes.find((l) => l.id === activeLaneId)
+                                      ?.title
+                                  }`
+                                : ""
+                            }`}
+                            // placeholderTextColor="#99AAB0"
+                            placeholderTextColor="#AFC7CE"
+                            multiline
+                            onContentSizeChange={(e) => setInputHeight(e.nativeEvent.contentSize.height)}
+                            onFocus={() => Haptics.selectionAsync()}
+                            value={input}
+                            onChangeText={(t) => {
+                              setInput(t);
+                              if (activeLaneId) {
+                                setLaneDrafts((prev) => ({
+                                  ...prev,
+                                  [activeLaneId]: {
+                                    input: t,
+                                    attachments:
+                                      prev[activeLaneId]?.attachments ?? [],
+                                    replyingToUuid: replyingTo?.uuid || null,
+                                  },
+                                }));
+                              }
+                            }}
+                            multiline
+                            onContentSizeChange={(e) => {
+                              if (justSent) return; // avoid brief post-send bounce
+                              const h = Math.round(e.nativeEvent.contentSize.height);
+                              setInputHeight(Math.min(Math.max(INPUT_MIN_HEIGHT, h), INPUT_MAX_HEIGHT));
+                            }}
+                            returnKeyType="send"
+                            onSubmitEditing={() => {
+                              if (input.trim() || attachmentsToSend.length)
+                                handleSend();
+                            }}
+                          />
+                        </Animated.View>
+                      </PanGestureHandler>
 
                       {input.trim() !== "" && (
                         <GlassPressable
                           onPress={handleSend}
                           style={styles.sendButton}
                           accessibilityLabel="Send message"
-                          radius={18}
-                          padH={10}
-                          padV={6}
+                          radius={23}
+                          padH={12}
+                          padV={12}
                           variant="solid"
                           haptics="light"
                         >
@@ -2362,11 +2541,11 @@ export default function ChatOverlay({
                           />
                         </GlassPressable>
                       )}
-                    </Animated.View>
+                    </View>
                   </View>
                 )}
               </View>
-            </KeyboardAvoidingView>
+            </Animated.View>
           </Animated.View>
 
           {/* Reaction overlay (long-press) */}
@@ -2495,27 +2674,6 @@ export default function ChatOverlay({
               setThemeIdx(next);
               persistPrefs({ themeIdx: next });
             }}
-            onPickBackground={async () => {
-              const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsMultipleSelection: false,
-              });
-              if (!result.canceled && result.assets[0]?.uri) {
-                setBgImage(result.assets[0].uri);
-                persistPrefs({ bgImage: result.assets[0].uri });
-              }
-            }}
-            mode={mode}
-            onSetMode={async (next) => {
-              setMode(next);
-              try {
-                await callApiRef.current(
-                  `messages/conversations/${conversationId}/mode/`,
-                  "PATCH",
-                  { mode: next }
-                );
-              } catch {}
-            }}
           />
         </View>
       </GestureHandlerRootView>
@@ -2526,278 +2684,295 @@ export default function ChatOverlay({
 /* =========================
    STYLES
 ========================= */
+
 const styles = StyleSheet.create({
   containerWithoutOverflow: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 999,
-    backgroundColor: "transparent",
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.38)",
   },
   sheetContainer: {
     position: "absolute",
     left: 0,
     right: 0,
-    backgroundColor: "transparent",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
     overflow: "hidden",
   },
-
-  orb: { position: "absolute", borderRadius: 999 },
-
-  headerActionsRow: {
-    minHeight: 44,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 6,
+  orb: {
+    position: "absolute",
+    borderRadius: 999,
   },
-  headerBlur: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0 },
-
   identityBar: {
-    flexDirection: "row",
     flex: 1,
-    flexGrow: 1,
-    minWidth: 0,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+    paddingRight: 10,
+    minHeight: 44,
   },
   avatarGroupWide: {
-    width: 56,
-    height: 40,
-    position: "relative",
-    marginRight: 4,
+    width: 64,
+    height: 32,
+    marginLeft: 8,
   },
   avatarWrapper: {
     position: "absolute",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.2,
-    borderColor: "rgba(0,0,0,0.6)",
-    backgroundColor: "rgba(20,22,26,0.5)",
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.18)",
   },
   stackedAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#333",
+    width: 28,
+    height: 28,
   },
-  identityTextCol: { flexDirection: "column", flex: 1, minWidth: 0 },
+  identityTextCol: {
+    flex: 1,
+    marginLeft: 28,
+  },
   chatHeaderName: {
-    fontSize: 15, // compact
-    fontWeight: "900",
     color: "#EFFFFF",
-    letterSpacing: 0.25,
+    fontSize: 14.5,
+    fontWeight: "800",
+    marginBottom: 2,
   },
-  chatHeaderUsername: { fontSize: 11, color: "#b7d5db", marginTop: 1 },
+  chatHeaderUsername: {
+    color: "#b9d2d9",
+    fontSize: 12,
+    fontWeight: "600",
+    marginRight: 6,
+  },
 
-  // lanes
   lanePill: {
     flexDirection: "row",
     alignItems: "center",
+    borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 16,
   },
   lanePillActive: {
-    backgroundColor: "rgba(255,255,255,0.12)", // neutral fill
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.18)",
   },
   lanePillInactive: {
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(255,255,255,0.06)",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.14)",
+    borderColor: "rgba(255,255,255,0.12)",
   },
-  laneText: { fontWeight: "900" },
-  laneTextActive: { color: "#EFFFFF" },
-  laneTextInactive: { color: "#d7e7ea" },
-
-  messageRowOwn: { alignSelf: "flex-end" },
-  messageRowOther: { alignSelf: "flex-start" },
-
-  bubbleWrap: { maxWidth: BUBBLE_MAX_W },
-
-  messageText: { fontSize: 16, lineHeight: 22, fontWeight: "600" },
-  emojiText: { fontSize: 40, lineHeight: 44 },
-
-  // time chip that appears when pulling left
-  timeChip: {
-    position: "absolute",
-    right: -56,
-    top: 8,
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.22)",
+  laneText: {
+    fontWeight: "900",
   },
-  timeChipText: { color: "#fff", fontSize: 11, fontWeight: "800" },
-
-  mediaBubbleContainer: { marginTop: 6, borderRadius: 18, overflow: "hidden" },
-  mediaBubbleOwn: { alignSelf: "flex-end" },
-  mediaBubbleOther: { alignSelf: "flex-start" },
-  largeMediaFull: {
-    width: SCREEN_WIDTH * 0.75 - 4,
-    height: (SCREEN_WIDTH * 0.75 - 4) * (9 / 16),
-    backgroundColor: "#000",
+  laneTextActive: {
+    color: "#EFFFFF",
+  },
+  laneTextInactive: {
+    color: "#d7e7ea",
   },
 
-  // reactions
+  bubbleWrap: {
+    maxWidth: BUBBLE_MAX_W,
+  },
+  messageRowOwn: {
+    alignSelf: "flex-end",
+  },
+  messageRowOther: {
+    alignSelf: "flex-start",
+  },
+
   reactCluster: {
     position: "absolute",
-    top: -18,
+    top: -14,
     flexDirection: "row",
-    gap: 4,
-    zIndex: 10,
+    zIndex: 2,
   },
-  reactClusterOwn: { right: 6 },
-  reactClusterOther: { left: 6 },
+  reactClusterOwn: { right: 8 },
+  reactClusterOther: { left: 8 },
   reactChip: {
-    minWidth: 22,
-    height: 22,
+    marginHorizontal: 2,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 10,
     paddingHorizontal: 6,
-    borderRadius: 11,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    paddingVertical: 2,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: "rgba(255,255,255,0.22)",
-    justifyContent: "center",
-    alignItems: "center",
   },
-  reactionPillText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  reactionPillText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "800",
+  },
 
-  footerWrap: { position: "relative", paddingHorizontal: 8, paddingTop: 4 },
-  footerBlur: { width: "100%", position: "absolute", top: 0, bottom: 0 },
+  emojiText: {
+    fontSize: 36,
+    lineHeight: 42,
+  },
+  messageText: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "600",
+  },
+
+  timeChip: {
+    position: "absolute",
+    left: -48,
+    top: "50%",
+    marginTop: -10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    borderRadius: 8,
+  },
+  timeChipText: {
+    color: "#EFFFFF",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  mediaBubbleContainer: {
+    marginTop: 8,
+    maxWidth: SCREEN_WIDTH * 0.8,
+  },
+  mediaBubbleOwn: {
+    alignSelf: "flex-end",
+  },
+  mediaBubbleOther: {
+    alignSelf: "flex-start",
+  },
+  largeMediaFull: {
+    width: SCREEN_WIDTH * 0.75,
+    height: SCREEN_WIDTH * 0.75,
+    borderRadius: 14,
+    marginTop: 6,
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+
+  branchLine: {
+    width: 2,
+    height: 16,
+    borderRadius: 1,
+    marginRight: 8,
+    backgroundColor: "rgba(255,255,255,0.25)",
+  },
+  parentPreviewText: {
+    color: "#d7e7ea",
+    fontSize: 12,
+    maxWidth: SCREEN_WIDTH * 0.7,
+  },
+  dateSeparatorText: {
+    color: "#d7e7ea",
+    fontWeight: "800",
+    fontSize: 12,
+  },
+
   chatFooter: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    // borderTopColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "rgba(0, 0, 0, 0)",
+    paddingHorizontal: 10,
+    paddingTop: 8,
+  },
+  attachmentsPreview: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 6,
+    paddingTop: 4,
+  },
+  attachmentPreview: {
+    marginRight: 8,
+    marginTop: 8,
+    borderRadius: 10,
+    overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.18)",
+  },
+  attachmentThumbnail: {
+    width: 68,
+    height: 68,
+  },
+  removeAttachmentBtn: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    borderRadius: 12,
+    padding: 2,
   },
 
+  requestWarningText: {
+    color: "#fff",
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  requestActions: {
+    flexDirection: "row",
+    paddingHorizontal: 12,
+    gap: 8,
+    marginTop: 6,
+  },
+  requestBtnTextPrimary: {
+    color: "#001410",
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  requestBtnTextSubtle: {
+    color: "#cfe5e9",
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  requestBtnTextDanger: {
+    color: "#1a0000",
+    fontWeight: "900",
+    textAlign: "center",
+  },
+
+  footerWrap: {
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+  },
   replyingBanner: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 4,
-    paddingBottom: 4,
-    backgroundColor: "rgba(192, 31, 31, 0)",
+    marginHorizontal: 6,
+    marginBottom: 8,
   },
   replyingBannerText: {
-    color: "#EFFFFF",
-    fontSize: 13,
+    color: "#cfe5e9",
     fontWeight: "700",
-    flexShrink: 1,
   },
 
   writeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "transparent",
-    borderRadius: 100,
-    marginHorizontal: 1,
-    marginVertical: 10,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
   },
 
   inputShell: {
     flex: 1,
+    minHeight: 44,
+    maxHeight: 140,
     borderRadius: 18,
     overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.06)",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0)",
+    // borderColor: "rgba(255,255,255,0.18)",
+    // backgroundColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(255,255,255,0.22)",
+backgroundColor: "rgba(255,255,255,0.08)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  footerBlur: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 18,
   },
   chatInput: {
-    flex: 1,
-    fontSize: 17,
     color: "#EFFFFF",
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "ios" ? 11 : 8,
-    textAlignVertical: "top",
+    fontSize: 16,
+    fontWeight: "600",
   },
-  sendButton: { marginLeft: 8 },
-
-  attachmentsPreview: {
-    maxHeight: 150,
-    marginBottom: 6,
-    marginHorizontal: 12,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingVertical: 5,
-  },
-  attachmentPreview: {
-    marginRight: 10,
-    marginBottom: 10,
-    width: 56,
-    height: 56,
-    borderRadius: 10,
-    overflow: "hidden",
-    position: "relative",
-  },
-  attachmentThumbnail: { width: "100%", height: "100%" },
-  removeAttachmentBtn: {
-    position: "absolute",
-    top: -6,
-    right: -6,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 10,
-    padding: 2,
-  },
-
-  dateSeparatorText: {
-    color: "#cfe4ea",
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-  },
-  branchLine: {
-    width: 2,
-    height: 18,
-    marginRight: 8,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    borderRadius: 2,
-  },
-  parentPreviewText: {
-    color: "#dbeef2",
-    fontSize: 12,
-    fontWeight: "700",
-    maxWidth: SCREEN_WIDTH * 0.6,
-  },
-
-  requestActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginHorizontal: 12,
-    marginTop: 6,
-  },
-  requestBtnTextPrimary: {
-    color: "#00120a",
-    fontWeight: "900",
-    textAlign: "center",
-  },
-  requestBtnTextSubtle: {
-    color: "#EFFFFF",
-    fontWeight: "900",
-    textAlign: "center",
-  },
-  requestBtnTextDanger: {
-    color: "#fff",
-    fontWeight: "900",
-    textAlign: "center",
-  },
-
-  requestWarningText: {
-    color: "#ffd5d5",
-    fontWeight: "800",
-    textAlign: "center",
+  sendButton: {
+    marginLeft: 8,
+    alignSelf: "flex-end",
   },
 });
