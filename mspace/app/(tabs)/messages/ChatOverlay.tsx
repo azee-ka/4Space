@@ -526,11 +526,7 @@ export default function ChatOverlay({
   const msgOpacities = useRef<Record<string, Animated.Value>>({}).current;
   const msgPanX = useRef<Record<string, Animated.Value>>({}).current;
   const seenMsgsRef = useRef<Set<string>>(new Set());
-
-  // input liquid-glass glow + stretch
-  const inputGlowX = useRef(new Animated.Value(0)).current;
-  const inputGlowA = useRef(new Animated.Value(0)).current;
-  const [inputShellW, setInputShellW] = useState(0);
+  const footerPulse = useRef(new Animated.Value(0)).current;
 
   const ensureAnimFor = useCallback(
     (id: string, isOwn: boolean) => {
@@ -565,6 +561,11 @@ export default function ChatOverlay({
     },
     [msgScales, msgOpacities]
   );
+
+  const footerScale = footerPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.03],
+  });
 
   const OPEN_TOP = insets.top + 16;
   const SHEET_OFFSET = SCREEN_HEIGHT - OPEN_TOP;
@@ -885,7 +886,7 @@ export default function ChatOverlay({
   // small reset so autoscroll doesn't fight the user
   useEffect(() => {
     if (justSent) {
-      const t = setTimeout(() => setJustSent(false), 250);
+      const t = setTimeout(() => setJustSent(false), 400);
       return () => clearTimeout(t);
     }
   }, [justSent]);
@@ -967,8 +968,25 @@ export default function ChatOverlay({
     if (!trimmed && attachmentsToSend.length === 0) return;
     if (!activeLaneId) return;
 
-    // light haptic on send
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // bubbly pulse on send
+    Animated.sequence([
+      Animated.spring(footerPulse, {
+        toValue: 1,
+        useNativeDriver: true,
+        stiffness: 280,
+        damping: 14,
+        mass: 0.4,
+      }),
+      Animated.spring(footerPulse, {
+        toValue: 0,
+        useNativeDriver: true,
+        stiffness: 280,
+        damping: 16,
+        mass: 0.5,
+      }),
+    ]).start();
 
     const optimistic: MessageType = {
       uuid: `temp-${Date.now()}`,
@@ -987,14 +1005,6 @@ export default function ChatOverlay({
     };
 
     setMessages((prev) => [optimistic, ...prev]);
-
-    // snap to bottom IMMEDIATELY (FlatList is inverted => offset 0 is bottom)
-    requestAnimationFrame(() => {
-      if (flatListRef.current) {
-        flatListRef.current.scrollToOffset({ offset: 0, animated: false });
-      }
-    });
-
     setJustSent(true);
 
     const basePayload: any = {
@@ -1180,20 +1190,43 @@ export default function ChatOverlay({
     }
   };
 
-  /* overlay tracking + keyboard (no pulses) */
+  /* overlay tracking + keyboard pulsing */
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardVisible(true);
+      Animated.sequence([
+        Animated.spring(footerPulse, {
+          toValue: 1,
+          useNativeDriver: true,
+          stiffness: 260,
+          damping: 16,
+          mass: 0.5,
+        }),
+        Animated.spring(footerPulse, {
+          toValue: 0,
+          useNativeDriver: true,
+          stiffness: 260,
+          damping: 16,
+          mass: 0.5,
+        }),
+      ]).start();
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       setKeyboardVisible(false);
+      Animated.spring(footerPulse, {
+        toValue: 0,
+        useNativeDriver: true,
+        stiffness: 260,
+        damping: 18,
+        mass: 0.6,
+      }).start();
     });
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, []);
+  }, [footerPulse]);
   const keyboardWasOpen = useRef(false);
 
   const clampX = (x: number, width: number) => {
@@ -1327,7 +1360,7 @@ export default function ChatOverlay({
             color="#EFFFFF"
             style={{ marginRight: 10 }}
           />
-        <Text
+          <Text
             style={{ color: "#EFFFFF", fontWeight: "800", flexShrink: 1 }}
             numberOfLines={1}
           >
@@ -1532,10 +1565,7 @@ export default function ChatOverlay({
         >
           <Animated.View
             style={{
-              transform: [
-                { translateX: bubbleTranslateX },
-                { scale: msgScales[item.uuid] },
-              ],
+              transform: [{ translateX: bubbleTranslateX }, { scale: msgScales[item.uuid] }],
               opacity: msgOpacities[item.uuid],
             }}
           >
@@ -1589,9 +1619,7 @@ export default function ChatOverlay({
                   <Text
                     style={[
                       styles.emojiText,
-                      own
-                        ? { alignSelf: "flex-end" }
-                        : { alignSelf: "flex-start" },
+                      own ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
                       { color: own ? theme.textOnOwn : theme.textOnOther },
                     ]}
                   >
@@ -1752,7 +1780,7 @@ export default function ChatOverlay({
           <Animated.View
             style={[
               styles.sheetContainer,
-              { top: insets.top, bottom: 0, transform: [{ translateY }] },
+              { top: insets.top + 16, bottom: 0, transform: [{ translateY }] },
             ]}
           >
             {/* background */}
@@ -2208,7 +2236,7 @@ export default function ChatOverlay({
                       tint="dark"
                       style={styles.footerBlur}
                     />
-                    {/* <LinearGradient
+                    <LinearGradient
                       colors={[
                         "rgba(255,255,255,0.08)",
                         "rgba(255,255,255,0.02)",
@@ -2216,7 +2244,7 @@ export default function ChatOverlay({
                       start={{ x: 0.2, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={StyleSheet.absoluteFill}
-                    /> */}
+                    />
 
                     {replyingTo && (
                       <View style={styles.replyingBanner}>
@@ -2247,8 +2275,12 @@ export default function ChatOverlay({
                       </View>
                     )}
 
-                    {/* Composer (no auto scaling; interactive glow+stretch only) */}
-                    <View style={styles.writeContainer}>
+                    <Animated.View
+                      style={[
+                        styles.writeContainer,
+                        { transform: [{ scale: footerScale }] },
+                      ]}
+                    >
                       <GlassPressable
                         onPress={() => {
                           Haptics.selectionAsync();
@@ -2265,134 +2297,52 @@ export default function ChatOverlay({
                         <MaterialIcons name="add" size={20} color="#EFFFFF" />
                       </GlassPressable>
 
-                      {/* Liquid glass input with moving glow + stretch */}
-                      <PanGestureHandler
-                        onGestureEvent={Animated.event(
-                          [{ nativeEvent: { x: inputGlowX } }],
-                          { useNativeDriver: false }
-                        )}
-                        onHandlerStateChange={(e) => {
-                          const st = (e as any).nativeEvent.state;
-                          if (
-                            st === GestureState.ACTIVE ||
-                            st === GestureState.BEGAN
-                          ) {
-                            Animated.timing(inputGlowA, {
-                              toValue: 1,
-                              duration: 120,
-                              useNativeDriver: true,
-                            }).start();
-                          } else if (
-                            st === GestureState.END ||
-                            st === GestureState.CANCELLED ||
-                            st === GestureState.FAILED
-                          ) {
-                            Animated.timing(inputGlowA, {
-                              toValue: 0,
-                              duration: 220,
-                              useNativeDriver: true,
-                            }).start();
-                          }
-                        }}
-                      >
-                        <Animated.View
+                      <View style={styles.inputShell}>
+                        <TextInput
+                          ref={inputRef}
                           style={[
-                            styles.inputShell,
+                            styles.chatInput,
                             {
-                              transform: [
-                                {
-                                  scaleX: inputShellW
-                                    ? (inputGlowX as any).interpolate({
-                                        inputRange: [
-                                          0,
-                                          inputShellW * 0.12,
-                                          inputShellW * 0.88,
-                                          inputShellW,
-                                        ],
-                                        outputRange: [1.04, 1, 1, 1.06],
-                                        extrapolate: "clamp",
-                                      })
-                                    : 1,
-                                },
-                              ],
+                              minHeight: 44,
+                              height: Math.min(Math.max(44, inputHeight), 140),
+                              maxHeight: 140,
                             },
                           ]}
-                          onLayout={(e) => {
-                            setInputShellW(e.nativeEvent.layout.width);
-                            inputGlowX.setValue(
-                              e.nativeEvent.layout.width / 2
-                            );
-                          }}
-                        >
-                          <Animated.View
-                            pointerEvents="none"
-                            style={[
-                              styles.inputGlow,
-                              {
-                                opacity: inputGlowA,
-                                transform: [
-                                  {
-                                    translateX: Animated.subtract(
-                                      inputGlowX,
-                                      40
-                                    ),
-                                  },
-                                ],
-                              },
-                            ]}
-                          />
-                          <TextInput
-                            ref={inputRef}
-                            style={[
-                              styles.chatInput,
-                              {
-                                minHeight: 44,
-                                height: Math.min(
-                                  Math.max(44, inputHeight),
-                                  140
-                                ),
-                                maxHeight: 140,
-                              },
-                            ]}
-                            placeholder={`Message${
-                              lanes.find((l) => l.id === activeLaneId)?.title
-                                ? ` ${
-                                    lanes.find((l) => l.id === activeLaneId)
-                                      ?.title
-                                  }`
-                                : ""
-                            }`}
-                            placeholderTextColor="#99AAB0"
-                            value={input}
-                            onChangeText={(t) => {
-                              setInput(t);
-                              if (activeLaneId) {
-                                setLaneDrafts((prev) => ({
-                                  ...prev,
-                                  [activeLaneId]: {
-                                    input: t,
-                                    attachments:
-                                      prev[activeLaneId]?.attachments ?? [],
-                                    replyingToUuid: replyingTo?.uuid || null,
-                                  },
-                                }));
-                              }
-                            }}
-                            multiline
-                            onContentSizeChange={(e) =>
-                              setInputHeight(e.nativeEvent.contentSize.height)
+                          placeholder={`Message${
+                            lanes.find((l) => l.id === activeLaneId)?.title
+                              ? ` ${
+                                  lanes.find((l) => l.id === activeLaneId)
+                                    ?.title
+                                }`
+                              : ""
+                          }`}
+                          placeholderTextColor="#99AAB0"
+                          value={input}
+                          onChangeText={(t) => {
+                            setInput(t);
+                            if (activeLaneId) {
+                              setLaneDrafts((prev) => ({
+                                ...prev,
+                                [activeLaneId]: {
+                                  input: t,
+                                  attachments:
+                                    prev[activeLaneId]?.attachments ?? [],
+                                  replyingToUuid: replyingTo?.uuid || null,
+                                },
+                              }));
                             }
-                            returnKeyType="send"
-                            onSubmitEditing={() => {
-                              if (
-                                input.trim() ||
-                                attachmentsToSend.length
-                              )
-                                handleSend();
-                            }}
-                          />
-                        </Animated.View>
-                      </PanGestureHandler>
+                          }}
+                          multiline
+                          onContentSizeChange={(e) =>
+                            setInputHeight(e.nativeEvent.contentSize.height)
+                          }
+                          returnKeyType="send"
+                          onSubmitEditing={() => {
+                            if (input.trim() || attachmentsToSend.length)
+                              handleSend();
+                          }}
+                        />
+                      </View>
 
                       {input.trim() !== "" && (
                         <GlassPressable
@@ -2412,7 +2362,7 @@ export default function ChatOverlay({
                           />
                         </GlassPressable>
                       )}
-                    </View>
+                    </Animated.View>
                   </View>
                 )}
               </View>
@@ -2728,7 +2678,7 @@ const styles = StyleSheet.create({
   chatFooter: {
     borderTopWidth: StyleSheet.hairlineWidth,
     // borderTopColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(0, 0, 0, 0)",
   },
 
   replyingBanner: {
@@ -2737,6 +2687,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 4,
     paddingBottom: 4,
+    backgroundColor: "rgba(192, 31, 31, 0)",
   },
   replyingBannerText: {
     color: "#EFFFFF",
@@ -2758,25 +2709,12 @@ const styles = StyleSheet.create({
 
   inputShell: {
     flex: 1,
-    position: "relative",
     borderRadius: 18,
     overflow: "hidden",
     backgroundColor: "rgba(255,255,255,0.06)",
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.14)",
+    borderColor: "rgba(255,255,255,0)",
   },
-  // moving glow inside the input
-  inputGlow: {
-    position: "absolute",
-    top: 2,
-    bottom: 2,
-    width: 80,
-    borderRadius: 40,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.25)",
-  },
-
   chatInput: {
     flex: 1,
     fontSize: 17,
