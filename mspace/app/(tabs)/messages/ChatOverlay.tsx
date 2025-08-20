@@ -1,6 +1,11 @@
-// app/messages/ChatOverlay.tsx
-
-import React, { useEffect, useRef, useState, useCallback } from "react";
+// app/(tabs)/messages/ChatOverlay.tsx
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -18,28 +23,42 @@ import {
   Image,
   Linking,
   Alert,
-  TouchableWithoutFeedback,
-  ScrollView,
+  ImageBackground,
+  Keyboard,
 } from "react-native";
 
+import * as Haptics from "expo-haptics";
 import * as Clipboard from "expo-clipboard";
 import * as MediaLibrary from "expo-media-library";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Video } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { BlurView } from "expo-blur";
-import * as ImagePicker from "expo-image-picker";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Keyboard } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State as GestureState,
+} from "react-native-gesture-handler";
 
-import useApi from "../../../hooks/useApi";
-import useWebSocket from "../../../hooks/useWebSocket";
-import ProfilePicture from "../../../utils/getProfilePicture";
+import useApi from "@/hooks/useApi";
+import useWebSocket from "@/hooks/useWebSocket";
+import ProfilePicture from "@/utils/getProfilePicture";
 import useAuth from "@/hooks/useAuth";
 
-const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+import ReactionOverlay from "./ReactionOverlay";
+import AttachMenu from "./AttachMenu";
+import ChatDetailsSheet from "./ChatDetailsSheet";
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const BUBBLE_MAX_W = Math.floor(SCREEN_WIDTH * 0.78);
+
+/* =========================
+   TYPES
+========================= */
 
 type AttachmentType = {
   id: string;
@@ -51,11 +70,11 @@ type AttachmentType = {
 type ReactionType = {
   id: string;
   user_username: string;
-  reaction_type: string;
+  reaction_type: "like" | "love" | "laugh" | "sad" | "angry";
   reacted_at: string;
 };
 
-type MessageType = {
+export type MessageType = {
   uuid: string;
   text: string;
   sender_username: string;
@@ -63,12 +82,13 @@ type MessageType = {
   attachments: AttachmentType[];
   reactions: ReactionType[];
   parent_message_uuid: string | null;
+  context?: string | null; // lane id
 };
 
 type ConversationType = {
   participants: Array<{
     user: {
-      id: number;
+      id: number | string;
       first_name: string;
       last_name: string;
       username: string;
@@ -77,13 +97,63 @@ type ConversationType = {
   }>;
   view_type: "inbox" | "request";
   conversation_status: "blocked" | "invite" | "allowed" | string;
+  uuid?: string;
+  mode?: ConversationMode;
+  theme?: { name?: string; themeIdx?: number; bgImage?: string | null } | null;
 };
 
-interface ChatOverlayProps {
-  visible: boolean;
-  conversationId: string;
-  onClose: () => void;
-}
+export type Lane = {
+  id: string;
+  title: string;
+  emoji?: string; // MaterialIcons name if present
+  color?: string;
+  is_archived?: boolean;
+};
+
+type ConversationMode =
+  | "personal"
+  | "work"
+  | "family"
+  | "dating"
+  | "travel"
+  | "events"
+  | "wellness";
+
+/* =========================
+   THEME
+========================= */
+
+const DEFAULT_THEME = {
+  name: "Midnight",
+  bgGradient: ["#05080D", "#071019", "#000000"],
+  bubbleOwn: "#147AFF",
+  bubbleOther: "rgba(30,31,36,0.35)",
+  textOnOwn: "#FFFFFF",
+  textOnOther: "#EAFBFF",
+  backdropTintIntensity: 50,
+};
+
+const THEMES = [
+  DEFAULT_THEME,
+  {
+    name: "Aurora",
+    bgGradient: ["#091322", "#0a1e2e", "#063345"],
+    bubbleOwn: "#19C37D",
+    bubbleOther: "rgba(20,34,54,0.38)",
+    textOnOwn: "#00120a",
+    textOnOther: "#E7F7F0",
+    backdropTintIntensity: 42,
+  },
+  {
+    name: "Sunset",
+    bgGradient: ["#150a0e", "#26101c", "#310f1f"],
+    bubbleOwn: "#FF6B4A",
+    bubbleOther: "rgba(42,27,36,0.36)",
+    textOnOwn: "#1E0A08",
+    textOnOther: "#FFEDE9",
+    backdropTintIntensity: 46,
+  },
+];
 
 function isEmojiOnlyMessage(text: string) {
   const cleaned = text.replace(/[\s\u200B]/g, "");
@@ -100,169 +170,701 @@ function isEmojiOnlyMessage(text: string) {
   return emojiOnlyRegex.test(cleaned);
 }
 
+/* =========================
+   GLASS BUTTON
+========================= */
+
+const GLASS = {
+  blurBtn: Platform.select({ ios: 14, android: 8, default: 12 }),
+  blurHeader: Platform.select({ ios: 22, android: 10, default: 16 }),
+  blurFooter: Platform.select({ ios: 16, android: 8, default: 12 }),
+  strokeSoft: "rgba(255,255,255,0.14)",
+  sheen: "rgba(255,255,255,0.22)",
+  fillGhost: "rgba(255,255,255,0.06)",
+  fillSolid: "rgba(255,255,255,0.12)",
+};
+
+function GlassPressable({
+  children,
+  onPress,
+  onLongPress,
+  accessibilityLabel,
+  radius = 18,
+  padH = 14,
+  padV = 10,
+  variant = "ghost",
+  style,
+  haptics = "selection",
+  block = false,
+}: {
+  children: React.ReactNode;
+  onPress?: () => void;
+  onLongPress?: () => void;
+  accessibilityLabel?: string;
+  radius?: number;
+  padH?: number;
+  padV?: number;
+  variant?: "solid" | "ghost";
+  style?: any;
+  haptics?: "none" | "selection" | "light" | "medium";
+  block?: boolean;
+}) {
+  const press = useRef(new Animated.Value(0)).current;
+  const scale = press.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.97],
+  });
+  const opacity = press.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.94],
+  });
+  const sheenOpacity = press.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.45],
+  });
+  const sheenShift = press.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-22, 22],
+  });
+
+  const doHaptics = useCallback(() => {
+    if (haptics === "none") return;
+    if (haptics === "selection") Haptics.selectionAsync();
+    else if (haptics === "light")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    else if (haptics === "medium")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, [haptics]);
+
+  return (
+    <Animated.View
+      style={[
+        { borderRadius: radius, transform: [{ scale }], opacity },
+        Platform.select({
+          ios: {
+            shadowColor: "#FFFFFF",
+            shadowOpacity: 0.12,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 0 },
+          },
+          android: { elevation: 5 },
+          default: {},
+        }),
+        style,
+      ]}
+    >
+      <Pressable
+        onPress={() => {
+          doHaptics();
+          onPress?.();
+        }}
+        onLongPress={() => {
+          if (haptics !== "none")
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onLongPress?.();
+        }}
+        onPressIn={() =>
+          Animated.spring(press, {
+            toValue: 1,
+            useNativeDriver: true,
+            stiffness: 320,
+            damping: 20,
+            mass: 0.25,
+          }).start()
+        }
+        onPressOut={() =>
+          Animated.spring(press, {
+            toValue: 0,
+            useNativeDriver: true,
+            stiffness: 320,
+            damping: 20,
+            mass: 0.25,
+          }).start()
+        }
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        style={{
+          borderRadius: radius,
+          overflow: "hidden",
+          backgroundColor: "transparent",
+          paddingHorizontal: padH,
+          paddingVertical: padV,
+          width: block ? "100%" : undefined,
+          alignSelf: block ? "stretch" : undefined,
+        }}
+      >
+        {/* layers */}
+        <View
+          pointerEvents="none"
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            overflow: "hidden",
+            borderRadius: radius,
+          }}
+        >
+          <BlurView
+            intensity={GLASS.blurBtn}
+            tint="light"
+            style={StyleSheet.absoluteFill}
+          />
+          <LinearGradient
+            colors={
+              variant === "solid"
+                ? ["rgba(255,255,255,0.18)", "rgba(255,255,255,0.06)"]
+                : [GLASS.fillGhost, "rgba(255,255,255,0.02)"]
+            }
+            start={{ x: 0.15, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          {/* sheen */}
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                opacity: sheenOpacity,
+                transform: [{ translateX: sheenShift }],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={[
+                "rgba(255,255,255,0)",
+                GLASS.sheen,
+                "rgba(255,255,255,0)",
+              ]}
+              start={{ x: 0, y: 0.2 }}
+              end={{ x: 1, y: 0.8 }}
+              style={{
+                position: "absolute",
+                left: -60,
+                right: -60,
+                top: 0,
+                bottom: 0,
+              }}
+            />
+          </Animated.View>
+          {/* stroke */}
+          <View
+            pointerEvents="none"
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                borderRadius: radius,
+                borderWidth: StyleSheet.hairlineWidth,
+                borderColor: "rgba(255,255,255,0.14)",
+              },
+            ]}
+          />
+        </View>
+        {children}
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+function LiquidBubble({
+  children,
+  own,
+  emojiOnly,
+  radius,
+  theme,
+  style,
+}: {
+  children: React.ReactNode;
+  own: boolean;
+  emojiOnly: boolean;
+  radius: {
+    borderTopLeftRadius: number;
+    borderTopRightRadius: number;
+    borderBottomLeftRadius: number;
+    borderBottomRightRadius: number;
+  };
+  theme: (typeof THEMES)[number];
+  style?: any;
+}) {
+  const baseColor = own ? theme.bubbleOwn : theme.bubbleOther;
+  return (
+    <View
+      style={[
+        {
+          borderRadius: 18,
+          ...radius,
+          overflow: "hidden",
+          backgroundColor: "transparent",
+        },
+        style,
+      ]}
+    >
+      {!own && (
+        <BlurView intensity={6} tint="light" style={StyleSheet.absoluteFill} />
+      )}
+      <LinearGradient
+        colors={
+          own
+            ? [baseColor, baseColor]
+            : ["rgba(255,255,255,0.06)", "rgba(255,255,255,0.02)"]
+        }
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0.00)"]}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            borderWidth: StyleSheet.hairlineWidth,
+            borderColor: own
+              ? "rgba(255,255,255,0.18)"
+              : "rgba(255,255,255,0.12)",
+            borderRadius: 18,
+          },
+        ]}
+      />
+      <View
+        style={{
+          paddingHorizontal: emojiOnly ? 0 : 14,
+          paddingVertical: emojiOnly ? 0 : 10,
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
+/* =========================
+   MAIN
+========================= */
+
 export default function ChatOverlay({
   visible,
   conversationId,
   onClose,
-}: ChatOverlayProps) {
+}: {
+  visible: boolean;
+  conversationId: string;
+  onClose: () => void;
+}) {
   const insets = useSafeAreaInsets();
   const { authState } = useAuth();
   const currentUsername = authState?.current?.user?.username || "UNKNOWN";
   const { callApi } = useApi();
+  const callApiRef = useRef(callApi);
+  callApiRef.current = callApi; // always latest
 
-  // ─────── Animation Values ───────
-  const popupAnim = useRef(new Animated.Value(0)).current;
-  const blurOpacity = popupAnim.interpolate({
-    inputRange: [0, 0.2, 1],
-    outputRange: [0, 1, 1],
-  });
-  const popupScale = popupAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.8, 1],
-  });
-
-  // ─────── State ───────
-  const [showAttachMenu, setShowAttachMenu] = useState(false);
-  const attachAnim = useRef(new Animated.Value(0)).current;
-
-  const [focusedMessage, setFocusedMessage] = useState<MessageType | null>(
-    null
-  );
-  const [pressedLayout, setPressedLayout] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
-
-  const [reactionSummaryMessage, setReactionSummaryMessage] = useState<
-    MessageType | null
-  >(null);
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const [conversation, setConversation] = useState<ConversationType | null>(
     null
   );
+
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingOlder, setLoadingOlder] = useState(false);
+
+  const [laneDrafts, setLaneDrafts] = useState<
+    Record<
+      string,
+      {
+        input: string;
+        attachments: { uri: string; type: string; name: string }[];
+        replyingToUuid: string | null;
+      }
+    >
+  >({});
+
   const [input, setInput] = useState("");
-  const [userScrolledUp, setUserScrolledUp] = useState(false);
-  const [justSent, setJustSent] = useState(false);
   const [attachmentsToSend, setAttachmentsToSend] = useState<
     { uri: string; type: string; name: string }[]
   >([]);
   const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
-  const [showChainModal, setShowChainModal] = useState<{
-    rootUuid: string;
-    chain: MessageType[];
+  const [inputHeight, setInputHeight] = useState(44);
+
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
+  const [justSent, setJustSent] = useState(false);
+
+  // lanes / mode / theme
+  const [lanes, setLanes] = useState<Lane[]>([]);
+  const [activeLaneId, setActiveLaneId] = useState<string | null>(null);
+  const [mode, setMode] = useState<ConversationMode>("personal");
+  const [themeIdx, setThemeIdx] = useState(0);
+  const theme = THEMES[themeIdx];
+  const [bgImage, setBgImage] = useState<string | null>(null);
+
+  // overlays
+  const [focusedMessage, setFocusedMessage] = useState<MessageType | null>(
+    null
+  );
+  const [overlayLayout, setOverlayLayout] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
   } | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [attachVisible, setAttachVisible] = useState(false);
 
   const flatListRef = useRef<FlatList<MessageType>>(null);
   const inputRef = useRef<TextInput>(null);
-
-  // map of refs for each bubble, keyed by message UUID.
   const bubbleRefs = useRef<Record<string, View | null>>({});
+  const loadingOlderRef = useRef(false); // prevent duplicate loads near top
+  const onEndReachedCalledDuringMomentum = useRef(false);
 
-  const OPEN_TOP = insets.top + 20;
+  // --- bubbly effects & swipe-to-time/reply maps ---
+  const msgScales = useRef<Record<string, Animated.Value>>({}).current;
+  const msgOpacities = useRef<Record<string, Animated.Value>>({}).current;
+  const msgPanX = useRef<Record<string, Animated.Value>>({}).current;
+  const seenMsgsRef = useRef<Set<string>>(new Set());
+
+  // input liquid-glass glow + stretch
+  const inputGlowX = useRef(new Animated.Value(0)).current;
+  const inputGlowA = useRef(new Animated.Value(0)).current;
+  const [inputShellW, setInputShellW] = useState(0);
+
+  const ensureAnimFor = useCallback(
+    (id: string, isOwn: boolean) => {
+      if (!msgScales[id])
+        msgScales[id] = new Animated.Value(isOwn ? 0.96 : 0.98);
+      if (!msgOpacities[id]) msgOpacities[id] = new Animated.Value(0);
+      if (!msgPanX[id]) msgPanX[id] = new Animated.Value(0);
+    },
+    [msgScales, msgOpacities, msgPanX]
+  );
+
+  const animateInIfNew = useCallback(
+    (id: string) => {
+      if (!seenMsgsRef.current.has(id)) {
+        seenMsgsRef.current.add(id);
+        Animated.parallel([
+          Animated.spring(msgScales[id], {
+            toValue: 1,
+            useNativeDriver: true,
+            stiffness: 320,
+            damping: 22,
+            mass: 0.6,
+          }),
+          Animated.timing(msgOpacities[id], {
+            toValue: 1,
+            duration: 140,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
+    },
+    [msgScales, msgOpacities]
+  );
+
+  const OPEN_TOP = insets.top + 16;
   const SHEET_OFFSET = SCREEN_HEIGHT - OPEN_TOP;
 
-  // ─────── Slide-Up Sheet Animation ───────
-  const translateY = useRef(new Animated.Value(SHEET_OFFSET)).current;
+  const convLoadedForRef = useRef<string | null>(null);
+  const lanesFetchedForRef = useRef<string | null>(null);
+
+  /* open/close */
   useEffect(() => {
     if (!visible) return;
     translateY.setValue(SHEET_OFFSET);
     Animated.timing(translateY, {
       toValue: 0,
-      duration: 450,
+      duration: 380,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
-    }).start();
+    }).start(() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   const triggerClose = useCallback(() => {
+    Haptics.selectionAsync();
     Animated.timing(translateY, {
       toValue: SHEET_OFFSET,
-      duration: 250,
+      duration: 220,
       easing: Easing.in(Easing.quad),
       useNativeDriver: true,
-    }).start(() => {
-      onClose();
-    });
-  }, [onClose]);
+    }).start(() => onClose());
+  }, [onClose, SHEET_OFFSET, translateY]);
 
-  // ─────── Fetch Conversation Details ───────
+  /* load conversation + prefs (RUNS ONCE PER OPEN/ID) */
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || !conversationId) return;
+    if (convLoadedForRef.current === conversationId) return; // guard
+    convLoadedForRef.current = conversationId;
+
+    let cancelled = false;
     (async () => {
       try {
-        const resp = await callApi(
+        const resp = await callApiRef.current(
           `messages/get_conversation_details/${conversationId}/`
         );
+        if (cancelled) return;
         setConversation(resp.data);
-      } catch (err) {
-        console.error(err);
-      }
+        if (resp.data?.mode) setMode(resp.data.mode);
+        if (resp.data?.theme) {
+          const { themeIdx: serverIdx, bgImage: serverBg } =
+            resp.data.theme || {};
+          if (typeof serverIdx === "number")
+            setThemeIdx(Math.min(Math.max(serverIdx, 0), THEMES.length - 1));
+          if (serverBg) setBgImage(serverBg);
+        }
+      } catch {}
+      try {
+        const raw = await AsyncStorage.getItem(`chat:prefs:${conversationId}`);
+        if (raw) {
+          const prefs = JSON.parse(raw);
+          if (typeof prefs.themeIdx === "number")
+            setThemeIdx(
+              Math.min(Math.max(prefs.themeIdx, 0), THEMES.length - 1)
+            );
+          if (typeof prefs.activeLaneId === "string")
+            setActiveLaneId(prefs.activeLaneId);
+          if (typeof prefs.bgImage === "string") setBgImage(prefs.bgImage);
+        }
+      } catch {}
     })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, conversationId]);
+
+  // reset guards when closed
+  useEffect(() => {
+    if (!visible) {
+      convLoadedForRef.current = null;
+      lanesFetchedForRef.current = null;
+    }
   }, [visible]);
 
-  // ─────── Fetch Messages (paginated) ───────
+  /* persist prefs (local + server; no spam) */
+  const persistPrefs = useCallback(
+    async (
+      patch: Partial<{
+        themeIdx: number;
+        bgImage: string | null;
+        activeLaneId: string | null;
+      }>
+    ) => {
+      try {
+        const raw =
+          (await AsyncStorage.getItem(`chat:prefs:${conversationId}`)) || "{}";
+        const prev = JSON.parse(raw);
+        const next = { ...prev, ...patch };
+        await AsyncStorage.setItem(
+          `chat:prefs:${conversationId}`,
+          JSON.stringify(next)
+        );
+      } catch {}
+      // fire-and-forget
+      try {
+        await callApiRef.current(
+          `messages/conversations/${conversationId}/prefs/`,
+          "PATCH",
+          {
+            theme: {
+              themeIdx: patch.themeIdx ?? themeIdx,
+              bgImage: patch.bgImage ?? bgImage,
+            },
+          }
+        );
+      } catch {}
+    },
+    [conversationId, themeIdx, bgImage]
+  );
+
+  /* lanes fetch/create (ONCE PER OPEN/ID) */
+  useEffect(() => {
+    if (!visible || !conversationId) return;
+    if (lanesFetchedForRef.current === conversationId) return;
+
+    lanesFetchedForRef.current = conversationId;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const ctxRes = await callApiRef.current(
+          `messages/contexts/${conversationId}/`
+        );
+        if (cancelled) return;
+
+        const list: Lane[] = Array.isArray(ctxRes.data) ? ctxRes.data : [];
+        if (list.length) {
+          setLanes(list);
+          setActiveLaneId((prev) =>
+            prev && list.some((l) => l.id === prev) ? prev : list[0].id
+          );
+        } else {
+          try {
+            const created = await callApiRef.current(
+              `messages/contexts/${conversationId}/`,
+              "POST",
+              {
+                title: "Main",
+                emoji: "chat",
+                color: "#147AFF",
+              }
+            );
+            if (cancelled) return;
+            setLanes([created.data]);
+            setActiveLaneId(created.data.id);
+          } catch {
+            if (cancelled) return;
+            const fallback: Lane = {
+              id: "default",
+              title: "Main",
+              emoji: "chat",
+              color: "#147AFF",
+            };
+            setLanes([fallback]);
+            setActiveLaneId("default");
+          }
+        }
+      } catch {
+        if (cancelled) return;
+        const fallback: Lane = {
+          id: "default",
+          title: "Main",
+          emoji: "chat",
+          color: "#147AFF",
+        };
+        setLanes((p) => (p.length ? p : [fallback]));
+        setActiveLaneId((prev) => prev ?? "default");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, conversationId]);
+
+  /* per-lane draft restore/persist */
+  const persistDraft = useCallback(
+    (laneId: string | null) => {
+      if (!laneId) return;
+      setLaneDrafts((prev) => ({
+        ...prev,
+        [laneId]: {
+          input,
+          attachments: attachmentsToSend,
+          replyingToUuid: replyingTo?.uuid || null,
+        },
+      }));
+    },
+    [input, attachmentsToSend, replyingTo]
+  );
+
+  const restoreDraft = useCallback(
+    (laneId: string | null) => {
+      if (!laneId) {
+        setInput("");
+        setAttachmentsToSend([]);
+        setReplyingTo(null);
+        return;
+      }
+      const d = laneDrafts[laneId];
+      setInput(d?.input ?? "");
+      setAttachmentsToSend(d?.attachments ?? []);
+      setReplyingTo(
+        d?.replyingToUuid
+          ? messages.find((m) => m.uuid === d.replyingToUuid) ?? null
+          : null
+      );
+    },
+    [laneDrafts, messages]
+  );
+
+  const previousLaneRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prev = previousLaneRef.current;
+    if (prev && prev !== activeLaneId) persistDraft(prev);
+    previousLaneRef.current = activeLaneId;
+    restoreDraft(activeLaneId);
+    if (activeLaneId) persistPrefs({ activeLaneId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLaneId]);
+
+  /* fetch messages for lane */
   const fetchMessages = useCallback(
     async (pageToLoad: number) => {
+      if (!activeLaneId || !conversationId) return;
       try {
-        if (pageToLoad === 0) setLoading(true);
-        else setLoadingOlder(true);
-
-        const resp = await callApi(
-          `messages/get_messages/${conversationId}/?limit=30&offset=${
-            pageToLoad * 30
-          }`
-        );
-        const { results, next } = resp.data;
-
+        pageToLoad === 0 ? setLoading(true) : setLoadingOlder(true);
+        if (pageToLoad !== 0) loadingOlderRef.current = true;
+        const url = `messages/get_messages/${conversationId}/?limit=30&offset=${
+          pageToLoad * 30
+        }&context=${activeLaneId}`;
+        const resp = await callApiRef.current(url);
+        const { results, next } = resp.data || {};
         if (pageToLoad === 0) {
-          setMessages(results);
+          setMessages(Array.isArray(results) ? results : []);
         } else {
           setMessages((prev) => {
-            const existingIds = new Set(prev.map((m) => m.uuid));
-            const filtered = results.filter((m) => !existingIds.has(m.uuid));
+            const existing = new Set(prev.map((m) => m.uuid));
+            const filtered = (Array.isArray(results) ? results : []).filter(
+              (m: any) => !existing.has(m.uuid)
+            );
             return [...prev, ...filtered];
           });
         }
         setHasMore(!!next);
         setPage(pageToLoad + 1);
-      } catch (err) {
-        console.error(err);
+      } catch {
+        // ignore silently
       } finally {
-        if (pageToLoad === 0) setLoading(false);
-        else setLoadingOlder(false);
+        pageToLoad === 0 ? setLoading(false) : setLoadingOlder(false);
+        if (pageToLoad !== 0) loadingOlderRef.current = false;
+        onEndReachedCalledDuringMomentum.current = false;
       }
     },
-    [conversationId]
+    [conversationId, activeLaneId]
   );
 
   useEffect(() => {
-    if (visible) fetchMessages(0);
-  }, [visible]);
+    if (visible && activeLaneId) fetchMessages(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, activeLaneId]);
 
-  // ─────── WebSocket for Live Updates ───────
+  /* live updates */
   const { sendMessage } = useWebSocket(`messages/inbox/${conversationId}/`, {
     onMessage: (data: any) => {
-      console.log("WS incoming →", data);
       if (data.type === "chat_message") {
-        const newMsg: MessageType = data.message;
+        const msg: MessageType = data.message;
+        if (activeLaneId && (msg.context ?? null) !== activeLaneId) return;
+
         setMessages((prev) => {
-          if (prev.some((m) => m.uuid === newMsg.uuid)) return prev;
-          return [newMsg, ...prev];
+          // If this is our own message echoed back, replace the optimistic temp copy
+          const idx = prev.findIndex(
+            (m) =>
+              m.uuid.startsWith("temp-") &&
+              m.sender_username === currentUsername &&
+              (m.context ?? null) === (msg.context ?? null) &&
+              m.text === msg.text
+          );
+          if (idx !== -1) {
+            const next = [...prev];
+            next[idx] = msg;
+            return next;
+          }
+          return prev.some((m) => m.uuid === msg.uuid) ? prev : [msg, ...prev];
         });
       } else if (data.type === "reaction_update") {
         const { message_uuid, reactions } = data;
-        console.log("Applying reactions for", message_uuid, reactions);
         setMessages((prev) =>
-          prev.map((m) =>
-            m.uuid === message_uuid ? { ...m, reactions } : m
-          )
+          prev.map((m) => (m.uuid === message_uuid ? { ...m, reactions } : m))
         );
       } else if (data.type === "unsend") {
         const { message_uuid } = data;
@@ -271,75 +873,149 @@ export default function ChatOverlay({
     },
   });
 
-  // ─────── Auto-scroll on new messages ───────
+  /* autoscroll (inverted list) - keep at visual bottom without teleporting to top */
   useEffect(() => {
     if (!loadingOlder && flatListRef.current) {
       if (!justSent && !userScrolledUp && loading === false) {
-        flatListRef.current.scrollToEnd({ animated: false });
+        flatListRef.current.scrollToOffset({ offset: 0, animated: false });
       }
     }
   }, [messages, userScrolledUp, justSent, loadingOlder, loading]);
 
+  // small reset so autoscroll doesn't fight the user
+  useEffect(() => {
+    if (justSent) {
+      const t = setTimeout(() => setJustSent(false), 250);
+      return () => clearTimeout(t);
+    }
+  }, [justSent]);
+
+  /* helpers */
   const isOwnMessage = (m: MessageType) =>
     m.sender_username === currentUsername;
-
-  const getReplyChain = useCallback(
-    (rootUuid: string): MessageType[] => {
-      const chain: MessageType[] = [];
-      let current = messages.find((m) => m.uuid === rootUuid) || null;
-      while (current) {
-        chain.push(current);
-        if (current.parent_message_uuid) {
-          current = messages.find(
-            (m) => m.uuid === current!.parent_message_uuid
-          );
-        } else {
-          break;
-        }
-      }
-      return chain.reverse();
-    },
-    [messages]
-  );
-
-  const openChainModal = (msg: MessageType) => {
-    const chain = getReplyChain(msg.uuid);
-    if (chain.length > 1) {
-      setShowChainModal({ rootUuid: msg.uuid, chain });
-    }
+  const timeDiffMin = (a: Date, b: Date) =>
+    Math.abs((a.getTime() - b.getTime()) / 60000);
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+  const needsTimeSeparator = (curr: MessageType, prev?: MessageType) => {
+    if (!prev) return true;
+    const t1 = new Date(curr.sent_at);
+    const t0 = new Date(prev.sent_at);
+    if (!isSameDay(t1, t0)) return true;
+    return timeDiffMin(t1, t0) >= 30;
   };
 
-  // ─────── Send Message ───────
+  // ---- identity display helpers (robust fallbacks) ----
+  const fullName = (u: any) =>
+    [u?.first_name ?? u?.firstName, u?.last_name ?? u?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+  const usernameOf = (u: any) =>
+    u?.username ?? u?.user_name ?? (u?.user && u.user.username) ?? null;
+
+  // normalize participant shape
+  const asUser = useCallback((p: any) => (p && p.user ? p.user : p), []);
+
+  const participantsUsers = useMemo(
+    () => (conversation?.participants ?? []).map(asUser),
+    [conversation, asUser]
+  );
+
+  const peers = useMemo(
+    () =>
+      participantsUsers.filter((u: any) => usernameOf(u) !== currentUsername),
+    [participantsUsers, currentUsername]
+  );
+
+  const shownPeople = useMemo(
+    () => (peers.length ? peers : participantsUsers),
+    [peers, participantsUsers]
+  );
+
+  const nameLine = useMemo(
+    () =>
+      shownPeople
+        .map((u: any) => {
+          const fn = fullName(u);
+          const un = usernameOf(u) || "unknown";
+          return fn || `@${un}`;
+        })
+        .join(", "),
+    [shownPeople]
+  );
+
+  const handleLine = useMemo(
+    () =>
+      shownPeople
+        .map((u: any) => `@${usernameOf(u) || "unknown"}`)
+        .join(", "),
+    [shownPeople]
+  );
+
+  const participantsFlat = useMemo(
+    () => (conversation?.participants ?? []).map((p: any) => p?.user ?? p),
+    [conversation]
+  );
+
+  /* SEND */
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed && attachmentsToSend.length === 0) return;
+    if (!activeLaneId) return;
 
-    const optimisticMessage: MessageType = {
+    // light haptic on send
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const optimistic: MessageType = {
       uuid: `temp-${Date.now()}`,
       text: trimmed,
       sender_username: currentUsername,
       sent_at: new Date().toISOString(),
-      attachments: attachmentsToSend.map((file) => ({
-        id: `temp-${file.name}`,
-        mime_type: file.type,
-        url: file.uri,
+      attachments: attachmentsToSend.map((f) => ({
+        id: `temp-${f.name}`,
+        mime_type: f.type,
+        url: f.uri,
         uploaded_at: new Date().toISOString(),
       })),
       reactions: [],
       parent_message_uuid: replyingTo?.uuid || null,
+      context: activeLaneId,
+    };
+
+    setMessages((prev) => [optimistic, ...prev]);
+
+    // snap to bottom IMMEDIATELY (FlatList is inverted => offset 0 is bottom)
+    requestAnimationFrame(() => {
+      if (flatListRef.current) {
+        flatListRef.current.scrollToOffset({ offset: 0, animated: false });
+      }
+    });
+
+    setJustSent(true);
+
+    const basePayload: any = {
+      text: trimmed,
+      sender_username: currentUsername,
+      conversation: conversationId,
+      context: activeLaneId,
+      ...(replyingTo && { parent_message_uuid: replyingTo.uuid }),
     };
 
     setInput("");
+    setInputHeight(44);
+    setAttachmentsToSend([]);
     setReplyingTo(null);
-    setJustSent(true);
+    setLaneDrafts((prev) => ({
+      ...prev,
+      [activeLaneId]: { input: "", attachments: [], replyingToUuid: null },
+    }));
 
     if (attachmentsToSend.length === 0) {
-      sendMessage({
-        text: trimmed,
-        sender_username: currentUsername,
-        conversation: conversationId,
-        ...(replyingTo && { parent_message_uuid: replyingTo.uuid }),
-      });
+      sendMessage(basePayload);
       return;
     }
 
@@ -347,11 +1023,15 @@ export default function ChatOverlay({
       const body: any = {
         conversation: conversationId,
         text: trimmed,
+        context: activeLaneId,
       };
       if (replyingTo) body.parent_message_uuid = replyingTo.uuid;
-
-      const resp = await callApi("messages/create_message/", "POST", body);
-      let newMessage: MessageType = resp.data;
+      const created = await callApiRef.current(
+        "messages/create_message/",
+        "POST",
+        body
+      );
+      let newMessage: MessageType = created.data;
 
       if (attachmentsToSend.length > 0) {
         const formData = new FormData();
@@ -362,26 +1042,24 @@ export default function ChatOverlay({
             name: fileObj.name,
           } as any);
         });
-        const attachmentResp = await callApi(
+        const attResp = await callApiRef.current(
           `messages/upload_attachment/${newMessage.uuid}/`,
           "POST",
           formData,
           "multipart/form-data"
         );
-        newMessage.attachments = attachmentResp.data;
+        newMessage.attachments = attResp.data;
       }
 
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.uuid === optimisticMessage.uuid ? newMessage : msg
+        prev.map((m) =>
+          m.uuid === optimistic.uuid
+            ? { ...newMessage, context: activeLaneId }
+            : m
         )
       );
-      setAttachmentsToSend([]);
-    } catch (err) {
-      console.error(err);
-      setMessages((prev) =>
-        prev.filter((msg) => msg.uuid !== optimisticMessage.uuid)
-      );
+    } catch {
+      setMessages((prev) => prev.filter((m) => m.uuid !== optimistic.uuid));
       Alert.alert(
         "Message Failed",
         "Unable to send your message. Please try again."
@@ -389,47 +1067,22 @@ export default function ChatOverlay({
     }
   };
 
-  // ─────── Pick Media ───────
-  const handleMediaPick = async () => {
-    setAttachmentsToSend([]);
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("We need permission to access your media library.");
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets) {
-      const attachments = result.assets.map((asset) => ({
-        uri: asset.uri,
-        type: asset.mimeType || "image/jpeg",
-        name: asset.fileName || `media-${Date.now()}`,
-      }));
-      setAttachmentsToSend((prev) => [...prev, ...attachments]);
-    }
-  };
-
-  // ─────── Toggle Reaction ───────
+  /* REACTIONS */
   const handleToggleReaction = async (
     msg: MessageType,
-    reactionType: string
+    reactionType: ReactionType["reaction_type"]
   ) => {
     const existingByUser = msg.reactions.find(
       (r) => r.user_username === currentUsername
     );
-    const isSameType = existingByUser?.reaction_type === reactionType;
+    const isSame = existingByUser?.reaction_type === reactionType;
 
     setMessages((prev) =>
       prev.map((m) => {
         if (m.uuid !== msg.uuid) return m;
-
-        let newReactions: ReactionType[] = [...m.reactions];
-
-        if (isSameType && existingByUser) {
-          newReactions = newReactions.filter(
+        let next = [...m.reactions];
+        if (isSame && existingByUser) {
+          next = next.filter(
             (r) =>
               !(
                 r.user_username === currentUsername &&
@@ -437,24 +1090,20 @@ export default function ChatOverlay({
               )
           );
         } else {
-          if (existingByUser) {
-            newReactions = newReactions.filter(
-              (r) => r.user_username !== currentUsername
-            );
-          }
-          newReactions.push({
+          if (existingByUser)
+            next = next.filter((r) => r.user_username !== currentUsername);
+          next.push({
             id: `temp-${Date.now()}`,
             user_username: currentUsername,
             reaction_type: reactionType,
             reacted_at: new Date().toISOString(),
           });
         }
-
-        return { ...m, reactions: newReactions };
+        return { ...m, reactions: next };
       })
     );
 
-    if (isSameType && existingByUser) {
+    if (isSame && existingByUser) {
       sendMessage({
         action: "remove_reaction",
         message_uuid: msg.uuid,
@@ -469,22 +1118,51 @@ export default function ChatOverlay({
     }
   };
 
-  // ─────── Unsend Message ───────
   const handleUnsend = async (msg: MessageType) => {
     try {
-      await callApi(`messages/unsend_message/${msg.uuid}/`, "POST");
+      await callApiRef.current(`messages/unsend_message/${msg.uuid}/`, "POST");
       setMessages((prev) => prev.filter((m) => m.uuid !== msg.uuid));
-      sendMessage({
-        type: "unsend",
-        message_uuid: msg.uuid,
-      });
-    } catch (err) {
-      console.error(err);
+      sendMessage({ type: "unsend", message_uuid: msg.uuid });
+    } catch {
       Alert.alert("Unable to unsend", "Try again in a moment.");
     }
   };
 
-  // ─────── Save Media ───────
+  /* MEDIA */
+  const handleMediaPick = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert("We need permission to access your media library.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsMultipleSelection: true,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets) {
+      const newItems = result.assets.map((asset) => ({
+        uri: asset.uri,
+        type: (asset as any).mimeType || "image/jpeg",
+        name: (asset as any).fileName || `media-${Date.now()}`,
+      }));
+      setAttachmentsToSend((prev) => [...prev, ...newItems]);
+      if (activeLaneId) {
+        setLaneDrafts((prev) => ({
+          ...prev,
+          [activeLaneId]: {
+            input,
+            attachments: [
+              ...(prev[activeLaneId]?.attachments ?? []),
+              ...newItems,
+            ],
+            replyingToUuid: replyingTo?.uuid || null,
+          },
+        }));
+      }
+    }
+  };
+
   const handleSaveMedia = async (att: AttachmentType) => {
     try {
       const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -495,626 +1173,14 @@ export default function ChatOverlay({
         );
         return;
       }
-      const asset = await MediaLibrary.createAssetAsync(att.url);
-      if (asset) {
-        Alert.alert("Saved!", "Media saved to your camera roll.");
-      }
-    } catch (err) {
-      console.error(err);
+      await MediaLibrary.createAssetAsync(att.url);
+      Alert.alert("Saved!", "Media saved to your camera roll.");
+    } catch {
       Alert.alert("Save failed", "Could not save media.");
     }
   };
 
-  // ─────── Detect Scroll Up ───────
-  const onScroll = (e: any) => {
-    const offsetY = e.nativeEvent.contentOffset.y;
-    const contentHeight = e.nativeEvent.contentSize.height;
-    const layoutHeight = e.nativeEvent.layoutMeasurement.height;
-    const distanceFromBottom = contentHeight - offsetY - layoutHeight;
-    setUserScrolledUp(distanceFromBottom > 50);
-  };
-  const onEndReached = () => {
-    if (hasMore && !loadingOlder) {
-      fetchMessages(page);
-    }
-  };
-
-  // ─────── Handle Long-Press on a Bubble ───────
-  const handleLongPress = (message: MessageType) => {
-    const ref = bubbleRefs.current[message.uuid];
-    if (!ref) {
-      // fallback to centered if ref missing
-      setPressedLayout(null);
-      setFocusedMessage(message);
-      popupAnim.setValue(0);
-      Animated.timing(popupAnim, {
-        toValue: 1,
-        duration: 200,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-      return;
-    }
-    // Measure the bubble’s position & size on screen
-    ref.measureInWindow((x, y, width, height) => {
-      setPressedLayout({ x, y, width, height });
-      setFocusedMessage(message);
-      popupAnim.setValue(0);
-      Animated.timing(popupAnim, {
-        toValue: 1,
-        duration: 250,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    });
-  };
-
-  // ─────── Close the Long-Press Overlay ───────
-  const closePopup = () => {
-    Animated.timing(popupAnim, {
-      toValue: 0,
-      duration: 150,
-      easing: Easing.in(Easing.cubic),
-      useNativeDriver: true,
-    }).start(() => {
-      setFocusedMessage(null);
-      setPressedLayout(null);
-    });
-  };
-
-  // ─────── Open / Close Reaction Summary ───────
-  const openReactionSummary = (msg: MessageType) => {
-    setReactionSummaryMessage(msg);
-  };
-  const closeReactionSummary = () => {
-    setReactionSummaryMessage(null);
-  };
-
-  // ─────── Render Media Attachment ───────
-  const renderMediaAttachment = (att: AttachmentType) => {
-    if (att.mime_type.startsWith("image/")) {
-      return (
-        <Pressable
-          key={att.id}
-          onLongPress={() =>
-            Alert.alert(
-              "Save Image",
-              "Would you like to save this image to your device?",
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Save",
-                  onPress: () => handleSaveMedia(att),
-                },
-              ]
-            )
-          }
-        >
-          <Image source={{ uri: att.url }} style={styles.largeMediaFull} />
-        </Pressable>
-      );
-    } else if (att.mime_type.startsWith("video/")) {
-      return (
-        <Pressable
-          key={att.id}
-          onLongPress={() =>
-            Alert.alert(
-              "Save Video",
-              "Would you like to save this video to your device?",
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Save",
-                  onPress: () => handleSaveMedia(att),
-                },
-              ]
-            )
-          }
-        >
-          <Video
-            source={{ uri: att.url }}
-            style={styles.largeMediaFull}
-            useNativeControls
-            resizeMode="contain"
-          />
-        </Pressable>
-      );
-    } else {
-      return (
-        <Pressable
-          key={att.id}
-          style={styles.docCard}
-          onPress={() => Linking.openURL(att.url)}
-          onLongPress={() =>
-            Alert.alert(
-              "Download File",
-              "Would you like to download this file?",
-              [
-                { text: "Cancel", style: "cancel" },
-                {
-                  text: "Download",
-                  onPress: () => Linking.openURL(att.url),
-                },
-              ]
-            )
-          }
-        >
-          <MaterialIcons name="insert-drive-file" size={48} color="#888" />
-          <Text style={styles.docFileName} numberOfLines={1}>
-            {att.url.split("/").pop()}
-          </Text>
-        </Pressable>
-      );
-    }
-  };
-
-  // ─────── Render Single Message Bubble ───────
-  const renderMessageItem = ({
-    item,
-    index,
-  }: {
-    item: MessageType;
-    index: number;
-  }) => {
-    const plainText = item.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
-    const emojiOnly = isEmojiOnlyMessage(plainText);
-    const own = isOwnMessage(item);
-    const msgDate = new Date(item.sent_at);
-    const prev = messages[index + 1];
-    const parentMsg = item.parent_message_uuid
-      ? messages.find((m) => m.uuid === item.parent_message_uuid)
-      : null;
-    const parentPreviewText = parentMsg
-      ? parentMsg.text
-        ? parentMsg.text.length > 50
-          ? parentMsg.text.substring(0, 50) + "…"
-          : parentMsg.text
-        : "Attachment"
-      : "";
-
-    const isKnot =
-      item.parent_message_uuid &&
-      parentMsg &&
-      parentMsg.sender_username !== currentUsername &&
-      messages.some(
-        (m) =>
-          m.parent_message_uuid === parentMsg.uuid &&
-          m.sender_username !== currentUsername
-      );
-
-    // ─────── Prepare distinct reactions ───────
-    const uniqueByUser: { [username: string]: ReactionType } = {};
-    item.reactions.forEach((r) => {
-      if (!uniqueByUser[r.user_username]) {
-        uniqueByUser[r.user_username] = r;
-      }
-    });
-    const distinctReactions = Object.values(uniqueByUser);
-
-    // At most 3 badges; overflow hides behind “+N”
-    const maxToShow = 3;
-    const overflowCount =
-      distinctReactions.length > maxToShow
-        ? distinctReactions.length - (maxToShow - 1)
-        : 0;
-
-    return (
-      <View style={{ marginVertical: 6 }}>
-        {(!prev ||
-          new Date(prev.sent_at).getTime() + 15 * 60 * 1000 <
-            msgDate.getTime()) && (
-          <View style={styles.dateSeparatorWrapper}>
-            <Text style={styles.dateSeparatorText}>
-              {msgDate.toLocaleString([], {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-          </View>
-        )}
-
-        {parentMsg && (
-          <View
-            style={[
-              styles.parentPreviewContainer,
-              own ? styles.parentPreviewOwn : styles.parentPreviewOther,
-            ]}
-          >
-            <Pressable
-              style={styles.parentPreviewInner}
-              onPress={() => openChainModal(item)}
-            >
-              <View
-                style={[
-                  styles.branchLine,
-                  isKnot && styles.branchKnot,
-                  index -
-                    messages.findIndex((m) => m.uuid === parentMsg.uuid) <
-                  5
-                    ? { height: 20 }
-                    : { height: 40 },
-                ]}
-              />
-              <Text style={styles.parentPreviewText} numberOfLines={1}>
-                {parentMsg.sender_username}: {parentPreviewText}
-              </Text>
-            </Pressable>
-          </View>
-        )}
-
-        {/* ─────── Bubble wrapper (position: "relative") ─────── */}
-        <View
-          style={[
-            { position: "relative", maxWidth: "75%" },
-            own ? styles.messageRowOwn : styles.messageRowOther,
-            distinctReactions.length > 0 && styles.reactedMarginTop,
-          ]}
-        >
-          <Pressable
-            ref={(ref) => {
-              bubbleRefs.current[item.uuid] = ref;
-            }}
-            delayLongPress={200}
-            onLongPress={() => handleLongPress(item)}
-            style={[
-              styles.bubbleContainer,
-              own ? styles.bubbleContainerOwn : styles.bubbleContainerOther,
-              emojiOnly && styles.emojiOnlyContainer,
-            ]}
-          >
-            {emojiOnly ? (
-              <Text style={styles.emojiText}>{item.text}</Text>
-            ) : (
-              <Text
-                style={[
-                  styles.messageText,
-                  own ? styles.messageTextOwn : styles.messageTextOther,
-                ]}
-              >
-                {item.text}
-              </Text>
-            )}
-          </Pressable>
-
-          {/* ─────── Reaction Badges ─────── */}
-          {distinctReactions.length > 0 &&
-            distinctReactions.slice(0, maxToShow).map((r, idx) => {
-              // Determine what to show on the last badge if overflow exists
-              let emojiChar: string;
-              if (idx === maxToShow - 1 && overflowCount > 0) {
-                emojiChar = `+${overflowCount}`;
-              } else {
-                switch (r.reaction_type) {
-                  case "like":
-                    emojiChar = "👍";
-                    break;
-                  case "love":
-                    emojiChar = "❤️";
-                    break;
-                  case "laugh":
-                    emojiChar = "😂";
-                    break;
-                  case "sad":
-                    emojiChar = "😢";
-                    break;
-                  case "angry":
-                    emojiChar = "😡";
-                    break;
-                  default:
-                    emojiChar = "❓";
-                }
-              }
-
-              // Shift each subsequent badge inward by 12px
-              const shiftX = idx * 12;
-              const topOffset = -28; // same vertical offset as before
-
-              // Highlight if it’s the current user’s reaction
-              const isMine =
-                (r.user_username === currentUsername &&
-                  overflowCount === 0) ||
-                (r.user_username === currentUsername && idx < maxToShow - 1);
-              const badgeColor = isMine ? "#0A84FF" : "#333";
-
-              return (
-                <View
-                  key={
-                    idx === maxToShow - 1 && overflowCount > 0
-                      ? `overflow-${idx}`
-                      : r.user_username
-                  }
-                  style={[
-                    styles.reactionBadge,
-                    {
-                      backgroundColor: badgeColor,
-                      top: topOffset,
-                      ...(own
-                        ? { left: -18 + shiftX }
-                        : { right: -18 - shiftX }),
-                    },
-                  ]}
-                >
-                  <Text style={styles.reactionBadgeText}>{emojiChar}</Text>
-                </View>
-              );
-            })}
-        </View>
-
-        {item.attachments?.length > 0 && (
-          <View
-            style={[
-              styles.mediaBubbleContainer,
-              own ? styles.mediaBubbleOwn : styles.mediaBubbleOther,
-            ]}
-          >
-            {item.attachments.map((att) => renderMediaAttachment(att))}
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  // ─────── Render the Focused Bubble + Reaction/Action Overlay ───────
-  function renderPopupOverlay() {
-    if (!focusedMessage) return null;
-
-    const plainText = focusedMessage.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
-    const emojiOnly = isEmojiOnlyMessage(plainText);
-    const isOwn = isOwnMessage(focusedMessage);
-
-    const REACTION_ROW_HEIGHT = 40;
-    const ACTION_ROW_HEIGHT = 50;
-    const MARGIN = 8;
-
-    if (pressedLayout) {
-      const { x, y, width, height } = pressedLayout;
-
-      // 1) Clamp X so the bubble copy doesn’t overflow screen edges
-      const minX = 16;
-      const maxX = SCREEN_WIDTH - width - 16;
-      let clampedX = x;
-      if (clampedX < minX) clampedX = minX;
-      if (clampedX > maxX) clampedX = maxX;
-
-      // 2) Style for the “bubble copy” preview
-      const bubbleStyle = {
-        position: "absolute" as const,
-        top: y,
-        left: clampedX,
-        width: width,
-        transform: [{ scale: popupScale }],
-      };
-
-      // 3) Compute vertical positions for reaction row (above) and action row (below)
-      let reactionTop = y - MARGIN - REACTION_ROW_HEIGHT;
-      if (reactionTop < insets.top + MARGIN) {
-        reactionTop = insets.top + MARGIN;
-      }
-
-      let actionTop = y + height + MARGIN;
-      if (
-        actionTop + ACTION_ROW_HEIGHT >
-        SCREEN_HEIGHT - insets.bottom - MARGIN
-      ) {
-        actionTop = SCREEN_HEIGHT - insets.bottom - MARGIN - ACTION_ROW_HEIGHT;
-      }
-
-      return (
-        <Animated.View
-          style={[styles.popupOverlayContainer, { opacity: blurOpacity }]}
-        >
-          {/* 1) Full-screen blur (tappable outside to close) */}
-          <TouchableWithoutFeedback onPress={closePopup}>
-            <AnimatedBlurView
-              intensity={70}
-              tint="dark"
-              style={[
-                StyleSheet.absoluteFill,
-                {
-                  transform: [
-                    { translateX: SCREEN_WIDTH / 2 },
-                    { translateY: SCREEN_HEIGHT / 2 },
-                    { scale: popupScale },
-                    { translateX: -SCREEN_WIDTH / 2 },
-                    { translateY: -SCREEN_HEIGHT / 2 },
-                  ],
-                },
-              ]}
-            />
-          </TouchableWithoutFeedback>
-
-          {/* (A) Reaction Summary Overlay (if open) */}
-          {reactionSummaryMessage === focusedMessage && (
-            <View style={styles.summaryOverlay}>
-              <BlurView intensity={50} tint="dark" style={styles.summaryBlur} />
-              <View style={styles.summaryContent}>
-                <Text style={styles.summaryTitle}>Reactions</Text>
-                <ScrollView style={{ maxHeight: 200 }}>
-                  {(() => {
-                    const grouping: Record<
-                      string,
-                      { count: number; users: string[] }
-                    > = {};
-                    focusedMessage.reactions.forEach((r) => {
-                      if (!grouping[r.reaction_type]) {
-                        grouping[r.reaction_type] = { count: 0, users: [] };
-                      }
-                      grouping[r.reaction_type].count += 1;
-                      grouping[r.reaction_type].users.push(r.user_username);
-                    });
-                    return Object.entries(grouping).map(
-                      ([reaction_type, { count, users }]) => {
-                        let emoji = "❓";
-                        switch (reaction_type) {
-                          case "like":
-                            emoji = "👍";
-                            break;
-                          case "love":
-                            emoji = "❤️";
-                            break;
-                          case "laugh":
-                            emoji = "😂";
-                            break;
-                          case "sad":
-                            emoji = "😢";
-                            break;
-                          case "angry":
-                            emoji = "😡";
-                            break;
-                        }
-                        const youReacted =
-                          users.indexOf(currentUsername) !== -1;
-                        return (
-                          <View key={reaction_type} style={styles.summaryRow}>
-                            <Text style={styles.summaryEmoji}>{emoji}</Text>
-                            <Text style={styles.summaryText}>
-                              {count} – {users.join(", ")}
-                            </Text>
-                            {youReacted && (
-                              <Pressable
-                                onPress={async () => {
-                                  await handleToggleReaction(
-                                    focusedMessage,
-                                    reaction_type
-                                  );
-                                  closeReactionSummary();
-                                  closePopup();
-                                }}
-                                style={styles.unreactButton}
-                              >
-                                <Text style={styles.unreactText}>Unreact</Text>
-                              </Pressable>
-                            )}
-                          </View>
-                        );
-                      }
-                    );
-                  })()}
-                </ScrollView>
-                <Pressable
-                  onPress={closeReactionSummary}
-                  style={styles.closeSummaryBtn}
-                >
-                  <Text style={styles.closeSummaryText}>Close</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
-
-          {/* (1) “Bubble Copy” Preview */}
-          <Animated.View style={bubbleStyle}>
-            <View
-              style={[
-                styles.bubbleContainer,
-                isOwn
-                  ? styles.bubbleContainerOwn
-                  : styles.bubbleContainerOther,
-                emojiOnly && styles.emojiOnlyContainer,
-              ]}
-            >
-              {emojiOnly ? (
-                <Text style={styles.emojiText}>{focusedMessage.text}</Text>
-              ) : (
-                <Text
-                  style={[
-                    styles.messageText,
-                    isOwn
-                      ? styles.messageTextOwn
-                      : styles.messageTextOther,
-                  ]}
-                  numberOfLines={3}
-                >
-                  {focusedMessage.text}
-                </Text>
-              )}
-            </View>
-          </Animated.View>
-
-          {/* (2) Reaction Row (above the bubble) */}
-          <Animated.View
-            style={{
-              position: "absolute" as const,
-              top: reactionTop,
-              ...(isOwn ? { right: 16 } : { left: clampedX }),
-              opacity: blurOpacity,
-              transform: [{ scale: popupScale }],
-            }}
-          >
-            <View style={styles.reactionsRowContainer}>
-              {["👍", "❤️", "😂", "😢", "😡"].map((em) => (
-                <Pressable
-                  key={em}
-                  onPress={async () => {
-                    await handleToggleReaction(
-                      focusedMessage,
-                      {
-                        "👍": "like",
-                        "❤️": "love",
-                        "😂": "laugh",
-                        "😢": "sad",
-                        "😡": "angry",
-                      }[em]
-                    );
-                    closePopup();
-                  }}
-                  style={styles.reactionButton}
-                >
-                  <Text style={styles.reactionEmojiBtn}>{em}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </Animated.View>
-
-          {/* (3) Action Row (below the bubble) */}
-          <Animated.View
-            style={{
-              position: "absolute" as const,
-              top: actionTop,
-              ...(isOwn ? { right: 16 } : { left: clampedX }),
-              opacity: blurOpacity,
-              transform: [{ scale: popupScale }],
-            }}
-          >
-            <View style={styles.actionsRowContainer}>
-              <Pressable
-                onPress={() => {
-                  setReplyingTo(focusedMessage);
-                  closePopup();
-                }}
-                style={styles.actionButton}
-              >
-                <Text style={styles.actionText}>Reply</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  Clipboard.setString(focusedMessage.text || "");
-                  closePopup();
-                }}
-                style={styles.actionButton}
-              >
-                <Text style={styles.actionText}>Copy</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  handleUnsend(focusedMessage);
-                  closePopup();
-                }}
-                style={[styles.actionButton, { borderBottomWidth: 0 }]}
-              >
-                <Text style={styles.actionText}>Unsend</Text>
-              </Pressable>
-            </View>
-          </Animated.View>
-        </Animated.View>
-      );
-    }
-
-    return null;
-  }
-
-  // ─────── Keyboard Tracking ───────
+  /* overlay tracking + keyboard (no pulses) */
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", () => {
@@ -1130,570 +1196,1387 @@ export default function ChatOverlay({
   }, []);
   const keyboardWasOpen = useRef(false);
 
-  // ─────── Show / Hide Attach Menu ───────
-  const showAttachMenuAnimated = () => {
-    keyboardWasOpen.current = keyboardVisible;
-    Keyboard.dismiss();
-    setShowAttachMenu(true);
-    attachAnim.setValue(0);
-    Animated.timing(attachAnim, {
-      toValue: 1,
-      duration: 300,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
+  const clampX = (x: number, width: number) => {
+    const minX = 12;
+    const maxX = SCREEN_WIDTH - width - 12;
+    return Math.max(minX, Math.min(x, maxX));
   };
-  const hideAttachMenu = () => {
-    Animated.timing(attachAnim, {
-      toValue: 0,
-      duration: 200,
-      easing: Easing.in(Easing.cubic),
-      useNativeDriver: true,
-    }).start(() => {
-      setShowAttachMenu(false);
-      if (keyboardWasOpen.current && inputRef.current) {
-        inputRef.current.focus();
+  const clampY = (y: number, height: number) => {
+    const topBound = insets.top + 12;
+    const bottomBound = SCREEN_HEIGHT - insets.bottom - 12 - height;
+    return Math.max(topBound, Math.min(y, bottomBound));
+  };
+
+  const onScroll = (e: any) => {
+    const { contentOffset } = e.nativeEvent;
+    const nearBottom = contentOffset.y <= 50; // inverted list
+    setUserScrolledUp(!nearBottom);
+
+    if (focusedMessage) {
+      const ref = bubbleRefs.current[focusedMessage.uuid];
+      if (ref) {
+        ref.measureInWindow((x, y, w, h) => {
+          setOverlayLayout({
+            x: clampX(x, w),
+            y: clampY(y, h),
+            width: w,
+            height: h,
+          });
+        });
       }
-      keyboardWasOpen.current = false;
+    }
+  };
+
+  const onEndReached = () => {
+    if (onEndReachedCalledDuringMomentum.current) return;
+    if (hasMore && !loadingOlderRef.current) {
+      onEndReachedCalledDuringMomentum.current = true;
+      fetchMessages(page);
+    }
+  };
+
+  const openOverlayFor = (message: MessageType) => {
+    const ref = bubbleRefs.current[message.uuid];
+    if (!ref) return;
+    Haptics.selectionAsync();
+    ref.measureInWindow((x, y, width, height) => {
+      setFocusedMessage(message);
+      setOverlayLayout({
+        x: clampX(x, width),
+        y: clampY(y, height),
+        width,
+        height,
+      });
+      // gently scale the focused bubble
+      ensureAnimFor(message.uuid, isOwnMessage(message));
+      Animated.spring(msgScales[message.uuid], {
+        toValue: 0.98,
+        useNativeDriver: true,
+        stiffness: 360,
+        damping: 18,
+        mass: 0.4,
+      }).start();
     });
   };
 
-  // ─────── Render the Attachment Menu Overlay ───────
-  const renderAttachMenu = () => {
-    if (!showAttachMenu) return null;
+  /* LANE ICON DETECTION */
+  const hasMaterialIcon = useCallback((name?: string) => {
+    if (!name) return false;
+    // @ts-ignore
+    const map = (MaterialIcons as any).glyphMap || {};
+    return !!map[name];
+  }, []);
 
-    const attachBlurOpacity = attachAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-    });
-    const attachScale = attachAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0.8, 1],
-    });
-
-    return (
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          { opacity: attachBlurOpacity, zIndex: 1001 },
-        ]}
-      >
-        {/* 1) Full-screen blur behind everything (pointerEvents="none" so touches pass through) */}
-        <AnimatedBlurView
-          intensity={60}
-          tint="dark"
-          pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              transform: [
-                { translateX: SCREEN_WIDTH / 2 },
-                { translateY: SCREEN_HEIGHT / 2 },
-                { scale: attachScale },
-                { translateX: -SCREEN_WIDTH / 2 },
-                { translateY: -SCREEN_HEIGHT / 2 },
-              ],
-            },
-          ]}
-        />
-
-        {/* 2) One full-screen Pressable: any tap not handled by a child button will bubble here and close. */}
-        <Pressable style={StyleSheet.absoluteFill} onPress={hideAttachMenu}>
-          {/* 3) The menu container itself is a child of this Pressable. 
-                 Taps on empty space in or around the menu bubble up to this Pressable. */}
-          <Animated.View
-            style={[
-              styles.attachMenuContainer,
-              {
-                transform: [{ scale: attachScale }],
-                opacity: attachBlurOpacity,
-              },
-            ]}
-          >
-            <Animated.ScrollView
-              style={StyleSheet.absoluteFill}
-              contentContainerStyle={styles.attachScrollContent}
-              showsVerticalScrollIndicator={false}
-            >
-              {/* 4) Actual menu items live here */}
-              <View style={styles.attachMenu}>
-                {/* “Photos/Videos” Button */}
-                <Pressable
-                  style={styles.attachItem}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    hideAttachMenu();
-                    handleMediaPick();
-                  }}
-                >
-                  <MaterialIcons name="photo" size={24} color="#FFF" />
-                  <Text style={styles.attachText}>Photos/Videos</Text>
-                </Pressable>
-
-                {/* “Play” Button */}
-                <Pressable
-                  style={styles.attachItem}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    hideAttachMenu();
-                    console.log("Play");
-                  }}
-                >
-                  <MaterialIcons name="games" size={24} color="#FFF" />
-                  <Text style={styles.attachText}>Play</Text>
-                </Pressable>
-
-                {/* “Document” Button */}
-                <Pressable
-                  style={styles.attachItem}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    hideAttachMenu();
-                    console.log("Document");
-                  }}
-                >
-                  <MaterialIcons
-                    name="insert-drive-file"
-                    size={24}
-                    color="#FFF"
-                  />
-                  <Text style={styles.attachText}>Document</Text>
-                </Pressable>
-
-                {/* “Location” Button */}
-                <Pressable
-                  style={styles.attachItem}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    hideAttachMenu();
-                    console.log("Location");
-                  }}
-                >
-                  <MaterialIcons name="location-pin" size={24} color="#FFF" />
-                  <Text style={styles.attachText}>Location</Text>
-                </Pressable>
-
-                {/* “Contact” Button */}
-                <Pressable
-                  style={styles.attachItem}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    hideAttachMenu();
-                    console.log("Contact");
-                  }}
-                >
-                  <MaterialIcons name="person" size={24} color="#FFF" />
-                  <Text style={styles.attachText}>Contact</Text>
-                </Pressable>
-
-                {/* …you can add more items here in the same pattern… */}
-              </View>
-            </Animated.ScrollView>
-          </Animated.View>
+  /* RENDERERS */
+  const renderMediaAttachment = (att: AttachmentType) => {
+    if (att.mime_type.startsWith("image/")) {
+      return (
+        <Pressable
+          key={att.id}
+          onLongPress={() =>
+            Alert.alert("Save Image", "Save to your device?", [
+              { text: "Cancel", style: "cancel" },
+              { text: "Save", onPress: () => handleSaveMedia(att) },
+            ])
+          }
+        >
+          <Image source={{ uri: att.url }} style={styles.largeMediaFull} />
         </Pressable>
-      </Animated.View>
+      );
+    } else if (att.mime_type.startsWith("video/")) {
+      return (
+        <Pressable
+          key={att.id}
+          onLongPress={() =>
+            Alert.alert("Save Video", "Save to your device?", [
+              { text: "Cancel", style: "cancel" },
+              { text: "Save", onPress: () => handleSaveMedia(att) },
+            ])
+          }
+        >
+          <Video
+            source={{ uri: att.url }}
+            style={styles.largeMediaFull}
+            useNativeControls
+            resizeMode="contain"
+          />
+        </Pressable>
+      );
+    }
+    return (
+      <GlassPressable
+        key={att.id}
+        variant="solid"
+        radius={14}
+        padH={12}
+        padV={12}
+        onPress={() => Linking.openURL(att.url)}
+        onLongPress={() =>
+          Alert.alert("Download File", "Download this file?", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Download", onPress: () => Linking.openURL(att.url) },
+          ])
+        }
+        haptics="selection"
+        style={{ marginTop: 6, width: SCREEN_WIDTH * 0.75 - 4 }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <MaterialIcons
+            name="insert-drive-file"
+            size={24}
+            color="#EFFFFF"
+            style={{ marginRight: 10 }}
+          />
+        <Text
+            style={{ color: "#EFFFFF", fontWeight: "800", flexShrink: 1 }}
+            numberOfLines={1}
+          >
+            {att.url.split("/").pop()}
+          </Text>
+        </View>
+      </GlassPressable>
     );
   };
 
-  if (loading && !conversation) {
-    return null;
-  }
+  const renderMessageItem = ({
+    item,
+    index,
+  }: {
+    item: MessageType;
+    index: number;
+  }) => {
+    const prev = messages[index + 1];
+    const next = messages[index - 1];
+    const own = isOwnMessage(item);
+    const plainText = item.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
+    const emojiOnly = isEmojiOnlyMessage(plainText);
+    const msgDate = new Date(item.sent_at);
 
-  return (
-    <>
-      {/* ─────── MAIN MODAL ─────── */}
-      <Modal
-        animationType="none"
-        transparent
-        visible={visible}
-        onRequestClose={triggerClose}
+    const showDateSeparator = needsTimeSeparator(item, prev);
+    const firstOfGroup = (() => {
+      if (!prev) return true;
+      if (item.sender_username !== prev.sender_username) return true;
+      const t1 = new Date(item.sent_at);
+      const t0 = new Date(prev.sent_at);
+      return Math.abs((t1.getTime() - t0.getTime()) / 60000) > 5;
+    })();
+    const lastOfGroup =
+      !next ||
+      (() => {
+        if (next.sender_username !== item.sender_username) return true;
+        const t1 = new Date(next.sent_at);
+        const t0 = new Date(item.sent_at);
+        return Math.abs((t1.getTime() - t0.getTime()) / 60000) > 5;
+      })();
+
+    const radius = {
+      borderTopLeftRadius: own ? 18 : firstOfGroup ? 18 : 8,
+      borderTopRightRadius: own ? (firstOfGroup ? 18 : 8) : 18,
+      borderBottomLeftRadius: own ? 18 : lastOfGroup ? 18 : 8,
+      borderBottomRightRadius: own ? (lastOfGroup ? 18 : 8) : 18,
+    };
+
+    // distinct reactions by user
+    const seenByUser: Record<string, ReactionType> = {};
+    item.reactions.forEach((r) => {
+      if (!seenByUser[r.user_username]) seenByUser[r.user_username] = r;
+    });
+    const reacts = Object.values(seenByUser);
+    const maxBadges = 3;
+    const overflow = Math.max(0, reacts.length - (maxBadges - 1));
+
+    const parentMsg = item.parent_message_uuid
+      ? messages.find((m) => m.uuid === item.parent_message_uuid)
+      : null;
+    const parentText = parentMsg
+      ? parentMsg.text
+        ? parentMsg.text.length > 50
+          ? parentMsg.text.slice(0, 50) + "…"
+          : parentMsg.text
+        : "Attachment"
+      : "";
+
+    // setup per-message animated values
+    ensureAnimFor(item.uuid, own);
+    animateInIfNew(item.uuid);
+
+    const panX = msgPanX[item.uuid];
+    const bubbleTranslateX = panX.interpolate({
+      inputRange: [-80, 80],
+      outputRange: [-20, 24],
+      extrapolate: "clamp",
+    });
+    const timeOpacity = panX.interpolate({
+      inputRange: [-80, -10],
+      outputRange: [1, 0],
+      extrapolate: "clamp",
+    });
+
+    return (
+      <View
+        style={{
+          marginTop:
+            (showDateSeparator ? 18 : firstOfGroup ? 10 : 2) +
+            ((reacts?.length || 0) > 0 ? 16 : 0),
+          marginBottom: lastOfGroup ? 8 : 2,
+        }}
       >
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <View style={styles.containerWithoutOverflow}>
-            {/* BACKDROP */}
-            <Pressable style={styles.backdrop} onPress={triggerClose} />
+        {showDateSeparator && (
+          <GlassPressable
+            radius={12}
+            padH={12}
+            padV={4}
+            variant="ghost"
+            style={{ alignSelf: "center" }}
+            haptics="none"
+          >
+            <Text style={styles.dateSeparatorText}>
+              {msgDate.toLocaleString([], {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+          </GlassPressable>
+        )}
 
-            {/* (A) Long-press overlay on messages */}
-            {renderPopupOverlay()}
-
-            {/* (B) Attach-menu overlay (when user taps “+”) */}
-            {renderAttachMenu()}
-
-            {/* SLIDING SHEET */}
-            <Animated.View
-              style={[
-                styles.sheetContainer,
-                {
-                  top: OPEN_TOP,
-                  bottom: 0,
-                  transform: [{ translateY }],
-                },
-              ]}
-            >
-              {/* DRAG HANDLE */}
-              <View style={styles.dragHandleContainer}>
-                <View style={styles.dragHandle} />
-              </View>
-
-              {/* HEADER */}
-              <BlurView intensity={50} tint="dark" style={styles.headerBlur}>
-                <View style={styles.chatHeader}>
-                  <Pressable onPress={triggerClose} style={styles.backButton}>
-                    <MaterialIcons name="chevron-left" size={28} color="#FFF" />
-                  </Pressable>
-                  {conversation?.participants && (
-                    <View style={styles.headerGroup}>
-                      <View style={styles.avatarGroup}>
-                        {conversation.participants
-                          .filter((p) => p.user.username !== currentUsername)
-                          .slice(0, 3)
-                          .map((p, idx) => (
-                            <View
-                              key={p.user.id}
-                              style={[
-                                styles.avatarWrapper,
-                                { left: idx * 18, zIndex: 3 - idx },
-                              ]}
-                            >
-                              <ProfilePicture
-                                src={p.user.profile_image}
-                                style={styles.stackedAvatar}
-                              />
-                            </View>
-                          ))}
-                        {conversation.participants.filter(
-                          (p) => p.user.username !== currentUsername
-                        ).length > 3 && (
-                          <View
-                            style={[styles.avatarWrapper, styles.stackedExtra]}
-                          >
-                            <Text style={styles.extraCountText}>
-                              +
-                              {conversation.participants.filter(
-                                (p) => p.user.username !== currentUsername
-                              ).length - 3}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                      <View style={styles.chatHeaderInfo}>
-                        <Text style={styles.chatHeaderName} numberOfLines={1}>
-                          {conversation.participants
-                            .filter((p) => p.user.username !== currentUsername)
-                            .map(
-                              (p) => `${p.user.first_name} ${p.user.last_name}`
-                            )
-                            .join(", ")}
-                        </Text>
-                        <Text
-                          style={styles.chatHeaderUsername}
-                          numberOfLines={1}
-                        >
-                          {conversation.participants
-                            .filter((p) => p.user.username !== currentUsername)
-                            .map((p) => `@${p.user.username}`)
-                            .join(", ")}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
-                </View>
-              </BlurView>
-
-              {/* ─────── MESSAGES LIST ─────── */}
-              <FlatList
-                ref={flatListRef}
-                data={messages}
-                keyExtractor={(item) => item.uuid}
-                inverted
-                onScroll={onScroll}
-                scrollEventThrottle={16}
-                onEndReached={onEndReached}
-                onEndReachedThreshold={0.1}
-                bounces={true}
-                overScrollMode="always"
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  paddingHorizontal: 16,
-                  paddingTop: 20,
-                  paddingBottom: 0,
+        {firstOfGroup &&
+          !own &&
+          (() => {
+            const sender = participantsFlat.find(
+              (u: any) => u?.username === item.sender_username
+            );
+            const senderFull = [sender?.first_name, sender?.last_name]
+              .filter(Boolean)
+              .join(" ")
+              .trim();
+            return (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 6,
                 }}
-                ListFooterComponent={() =>
-                  loadingOlder ? (
-                    <ActivityIndicator
-                      size="small"
-                      color="#FFF"
-                      style={{ marginTop: 12 }}
-                    />
-                  ) : null
-                }
-                renderItem={renderMessageItem}
-              />
-
-              {/* ─────── FOOTER / INPUT AREA ─────── */}
-              <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-                keyboardVerticalOffset={Platform.select({
-                  ios: 40,
-                  android: 80,
-                })}
               >
                 <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    marginRight: 8,
+                  }}
+                >
+                  <ProfilePicture
+                    src={sender?.profile_image ?? null}
+                    style={{ width: 28, height: 28 }}
+                  />
+                </View>
+                <Text style={{ color: "#a7bdc5", fontSize: 12 }}>
+                  {senderFull || `@${item.sender_username}`}
+                </Text>
+              </View>
+            );
+          })()}
+
+        {parentMsg && (
+          <GlassPressable
+            radius={12}
+            padH={8}
+            padV={4}
+            variant="ghost"
+            style={[
+              own ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
+            ]}
+            haptics="none"
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={styles.branchLine} />
+              <Text style={styles.parentPreviewText} numberOfLines={1}>
+                {parentMsg.sender_username}: {parentText}
+              </Text>
+            </View>
+          </GlassPressable>
+        )}
+
+        <PanGestureHandler
+          activeOffsetX={[-8, 8]}
+          failOffsetY={[-8, 8]}
+          onGestureEvent={Animated.event(
+            [{ nativeEvent: { translationX: msgPanX[item.uuid] } }],
+            { useNativeDriver: true }
+          )}
+          onHandlerStateChange={(e) => {
+            const st = (e as any).nativeEvent.state;
+            if (
+              st === GestureState.END ||
+              st === GestureState.CANCELLED ||
+              st === GestureState.FAILED
+            ) {
+              const dx = (e as any).nativeEvent.translationX || 0;
+              // Right-swipe to reply (others' messages)
+              if (dx > 42 && !own) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setReplyingTo(item);
+              }
+              Animated.spring(msgPanX[item.uuid], {
+                toValue: 0,
+                useNativeDriver: true,
+                stiffness: 300,
+                damping: 20,
+                mass: 0.5,
+              }).start();
+            }
+          }}
+        >
+          <Animated.View
+            style={{
+              transform: [
+                { translateX: bubbleTranslateX },
+                { scale: msgScales[item.uuid] },
+              ],
+              opacity: msgOpacities[item.uuid],
+            }}
+          >
+            <View
+              style={[
+                styles.bubbleWrap,
+                { position: "relative" },
+                own ? styles.messageRowOwn : styles.messageRowOther,
+              ]}
+            >
+              {/* reactions cluster above bubble like iMessage */}
+              {reacts.length > 0 && (
+                <View
                   style={[
-                    styles.chatFooter,
-                    { paddingBottom: insets.bottom - 5 },
+                    styles.reactCluster,
+                    own ? styles.reactClusterOwn : styles.reactClusterOther,
                   ]}
                 >
-                  {/* ATTACHMENT PREVIEWS */}
-                  {attachmentsToSend.length > 0 && (
-                    <View style={styles.attachmentsPreview}>
-                      {attachmentsToSend.map((file, idx) => (
-                        <View key={idx} style={styles.attachmentPreview}>
-                          <Image
-                            source={{ uri: file.uri }}
-                            style={styles.attachmentThumbnail}
-                          />
-                          <Pressable
-                            style={styles.removeAttachmentBtn}
-                            onPress={() =>
-                              setAttachmentsToSend((prev) =>
-                                prev.filter((_, i) => i !== idx)
-                              )
-                            }
-                          >
-                            <MaterialIcons
-                              name="cancel"
-                              size={20}
-                              color="#FF3B30"
-                            />
-                          </Pressable>
-                        </View>
-                      ))}
-                    </View>
-                  )}
+                  {reacts.slice(0, maxBadges).map((r, idx) => {
+                    const emoji =
+                      idx === maxBadges - 1 && overflow > 0
+                        ? `+${overflow}`
+                        : r.reaction_type === "like"
+                        ? "👍"
+                        : r.reaction_type === "love"
+                        ? "❤️"
+                        : r.reaction_type === "laugh"
+                        ? "😂"
+                        : r.reaction_type === "sad"
+                        ? "😢"
+                        : "😡";
+                    return (
+                      <View
+                        key={`${r.user_username}-${idx}`}
+                        style={styles.reactChip}
+                      >
+                        <Text style={styles.reactionPillText}>{emoji}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
 
-                  {/* IF BLOCKED / INVITE */}
-                  {conversation &&
-                  conversation.conversation_status === "blocked" ? (
-                    <View style={styles.requestWarningContainer}>
+              {/* message bubble (emoji-only has NO bubble) */}
+              {emojiOnly ? (
+                <Pressable
+                  ref={(ref) => (bubbleRefs.current[item.uuid] = ref)}
+                  delayLongPress={160}
+                  onLongPress={() => openOverlayFor(item)}
+                >
+                  <Text
+                    style={[
+                      styles.emojiText,
+                      own
+                        ? { alignSelf: "flex-end" }
+                        : { alignSelf: "flex-start" },
+                      { color: own ? theme.textOnOwn : theme.textOnOther },
+                    ]}
+                  >
+                    {item.text}
+                  </Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  ref={(ref) => (bubbleRefs.current[item.uuid] = ref)}
+                  delayLongPress={160}
+                  onLongPress={() => openOverlayFor(item)}
+                >
+                  <LiquidBubble
+                    own={own}
+                    emojiOnly={false}
+                    radius={radius}
+                    theme={theme}
+                  >
+                    <Text
+                      style={[
+                        styles.messageText,
+                        { color: own ? theme.textOnOwn : theme.textOnOther },
+                      ]}
+                    >
+                      {item.text}
+                    </Text>
+                  </LiquidBubble>
+                </Pressable>
+              )}
+
+              {/* elastic time chip revealed when pulling left */}
+              <Animated.View style={[styles.timeChip, { opacity: timeOpacity }]}>
+                <Text style={styles.timeChipText}>
+                  {msgDate.toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </Animated.View>
+            </View>
+
+            {item.attachments?.length > 0 && (
+              <View
+                style={[
+                  styles.mediaBubbleContainer,
+                  own ? styles.mediaBubbleOwn : styles.mediaBubbleOther,
+                ]}
+              >
+                {item.attachments.map((att) => renderMediaAttachment(att))}
+              </View>
+            )}
+          </Animated.View>
+        </PanGestureHandler>
+      </View>
+    );
+  };
+
+  /* lane mutators */
+  const apiUpdateLane = async (id: string, patch: Partial<Lane>) => {
+    try {
+      const res = await callApiRef.current(
+        `messages/contexts/${conversationId}/${id}/`,
+        "PATCH",
+        patch
+      );
+      const updated: Lane = res.data ?? { id, ...(patch as any) };
+      setLanes((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, ...updated } : l))
+      );
+    } catch {
+      setLanes((prev) =>
+        prev.map((l) => (l.id === id ? ({ ...l, ...patch } as Lane) : l))
+      );
+    }
+  };
+  const apiDeleteLane = async (id: string) => {
+    try {
+      await callApiRef.current(
+        `messages/contexts/${conversationId}/${id}/`,
+        "DELETE"
+      );
+    } catch {}
+    setLanes((p) => p.filter((l) => l.id !== id));
+    if (activeLaneId === id) {
+      const firstActive = lanes.find((l) => l.id !== id && !l.is_archived);
+      setActiveLaneId(firstActive?.id ?? null);
+    }
+  };
+
+  /* animated bg orbs */
+  const orbA = useRef(new Animated.Value(0)).current;
+  const orbB = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = (val: Animated.Value, delay = 0) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(val, {
+            toValue: 1,
+            duration: 8000,
+            delay,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(val, {
+            toValue: 0,
+            duration: 8000,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    loop(orbA, 400);
+    loop(orbB, 1200);
+  }, [orbA, orbB]);
+
+  const orbAStyle = {
+    transform: [
+      {
+        translateY: orbA.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -8],
+        }),
+      },
+      {
+        scale: orbA.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] }),
+      },
+    ],
+    opacity: 0.18,
+  };
+  const orbBStyle = {
+    transform: [
+      {
+        translateY: orbB.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 10],
+        }),
+      },
+      {
+        scale: orbB.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] }),
+      },
+    ],
+    opacity: 0.12,
+  };
+
+  if (loading && !conversation) return null;
+  return (
+    <Modal
+      animationType="none"
+      transparent
+      visible={visible}
+      onRequestClose={triggerClose}
+    >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={styles.containerWithoutOverflow}>
+          {/* backdrop */}
+          <Pressable style={styles.backdrop} onPress={triggerClose} />
+
+          <Animated.View
+            style={[
+              styles.sheetContainer,
+              { top: insets.top, bottom: 0, transform: [{ translateY }] },
+            ]}
+          >
+            {/* background */}
+            {bgImage ? (
+              <ImageBackground
+                source={{ uri: bgImage }}
+                resizeMode="cover"
+                style={StyleSheet.absoluteFillObject}
+              >
+                <LinearGradient
+                  colors={["rgba(0,0,0,0.45)", "rgba(0,0,0,0.82)"]}
+                  style={StyleSheet.absoluteFillObject}
+                />
+              </ImageBackground>
+            ) : (
+              <LinearGradient
+                colors={theme.bgGradient}
+                style={StyleSheet.absoluteFillObject}
+              />
+            )}
+
+            {/* subtle animated orbs */}
+            <Animated.View
+              pointerEvents="none"
+              style={[StyleSheet.absoluteFill, { opacity: 1 }]}
+            >
+              <Animated.View
+                style={[
+                  styles.orb,
+                  { width: 220, height: 220, left: -40, top: insets.top + 40 },
+                  orbAStyle,
+                ]}
+              >
+                <LinearGradient
+                  colors={["rgba(0,255,255,0.18)", "transparent"]}
+                  style={StyleSheet.absoluteFill}
+                />
+              </Animated.View>
+              <Animated.View
+                style={[
+                  styles.orb,
+                  {
+                    width: 280,
+                    height: 280,
+                    right: -60,
+                    top: SCREEN_HEIGHT * 0.22,
+                  },
+                  orbBStyle,
+                ]}
+              >
+                <LinearGradient
+                  colors={["rgba(160,124,254,0.15)", "transparent"]}
+                  style={StyleSheet.absoluteFill}
+                />
+              </Animated.View>
+            </Animated.View>
+
+            {/* full-width identity bar */}
+            <View
+              style={{
+                paddingHorizontal: 6,
+                marginTop: 6,
+                display: "flex",
+                flexDirection: "row",
+                gap: 10,
+              }}
+            >
+              <GlassPressable
+                onPress={triggerClose}
+                radius={16}
+                padH={10}
+                padV={9}
+                style={{ marginLeft: 10, alignSelf: "center" }}
+                haptics="light"
+              >
+                <MaterialIcons name="chevron-left" size={24} color="#EFFFFF" />
+              </GlassPressable>
+
+              <GlassPressable
+                onPress={() => setShowDetails(true)}
+                radius={18}
+                padH={10}
+                padV={5}
+                variant="ghost"
+                style={styles.identityBar}
+                haptics="selection"
+                block
+              >
+                <View style={styles.avatarGroupWide}>
+                  {shownPeople.slice(0, 3).map((u: any, idx: number) => (
+                    <View
+                      key={`${u?.id ?? u?.username ?? idx}-${idx}`}
+                      style={[
+                        styles.avatarWrapper,
+                        { left: idx * 18, zIndex: 3 - idx },
+                      ]}
+                    >
+                      <ProfilePicture
+                        src={u?.profile_image}
+                        style={styles.stackedAvatar}
+                      />
+                    </View>
+                  ))}
+                </View>
+                <View style={styles.identityTextCol}>
+                  <Text style={styles.chatHeaderName} numberOfLines={1}>
+                    {nameLine || "Conversation"}
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Text style={styles.chatHeaderUsername} numberOfLines={1}>
+                      {handleLine}
+                    </Text>
+                    <MaterialIcons
+                      name="expand-more"
+                      size={18}
+                      color="#EFFFFF"
+                    />
+                  </View>
+                </View>
+              </GlassPressable>
+            </View>
+
+            {/* lanes rail */}
+            <View style={{ paddingVertical: 6 }}>
+              <FlatList
+                data={[
+                  ...lanes,
+                  { id: "__new__", title: "New", emoji: "add" } as any,
+                ]}
+                keyExtractor={(i: any) => i.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 12 }}
+                renderItem={({ item }: { item: any }) =>
+                  item.id === "__new__" ? (
+                    <GlassPressable
+                      onPress={async () => {
+                        Haptics.selectionAsync();
+                        try {
+                          const res = await callApiRef.current(
+                            `messages/contexts/${conversationId}/`,
+                            "POST",
+                            {
+                              title: "New lane",
+                              emoji: "view-agenda",
+                              color: theme.bubbleOwn,
+                            }
+                          );
+                          const lane = res.data as Lane;
+                          setLanes((p) => [lane, ...p]);
+                          setActiveLaneId(lane.id);
+                        } catch {
+                          const lane: Lane = {
+                            id: `local-${Date.now()}`,
+                            title: "New lane",
+                            emoji: "view-agenda",
+                            color: theme.bubbleOwn,
+                          };
+                          setLanes((p) => [lane, ...p]);
+                          setActiveLaneId(lane.id);
+                        }
+                      }}
+                      radius={16}
+                      padH={12}
+                      padV={8}
+                      variant="solid"
+                      haptics="selection"
+                      style={{ marginRight: 8 }}
+                    >
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <MaterialIcons
+                          name="add"
+                          size={16}
+                          color="#EFFFFF"
+                          style={{ marginRight: 6 }}
+                        />
+                        <Text style={{ color: "#EFFFFF", fontWeight: "900" }}>
+                          New
+                        </Text>
+                      </View>
+                    </GlassPressable>
+                  ) : (
+                    <Pressable
+                      onPress={() => {
+                        if (activeLaneId !== item.id) {
+                          Haptics.selectionAsync();
+                          setActiveLaneId(item.id);
+                        }
+                      }}
+                      onLongPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        Alert.alert(`${item.title}`, "Manage lane", [
+                          {
+                            text: "Rename / Edit",
+                            onPress: () => setShowDetails(true),
+                          },
+                          {
+                            text: item.is_archived ? "Unarchive" : "Archive",
+                            onPress: async () => {
+                              await apiUpdateLane(item.id, {
+                                is_archived: !item.is_archived,
+                              });
+                              if (
+                                !item.is_archived &&
+                                activeLaneId === item.id
+                              ) {
+                                const firstActive = lanes.find(
+                                  (l) => l.id !== item.id && !l.is_archived
+                                );
+                                setActiveLaneId(firstActive?.id ?? null);
+                              }
+                            },
+                          },
+                          {
+                            text: "Delete",
+                            style: "destructive",
+                            onPress: () =>
+                              Alert.alert(
+                                "Delete lane?",
+                                "This only removes the lane context. Messages remain in the conversation history.",
+                                [
+                                  { text: "Cancel", style: "cancel" },
+                                  {
+                                    text: "Delete",
+                                    style: "destructive",
+                                    onPress: () => apiDeleteLane(item.id),
+                                  },
+                                ]
+                              ),
+                          },
+                          { text: "Cancel", style: "cancel" },
+                        ]);
+                      }}
+                      style={[
+                        styles.lanePill,
+                        activeLaneId === item.id
+                          ? styles.lanePillActive
+                          : styles.lanePillInactive,
+                        { marginRight: 8 },
+                      ]}
+                    >
+                      {hasMaterialIcon(item.emoji) ? (
+                        <MaterialIcons
+                          name={item.emoji as any}
+                          size={16}
+                          color={
+                            activeLaneId === item.id ? "#EFFFFF" : "#d7e7ea"
+                          }
+                          style={{ marginRight: 6, opacity: 0.95 }}
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name="view-agenda"
+                          size={16}
+                          color={
+                            activeLaneId === item.id ? "#EFFFFF" : "#d7e7ea"
+                          }
+                          style={{ marginRight: 6, opacity: 0.95 }}
+                        />
+                      )}
+                      <Text
+                        style={[
+                          styles.laneText,
+                          activeLaneId === item.id
+                            ? styles.laneTextActive
+                            : styles.laneTextInactive,
+                        ]}
+                      >
+                        {item.title}
+                      </Text>
+                    </Pressable>
+                  )
+                }
+              />
+            </View>
+
+            {/* Messages */}
+            <FlatList
+              key={`lane-${activeLaneId || "none"}`}
+              ref={flatListRef}
+              data={messages}
+              keyExtractor={(item) => item.uuid}
+              inverted
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              onEndReached={onEndReached}
+              onEndReachedThreshold={0.1}
+              maintainVisibleContentPosition={{
+                minIndexForVisible: 1,
+              }}
+              windowSize={10}
+              maxToRenderPerBatch={20}
+              initialNumToRender={20}
+              removeClippedSubviews
+              contentContainerStyle={{
+                paddingHorizontal: 14,
+                paddingTop: 16,
+                paddingBottom: 8,
+              }}
+              ListFooterComponent={() =>
+                loadingOlder ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#FFF"
+                    style={{ marginTop: 12 }}
+                  />
+                ) : null
+              }
+              renderItem={renderMessageItem}
+              onMomentumScrollBegin={() => {
+                onEndReachedCalledDuringMomentum.current = false;
+              }}
+            />
+
+            {/* Footer */}
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              keyboardVerticalOffset={Platform.select({ ios: 40, android: 80 })}
+            >
+              <View
+                style={[
+                  styles.chatFooter,
+                  { paddingBottom: Math.max(0, insets.bottom - 4) },
+                ]}
+              >
+                {attachmentsToSend.length > 0 && (
+                  <View style={styles.attachmentsPreview}>
+                    {attachmentsToSend.map((file, idx) => (
+                      <View key={idx} style={styles.attachmentPreview}>
+                        <Image
+                          source={{ uri: file.uri }}
+                          style={styles.attachmentThumbnail}
+                        />
+                        <Pressable
+                          style={styles.removeAttachmentBtn}
+                          onPress={() => {
+                            const next = attachmentsToSend.filter(
+                              (_, i) => i !== idx
+                            );
+                            setAttachmentsToSend(next);
+                            if (activeLaneId) {
+                              setLaneDrafts((prev) => ({
+                                ...prev,
+                                [activeLaneId]: {
+                                  input,
+                                  attachments: next,
+                                  replyingToUuid: replyingTo?.uuid || null,
+                                },
+                              }));
+                            }
+                          }}
+                        >
+                          <MaterialIcons
+                            name="cancel"
+                            size={20}
+                            color="#FF3B30"
+                          />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {conversation?.conversation_status === "blocked" ? (
+                  <View style={{ marginHorizontal: 12, marginTop: 6 }}>
+                    <GlassPressable
+                      radius={12}
+                      padH={12}
+                      padV={12}
+                      variant="solid"
+                      haptics="none"
+                    >
                       <Text style={styles.requestWarningText}>
                         You cannot send messages in this conversation.
                       </Text>
-                    </View>
-                  ) : conversation && conversation.view_type === "request" ? (
-                    <View style={styles.requestActions}>
-                      <Pressable
-                        style={[styles.requestBtn, styles.requestBtnPrimary]}
-                        onPress={async () => {
-                          try {
-                            await callApi(
-                              `messages/request/${conversationId}/accept/`,
-                              "POST"
-                            );
-                            const updated = await callApi(
-                              `messages/get_conversation_details/${conversationId}/`
-                            );
-                            setConversation(updated.data);
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        <Text style={styles.requestBtnTextPrimary}>Accept</Text>
-                      </Pressable>
-                      <Pressable
-                        style={[styles.requestBtn, styles.requestBtnSubtle]}
-                        onPress={async () => {
-                          try {
-                            await callApi(
-                              `messages/request/${conversationId}/reject/`,
-                              "POST"
-                            );
-                            triggerClose();
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        <Text style={styles.requestBtnTextSubtle}>Reject</Text>
-                      </Pressable>
-                      <Pressable
-                        style={[styles.requestBtn, styles.requestBtnDanger]}
-                        onPress={async () => {
-                          try {
-                            await callApi(
-                              `messages/request/${conversationId}/block/`,
-                              "POST"
-                            );
-                            triggerClose();
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        <Text style={styles.requestBtnTextDanger}>Block</Text>
-                      </Pressable>
-                    </View>
-                  ) : (
+                    </GlassPressable>
+                  </View>
+                ) : conversation?.view_type === "request" ? (
+                  <View style={styles.requestActions}>
+                    <GlassPressable
+                      style={{ flex: 1, marginRight: 8 }}
+                      variant="solid"
+                      radius={12}
+                      padH={12}
+                      padV={10}
+                      onPress={async () => {
+                        try {
+                          await callApiRef.current(
+                            `messages/request/${conversationId}/accept/`,
+                            "POST"
+                          );
+                          const updated = await callApiRef.current(
+                            `messages/get_conversation_details/${conversationId}/`
+                          );
+                          setConversation(updated.data);
+                        } catch {}
+                      }}
+                      haptics="light"
+                    >
+                      <Text style={styles.requestBtnTextPrimary}>Accept</Text>
+                    </GlassPressable>
+                    <GlassPressable
+                      style={{ flex: 1, marginRight: 8 }}
+                      variant="ghost"
+                      radius={12}
+                      padH={12}
+                      padV={10}
+                      onPress={async () => {
+                        try {
+                          await callApiRef.current(
+                            `messages/request/${conversationId}/reject/`,
+                            "POST"
+                          );
+                          triggerClose();
+                        } catch {}
+                      }}
+                      haptics="selection"
+                    >
+                      <Text style={styles.requestBtnTextSubtle}>Reject</Text>
+                    </GlassPressable>
+                    <GlassPressable
+                      style={{ flex: 1 }}
+                      variant="solid"
+                      radius={12}
+                      padH={12}
+                      padV={10}
+                      onPress={async () => {
+                        try {
+                          await callApiRef.current(
+                            `messages/request/${conversationId}/block/`,
+                            "POST"
+                          );
+                          triggerClose();
+                        } catch {}
+                      }}
+                      haptics="medium"
+                    >
+                      <Text style={styles.requestBtnTextDanger}>Block</Text>
+                    </GlassPressable>
+                  </View>
+                ) : (
+                  <View style={styles.footerWrap}>
                     <BlurView
-                      intensity={0}
+                      intensity={GLASS.blurFooter}
                       tint="dark"
                       style={styles.footerBlur}
-                    >
-                      {/* REPLYING BANNER */}
-                      {replyingTo && (
-                        <View style={styles.replyingBanner}>
+                    />
+                    {/* <LinearGradient
+                      colors={[
+                        "rgba(255,255,255,0.08)",
+                        "rgba(255,255,255,0.02)",
+                      ]}
+                      start={{ x: 0.2, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    /> */}
+
+                    {replyingTo && (
+                      <View style={styles.replyingBanner}>
+                        <GlassPressable
+                          radius={12}
+                          padH={10}
+                          padV={8}
+                          variant="ghost"
+                          haptics="none"
+                          style={{ flex: 1 }}
+                        >
                           <Text style={styles.replyingBannerText}>
                             Replying to {replyingTo.sender_username}: “
                             {replyingTo.text
                               ? replyingTo.text.length > 30
                                 ? replyingTo.text.substring(0, 30) + "…"
                                 : replyingTo.text
-                              : "Attachment"}{" "}
-                            … ”
+                              : "Attachment"}
+                            …”
                           </Text>
-                          <Pressable onPress={() => setReplyingTo(null)}>
-                            <MaterialIcons
-                              name="close"
-                              size={18}
-                              color="#BBB"
-                              style={{ marginLeft: 8 }}
-                            />
-                          </Pressable>
-                        </View>
-                      )}
-
-                      <View style={styles.writeContainer}>
-                        {/* “+” Attachment Button */}
+                        </GlassPressable>
                         <Pressable
-                          onPress={showAttachMenuAnimated}
-                          style={{ marginRight: 12 }}
+                          onPress={() => setReplyingTo(null)}
+                          style={{ paddingHorizontal: 6, paddingVertical: 8 }}
                         >
-                          <MaterialIcons
-                            name="add"
-                            size={24}
-                            color="rgba(222, 222, 222, 0.62)"
-                            style={{
-                              backgroundColor: "rgba(81, 81, 81, 0.42)",
-                              borderRadius: 999,
-                              padding: 4,
+                          <MaterialIcons name="close" size={18} color="#BBB" />
+                        </Pressable>
+                      </View>
+                    )}
+
+                    {/* Composer (no auto scaling; interactive glow+stretch only) */}
+                    <View style={styles.writeContainer}>
+                      <GlassPressable
+                        onPress={() => {
+                          Haptics.selectionAsync();
+                          keyboardWasOpen.current = keyboardVisible;
+                          Keyboard.dismiss();
+                          setAttachVisible(true);
+                        }}
+                        radius={18}
+                        padH={10}
+                        padV={6}
+                        variant="solid"
+                        style={{ marginRight: 8 }}
+                      >
+                        <MaterialIcons name="add" size={20} color="#EFFFFF" />
+                      </GlassPressable>
+
+                      {/* Liquid glass input with moving glow + stretch */}
+                      <PanGestureHandler
+                        onGestureEvent={Animated.event(
+                          [{ nativeEvent: { x: inputGlowX } }],
+                          { useNativeDriver: false }
+                        )}
+                        onHandlerStateChange={(e) => {
+                          const st = (e as any).nativeEvent.state;
+                          if (
+                            st === GestureState.ACTIVE ||
+                            st === GestureState.BEGAN
+                          ) {
+                            Animated.timing(inputGlowA, {
+                              toValue: 1,
+                              duration: 120,
+                              useNativeDriver: true,
+                            }).start();
+                          } else if (
+                            st === GestureState.END ||
+                            st === GestureState.CANCELLED ||
+                            st === GestureState.FAILED
+                          ) {
+                            Animated.timing(inputGlowA, {
+                              toValue: 0,
+                              duration: 220,
+                              useNativeDriver: true,
+                            }).start();
+                          }
+                        }}
+                      >
+                        <Animated.View
+                          style={[
+                            styles.inputShell,
+                            {
+                              transform: [
+                                {
+                                  scaleX: inputShellW
+                                    ? (inputGlowX as any).interpolate({
+                                        inputRange: [
+                                          0,
+                                          inputShellW * 0.12,
+                                          inputShellW * 0.88,
+                                          inputShellW,
+                                        ],
+                                        outputRange: [1.04, 1, 1, 1.06],
+                                        extrapolate: "clamp",
+                                      })
+                                    : 1,
+                                },
+                              ],
+                            },
+                          ]}
+                          onLayout={(e) => {
+                            setInputShellW(e.nativeEvent.layout.width);
+                            inputGlowX.setValue(
+                              e.nativeEvent.layout.width / 2
+                            );
+                          }}
+                        >
+                          <Animated.View
+                            pointerEvents="none"
+                            style={[
+                              styles.inputGlow,
+                              {
+                                opacity: inputGlowA,
+                                transform: [
+                                  {
+                                    translateX: Animated.subtract(
+                                      inputGlowX,
+                                      40
+                                    ),
+                                  },
+                                ],
+                              },
+                            ]}
+                          />
+                          <TextInput
+                            ref={inputRef}
+                            style={[
+                              styles.chatInput,
+                              {
+                                minHeight: 44,
+                                height: Math.min(
+                                  Math.max(44, inputHeight),
+                                  140
+                                ),
+                                maxHeight: 140,
+                              },
+                            ]}
+                            placeholder={`Message${
+                              lanes.find((l) => l.id === activeLaneId)?.title
+                                ? ` ${
+                                    lanes.find((l) => l.id === activeLaneId)
+                                      ?.title
+                                  }`
+                                : ""
+                            }`}
+                            placeholderTextColor="#99AAB0"
+                            value={input}
+                            onChangeText={(t) => {
+                              setInput(t);
+                              if (activeLaneId) {
+                                setLaneDrafts((prev) => ({
+                                  ...prev,
+                                  [activeLaneId]: {
+                                    input: t,
+                                    attachments:
+                                      prev[activeLaneId]?.attachments ?? [],
+                                    replyingToUuid: replyingTo?.uuid || null,
+                                  },
+                                }));
+                              }
+                            }}
+                            multiline
+                            onContentSizeChange={(e) =>
+                              setInputHeight(e.nativeEvent.contentSize.height)
+                            }
+                            returnKeyType="send"
+                            onSubmitEditing={() => {
+                              if (
+                                input.trim() ||
+                                attachmentsToSend.length
+                              )
+                                handleSend();
                             }}
                           />
-                        </Pressable>
+                        </Animated.View>
+                      </PanGestureHandler>
 
-                        {/* Text Input */}
-                        <TextInput
-                          ref={inputRef}
-                          style={styles.chatInput}
-                          placeholder="Message"
-                          placeholderTextColor="#888"
-                          value={input}
-                          onChangeText={setInput}
-                          multiline
-                          returnKeyType="send"
-                          onSubmitEditing={() => {
-                            if (input.trim() || attachmentsToSend.length)
-                              handleSend();
-                          }}
-                        />
-
-                        {/* Send Button */}
-                        {input.trim() !== "" && (
-                          <Pressable
-                            onPress={handleSend}
-                            style={styles.sendButton}
-                          >
-                            <FontAwesome
-                              name="send"
-                              size={22}
-                              color="rgba(222, 222, 222, 0.62)"
-                            />
-                          </Pressable>
-                        )}
-                      </View>
-                    </BlurView>
-                  )}
-                </View>
-              </KeyboardAvoidingView>
-            </Animated.View>
-          </View>
-        </GestureHandlerRootView>
-      </Modal>
-
-      {/* ─────── REPLY CHAIN (THREAD) MODAL ─────── */}
-      {showChainModal && (
-        <Modal transparent animationType="fade">
-          <AnimatedBlurView
-            intensity={80}
-            tint="dark"
-            style={[
-              styles.chainBlurContainer,
-              {
-                transform: [
-                  {
-                    scale: popupAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.8, 1],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          />
-          <View style={styles.chainContainer}>
-            <View style={styles.chainHeader}>
-              <Text style={styles.chainTitle}>Thread</Text>
-              <Pressable onPress={() => setShowChainModal(null)}>
-                <MaterialIcons name="close" size={24} color="#000" />
-              </Pressable>
-            </View>
-            <View style={styles.chainScroll}>
-              {showChainModal.chain.map((m, idx) => {
-                const msgDate = new Date(m.sent_at);
-                const own = isOwnMessage(m);
-                return (
-                  <View
-                    key={m.uuid}
-                    style={[styles.chainMessageRow, { marginLeft: idx * 12 }]}
-                  >
-                    {idx < showChainModal.chain.length - 1 && (
-                      <View
-                        style={[
-                          styles.branchVerticalLine,
-                          { left: idx * 12 + 8 },
-                        ]}
-                      />
-                    )}
-                    <View
-                      style={[
-                        styles.chainBubble,
-                        own ? styles.chainBubbleOwn : styles.chainBubbleOther,
-                      ]}
-                    >
-                      <Text style={styles.chainSenderName}>
-                        {m.sender_username}
-                      </Text>
-                      <Text style={styles.chainText}>{m.text}</Text>
-                      <Text style={styles.chainTimeText}>
-                        {msgDate.toLocaleString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </Text>
+                      {input.trim() !== "" && (
+                        <GlassPressable
+                          onPress={handleSend}
+                          style={styles.sendButton}
+                          accessibilityLabel="Send message"
+                          radius={18}
+                          padH={10}
+                          padV={6}
+                          variant="solid"
+                          haptics="light"
+                        >
+                          <FontAwesome
+                            name="send"
+                            size={18}
+                            color="rgba(255,255,255,0.95)"
+                          />
+                        </GlassPressable>
+                      )}
                     </View>
                   </View>
+                )}
+              </View>
+            </KeyboardAvoidingView>
+          </Animated.View>
+
+          {/* Reaction overlay (long-press) */}
+          <ReactionOverlay
+            visible={!!focusedMessage && !!overlayLayout}
+            layout={overlayLayout}
+            message={focusedMessage}
+            theme={{
+              bubbleOwn: theme.bubbleOwn,
+              bubbleOther: theme.bubbleOther,
+              textOnOwn: theme.textOnOwn,
+              textOnOther: theme.textOnOther,
+              backdropTintIntensity: theme.backdropTintIntensity,
+            }}
+            insets={insets}
+            currentUsername={currentUsername}
+            isOwn={focusedMessage ? isOwnMessage(focusedMessage) : false}
+            onClose={() => {
+              if (focusedMessage && msgScales[focusedMessage.uuid]) {
+                Animated.spring(msgScales[focusedMessage.uuid], {
+                  toValue: 1,
+                  useNativeDriver: true,
+                  stiffness: 360,
+                  damping: 18,
+                  mass: 0.4,
+                }).start();
+              }
+              setFocusedMessage(null);
+              setOverlayLayout(null);
+            }}
+            onReply={() => {
+              if (focusedMessage) setReplyingTo(focusedMessage);
+              setFocusedMessage(null);
+              setOverlayLayout(null);
+            }}
+            onCopy={() => {
+              if (focusedMessage?.text)
+                Clipboard.setString(focusedMessage.text);
+              setFocusedMessage(null);
+              setOverlayLayout(null);
+            }}
+            onUnsend={() => {
+              if (focusedMessage) handleUnsend(focusedMessage);
+              setFocusedMessage(null);
+              setOverlayLayout(null);
+            }}
+            onShowSummary={() => {}}
+            onToggleReaction={(type) => {
+              if (focusedMessage) handleToggleReaction(focusedMessage, type);
+              setFocusedMessage(null);
+              setOverlayLayout(null);
+            }}
+          />
+
+          {/* Attach menu */}
+          <AttachMenu
+            visible={attachVisible}
+            onDismiss={() => {
+              setAttachVisible(false);
+              if (keyboardWasOpen.current && inputRef.current)
+                inputRef.current.focus();
+              keyboardWasOpen.current = false;
+            }}
+            onPickMedia={handleMediaPick}
+            onSetBackground={async () => {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsMultipleSelection: false,
+              });
+              if (!result.canceled && result.assets[0]?.uri) {
+                setBgImage(result.assets[0].uri);
+                persistPrefs({ bgImage: result.assets[0].uri });
+              }
+            }}
+            onCycleTheme={() => {
+              const next = (themeIdx + 1) % THEMES.length;
+              setThemeIdx(next);
+              persistPrefs({ themeIdx: next });
+            }}
+            onStartPoll={() => Alert.alert("Poll", "Coming soon")}
+            onStartVoice={() => Alert.alert("Voice note", "Coming soon")}
+            onShareLocation={() => Alert.alert("Location", "Coming soon")}
+            onSchedule={() => Alert.alert("Schedule message", "Coming soon")}
+            onCamera={() => Alert.alert("Camera", "Coming soon")}
+            onDocument={() => Alert.alert("Document", "Coming soon")}
+          />
+
+          {/* Details */}
+          <ChatDetailsSheet
+            visible={showDetails}
+            onClose={() => setShowDetails(false)}
+            conversation={conversation}
+            conversationId={conversationId}
+            lanes={lanes}
+            activeLaneId={activeLaneId}
+            onSetActiveLane={(id) => setActiveLaneId(id)}
+            onCreateLane={async (title) => {
+              try {
+                const res = await callApiRef.current(
+                  `messages/contexts/${conversationId}/`,
+                  "POST",
+                  {
+                    title,
+                    emoji: "view-agenda",
+                    color: theme.bubbleOwn,
+                  }
                 );
-              })}
-            </View>
-          </View>
-        </Modal>
-      )}
-    </>
+                const lane = res.data as Lane;
+                setLanes((p) => [lane, ...p]);
+                setActiveLaneId(lane.id);
+              } catch {}
+            }}
+            onArchiveLane={async (id) => {
+              await apiUpdateLane(id, { is_archived: true });
+              setActiveLaneId((prev) =>
+                prev === id ? lanes.find((l) => l.id !== id)?.id ?? null : prev
+              );
+            }}
+            onUpdateLane={async (id, patch) => {
+              await apiUpdateLane(id, patch);
+            }}
+            onDeleteLane={apiDeleteLane}
+            themeName={THEMES[themeIdx].name}
+            onCycleTheme={() => {
+              const next = (themeIdx + 1) % THEMES.length;
+              setThemeIdx(next);
+              persistPrefs({ themeIdx: next });
+            }}
+            onPickBackground={async () => {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsMultipleSelection: false,
+              });
+              if (!result.canceled && result.assets[0]?.uri) {
+                setBgImage(result.assets[0].uri);
+                persistPrefs({ bgImage: result.assets[0].uri });
+              }
+            }}
+            mode={mode}
+            onSetMode={async (next) => {
+              setMode(next);
+              try {
+                await callApiRef.current(
+                  `messages/conversations/${conversationId}/mode/`,
+                  "PATCH",
+                  { mode: next }
+                );
+              } catch {}
+            }}
+          />
+        </View>
+      </GestureHandlerRootView>
+    </Modal>
   );
 }
 
+/* =========================
+   STYLES
+========================= */
 const styles = StyleSheet.create({
-  // ─────── CONTAINERS ───────
   containerWithoutOverflow: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 999,
@@ -1701,304 +2584,208 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    backgroundColor: "rgba(0, 0, 0, 0.38)",
   },
   sheetContainer: {
     position: "absolute",
     left: 0,
     right: 0,
-    backgroundColor: "#000",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: "transparent",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
-    elevation: 20,
   },
-  dragHandleContainer: {
+
+  orb: { position: "absolute", borderRadius: 999 },
+
+  headerActionsRow: {
+    minHeight: 44,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 6,
   },
-  dragHandle: {
-    width: 60,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#444",
-  },
-  headerBlur: {
-    width: "100%",
-    overflow: "hidden",
-  },
-  chatHeader: {
+  headerBlur: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0 },
+
+  identityBar: {
     flexDirection: "row",
+    flex: 1,
+    flexGrow: 1,
+    minWidth: 0,
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "center",
+    gap: 10,
   },
-  backButton: {
-    marginRight: 12,
-    padding: 6,
-  },
-  headerGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexShrink: 1,
-  },
-  avatarGroup: {
-    flexDirection: "row",
-    minWidth: 40,
-    height: 44,
+  avatarGroupWide: {
+    width: 56,
+    height: 40,
     position: "relative",
-    marginRight: 12,
+    marginRight: 4,
   },
   avatarWrapper: {
     position: "absolute",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: "#000",
-    backgroundColor: "#222",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1.2,
+    borderColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(20,22,26,0.5)",
     overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
   },
   stackedAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "#333",
   },
-  stackedExtra: {
-    left: 54,
-    zIndex: 0,
-    backgroundColor: "#333",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  extraCountText: {
-    color: "#0A84FF",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  chatHeaderInfo: {
-    flexDirection: "column",
-    flexShrink: 1,
-    marginLeft: 12,
-  },
+  identityTextCol: { flexDirection: "column", flex: 1, minWidth: 0 },
   chatHeaderName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#FFF",
-    letterSpacing: 0.2,
-    maxWidth: "100%",
+    fontSize: 15, // compact
+    fontWeight: "900",
+    color: "#EFFFFF",
+    letterSpacing: 0.25,
   },
-  chatHeaderUsername: {
-    fontSize: 14,
-    color: "#AAA",
-    marginTop: 2,
-  },
+  chatHeaderUsername: { fontSize: 11, color: "#b7d5db", marginTop: 1 },
 
-  dateSeparatorWrapper: {
-    alignSelf: "center",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-    marginVertical: 12,
-  },
-  dateSeparatorText: {
-    fontSize: 12,
-    color: "#DDD",
-  },
-
-  parentPreviewContainer: {
-    marginBottom: 4,
+  // lanes
+  lanePill: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
-  parentPreviewOwn: {
-    alignSelf: "flex-end",
+  lanePillActive: {
+    backgroundColor: "rgba(255,255,255,0.12)", // neutral fill
   },
-  parentPreviewOther: {
-    alignSelf: "flex-start",
-  },
-  parentPreviewInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#333",
-    borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    maxWidth: "85%",
-  },
-  parentPreviewText: {
-    color: "#EEE",
-    fontSize: 13,
-    flexShrink: 1,
-  },
-  branchLine: {
-    width: 2,
-    backgroundColor: "#0A84FF",
-    borderRadius: 1,
-    marginRight: 6,
-  },
-  branchKnot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#0A84FF",
-    marginRight: 6,
-  },
-
-  messageRowOwn: {
-    alignSelf: "flex-end",
-    marginLeft: "25%",
-  },
-  messageRowOther: {
-    alignSelf: "flex-start",
-    marginRight: "25%",
-  },
-  reactedMarginTop: {
-    marginTop: 20, // extra space for badge overlap
-  },
-
-  bubbleContainer: {
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  bubbleContainerOwn: {
-    backgroundColor: "#0A84FF",
-  },
-  bubbleContainerOther: {
-    backgroundColor: "#1C1C1E",
-  },
-
-  messageText: {
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  messageTextOwn: {
-    color: "#FFF",
-  },
-  messageTextOther: {
-    color: "#FFF",
-  },
-
-  emojiOnlyContainer: {
+  lanePillInactive: {
     backgroundColor: "transparent",
-    paddingVertical: 0,
-    paddingHorizontal: 0,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.14)",
   },
-  emojiText: {
-    fontSize: 40,
-    lineHeight: 44,
-  },
+  laneText: { fontWeight: "900" },
+  laneTextActive: { color: "#EFFFFF" },
+  laneTextInactive: { color: "#d7e7ea" },
 
-  mediaBubbleContainer: {
-    marginTop: 4,
-    borderRadius: 18,
-    overflow: "hidden",
+  messageRowOwn: { alignSelf: "flex-end" },
+  messageRowOther: { alignSelf: "flex-start" },
+
+  bubbleWrap: { maxWidth: BUBBLE_MAX_W },
+
+  messageText: { fontSize: 16, lineHeight: 22, fontWeight: "600" },
+  emojiText: { fontSize: 40, lineHeight: 44 },
+
+  // time chip that appears when pulling left
+  timeChip: {
+    position: "absolute",
+    right: -56,
+    top: 8,
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.22)",
   },
-  mediaBubbleOwn: {
-    alignSelf: "flex-end",
-  },
-  mediaBubbleOther: {
-    alignSelf: "flex-start",
-  },
+  timeChipText: { color: "#fff", fontSize: 11, fontWeight: "800" },
+
+  mediaBubbleContainer: { marginTop: 6, borderRadius: 18, overflow: "hidden" },
+  mediaBubbleOwn: { alignSelf: "flex-end" },
+  mediaBubbleOther: { alignSelf: "flex-start" },
   largeMediaFull: {
     width: SCREEN_WIDTH * 0.75 - 4,
     height: (SCREEN_WIDTH * 0.75 - 4) * (9 / 16),
     backgroundColor: "#000",
   },
-  docCard: {
-    width: SCREEN_WIDTH * 0.75 - 4,
-    height: 120,
-    backgroundColor: "#333",
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 0,
-  },
-  docFileName: {
-    marginTop: 6,
-    maxWidth: "80%",
-    color: "#CCC",
-    fontSize: 14,
-  },
 
-  // ─────── Corner-badge styles for iMessage-style reactions ───────
-  reactionBadge: {
+  // reactions
+  reactCluster: {
     position: "absolute",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    top: -18,
+    flexDirection: "row",
+    gap: 4,
+    zIndex: 10,
+  },
+  reactClusterOwn: { right: 6 },
+  reactClusterOther: { left: 6 },
+  reactChip: {
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 6,
+    borderRadius: 11,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.22)",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#000",
-    zIndex: 5,
   },
-  reactionBadgeText: {
-    fontSize: 16,
-    color: "#FFF",
-    textAlign: "center",
+  reactionPillText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+
+  footerWrap: { position: "relative", paddingHorizontal: 8, paddingTop: 4 },
+  footerBlur: { width: "100%", position: "absolute", top: 0, bottom: 0 },
+  chatFooter: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    // borderTopColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "transparent",
   },
 
-  footerBlur: {
-    width: "100%",
-    paddingTop: 0,
-    backgroundColor: "transparent",
+  replyingBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 4,
+    paddingBottom: 4,
   },
-  chatFooter: {
-    borderTopWidth: 1,
-    backgroundColor: "transparent",
-    paddingHorizontal: 2,
+  replyingBannerText: {
+    color: "#EFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+    flexShrink: 1,
   },
+
   writeContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "transparent",
     borderRadius: 100,
     marginHorizontal: 1,
-    marginVertical: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 0,
+    marginVertical: 10,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
   },
+
+  inputShell: {
+    flex: 1,
+    position: "relative",
+    borderRadius: 18,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.14)",
+  },
+  // moving glow inside the input
+  inputGlow: {
+    position: "absolute",
+    top: 2,
+    bottom: 2,
+    width: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.25)",
+  },
+
   chatInput: {
     flex: 1,
     fontSize: 17,
-    color: "#FFF",
-    paddingHorizontal: 10,
-    paddingVertical: Platform.OS === "ios" ? 10 : 6,
-    maxHeight: 120,
-    minHeight: 40,
-    borderRadius: 18,
-    backgroundColor: "rgba(79, 79, 79, 0)",
-    borderColor: "rgba(79, 79, 79, 0.3)",
-    borderWidth: 1,
-    marginRight: 8,
+    color: "#EFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === "ios" ? 11 : 8,
+    textAlignVertical: "top",
   },
-  sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  sendButton: { marginLeft: 8 },
 
   attachmentsPreview: {
     maxHeight: 150,
@@ -2011,325 +2798,68 @@ const styles = StyleSheet.create({
   attachmentPreview: {
     marginRight: 10,
     marginBottom: 10,
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    overflow: "hidden",
     position: "relative",
-    justifyContent: "center",
-    alignItems: "center",
   },
-  attachmentThumbnail: {
-    width: 70,
-    height: 70,
-    borderRadius: 8,
-  },
+  attachmentThumbnail: { width: "100%", height: "100%" },
   removeAttachmentBtn: {
     position: "absolute",
     top: -6,
     right: -6,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 10,
+    padding: 2,
   },
 
-  // ─────── Styles for the Attach Menu ───────
-  attachMenuContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1002,
-    backgroundColor: "transparent",
+  dateSeparatorText: {
+    color: "#cfe4ea",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.3,
   },
-  attachScrollContent: {
-    paddingTop: SCREEN_HEIGHT / 2 - 30,
-    paddingBottom: 100,
+  branchLine: {
+    width: 2,
+    height: 18,
+    marginRight: 8,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    borderRadius: 2,
   },
-  attachMenu: {
-    backgroundColor: "transparent",
-    alignItems: "flex-start",
-  },
-  attachItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    shadowColor: "rgb(255, 255, 255)",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.65,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  attachText: {
-    marginLeft: 16,
-    fontSize: 18,
-    color: "#FFF",
+  parentPreviewText: {
+    color: "#dbeef2",
+    fontSize: 12,
+    fontWeight: "700",
+    maxWidth: SCREEN_WIDTH * 0.6,
   },
 
-  requestWarningContainer: {
-    backgroundColor: "#2C2CDE",
-    borderColor: "#444",
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    marginVertical: 8,
-  },
-  requestWarningText: {
-    fontSize: 14,
-    color: "#FFF",
-    textAlign: "center",
-  },
   requestActions: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-  },
-  requestBtn: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
     alignItems: "center",
-  },
-  requestBtnPrimary: {
-    backgroundColor: "#0A84FF",
+    gap: 8,
+    marginHorizontal: 12,
+    marginTop: 6,
   },
   requestBtnTextPrimary: {
-    color: "#FFF",
-    fontWeight: "700",
-    fontSize: 15,
-  },
-  requestBtnSubtle: {
-    backgroundColor: "#444",
+    color: "#00120a",
+    fontWeight: "900",
+    textAlign: "center",
   },
   requestBtnTextSubtle: {
-    color: "#AAA",
-    fontWeight: "600",
-    fontSize: 15,
-  },
-  requestBtnDanger: {
-    backgroundColor: "#FF3B30",
+    color: "#EFFFFF",
+    fontWeight: "900",
+    textAlign: "center",
   },
   requestBtnTextDanger: {
-    color: "#FFF",
-    fontWeight: "700",
-    fontSize: 15,
+    color: "#fff",
+    fontWeight: "900",
+    textAlign: "center",
   },
 
-  // ─────── Long-Press Overlay Styles ───────
-  popupOverlayContainer: {
-    position: "absolute" as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "transparent",
-    zIndex: 1000,
-  },
-  reactionsRowContainer: {
-    flexDirection: "row",
-    backgroundColor: "#1C1C1E",
-    borderRadius: 40,
-    padding: 5,
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  actionsRowContainer: {
-    flexDirection: "column",
-    backgroundColor: "rgba(104, 104, 104, 0.15)",
-    borderRadius: 12,
-    width: 200,
-    justifyContent: "space-evenly",
-    alignItems: "flex-start",
-  },
-  reactionButton: {
-    marginHorizontal: 8,
-  },
-  reactionEmojiBtn: {
-    fontSize: 28,
-    color: "#FFF",
-  },
-  actionButton: {
-    paddingLeft: 20,
-    paddingRight: 6,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(157, 157, 157, 0.27)",
-    width: "100%",
-  },
-  actionText: {
-    fontSize: 16,
-    color: "#FFF",
-  },
-
-  // ─────── Attachment Menu Styles ───────
-  attachMenuContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1002,
-    backgroundColor: "transparent",
-  },
-  attachScrollContent: {
-    paddingTop: SCREEN_HEIGHT / 2 - 30,
-    paddingBottom: 100,
-  },
-  attachMenu: {
-    backgroundColor: "transparent",
-    alignItems: "flex-start",
-  },
-  attachItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "transparent",
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    shadowColor: "rgb(255, 255, 255)",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.65,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  attachText: {
-    marginLeft: 16,
-    fontSize: 18,
-    color: "#FFF",
-  },
-
-  // ─────── Summary Overlay Styles ───────
-  summaryOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 2000,
-  },
-  summaryBlur: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  summaryContent: {
-    marginTop: 16,
-    marginHorizontal: 32,
-    backgroundColor: "#EFEFF4",
-    borderRadius: 12,
-    padding: 16,
-    maxHeight: SCREEN_HEIGHT * 0.5,
-    elevation: 20,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 12,
-    color: "#000",
-  },
-  summaryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  summaryEmoji: {
-    fontSize: 22,
-    marginRight: 8,
-  },
-  summaryText: {
-    flex: 1,
-    fontSize: 14,
-    color: "#000",
-  },
-  unreactButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "#FF3B30",
-    borderRadius: 6,
-    marginLeft: 8,
-  },
-  unreactText: {
-    color: "#FFF",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  closeSummaryBtn: {
-    marginTop: 12,
-    alignSelf: "flex-end",
-  },
-  closeSummaryText: {
-    fontSize: 14,
-    color: "#0A84FF",
-    fontWeight: "700",
-  },
-
-  // ─────── Thread Overlay ───────
-  chainBlurContainer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  chainContainer: {
-    position: "absolute",
-    top: "15%",
-    left: "5%",
-    right: "5%",
-    bottom: "15%",
-    backgroundColor: "#EFEFF4",
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 20,
-  },
-  chainHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "#FFF",
-  },
-  chainTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#000",
-  },
-  chainScroll: {
-    flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  chainMessageRow: {
-    marginVertical: 8,
-  },
-  chainBubble: {
-    maxWidth: "75%",
-    borderRadius: 14,
-    padding: 10,
-    backgroundColor: "#FFF",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  chainBubbleOwn: {
-    backgroundColor: "#DCF8C6",
-  },
-  chainBubbleOther: {
-    backgroundColor: "#FFF",
-  },
-  chainSenderName: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  chainText: {
-    fontSize: 15,
-    color: "#000",
-    lineHeight: 20,
-  },
-  chainTimeText: {
-    fontSize: 11,
-    color: "#555",
-    textAlign: "right",
-    marginTop: 4,
-  },
-  branchVerticalLine: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    width: 2,
-    backgroundColor: "#0A84FF",
+  requestWarningText: {
+    color: "#ffd5d5",
+    fontWeight: "800",
+    textAlign: "center",
   },
 });

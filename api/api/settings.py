@@ -84,6 +84,8 @@ INSTALLED_APPS = [
     
     'src.space.finance.trade',
     
+    'src.fourChat',
+    
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken', 

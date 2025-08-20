@@ -1,10 +1,8 @@
-# anonchat/matchmaker.py
 import asyncio
 import uuid
-from typing import Dict, Optional, Tuple, List, Any
+from typing import Dict, Tuple, List, Any
 
 from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 from django.utils import timezone
 from django.db import transaction
 
@@ -15,10 +13,17 @@ class _Matcher:
     """
     Simple in-memory matcher with wait-based relaxing.
     NOTE: In production with multiple workers, move this to Redis or a DB table.
+
+    Interests are OPTIONAL:
+    - We only require an overlap when BOTH sides provided non-empty interests
+      AND BOTH are still within their own interest-wait windows.
+    - If either side has no interests, or either side has waited past their
+      interestWaitSec, interests do not block a match.
     """
     def __init__(self):
         self._lock = asyncio.Lock()
         self._waiting: Dict[str, Dict[str, Any]] = {}  # channel_name -> criteria
+        self._tick = None  # background ticker task
 
     async def enqueue(self, channel_name: str, criteria: Dict[str, Any]):
         async with self._lock:
@@ -29,9 +34,25 @@ class _Matcher:
             self._waiting.pop(channel_name, None)
 
     async def try_pair(self):
-        """
-        Attempt to pair as many waiting users as possible.
-        """
+        await self._pairing_pass()
+        await self._ensure_ticker()
+
+    async def _ensure_ticker(self):
+        if self._tick is None or self._tick.done():
+            self._tick = asyncio.create_task(self._ticker())
+
+    async def _ticker(self):
+        try:
+            while True:
+                async with self._lock:
+                    if not self._waiting:
+                        break
+                await self._pairing_pass()
+                await asyncio.sleep(1.0)
+        finally:
+            self._tick = None
+
+    async def _pairing_pass(self):
         async with self._lock:
             channels = list(self._waiting.keys())
             used = set()
@@ -40,7 +61,7 @@ class _Matcher:
             for i, c1 in enumerate(channels):
                 if c1 in used:
                     continue
-                for c2 in channels[i + 1 :]:
+                for c2 in channels[i + 1:]:
                     if c2 in used:
                         continue
                     a = self._waiting.get(c1)
@@ -53,7 +74,6 @@ class _Matcher:
                         used.add(c2)
                         break
 
-            # finalize pairs
             for c1, c2 in pairs:
                 a = self._waiting.pop(c1, None)
                 b = self._waiting.pop(c2, None)
@@ -61,7 +81,6 @@ class _Matcher:
                     continue
                 await self._start_session(a, b)
 
-    # ---- matching rules ----
     def _compatible(self, a: Dict[str, Any], b: Dict[str, Any]) -> bool:
         now_ts = timezone.now().timestamp()
 
@@ -76,35 +95,32 @@ class _Matcher:
         if not _seek_ok(as_, bg) or not _seek_ok(bs_, ag):
             return False
 
-        # interests intersection; relax after each side's interestWaitSec
+        # interests intersection — OPTIONAL
+        # Only enforce overlap when BOTH sides provided interests AND BOTH are still
+        # within their own interest-wait windows. Otherwise, do not block on interests.
         a_int = set(a.get("interests") or [])
         b_int = set(b.get("interests") or [])
-        need_interest = True
-        if waited_secs(a) >= int((a.get("waits") or {}).get("interestSec", 15)) or \
-           waited_secs(b) >= int((b.get("waits") or {}).get("interestSec", 15)):
-            need_interest = False
-        if need_interest and (not a_int or not b_int or a_int.isdisjoint(b_int)):
-            return False
+        a_wait_int = int((a.get("waits") or {}).get("interestSec", 15))
+        b_wait_int = int((b.get("waits") or {}).get("interestSec", 15))
+        a_still_needs_overlap = bool(a_int) and waited_secs(a) < a_wait_int
+        b_still_needs_overlap = bool(b_int) and waited_secs(b) < b_wait_int
+
+        if a_still_needs_overlap and b_still_needs_overlap:
+            if a_int.isdisjoint(b_int):
+                return False
 
         # countries with mode + relax after countryWaitSec when mode=prefer
-        a_cty = set(a.get("countries") or [])
-        b_cty = set(b.get("countries") or [])
-        a_mode = (a.get("countryMode") or "prefer").lower()
-        b_mode = (b.get("countryMode") or "prefer").lower()
-
-        # Function to decide if country condition from one side passes
         def country_pass(side, other):
             mode = (side.get("countryMode") or "prefer").lower()
             s = set(side.get("countries") or [])
             o = set(other.get("countries") or [])
             if not s:
-                return True  # no restriction
-            inter = s.intersection(o) if o else s  # if other has none, inter==s
+                return True
+            inter = s.intersection(o) if o else s
             if mode == "any":
                 return True
             if mode == "strict":
                 return len(inter) > 0
-            # prefer -> allow relax after wait
             if len(inter) > 0:
                 return True
             waited = timezone.now().timestamp() - float(side.get("joinedAt"))
@@ -128,17 +144,12 @@ class _Matcher:
         return True
 
     async def _start_session(self, a: Dict[str, Any], b: Dict[str, Any]):
-        """
-        Create DB session and notify both channels to join a shared group.
-        """
         group = f"chat_{uuid.uuid4().hex}"
         session_id = None
 
-        # Create DB session
         try:
             session_id = await _create_session(a, b)
         except Exception:
-            # even if DB fails, still allow ephemeral session
             session_id = uuid.uuid4().hex
 
         layer = get_channel_layer()
@@ -157,9 +168,8 @@ class _Matcher:
             "peer_pid": a["pid"],
         }
 
-        # send directly to channels
-        async_to_sync(layer.send)(a["channel"], payload_a)
-        async_to_sync(layer.send)(b["channel"], payload_b)
+        await layer.send(a["channel"], payload_a)
+        await layer.send(b["channel"], payload_b)
 
 
 matcher = _Matcher()
@@ -185,6 +195,7 @@ def _create_session(a: Dict[str, Any], b: Dict[str, Any]) -> str:
             a_meta={
                 "age": a.get("self", {}).get("age"),
                 "gender": a.get("self", {}).get("gender"),
+                "countryCode": a.get("self", {}).get("countryCode"),
                 "seeking": a.get("seeking", {}).get("gender"),
                 "countries": a.get("countries", []),
                 "interests": a.get("interests", []),
@@ -193,6 +204,7 @@ def _create_session(a: Dict[str, Any], b: Dict[str, Any]) -> str:
             b_meta={
                 "age": b.get("self", {}).get("age"),
                 "gender": b.get("self", {}).get("gender"),
+                "countryCode": b.get("self", {}).get("countryCode"),
                 "seeking": b.get("seeking", {}).get("gender"),
                 "countries": b.get("countries", []),
                 "interests": b.get("interests", []),

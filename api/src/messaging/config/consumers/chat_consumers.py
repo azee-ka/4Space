@@ -3,7 +3,7 @@ import json
 from django.utils.timezone import now
 from asgiref.sync import sync_to_async
 
-from src.messaging.models import Message, Conversation, Participant, Reaction
+from src.messaging.models import Message, Conversation, Participant, Reaction, Lane
 from src.messaging.serializers import MessageSerializer, ReactionSerializer
 from src.user.models import BaseUser
 
@@ -18,11 +18,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return BaseUser.objects.get(username=sender_username)
 
     @sync_to_async
-    def create_message(self, conversation, sender, message_content, parent_uuid=None):
+    def get_lane(self, conversation, lane_id):
+        if not lane_id:
+            return None
+        try:
+            return Lane.objects.get(id=lane_id, conversation=conversation)
+        except Lane.DoesNotExist:
+            return None
+
+    @sync_to_async
+    def create_message(self, conversation, sender, message_content, parent_uuid=None, lane=None):
         parent = None
         if parent_uuid:
             try:
-                parent = Message.objects.get(uuid=parent_uuid)
+                parent = Message.objects.get(uuid=parent_uuid, conversation=conversation)
             except Message.DoesNotExist:
                 parent = None
         return Message.objects.create(
@@ -31,6 +40,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text=message_content,
             parent_message=parent,
             sent_at=now(),
+            lane=lane,             # <- keep lane here
         )
 
     @sync_to_async
@@ -188,6 +198,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message_content = data.get('text')
             sender_username = data.get('sender_username')
             parent_uuid = data.get('parent_message_uuid', None)
+            lane_id = data.get('context')  # lane
 
             if not message_content or not sender_username:
                 await self.send(json.dumps({'error': 'Missing message or sender'}))
@@ -196,6 +207,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             try:
                 conversation = await self.get_conversation(self.conversation_id)
                 sender = await self.get_sender(sender_username)
+                lane = await self.get_lane(conversation, lane_id)
             except (Conversation.DoesNotExist, BaseUser.DoesNotExist):
                 await self.send(json.dumps({'error': 'Conversation or sender not found'}))
                 return
@@ -207,29 +219,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if not has_messages:
                 await self.update_invite_sent(conversation)
                 await self.evaluate_participants(conversation, sender)
-                message = await self.create_message(conversation, sender, message_content, parent_uuid)
-            else:
-                if is_group_chat:
-                    is_active = await sync_to_async(lambda: Participant.objects.filter(
-                        conversation=conversation,
-                        status='active',
-                        user=sender
-                    ).exists())()
-                    if not is_active:
-                        await self.send(json.dumps({'error': 'You have not accepted the invitation yet.'}))
-                        return
-                message = await self.create_message(conversation, sender, message_content, parent_uuid)
+
+            if is_group_chat:
+                is_active = await sync_to_async(lambda: Participant.objects.filter(
+                    conversation=conversation,
+                    status='active',
+                    user=sender
+                ).exists())()
+                if not is_active:
+                    await self.send(json.dumps({'error': 'You have not accepted the invitation yet.'}))
+                    return
+
+            # CREATE ONCE (with lane)
+            message = await self.create_message(conversation, sender, message_content, parent_uuid, lane)
 
             msg_obj = await self.get_conversation_message(message.uuid)
             payload = await sync_to_async(lambda: MessageSerializer(msg_obj, context={'request': None}).data)()
 
-            await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
-                    'type': 'chat_message',
-                    'message': payload,
-                }
-            )
+            await self.channel_layer.group_send(self.chat_group_name, {'type': 'chat_message', 'message': payload})
+
 
     async def reaction_update(self, event):
         await self.send(

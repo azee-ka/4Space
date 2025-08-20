@@ -42,6 +42,7 @@
   box-sizing: border-box;
 }
 
+/* Embedded/minimal variant uses this to remove card chrome */
 .fchat.fchat-bordered {
   gap: 0;
   padding: 0;
@@ -67,6 +68,7 @@
   pointer-events: none;
 }
 
+/* Card look used when !isEmbedded */
 .fchat-glass {
   background: var(--fchat-glass);
   border: 1px solid var(--fchat-border);
@@ -75,6 +77,8 @@
   -webkit-backdrop-filter: blur(var(--fchat-backdrop-blur));
   box-shadow: var(--fchat-shadow-md);
 }
+
+/* ---------- Header ---------- */
 
 .fchat-header {
   display: flex;
@@ -119,6 +123,10 @@
   color: var(--fchat-muted);
 }
 
+.fchat-muted {
+  margin: 0;
+}
+
 .fchat-actions {
   display: flex;
   gap: 8px;
@@ -145,6 +153,26 @@
   display: inline-block;
   box-shadow: 0 0 12px currentColor;
 }
+
+.fchat-online-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-variant-numeric: tabular-nums;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--fchat-glass, rgba(255, 255, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  margin-left: 0.5rem;
+}
+
+[data-theme="light"] .fchat-online-chip {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ---------- Buttons ---------- */
 
 .fchat-btn {
   border: 1px solid var(--fchat-border);
@@ -194,6 +222,8 @@
   width: 100%;
 }
 
+/* ---------- Layout ---------- */
+
 .fchat-content {
   position: relative;
   flex: 1 1 auto;
@@ -211,7 +241,10 @@
 }
 
 /* keep this rule after the new .fchat-content rules */
-.fchat-content.fchat-bordered { gap: 0; }
+.fchat-content.fchat-bordered {
+  gap: 0;
+}
+
 
 /* Sidebar collapse animation */
 .fchat-sidebar {
@@ -220,10 +253,14 @@
   will-change: opacity, transform;
   min-width: 0;
 }
+.fchat-sidebar.fchat-bordered {
+  border-right: 1px solid rgba(128, 128, 128, 0.43);
+}
+
 
 .fchat-sidebar.is-collapsed {
   position: absolute;
-  inset: 0 auto 0 0; /* stick to the left inside the grid */
+  inset: 0 auto 0 0;
   width: 360px;
   opacity: 0;
   transform-origin: left center;
@@ -233,7 +270,6 @@
   box-shadow: none;
   clip-path: inset(0 100% 0 0);
 }
-
 
 /* Let main panel grow smoothly and not overflow */
 .fchat-chat {
@@ -250,18 +286,12 @@
 }
 
 @media (max-width: 1100px) {
-  .fchat-content { grid-template-columns: 1fr; }
-}
-
-.fchat-content.fchat-bordered {
-  gap: 0;
-}
-
-@media (max-width: 1100px) {
   .fchat-content {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Sidebar ---------- */
 
 .fchat-sidebar {
   padding: 16px;
@@ -358,7 +388,9 @@
 }
 
 .fchat-chip {
-  padding: 6px 10px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  margin-top: 5px;
   border: 1px solid var(--fchat-border);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
@@ -434,6 +466,8 @@
   }
 }
 
+/* ---------- Chat ---------- */
+
 .fchat-chat {
   display: flex;
   flex-direction: column;
@@ -496,6 +530,51 @@
   margin-bottom: 6px;
 }
 
+/* ---------- NEW: Transcript lines (Stranger/You) ---------- */
+
+.fchat-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.fchat-line.is-me {
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.fchat-line.is-stranger {
+  background: rgba(34, 211, 238, 0.06);
+}
+
+.fchat-speaker {
+  font-weight: 700;
+}
+
+.fchat-line.is-me .fchat-speaker {
+  color: var(--fchat-cyan);
+}
+
+.fchat-line.is-stranger .fchat-speaker {
+  color: var(--fchat-lime);
+}
+
+.fchat-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.fchat-line .fchat-time {
+  margin-left: 0.5rem;
+  color: var(--fchat-muted);
+  font-size: 11px;
+}
+
+/* ---------- Legacy bubbles (kept for compatibility) ---------- */
+
 .fchat-msg {
   max-width: 72%;
   display: flex;
@@ -536,11 +615,13 @@
   color: var(--fchat-muted);
 }
 
-.fchat-time {
+.fchat-msg .fchat-time {
   align-self: flex-end;
   color: var(--fchat-muted);
   font-size: 11px;
 }
+
+/* ---------- Typing ---------- */
 
 .fchat-typing {
   display: flex;
@@ -580,6 +661,8 @@
     opacity: 0.3;
   }
 }
+
+/* ---------- Composer ---------- */
 
 .fchat-composer {
   display: grid;
@@ -630,7 +713,8 @@
   height: 100%;
 }
 
-/* Bottom-right FAB */
+/* ---------- FAB ---------- */
+
 .fchat-fab {
   display: flex;
   flex-direction: column;
@@ -666,6 +750,8 @@
   border-color: rgba(251, 113, 133, 0.35);
 }
 
+/* ---------- Footer ---------- */
+
 .fchat-footer {
   display: flex;
   align-items: center;
@@ -676,7 +762,8 @@
   font-size: 12px;
 }
 
-/* Country modal */
+/* ---------- Country modal ---------- */
+
 .fchat-modal {
   position: fixed;
   inset: 0;
@@ -687,7 +774,7 @@
 }
 
 .fchat-modal-body {
-  width: min(880px, 92vw);
+  width: min(680px, 80vw);
   max-height: 82vh;
   overflow: hidden;
   display: flex;
@@ -742,7 +829,8 @@
   flex-wrap: wrap;
 }
 
-/* Known */
+/* ---------- Known ---------- */
+
 .fchat-known-list {
   display: flex;
   flex-direction: column;
@@ -789,7 +877,8 @@
   color: var(--fchat-muted);
 }
 
-/* Reconnect banner */
+/* ---------- Reconnect banner ---------- */
+
 .fchat-reconnect-banner {
   display: flex;
   align-items: center;
@@ -805,7 +894,8 @@
   gap: 8px;
 }
 
-/* Authenticated: disable page background gradients */
+/* ---------- Authenticated: disable page background gradients ---------- */
+
 .fchat.fchat-no-bg {
   background: transparent !important;
 }
@@ -818,10 +908,54 @@
   content: none !important;
 }
 
-
+/* ---------- Tab panel ---------- */
 
 .fchat-tabpanel {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+
+
+
+.fchat-line.is-system {
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed var(--fchat-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fchat-muted);
+}
+
+.fchat-system-icon {
+  font-size: 14px;
+  line-height: 1;
+  color: var(--fchat-rose);
+}
+
+
+
+.fchat-consent {
+  background: rgba(255,255,255,0.04);
+}
+
+.fchat-link {
+  text-decoration: underline;
+}
+
+.fchat-line.is-system {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--fchat-border);
+  background: rgba(255,255,255,0.04);
+  color: var(--fchat-muted);
+}
+
+.fchat-system-icon {
+  display: inline-block;
 }

@@ -1,38 +1,32 @@
-# messaging/config/consumers/4chat_consumers.py
 import asyncio
-import json
-import uuid
 from typing import Any, Dict, Optional
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
 from django.utils import timezone
 from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.apps import apps
-from asgiref.sync import sync_to_async
 
+import uuid
 import urllib.parse
 import hmac
 import hashlib
+import re
 
 from .matchmaker import matcher
 from .models import ChatSession, Message, PingEvent
 
 
+# ------------------ helpers: ids & tokens ------------------
 
 def _rand_pid() -> str:
-    # short, url-safe-ish
     return uuid.uuid4().hex[:10]
 
 
-# Deterministic reconnect token derived from session_id + SECRET_KEY
 def _make_rtoken(session_id: str) -> str:
-    """
-    Deterministic reconnect token derived from session_id + SECRET_KEY.
-    Safe to expose to clients; not reversible and stable across workers.
-    """
     dig = hmac.new(
         key=str(settings.SECRET_KEY).encode("utf-8"),
         msg=str(session_id).encode("utf-8"),
@@ -41,20 +35,26 @@ def _make_rtoken(session_id: str) -> str:
     return f"rt_{dig}"
 
 
-# ---- Presence & mapping (Redis-cache + channel layer groups) ----
-REG_LOCK = asyncio.Lock()
+# ------------------ presence & groups (Redis cache + Channels groups) ------------------
 
-G_PREFIX = "g4"  # channel layer group prefix
-P_PREFIX = "4chat:presence"  # cache key prefix for presence sets
+G_PREFIX = "g4"
+P_PREFIX = "4chat:presence"
 PID_UID_PREFIX = "4chat:pid_uid:"
+STATS_ONLINE_KEY = "4chat:stats:online"
+
+# NEW: per-PID meta (gender / countryCode) cache
+PID_META_PREFIX = "4chat:pid_meta:"  # value: {"gender": "male|female|other", "countryCode": "US"}
+
+def _group_safe(name: str) -> str:
+    safe = re.sub(r"[^a-zA-Z0-9\-_.]", "_", name)
+    return safe[:96]
 
 def _g(kind: str, key: str) -> str:
-    return f"{G_PREFIX}:{kind}:{key}"
+    return _group_safe(f"{G_PREFIX}.{kind}.{key}")
 
 def _pk(kind: str, key: str) -> str:
     return f"{P_PREFIX}:{kind}:{key}"
 
-# Cache helpers (sync) — we wrap with sync_to_async at call sites
 def _presence_add(kind: str, key: str, ch: str, ttl: int = 3600):
     s = set(cache.get(_pk(kind, key), []))
     s.add(ch)
@@ -81,30 +81,81 @@ def _get_uid_for_pid_sync(pid: str) -> Optional[str]:
 def _del_pid_uid(pid: str):
     cache.delete(f"{PID_UID_PREFIX}{pid}")
 
+def _online_change(delta: int) -> int:
+    cache.add(STATS_ONLINE_KEY, 0, timeout=None)
+    if delta > 0:
+        try:
+            cache.incr(STATS_ONLINE_KEY, delta)
+        except Exception:
+            cache.set(STATS_ONLINE_KEY, int(cache.get(STATS_ONLINE_KEY) or 0) + delta, timeout=None)
+    else:
+        try:
+            cache.decr(STATS_ONLINE_KEY, -delta)
+        except Exception:
+            cache.set(STATS_ONLINE_KEY, max(0, int(cache.get(STATS_ONLINE_KEY) or 0) + delta), timeout=None)
+    return int(cache.get(STATS_ONLINE_KEY) or 0)
+
+def _online_get() -> int:
+    return int(cache.get(STATS_ONLINE_KEY) or 0)
+
+
+# ------------------ NEW: meta helpers ------------------
+
+def _safe_gender(v: Any, default="other") -> str:
+    s = str(v or "").strip().lower()
+    if s.startswith("m"):
+        return "male"
+    if s.startswith("f"):
+        return "female"
+    if s in {"other", "any", "o", "x", "nb", "nonbinary", "non-binary"}:
+        return "other"
+    return default
+
+_CC_RE = re.compile(r"^[A-Z]{2}$")
+
+def _safe_cc(v: Any) -> Optional[str]:
+    s = str(v or "").strip().upper()
+    return s if _CC_RE.match(s) else None
+
+def _set_pid_meta(pid: str, meta: Dict[str, Any], ttl: int = 3600):
+    cache.set(f"{PID_META_PREFIX}{pid}", meta, timeout=ttl)
+
+def _get_pid_meta(pid: str) -> Dict[str, Any]:
+    return cache.get(f"{PID_META_PREFIX}{pid}") or {}
+
+def _del_pid_meta(pid: str):
+    cache.delete(f"{PID_META_PREFIX}{pid}")
+
+
+# ------------------ consumer ------------------
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     """
-    Speaks the wire protocol your React client uses:
+    Wire protocol:
 
     -> client:
         {type:"join", interests:[], allowPings:bool, countries:[], countryMode:"strict|prefer|any",
          waits:{generalSec, interestSec, countrySec, maxOverallSec},
-         self:{age, gender}, seeking:{gender}}
+         self:{age, gender, countryCode?}, seeking:{gender}}
         {type:"message", text}
         {type:"typing", isTyping}
+        {type:"meta", self:{gender?, countryCode?}}      # NEW
         {type:"next"}
-        {type:"ping", ticket}   # we ack with 'pong' for now
+        {type:"ping", rtoken?|toUid?|toPid?|ticket?}
+        {type:"stats"}
 
     <- server:
-        {type:"paired", partner:{flair, pid}, pid}   # pid = your pid; partner.pid = peer pid
+        {type:"paired", partner:{flair, pid, uid?, gender?, countryCode?}, pid, rtoken}  # NEW fields
         {type:"message", text}
         {type:"typing", isTyping}
+        {type:"meta", self:{gender?, countryCode?}}      # NEW (forwarded partner meta)
         {type:"system", text}
         {type:"left"}
-        {type:"pong"}
+        {type:"pong", delivered:int, offlineNotified?:bool}
+        {type:"ping", from:{pid, uid?}, rtoken?}
+        {type:"presence", online:int}
     """
 
-    # ------- lifecycle -------
     async def connect(self):
         await self.accept()
         self.pid = _rand_pid()
@@ -117,20 +168,19 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.wait_record: Optional[Dict[str, Any]] = None
         self.rtokens = set()
 
-        # Map pid -> uid in shared cache
         await sync_to_async(_map_pid_uid)(self.pid, self.uid)
 
-        # Join global presence groups (multi-worker safe)
         await self.channel_layer.group_add(_g("pid", self.pid), self.channel_name)
         await sync_to_async(_presence_add)("pid", self.pid, self.channel_name)
         if self.uid:
             await self.channel_layer.group_add(_g("uid", self.uid), self.channel_name)
             await sync_to_async(_presence_add)("uid", self.uid, self.channel_name)
 
-        await self.send_json({"type": "system", "text": "Connected to 4Chat."})
+        await self.channel_layer.group_add(_g("global", "all"), self.channel_name)
+        count = await sync_to_async(_online_change)(+1)
+        await self.channel_layer.group_send(_g("global", "all"), {"type": "stats.push", "online": count})
 
     async def disconnect(self, close_code):
-        # Detach presence/groups
         try:
             await self.channel_layer.group_discard(_g("pid", self.pid), self.channel_name)
             await sync_to_async(_presence_remove)("pid", self.pid, self.channel_name)
@@ -142,21 +192,20 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 await sync_to_async(_presence_remove)("uid", self.uid, self.channel_name)
             except Exception:
                 pass
-        # Detach all rtoken groups we joined
-        for rt in list(getattr(self, "rtokens", [])):
+
+        for rt in list(self.rtokens):
             try:
                 await self.channel_layer.group_discard(_g("rt", rt), self.channel_name)
                 await sync_to_async(_presence_remove)("rt", rt, self.channel_name)
             except Exception:
                 pass
 
-        # clear mapping
         try:
             await sync_to_async(_del_pid_uid)(self.pid)
+            await sync_to_async(_del_pid_meta)(self.pid)   # NEW
         except Exception:
             pass
 
-        # If in queue, remove; if in session, notify partner and close session
         try:
             await matcher.leave_queue(self.channel_name)
         except Exception:
@@ -164,7 +213,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if self.group_name:
             await self._notify_left_and_cleanup()
 
-    # ------- incoming messages -------
+        try:
+            await self.channel_layer.group_discard(_g("global", "all"), self.channel_name)
+        except Exception:
+            pass
+        try:
+            count = await sync_to_async(_online_change)(-1)
+            await self.channel_layer.group_send(_g("global", "all"), {"type": "stats.push", "online": count})
+        except Exception:
+            pass
+
     async def receive_json(self, content: Dict[str, Any], **kwargs):
         msg_type = content.get("type")
 
@@ -177,43 +235,42 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             text = (content.get("text") or "").strip()
             if not text:
                 return
-            await self._group_send(
-                {
-                    "type": "chat.message",
-                    "sender_pid": self.pid,
-                    "text": text,
-                }
-            )
+            await self._group_send({"type": "chat.message", "sender_pid": self.pid, "text": text})
             await self._save_message(text)
 
         elif msg_type == "typing":
             if not self.group_name:
                 return
             is_typing = bool(content.get("isTyping"))
-            await self._group_send(
-                {
-                    "type": "chat.typing",
-                    "sender_pid": self.pid,
-                    "isTyping": is_typing,
-                }
-            )
+            await self._group_send({"type": "chat.typing", "sender_pid": self.pid, "isTyping": is_typing})
+
+        # NEW: receive and forward meta updates (gender/country)
+        elif msg_type == "meta":
+            data = content.get("self") or content
+            gender = _safe_gender((data or {}).get("gender"), default=None)
+            cc = _safe_cc((data or {}).get("countryCode"))
+            current = await sync_to_async(_get_pid_meta)(self.pid)
+            new_meta = {**current}
+            if gender:
+                new_meta["gender"] = gender
+            if cc:
+                new_meta["countryCode"] = cc
+            await sync_to_async(_set_pid_meta)(self.pid, new_meta)
+            if self.group_name:
+                await self._group_send({"type": "chat.meta", "sender_pid": self.pid, "self": new_meta})
 
         elif msg_type == "next":
-            # leave current session, re-enqueue with last known criteria
             await self._notify_left_and_cleanup()
             if self.wait_record:
                 await matcher.enqueue(self.channel_name, self.wait_record)
-                # try to immediately pair (fast path)
                 await matcher.try_pair()
 
         elif msg_type == "ping":
-            # Extended ping: target by rtoken (anonymous history), toUid (logged-in), or toPid.
             rtoken = str(content.get("rtoken") or "")
             to_uid = content.get("toUid")
             to_pid = content.get("toPid")
-            ticket = str(content.get("ticket") or "")  # legacy analytics
+            ticket = str(content.get("ticket") or "")
 
-            # Collect target channels from presence (cross-worker)
             target_channels = set()
             if to_uid:
                 chans = await sync_to_async(_presence_list)("uid", str(to_uid))
@@ -225,20 +282,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 chans = await sync_to_async(_presence_list)("rt", rtoken)
                 target_channels.update(chans)
 
-            # Exclude self
-            if self.channel_name in target_channels:
-                target_channels.discard(self.channel_name)
+            target_channels.discard(self.channel_name)
 
             delivered = 0
-            for ch in list(target_channels):
+            for ch in target_channels:
                 await self.channel_layer.send(
                     ch,
                     {
                         "type": "ping.notify",
-                        "payload": {
-                            "from": {"pid": self.pid, "uid": getattr(self, "uid", None)},
-                            "rtoken": rtoken or None,
-                        },
+                        "payload": {"from": {"pid": self.pid, "uid": getattr(self, "uid", None)}, "rtoken": rtoken or None},
                     },
                 )
                 delivered += 1
@@ -246,7 +298,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             if ticket:
                 await self._save_ping(ticket)
 
-            # If nobody online and we have a user target, create offline notification + push
             offline_notified = False
             if delivered == 0 and to_uid:
                 try:
@@ -257,18 +308,27 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
             await self.send_json({"type": "pong", "delivered": delivered, "offlineNotified": offline_notified})
 
-    # ------- join / pairing -------
+        elif msg_type == "stats":
+            count = await sync_to_async(_online_get)()
+            await self.send_json({"type": "presence", "online": count})
+
+    # ------------------ matchmaking ------------------
+
     async def _handle_join(self, payload: Dict[str, Any]):
-        # Normalize incoming meta used for matching
         interests = [str(t).strip().lower() for t in (payload.get("interests") or []) if str(t).strip()]
         countries = [str(c).strip() for c in (payload.get("countries") or []) if str(c).strip()]
-
         waits = payload.get("waits") or {}
         general_wait = int(waits.get("generalSec") or 3)
         interest_wait = int(waits.get("interestSec") or 15)
         country_wait = int(waits.get("countrySec") or 20)
         max_overall = int(waits.get("maxOverallSec") or 60)
 
+        # pull meta and store it immediately so the peer can see it at 'paired'
+        raw_self = payload.get("self") or {}
+        gender = _safe_gender(raw_self.get("gender"))
+        cc = _safe_cc(raw_self.get("countryCode"))
+
+        # keep a copy on the instance and in the cache
         self.meta = {
             "allowPings": bool(payload.get("allowPings")),
             "countries": countries,
@@ -280,34 +340,27 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "maxOverallSec": max_overall,
             },
             "self": {
-                "age": _safe_int(payload.get("self", {}).get("age")),
-                "gender": _safe_str(payload.get("self", {}).get("gender"), "other"),
+                "age": _safe_int(raw_self.get("age")),
+                "gender": gender,
+                "countryCode": cc,
             },
-            "seeking": {
-                "gender": _safe_str(payload.get("seeking", {}).get("gender"), "any"),
-            },
+            "seeking": {"gender": _safe_str((payload.get("seeking") or {}).get("gender"), "any")},
             "interests": interests,
             "joinedAt": timezone.now().timestamp(),
             "pid": self.pid,
             "channel": self.channel_name,
         }
+        await sync_to_async(_set_pid_meta)(self.pid, {"gender": gender, "countryCode": cc})
+        self.wait_record = self.meta  # remember for "next"
 
-        # store for "next"
-        self.wait_record = self.meta
-
-        # Place in queue and try pairing
         await matcher.enqueue(self.channel_name, self.meta)
         await matcher.try_pair()
 
-        # Let the client see a status line (optional)
-        await self.send_json({"type": "system", "text": "Searching for a match…"})
+    # ------------------ group event handlers ------------------
 
-    # ------- session events from other side / group -------
     async def chat_start(self, event: Dict[str, Any]):
         """
-        Called by matchmaker when a session is formed. Payload:
-          {"type":"chat.start", "group": str, "session_id": str,
-           "self_pid": str, "peer_pid": str}
+        {"type":"chat.start","group": str,"session_id": str,"self_pid": str,"peer_pid": str}
         """
         self.group_name = event["group"]
         self.session_id = event["session_id"]
@@ -315,28 +368,36 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
-        # compute + register reconnect token for "season history" pings
+        # join reconnect token group for history pings
         rtoken = _make_rtoken(self.session_id)
         self.rtokens.add(rtoken)
         await self.channel_layer.group_add(_g("rt", rtoken), self.channel_name)
         await sync_to_async(_presence_add)("rt", rtoken, self.channel_name)
 
-        # find peer's uid from pid→uid map (cached)
         peer_uid = await sync_to_async(_get_uid_for_pid_sync)(peer_pid)
+        peer_meta = await sync_to_async(_get_pid_meta)(peer_pid)  # NEW
 
-        # tell UI it’s paired
         await self.send_json(
             {
                 "type": "paired",
-                "partner": {"flair": "Stranger", "pid": peer_pid, "uid": peer_uid},
+                "partner": {
+                    "flair": "Stranger",
+                    "pid": peer_pid,
+                    "uid": peer_uid,
+                    **({k: v for k, v in peer_meta.items() if v} or {}),
+                },
                 "pid": self.pid,
                 "rtoken": rtoken,
             }
         )
         await self.send_json({"type": "system", "text": "Connected. Say hi!"})
 
+        # Proactively push *our* current meta to the peer as well
+        my_meta = await sync_to_async(_get_pid_meta)(self.pid)
+        if my_meta:
+            await self._group_send({"type": "chat.meta", "sender_pid": self.pid, "self": my_meta})
+
     async def chat_message(self, event: Dict[str, Any]):
-        # only deliver to the other side
         if event.get("sender_pid") == self.pid:
             return
         await self.send_json({"type": "message", "text": event.get("text", "")})
@@ -346,8 +407,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
         await self.send_json({"type": "typing", "isTyping": bool(event.get("isTyping"))})
 
+    # NEW: forward meta to the other side
+    async def chat_meta(self, event: Dict[str, Any]):
+        if event.get("sender_pid") == self.pid:
+            return
+        meta = event.get("self") or {}
+        await self.send_json({"type": "meta", "self": meta})
+
     async def chat_left(self, event: Dict[str, Any]):
-        # peer left the session
         await self.send_json({"type": "left"})
         await self.send_json({"type": "system", "text": "Stranger disconnected."})
 
@@ -355,7 +422,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         payload = event.get("payload", {})
         await self.send_json({"type": "ping", **payload})
 
-    # ------- helpers -------
+    async def stats_push(self, event):
+        await self.send_json({"type": "presence", "online": int(event.get("online", 0))})
+
+    # ------------------ helpers ------------------
+
     @database_sync_to_async
     def _create_notification(self, to_uid: str, rtoken: Optional[str]) -> Optional[int]:
         User = get_user_model()
@@ -394,7 +465,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         try:
             tokens = await self._get_device_tokens(to_uid)
             if tokens:
-                # fire-and-forget push sending (stub)
                 title = "4Chat ping"
                 body = "Open the app to reconnect."
                 extra = {"rtoken": rtoken} if rtoken else {}
@@ -405,9 +475,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return notif_id
 
     async def _send_push_via_provider(self, platform: str, token: str, title: str, body: str, extra: Dict[str, Any]):
-        """
-        Stub: integrate with FCM/APNs here. Left as a no-op to avoid blocking.
-        """
         return
 
     async def _group_send(self, payload: Dict[str, Any]):
@@ -418,11 +485,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def _notify_left_and_cleanup(self):
         if not self.group_name:
             return
-        # notify peer
         await self.channel_layer.group_send(self.group_name, {"type": "chat.left"})
-        # leave group
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
-        # mark session closed
         if self.session_id:
             await self._end_session()
         self.group_name = None
@@ -453,7 +517,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             PingEvent.objects.create(from_pid=self.pid, to_pid=None, ticket=ticket)
         except Exception:
             pass
-        
+
 
 def _safe_int(v, default=None):
     try:

@@ -24,11 +24,11 @@ const toolIcons = {
 };
 
 const toolLaunchPaths = {
-  richtext: "/space/project/{id}/rich-editor",
-  markdown: "/space/project/{id}/markdown-editor",
-  latex: "/space/project/{id}/latex-editor",
-  code: "/space/project/{id}/code-editor",
-  notebook: "/space/project/{id}/notebook",
+  richtext: "/space/workspace/project/{id}/rich-editor",
+  markdown: "/space/workspace/project/{id}/markdown-editor",
+  latex: "/space/workspace/project/{id}/latex-editor",
+  code: "/space/workspace/project/{id}/code-editor",
+  notebook: "/space/workspace/project/{id}/notebook",
 };
 
 const SpaceProjects = () => {

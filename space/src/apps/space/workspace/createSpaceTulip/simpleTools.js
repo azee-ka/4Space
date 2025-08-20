@@ -5,31 +5,31 @@ export const simpleTools = [
   {
     name: "Rich Text Editor",
     icon: <FiFileText />,
-    launchPath: "/space/project/{id}/rich-editor",
+    launchPath: "/space/workspace/project/{id}/rich-editor",
     apiToolType: "richtext"
   },
   {
     name: "Markdown Editor",
     icon: <FiEdit3 />,
-    launchPath: "/space/project/{id}/markdown-editor",
+    launchPath: "/space/workspace/project/{id}/markdown-editor",
     apiToolType: "markdown"
   },
   {
     name: "LaTeX Editor",
     icon: <FiLayers />,
-    launchPath: "/space/project/{id}/latex-editor",
+    launchPath: "/space/workspace/project/{id}/latex-editor",
     apiToolType: "latex"
   },
   {
     name: "Code Editor",
     icon: <FiCode />,
-    launchPath: "/space/project/{id}/code-editor",
+    launchPath: "/space/workspace/project/{id}/code-editor",
     apiToolType: "code"
   },
   {
     name: "Notebook Cell",
     icon: <FiTerminal />,
-    launchPath: "/space/project/{id}/notebook",
+    launchPath: "/space/workspace/project/{id}/notebook",
     apiToolType: "notebook"
   },
   {

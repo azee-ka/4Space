@@ -161,3 +161,42 @@ class MessageSettings(models.Model):
     
     
     
+    
+    
+    
+    
+    
+class Lane(models.Model):
+    """
+    Per-conversation context lane (aka sub-thread/scope) for 1:1 (or group).
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation = models.ForeignKey('Conversation', on_delete=models.CASCADE, related_name='lanes')
+    title = models.CharField(max_length=40, default="Main")
+    emoji = models.CharField(max_length=8, blank=True, default="")
+    color = models.CharField(max_length=7, blank=True, default="#0A84FF")
+    rules = models.JSONField(default=dict, blank=True)
+    is_archived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # No unique_together. If you want a non-unique index, uncomment:
+        # indexes = [models.Index(fields=['conversation', 'title'], name='lane_conv_title_idx')]
+        pass
+
+    def __str__(self):
+        return f"{self.conversation.uuid} • {self.title}"
+
+# Add 2 fields to Conversation
+def conversation_mode_default():
+    return "personal"
+
+Conversation.add_to_class("mode", models.CharField(
+    max_length=16,
+    default=conversation_mode_default,
+    choices=[(m, m) for m in ["personal","work","family","dating","travel","events","wellness"]]
+))
+Conversation.add_to_class("theme", models.JSONField(default=dict, blank=True))  # optional
+
+# Link Message to Lane (nullable for legacy)
+Message.add_to_class("lane", models.ForeignKey(Lane, null=True, blank=True, on_delete=models.SET_NULL, related_name="messages"))

@@ -2,12 +2,14 @@ import React, { createContext, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { USERNAME_HANDLES } from '../services/queryKeys';
 import { fetchUsernameHandles, saveUsernameHandles } from '../services/settings';
+import { useAuth } from '../hooks/useAuth';
 
 const HandlesContext = createContext();
 export const useHandles = () => useContext(HandlesContext);
 
 export function HandlesProvider({ children }) {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
   // Fetch handles
   const {
@@ -17,6 +19,7 @@ export function HandlesProvider({ children }) {
   } = useQuery({
     queryKey: USERNAME_HANDLES,
     queryFn: fetchUsernameHandles,
+    enabled: !!isAuthenticated,
     staleTime: 60_000,
   });
 

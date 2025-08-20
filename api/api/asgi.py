@@ -30,7 +30,7 @@ from channels.auth import AuthMiddlewareStack
 
 from src.notifications.routing import websocket_urlpatterns as notification_patterns
 from src.messaging.config.routing import websocket_urlpatterns as message_patterns
-from src.messaging.fourChat.routing import websocket_urlpatterns as fourChat_patterns
+from src.fourChat.routing import websocket_urlpatterns as fourChat_patterns
 
 websocket_urlpatterns = notification_patterns + message_patterns + fourChat_patterns
 

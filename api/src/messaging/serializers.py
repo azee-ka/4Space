@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Conversation, Message, Participant, Attachment, Reaction
+from .models import Conversation, Message, Participant, Attachment, Reaction, Lane
 from ..user.models import BaseUser
 from ..user.serializers import MentionUserSearchSerializer
 
@@ -40,30 +40,31 @@ class ParticipantSerializer(serializers.ModelSerializer):
         ]
 
 
+class LaneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lane
+        fields = ['id','title','emoji','color','rules','is_archived','created_at']
+
 class MessageSerializer(serializers.ModelSerializer):
     sender_username = serializers.ReadOnlyField(source='sender.username')
     attachments = AttachmentSerializer(many=True, read_only=True)
     reactions = ReactionSerializer(many=True, read_only=True)
     parent_message_uuid = serializers.SerializerMethodField()
+    context = serializers.SerializerMethodField()  # expose lane id
 
     class Meta:
         model = Message
         fields = [
-            'uuid',
-            'conversation',
-            'sender',
-            'sender_username',
-            'text',
-            'sent_at',
-            'read',
-            'attachments',
-            'reactions',
-            'parent_message_uuid',
+            'uuid','conversation','sender','sender_username','text','sent_at','read',
+            'attachments','reactions','parent_message_uuid','context'
         ]
-        read_only_fields = ['sender', 'conversation', 'uuid', 'sent_at', 'read']
+        read_only_fields = ['sender','conversation','uuid','sent_at','read']
 
     def get_parent_message_uuid(self, obj):
         return obj.parent_message.uuid if obj.parent_message else None
+
+    def get_context(self, obj):
+        return str(obj.lane_id) if obj.lane_id else None
 
 
 
@@ -71,11 +72,13 @@ class MessageSerializer(serializers.ModelSerializer):
 class ConversationSerializer(serializers.ModelSerializer):
     view_type = serializers.SerializerMethodField()
     participants = serializers.SerializerMethodField()
-    conversation_status = serializers.SerializerMethodField() 
-    
+    conversation_status = serializers.SerializerMethodField()
+    mode = serializers.CharField(read_only=True)
+    theme = serializers.JSONField(read_only=True)
+
     class Meta:
         model = Conversation
-        fields = ['uuid', 'participants', 'created_at', 'view_type', 'conversation_status']
+        fields = ['uuid', 'participants', 'created_at', 'view_type', 'conversation_status', 'mode', 'theme']
 
     def get_participants(self, obj):
         # Fetch all participants excluding the current user

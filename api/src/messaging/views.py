@@ -9,10 +9,128 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
 from ..user.models import BaseUser
-from .models import Conversation, Message, Attachment, MessageSettings, Participant, Reaction
-from .serializers import ConversationSerializer, MessageSerializer, ConversationListSerializer, AttachmentSerializer, ReactionSerializer
+from .models import Conversation, Message, Attachment, MessageSettings, Participant, Reaction, Lane
+from .serializers import ConversationSerializer, MessageSerializer, ConversationListSerializer, AttachmentSerializer, ReactionSerializer, LaneSerializer
 from rest_framework.pagination import LimitOffsetPagination
 import uuid
+
+
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def lanes(request, conversation_id):
+  convo = get_object_or_404(Conversation, uuid=conversation_id, participant_records__user=request.user)
+  if request.method == 'GET':
+      data = LaneSerializer(convo.lanes.filter(is_archived=False).order_by('created_at'), many=True).data
+      return Response(data, status=200)
+  # POST create default or custom
+  title = request.data.get('title', 'New')
+  emoji = request.data.get('emoji','')
+  color = request.data.get('color','#0A84FF')
+  lane = Lane.objects.create(conversation=convo, title=title, emoji=emoji, color=color)
+  return Response(LaneSerializer(lane).data, status=201)
+
+# --- NEW: update lane (rename/archive) ---
+@api_view(['PATCH','DELETE'])
+@permission_classes([IsAuthenticated])
+def lane_detail(request, conversation_id, lane_id):
+  convo = get_object_or_404(Conversation, uuid=conversation_id, participant_records__user=request.user)
+  lane = get_object_or_404(Lane, id=lane_id, conversation=convo)
+  if request.method == 'PATCH':
+    for f in ['title','emoji','color','rules','is_archived']:
+      if f in request.data: setattr(lane, f, request.data[f])
+    lane.save()
+    return Response(LaneSerializer(lane).data, status=200)
+  # DELETE (soft by default)
+  lane.is_archived = True
+  lane.save()
+  return Response({'ok':True}, status=200)
+
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_messages(request, conversation_id):
+    # *** this is the ONLY get_messages now (lane-aware) ***
+    conversation = get_object_or_404(Conversation, uuid=conversation_id, participant_records__user=request.user)
+    qs = conversation.messages.order_by('-sent_at')
+    lane_id = request.GET.get('context')
+    if lane_id:
+        qs = qs.filter(lane_id=lane_id)
+    paginator = LimitOffsetPagination()
+    paginated = paginator.paginate_queryset(qs, request)
+    serializer = MessageSerializer(paginated, many=True, context={'request': request})
+    return paginator.get_paginated_response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_message(request):
+    # *** lane-aware message create (single implementation) ***
+    data = request.data
+    conversation = get_object_or_404(Conversation, uuid=data.get('conversation'), participant_records__user=request.user)
+
+    if not conversation.messages.exists():
+        _evaluate_participants_for_conversation(conversation, request.user)
+
+    lane = None
+    lane_id = data.get('context')
+    if lane_id:
+        lane = Lane.objects.filter(id=lane_id, conversation=conversation).first()
+
+    parent = None
+    parent_uuid = data.get('parent_message_uuid')
+    if parent_uuid:
+        parent = Message.objects.filter(uuid=parent_uuid, conversation=conversation).first()
+
+    text = data.get('text', '')
+
+    msg = Message.objects.create(
+        conversation=conversation,
+        sender=request.user,
+        text=text,
+        parent_message=parent,
+        sent_at=now(),
+        lane=lane,
+    )
+    full = MessageSerializer(msg, context={'request': request}).data
+    return Response(full, status=201)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_conversation_details(request, conversation_id):
+    conversation = get_object_or_404(Conversation, uuid=conversation_id, participant_records__user=request.user)
+    serializer = ConversationSerializer(conversation, context={'request': request})
+    return Response(serializer.data)
+
+# ---- Conversation prefs (theme/bg) ----
+@api_view(['PATCH','GET'])
+@permission_classes([IsAuthenticated])
+def conversation_prefs(request, conversation_id):
+    convo = get_object_or_404(Conversation, uuid=conversation_id, participant_records__user=request.user)
+    if request.method == 'GET':
+        return Response({'theme': convo.theme or {}}, status=200)
+    # PATCH
+    theme = request.data.get('theme') or {}
+    # lightweight merge
+    merged = {**(convo.theme or {}), **theme}
+    convo.theme = merged
+    convo.save(update_fields=['theme'])
+    return Response({'theme': convo.theme}, status=200)
+
+
+
+# --- NEW: mode patch endpoint ---
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def set_conversation_mode(request, conversation_id):
+    convo = get_object_or_404(Conversation, uuid=conversation_id, participant_records__user=request.user)
+    mode = request.data.get('mode')
+    if mode not in ["personal","work","family","dating","travel","events","wellness"]:
+        return Response({'error':'invalid mode'}, status=400)
+    convo.mode = mode
+    convo.save(update_fields=['mode'])
+    return Response({'ok':True, 'mode': mode}, status=200)
 
 
 
@@ -321,21 +439,6 @@ def list_invited_conversations(request):
     return Response(serializer.data)
 
 
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_conversation_details(request, conversation_id):
-    """
-    Get the details of a specific conversation, excluding the current user from participants.
-    """
-    conversation = get_object_or_404(
-        Conversation,
-        uuid=conversation_id,
-        participant_records__user=request.user  # Correct related name for Participant
-    )
-    serializer = ConversationSerializer(conversation, context={'request': request})
-    return Response(serializer.data)
 
 
 
