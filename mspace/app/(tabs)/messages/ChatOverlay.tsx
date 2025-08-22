@@ -1,4 +1,3 @@
-// app/(tabs)/messages/ChatOverlay.tsx
 import React, {
   useEffect,
   useRef,
@@ -25,7 +24,11 @@ import {
   ImageBackground,
   Keyboard,
   InteractionManager,
+  LayoutAnimation, 
+  UIManager,
 } from "react-native";
+import Svg, { Circle, Defs, RadialGradient, Rect, Stop } from "react-native-svg";
+import { Animated as RNAnimated } from "react-native";
 
 import * as Haptics from "expo-haptics";
 import * as Clipboard from "expo-clipboard";
@@ -99,7 +102,12 @@ type ConversationType = {
   conversation_status: "blocked" | "invite" | "allowed" | string;
   uuid?: string;
   mode?: ConversationMode;
-  theme?: { name?: string; themeIdx?: number; bgImage?: string | null } | null;
+  theme?: {
+    name?: string;
+    themeIdx?: number;
+    bgImage?: string | null;
+    accentColor?: string | null;
+  } | null;
 };
 
 export type Lane = {
@@ -108,6 +116,11 @@ export type Lane = {
   emoji?: string; // MaterialIcons name if present
   color?: string;
   is_archived?: boolean;
+  // optional lane-level rules (client-side persisted; server patched when available)
+  mute?: boolean;
+  pinned?: boolean;
+  ephemeralSeconds?: number | null;
+  autoArchiveDays?: number | null;
 };
 
 type ConversationMode =
@@ -123,35 +136,68 @@ type ConversationMode =
    THEME
 ========================= */
 
-const DEFAULT_THEME = {
-  name: "Midnight",
-  bgGradient: ["#05080D", "#071019", "#000000"],
-  bubbleOwn: "#147AFF",
-  bubbleOther: "rgba(30,31,36,0.35)",
-  textOnOwn: "#FFFFFF",
-  textOnOther: "#EAFBFF",
-  backdropTintIntensity: 50,
+type ThemeDef = {
+  id: string;
+  name: string;
+  accent: string;
+  bgGradient: [string, string, string] | [string, string];
+  bubbleOwn?: string;
+  bubbleOther: string;
+  textOnOwn: string;
+  textOnOther: string;
+  backdropTintIntensity: number;
 };
 
-const THEMES = [
-  DEFAULT_THEME,
+const THEMES: ThemeDef[] = [
   {
+    id: "midnight",
+    name: "Midnight",
+    accent: "#17D4FF",
+    bgGradient: ["#05080D", "#071019", "#000000"],
+    bubbleOther: "rgba(30,31,36,0.35)",
+    textOnOwn: "#FFFFFF",
+    textOnOther: "#EAFBFF",
+    backdropTintIntensity: 50,
+  },
+  {
+    id: "aurora",
     name: "Aurora",
+    accent: "#00E3D8",
     bgGradient: ["#091322", "#0a1e2e", "#063345"],
-    bubbleOwn: "#19C37D",
     bubbleOther: "rgba(20,34,54,0.38)",
     textOnOwn: "#00120a",
     textOnOther: "#E7F7F0",
     backdropTintIntensity: 42,
   },
   {
+    id: "sunset",
     name: "Sunset",
+    accent: "#FF6B4A",
     bgGradient: ["#150a0e", "#26101c", "#310f1f"],
-    bubbleOwn: "#FF6B4A",
     bubbleOther: "rgba(42,27,36,0.36)",
     textOnOwn: "#1E0A08",
     textOnOther: "#FFEDE9",
     backdropTintIntensity: 46,
+  },
+  {
+    id: "violet",
+    name: "Violet",
+    accent: "#A07CFE",
+    bgGradient: ["#0E0B1A", "#140F26"],
+    bubbleOther: "rgba(36,30,54,0.36)",
+    textOnOwn: "#0C0914",
+    textOnOther: "#EFE9FF",
+    backdropTintIntensity: 44,
+  },
+  {
+    id: "emerald",
+    name: "Emerald",
+    accent: "#19C37D",
+    bgGradient: ["#071411", "#0C201A"],
+    bubbleOther: "rgba(18,34,28,0.36)",
+    textOnOwn: "#00120A",
+    textOnOther: "#E7F7F0",
+    backdropTintIntensity: 45,
   },
 ];
 
@@ -174,16 +220,31 @@ function isEmojiOnlyMessage(text: string) {
    GLASS BUTTON
 ========================= */
 
+
 const GLASS = {
-  blurBtn: Platform.select({ ios: 14, android: 8, default: 12 }),
-  blurHeader: Platform.select({ ios: 22, android: 10, default: 16 }),
-  // slightly less frosty footer for readability
-  blurFooter: Platform.select({ ios: 12, android: 7, default: 10 }),
-  strokeSoft: "rgba(255,255,255,0.18)",
-  sheen: "rgba(255,255,255,0.22)",
+  // dial back blur/intensity to avoid frosty look
+  blurBtn: Platform.select({ ios: 12, android: 8, default: 12 }),
+  blurHeader: Platform.select({ ios: 20, android: 10, default: 14 }),
+  // slightly more blur for footer so glass stands out a touch more
+  blurFooter: Platform.select({ ios: 20, android: 10, default: 14 }),
+  // soften stroke/sheen so it doesn't read like a box shadow
+  strokeSoft: "rgba(255,255,255,0.14)",
+  sheen: "rgba(255,255,255,0.18)",
+  // slightly stronger fills for a more liquid, less frosted look
   fillGhost: "rgba(255,255,255,0.05)",
-  fillSolid: "rgba(255,255,255,0.14)",
+  fillSolid: "rgba(255,255,255,0.12)",
 };
+
+// --- Legacy compat shim ---------------------------------------------
+// Some older codepaths used a module-scope `drag` (Animated.ValueXY) and
+// accessed `drag.x` / `drag.y`. After refactors to `dragX`/`dragY`, any
+// missed reference can crash Hermes with: "Property 'drag' doesn't exist".
+// Provide a harmless, always-present fallback so those stale refs no-op.
+const __LEGACY_DRAG_X__ = new Animated.Value(0);
+const __LEGACY_DRAG_Y__ = new Animated.Value(0);
+// @ts-ignore – expose as read-only shape compatible with old callsites
+const drag = { x: __LEGACY_DRAG_X__, y: __LEGACY_DRAG_Y__ } as const;
+// ---------------------------------------------------------------------
 
 function GlassPressable({
   children,
@@ -197,6 +258,8 @@ function GlassPressable({
   style,
   haptics = "selection",
   block = false,
+  elastic = true,
+  showBackground = true,
 }: {
   children: React.ReactNode;
   onPress?: () => void;
@@ -209,6 +272,8 @@ function GlassPressable({
   style?: any;
   haptics?: "none" | "selection" | "light" | "medium";
   block?: boolean;
+  elastic?: boolean;
+  showBackground?: boolean;
 }) {
   const press = useRef(new Animated.Value(0)).current;
   const scale = press.interpolate({
@@ -228,6 +293,177 @@ function GlassPressable({
     outputRange: [-22, 22],
   });
 
+  // NEW: elastic drag physics (squish + tilt)
+  const dragX = useRef(new Animated.Value(0)).current;
+  const dragY = useRef(new Animated.Value(0)).current;
+  const squishX = dragX.interpolate({
+    inputRange: [-80, 0, 80],
+    outputRange: [0.98, 1, 0.98],
+    extrapolate: "clamp",
+  });
+  const squishY = dragY.interpolate({
+    inputRange: [-60, 0, 60],
+    outputRange: [0.99, 1, 0.99],
+    extrapolate: "clamp",
+  });
+  const tilt = dragX.interpolate({
+    inputRange: [-120, 120],
+    outputRange: ["-2deg", "2deg"],
+    extrapolate: "clamp",
+  });
+  const driftX = dragX.interpolate({
+    inputRange: [-120, 0, 120],
+    outputRange: [-2, 0, 2],
+    extrapolate: "clamp",
+  });
+  const driftY = dragY.interpolate({
+    inputRange: [-80, 0, 80],
+    outputRange: [-2, 0, 2],
+    extrapolate: "clamp",
+  });
+
+  // Liquid stretch: stretch along drag axis, compress orthogonal; anchor at finger
+  const stretchX = dragX.interpolate({
+    inputRange: [-120, 0, 120],
+    outputRange: [0.96, 1, 1.06],
+    extrapolate: 'clamp',
+  });
+  const stretchY = dragY.interpolate({
+    inputRange: [-120, 0, 120],
+    outputRange: [0.96, 1, 1.06],
+    extrapolate: 'clamp',
+  });
+
+  // Blend press scale with stretch for a single anchored scale
+  const scaleXAnchored = Animated.multiply(stretchX, scale);
+  const scaleYAnchored = Animated.multiply(stretchY, scale);
+
+  // Subtle shear to sell the “liquid” bend
+  const skewX = dragX.interpolate({
+    inputRange: [-120, 120],
+    outputRange: ['-6deg', '6deg'],
+    extrapolate: 'clamp',
+  });
+  const skewY = dragY.interpolate({
+    inputRange: [-120, 120],
+    outputRange: ['-4deg', '4deg'],
+    extrapolate: 'clamp',
+  });
+
+  // Finger-follow glow
+  const glowX = useRef(new Animated.Value(0)).current;
+  const glowY = useRef(new Animated.Value(0)).current;
+  const glowOpacity = useRef(new Animated.Value(0)).current;
+
+  // Feather factor to soften spotlight near container edges
+const edgeFeatherAV = useRef(new Animated.Value(1)).current;
+
+  // Track container size for clamping (numbers for JS-side calculations)
+  const compWRef = useRef(0);
+  const compHRef = useRef(0);
+
+  // Component size for edge-anchored stretching
+  const compWidth = useRef(new Animated.Value(0)).current;
+  const compHeight = useRef(new Animated.Value(0)).current;
+  // Scale anchoring down for very long containers so it doesn't look "sticky"
+  const anchorScaleX = useRef(new Animated.Value(1)).current;
+  const anchorScaleY = useRef(new Animated.Value(1)).current;
+  // Gate anchoring by dominant axis (prevents diagonal "pivot")
+  const anchorDomX = useRef(new Animated.Value(1)).current;
+  const anchorDomY = useRef(new Animated.Value(1)).current;
+  // Hysteresis state for dominant axis
+  const domAxisRef = useRef<'x' | 'y' | null>(null);
+
+  // Anchor at the edge opposite the drag direction, so stretch goes WITH the pull
+  const anchorEdgeX = Animated.multiply(
+    compWidth,
+    dragX.interpolate({
+      inputRange: [-40, 0, 40],
+      outputRange: [1, 0, 0], // drag<0 => right edge; drag>=0 => left edge
+      extrapolate: 'clamp',
+    })
+  );
+  const anchorEdgeY = Animated.multiply(
+    compHeight,
+    dragY.interpolate({
+      inputRange: [-40, 0, 40],
+      outputRange: [1, 0, 0], // drag<0 => bottom edge; drag>=0 => top edge
+      extrapolate: 'clamp',
+    })
+  );
+  // Engage anchor only after a small stretch threshold to avoid jitter near neutral
+  const anchorEngageX = dragX.interpolate({
+    inputRange: [-16, -8, 0, 8, 16],
+    outputRange: [1, 1, 0, 1, 1],
+    extrapolate: 'clamp',
+  });
+  const anchorEngageY = dragY.interpolate({
+    inputRange: [-16, -8, 0, 8, 16],
+    outputRange: [1, 1, 0, 1, 1],
+    extrapolate: 'clamp',
+  });
+
+  // Small positional pull so the whole bubble follows the gesture a bit
+  const pullTX = dragX.interpolate({
+    inputRange: [-120, 120],
+    outputRange: [-6, 6],
+    extrapolate: 'clamp',
+  });
+  const pullTY = dragY.interpolate({
+    inputRange: [-120, 120],
+    outputRange: [-4, 8],
+    extrapolate: 'clamp',
+  });
+
+  // Spotlight (torch) geometry
+  const SPOT_R = 100; // spotlight radius; tune 90–140
+  const HOT_R = 40;   // specular hotspot radius
+
+  // Elliptical torch: widen along dominant axis for a torch-like look
+  const spotScaleX = dragX.interpolate({ inputRange: [-200, 0, 200], outputRange: [1.35, 1, 1.35], extrapolate: 'clamp' });
+  const spotScaleY = dragY.interpolate({ inputRange: [-200, 0, 200], outputRange: [1.35, 1, 1.35], extrapolate: 'clamp' });
+  const hotScaleX  = dragX.interpolate({ inputRange: [-200, 0, 200], outputRange: [1.18, 1, 1.18], extrapolate: 'clamp' });
+  const hotScaleY  = dragY.interpolate({ inputRange: [-200, 0, 200], outputRange: [1.18, 1, 1.18], extrapolate: 'clamp' });
+  const oneMinusDomX = Animated.subtract(1, anchorDomX);
+  const oneMinusDomY = Animated.subtract(1, anchorDomY);
+  // Gate stretch to dominant axis only (other axis stays at 1x)
+const anchoredStretchX = Animated.add(Animated.multiply(stretchX, anchorDomX), oneMinusDomX);
+const anchoredStretchY = Animated.add(Animated.multiply(stretchY, anchorDomY), oneMinusDomY);
+const scaleXGated = Animated.multiply(anchoredStretchX, scale);
+const scaleYGated = Animated.multiply(anchoredStretchY, scale);
+
+  const spotScaleXFinal = Animated.add(Animated.multiply(spotScaleX, anchorDomX), oneMinusDomX);
+  const spotScaleYFinal = Animated.add(Animated.multiply(spotScaleY, anchorDomY), oneMinusDomY);
+  const hotScaleXFinal  = Animated.add(Animated.multiply(hotScaleX,  anchorDomX), oneMinusDomX);
+  const hotScaleYFinal  = Animated.add(Animated.multiply(hotScaleY,  anchorDomY), oneMinusDomY);
+
+  const spotTX = Animated.subtract(glowX, SPOT_R);
+  const spotTY = Animated.subtract(glowY, SPOT_R);
+  const hotTX = Animated.subtract(glowX, HOT_R);
+  const hotTY = Animated.subtract(glowY, HOT_R);
+  const HALO_R = Math.round(SPOT_R * 1.8);
+  const haloTX = Animated.subtract(glowX, HALO_R);
+  const haloTY = Animated.subtract(glowY, HALO_R);
+
+    const panActiveRef = useRef(false);
+
+    
+
+const showGlow = useCallback((on: boolean) => {
+  glowOpacity.stopAnimation();
+  Animated.timing(glowOpacity, {
+    toValue: on ? 0.50 : 0,
+    duration: on ? 0 : 80,
+    easing: Easing.linear,
+    useNativeDriver: true,
+  }).start();
+}, [glowOpacity]);
+
+  const moveGlow = useCallback((x: number, y: number) => {
+    glowX.setValue(x);
+    glowY.setValue(y);
+  }, [glowX, glowY]);
+
   const doHaptics = useCallback(() => {
     if (haptics === "none") return;
     if (haptics === "selection") Haptics.selectionAsync();
@@ -237,133 +473,465 @@ function GlassPressable({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, [haptics]);
 
+  // Normalize children: wrap any bare strings/numbers (even inside Fragments/arrays)
+  const wrapTextNodesDeep = (node: any): any => {
+    if (node == null || node === false) return null;
+    if (typeof node === 'string' || typeof node === 'number') {
+      return <Text>{String(node)}</Text>;
+    }
+    if (Array.isArray(node)) {
+      return node.map((n, i) => (
+        <React.Fragment key={i}>{wrapTextNodesDeep(n)}</React.Fragment>
+      ));
+    }
+    if (React.isValidElement(node)) {
+      // Only dive into Fragments; do not touch other element types
+      if ((node as any).type === React.Fragment) {
+        return (
+          <React.Fragment>{wrapTextNodesDeep((node as any).props?.children)}</React.Fragment>
+        );
+      }
+      return node;
+    }
+    return node;
+  };
+
+  const normalizedChildren = wrapTextNodesDeep(children);
+
   return (
     <Animated.View
       style={[
-        { borderRadius: radius, transform: [{ scale }], opacity },
+        {
+          borderRadius: radius,
+          transform: [
+            { translateX: Animated.multiply(pullTX, anchorDomX) },
+            { translateY: Animated.multiply(pullTY, anchorDomY) },
+            { translateX: Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeX, anchorScaleX), anchorDomX), anchorEngageX) },
+            { translateY: Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeY, anchorScaleY), anchorDomY), anchorEngageY) },
+            { scaleX: scaleXGated },
+            { scaleY: scaleYGated },
+            { translateX: Animated.multiply(Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeX, anchorScaleX), anchorDomX), anchorEngageX), -1) },
+            { translateY: Animated.multiply(Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeY, anchorScaleY), anchorDomY), anchorEngageY), -1) },
+          ],
+          opacity,
+        },
         Platform.select({
-          ios: {
-            shadowColor: "#FFFFFF",
-            shadowOpacity: 0.12,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: 0 },
-          },
-          android: { elevation: 5 },
+          ios: { shadowOpacity: 0 },
+          android: { elevation: 0 },
           default: {},
         }),
         style,
       ]}
     >
-      <Pressable
-        onPress={() => {
-          doHaptics();
-          onPress?.();
-        }}
-        onLongPress={() => {
-          if (haptics !== "none")
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          onLongPress?.();
-        }}
-        onPressIn={() =>
-          Animated.spring(press, {
-            toValue: 1,
-            useNativeDriver: true,
-            stiffness: 320,
-            damping: 20,
-            mass: 0.25,
-          }).start()
-        }
-        onPressOut={() =>
-          Animated.spring(press, {
-            toValue: 0,
-            useNativeDriver: true,
-            stiffness: 320,
-            damping: 20,
-            mass: 0.25,
-          }).start()
-        }
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        style={{
-          borderRadius: radius,
-          overflow: "hidden",
-          backgroundColor: "transparent",
-          paddingHorizontal: padH,
-          paddingVertical: padV,
-          width: block ? "100%" : undefined,
-          alignSelf: block ? "stretch" : undefined,
+      <PanGestureHandler
+        enabled={elastic}
+        activeOffsetX={[-2, 2]}
+        activeOffsetY={[-2, 2]}
+        onGestureEvent={Animated.event(
+  [
+    {
+      nativeEvent: {
+        translationX: dragX,
+        translationY: dragY,
+      },
+    },
+  ],
+  {
+    useNativeDriver: true,
+    listener: (evt) => {
+      const ne: any = (evt as any).nativeEvent || {};
+      const w = compWRef.current || 0;
+      const h = compHRef.current || 0;
+
+      if (typeof ne.x === 'number' && typeof ne.y === 'number') {
+        const xc = Math.max(0, Math.min(ne.x, w));
+        const yc = Math.max(0, Math.min(ne.y, h));
+        glowX.setValue(xc);
+        glowY.setValue(yc);
+
+        // Feather near borders so the circle edge never reads hard when clipped
+        const nearest = Math.min(xc, w - xc, yc, h - yc);
+        const factor = Math.max(0.6, Math.min(1, nearest / Math.max(1, SPOT_R)));
+        edgeFeatherAV.setValue(factor);
+      }
+
+      // dominant-axis hysteresis (see §3 below to eliminate diagonal anchoring)
+      const dx = typeof ne.translationX === 'number' ? ne.translationX : 0;
+      const dy = typeof ne.translationY === 'number' ? ne.translationY : 0;
+      const adx = Math.abs(dx);
+      const ady = Math.abs(dy);
+      if (domAxisRef.current === null) {
+        if (adx >= ady + 12) { anchorDomX.setValue(1); anchorDomY.setValue(0); domAxisRef.current = 'x'; }
+        else if (ady >= adx + 12) { anchorDomX.setValue(0); anchorDomY.setValue(1); domAxisRef.current = 'y'; }
+      } else if (domAxisRef.current === 'x') {
+        if (ady > adx + 20) { anchorDomX.setValue(0); anchorDomY.setValue(1); domAxisRef.current = 'y'; }
+      } else if (domAxisRef.current === 'y') {
+        if (adx > ady + 20) { anchorDomX.setValue(1); anchorDomY.setValue(0); domAxisRef.current = 'x'; }
+      }
+
+      if (!panActiveRef.current) { panActiveRef.current = true; showGlow(true); }
+    },
+  }
+)}
+        onHandlerStateChange={(e) => {
+          const st = (e as any).nativeEvent.state;
+          if (st === GestureState.BEGAN || st === GestureState.ACTIVE) {
+            panActiveRef.current = true;
+            showGlow(true);
+          } else if (
+            st === GestureState.END ||
+            st === GestureState.CANCELLED ||
+            st === GestureState.FAILED
+          ) {
+            panActiveRef.current = false;
+            showGlow(false);
+            anchorDomX.setValue(1);
+anchorDomY.setValue(1);
+domAxisRef.current = null;
+edgeFeatherAV.setValue(1);
+            Animated.parallel([
+              Animated.spring(dragX, {
+                toValue: 0,
+                useNativeDriver: true,
+                stiffness: 280,
+                damping: 18,
+                mass: 0.4,
+              }),
+              Animated.spring(dragY, {
+                toValue: 0,
+                useNativeDriver: true,
+                stiffness: 280,
+                damping: 18,
+                mass: 0.4,
+              }),
+            ]).start();
+          }
         }}
       >
-        {/* layers */}
-        <View
-          pointerEvents="none"
-          style={{
-            ...StyleSheet.absoluteFillObject,
-            overflow: "hidden",
-            borderRadius: radius,
-          }}
-        >
-          <BlurView
-            intensity={GLASS.blurBtn}
-            tint="light"
-            style={StyleSheet.absoluteFill}
-          />
-          <LinearGradient
-            colors={
-              variant === "solid"
-                ? ["rgba(255,255,255,0.18)", "rgba(255,255,255,0.06)"]
-                : [GLASS.fillGhost, "rgba(255,255,255,0.02)"]
-            }
-            start={{ x: 0.15, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-          {/* sheen */}
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                opacity: sheenOpacity,
-                transform: [{ translateX: sheenShift }],
-              },
-            ]}
+        <Animated.View>
+          <Pressable
+            onLayout={(e) => {
+              const { width, height } = e.nativeEvent.layout;
+              compWidth.setValue(width);
+              compHeight.setValue(height);
+              compWRef.current = width;
+              compHRef.current = height;
+              if ((glowX as any)._value === 0 && (glowY as any)._value === 0) {
+                glowX.setValue(width * 0.5);
+                glowY.setValue(height * 0.5);
+              } else {
+                // ensure current light stays within bounds if size changed
+                const curX = (glowX as any)._value ?? width * 0.5;
+                const curY = (glowY as any)._value ?? height * 0.5;
+                glowX.setValue(Math.max(0, Math.min(curX, width)));
+                glowY.setValue(Math.max(0, Math.min(curY, height)));
+              }
+              // weaken edge-anchoring for very wide/tall components so it feels more natural
+              const aspect = width / Math.max(1, height);
+              const invAspect = height / Math.max(1, width);
+              anchorScaleX.setValue(aspect > 1.6 ? 0.25 : 1); // was 0.35
+              anchorScaleY.setValue(invAspect > 1.6 ? 0.35 : 1);
+            }}
+            onPress={() => {
+              doHaptics();
+              onPress?.();
+            }}
+            onLongPress={() => {
+              if (haptics !== "none")
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onLongPress?.();
+            }}
+            onPressIn={(e) => {
+              const { locationX, locationY } = (e as any).nativeEvent || {};
+              const w = compWRef.current || 0;
+              const h = compHRef.current || 0;
+              if (typeof locationX === 'number' && typeof locationY === 'number') {
+                const xc = Math.max(0, Math.min(locationX, w));
+                const yc = Math.max(0, Math.min(locationY, h));
+                glowX.setValue(xc);
+                glowY.setValue(yc);
+              }
+              showGlow(true);
+              // start neutral; dominant axis will be chosen by gesture hysteresis
+              anchorDomX.setValue(0);
+              anchorDomY.setValue(0);
+              Animated.spring(press, {
+                toValue: 1,
+                useNativeDriver: true,
+                stiffness: 320,
+                damping: 20,
+                mass: 0.25,
+              }).start();
+            }}
+            onPressOut={() => {
+  if (!panActiveRef.current) {
+    showGlow(false);
+  }
+  Animated.spring(press, {
+    toValue: 0,
+    useNativeDriver: true,
+    stiffness: 320,
+    damping: 20,
+    mass: 0.25,
+  }).start();
+}}
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel}
+            style={{
+              borderRadius: radius,
+              overflow: "hidden",
+              backgroundColor: "transparent",
+              paddingHorizontal: padH,
+              paddingVertical: padV,
+              width: block ? "100%" : undefined,
+              alignSelf: block ? "stretch" : undefined,
+            }}
           >
-            <LinearGradient
-              colors={[
-                "rgba(255,255,255,0)",
-                GLASS.sheen,
-                "rgba(255,255,255,0)",
-              ]}
-              start={{ x: 0, y: 0.2 }}
-              end={{ x: 1, y: 0.8 }}
-              style={{
-                position: "absolute",
-                left: -60,
-                right: -60,
-                top: 0,
-                bottom: 0,
-              }}
-            />
-          </Animated.View>
-          {/* stroke */}
-          <View
-            pointerEvents="none"
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                borderRadius: radius,
-                borderWidth: StyleSheet.hairlineWidth,
-                borderColor: "rgba(255,255,255,0.14)",
-              },
-            ]}
-          />
-        </View>
-        {children}
-      </Pressable>
+            {/* layers */}
+            {showBackground && (
+              <View
+                pointerEvents="none"
+                style={{
+                  ...StyleSheet.absoluteFillObject,
+                  overflow: "hidden",
+                  borderRadius: radius,
+                }}
+              >
+                <BlurView
+                  intensity={GLASS.blurBtn}
+                  tint="light"
+                  style={StyleSheet.absoluteFill}
+                />
+                <LinearGradient
+                  colors={
+                    variant === "solid"
+                      ? ["rgba(255,255,255,0.12)", "rgba(255,255,255,0.04)"]
+                      : [GLASS.fillGhost, "rgba(255,255,255,0.012)"]
+                  }
+                  start={{ x: 0.15, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+                {/* finger-follow spotlight */}
+<Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: Animated.multiply(glowOpacity, edgeFeatherAV) }]}>                  {/* very soft outer halo to avoid hard-edged read */}
+                  <Animated.View
+                    style={{
+                      position: 'absolute',
+                      width: HALO_R * 2,
+                      height: HALO_R * 2,
+                      transform: [ { translateX: haloTX }, { translateY: haloTY }, { scaleX: spotScaleXFinal }, { scaleY: spotScaleYFinal } ],
+                    }}
+                    pointerEvents="none"
+                  >
+                    <Svg width="100%" height="100%">
+                      <Defs>
+                        <RadialGradient id="halo" cx="50%" cy="50%" r="50%">
+<Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.08}/>
+<Stop offset="60%"  stopColor="#FFFFFF" stopOpacity={0.04}/>
+<Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.00}/>
+                        </RadialGradient>
+                      </Defs>
+                      <Circle cx="50%" cy="50%" r="50%" fill="url(#halo)" />
+                    </Svg>
+                  </Animated.View>
+                  {/** Main spot — bright center, natural falloff **/}
+                  <Animated.View
+                    style={{
+                      position: 'absolute',
+                      width: SPOT_R * 2,
+                      height: SPOT_R * 2,
+                      transform: [
+                        { translateX: spotTX },
+                        { translateY: spotTY },
+                        { scaleX: spotScaleXFinal },
+                        { scaleY: spotScaleYFinal },
+                      ],
+                    }}
+                  >
+                    <Svg width="100%" height="100%">
+                      <Defs>
+                        <RadialGradient id="spot" cx="50%" cy="50%" r="50%">
+<Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.44}/>
+<Stop offset="35%"  stopColor="#FFFFFF" stopOpacity={0.22}/>
+<Stop offset="65%"  stopColor="#FFFFFF" stopOpacity={0.08}/>
+<Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.00}/>
+                        </RadialGradient>
+                      </Defs>
+                      <Circle cx="50%" cy="50%" r="50%" fill="url(#spot)" />
+                    </Svg>
+                  </Animated.View>
+
+                  {/* Specular hotspot */}
+                  <Animated.View
+                    style={{
+                      position: 'absolute',
+                      width: HOT_R * 2,
+                      height: HOT_R * 2,
+                      transform: [
+                        { translateX: Animated.add(hotTX, -4) },
+                        { translateY: Animated.add(hotTY, -6) },
+                        { scaleX: hotScaleXFinal },
+                        { scaleY: hotScaleYFinal },
+                      ],
+                    }}
+                  >
+                    <Svg width="100%" height="100%">
+                      <Defs>
+                        <RadialGradient id="hot" cx="50%" cy="50%" r="50%">
+<Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.48}/>
+<Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.12}/>
+                        </RadialGradient>
+                      </Defs>
+                      <Circle cx="50%" cy="50%" r="50%" fill="url(#hot)" />
+                    </Svg>
+                  </Animated.View>
+                </Animated.View>
+                {/* sheen */}
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    StyleSheet.absoluteFill,
+                    {
+                      opacity: sheenOpacity,
+                      transform: [{ translateX: sheenShift }],
+                    },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={[
+                      "rgba(255,255,255,0)",
+                      GLASS.sheen,
+                      "rgba(255,255,255,0)",
+                    ]}
+                    start={{ x: 0, y: 0.2 }}
+                    end={{ x: 1, y: 0.8 }}
+                    style={{
+                      position: "absolute",
+                      left: -60,
+                      right: -60,
+                      top: 0,
+                      bottom: 0,
+                    }}
+                  />
+                </Animated.View>
+              </View>
+            )}
+            {normalizedChildren}
+          </Pressable>
+        </Animated.View>
+      </PanGestureHandler>
     </Animated.View>
   );
 }
+
+const GlassInput = React.forwardRef<TextInput, any>((props, ref) => {
+  const {
+    containerStyle,
+    style: tiStyle,
+    onPress,
+    placeholderTextColor,
+    ...tiProps
+  } = props || {};
+
+  // Flatten incoming style so we can split layout vs typography
+  const flat = StyleSheet.flatten(tiStyle) || {} as any;
+
+  // Honor explicit height/minHeight/maxHeight for layout
+  const hasExplicitHeight =
+    flat.height != null || flat.minHeight != null || flat.maxHeight != null;
+
+  // Extract padding and radius from prior TextInput styles (so UI looks identical)
+  const pick = (keys: string[]) => keys.reduce((acc: any, k) => (flat[k] !== undefined ? (acc[k] = flat[k], acc) : acc), {} as any);
+
+  const paddingH = flat.paddingHorizontal ?? flat.padding ?? 12;
+  const paddingV = flat.paddingVertical ?? flat.padding ?? 8;
+
+  // Derive unified radius (fallback to 18)
+  const radius = flat.borderRadius ?? 18;
+
+  // Auto-size config and state
+  const minH = flat.minHeight ?? 46;
+  const maxH = flat.maxHeight ?? 160;
+  const [measuredH, setMeasuredH] = useState(minH);
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(v, hi));
+
+  // Container-facing properties (size & margins)
+  const containerFromTI = {
+    // sizing
+    height: flat.height,
+    minHeight: flat.minHeight,
+    maxHeight: flat.maxHeight,
+    width: flat.width,
+    flex: flat.flex,
+    alignSelf: flat.alignSelf,
+    // margins
+    ...pick(["margin", "marginTop", "marginRight", "marginBottom", "marginLeft", "marginHorizontal", "marginVertical"]),
+  } as any;
+
+  // Typography to keep on TextInput
+  const textStyles = {
+    color: flat.color,
+    fontSize: flat.fontSize,
+    fontFamily: flat.fontFamily,
+    fontWeight: flat.fontWeight,
+    lineHeight: flat.lineHeight,
+    letterSpacing: flat.letterSpacing,
+    textAlign: flat.textAlign,
+    textAlignVertical: flat.textAlignVertical,
+    includeFontPadding: flat.includeFontPadding,
+  } as any;
+
+  // Ensure inner TI doesn’t contribute its own background/border/padding
+  const scrubbedTI = [
+    textStyles,
+    { backgroundColor: 'transparent', padding: 0, margin: 0, flex: 1 },
+  ];
+
+  // Ensure multiline auto-grow and scrollEnabled behave as desired
+  const isMultiline = tiProps.multiline ?? true; // default to multiline for composer
+  const scrollEnabled = isMultiline ? (tiProps.scrollEnabled ?? false) : tiProps.scrollEnabled;
+
+  return (
+    <GlassPressable
+      variant="ghost"
+      radius={radius}
+      padH={paddingH}
+      padV={paddingV}
+      haptics="none"
+      elastic={true} // keep pan enabled so glow follows finger over wide input
+      showBackground={false} // avoid double BG under composer
+      block
+      onPress={() => {
+        try { (ref as any)?.current?.focus?.(); } catch {}
+        onPress?.();
+      }}
+      style={[
+        hasExplicitHeight ? null : { flex: 1 },
+        { minHeight: minH, height: measuredH },
+        containerFromTI,
+        containerStyle
+      ]}
+    >
+      <View pointerEvents="box-none" style={{ flex: 1, alignSelf: 'stretch' }}>
+        <TextInput
+          ref={ref}
+          {...tiProps}
+          multiline={isMultiline}
+          scrollEnabled={scrollEnabled}
+          textAlignVertical={tiProps.textAlignVertical ?? 'top'}
+          placeholderTextColor={placeholderTextColor}
+          style={scrubbedTI}
+          onContentSizeChange={(e) => {
+            const ch = e.nativeEvent.contentSize?.height ?? minH;
+            const target = clamp(ch + (paddingV * 2), minH, maxH);
+            if (target !== measuredH) setMeasuredH(target);
+          }}
+        />
+      </View>
+    </GlassPressable>
+  );
+});
+GlassInput.displayName = 'GlassInput';
 
 function LiquidBubble({
   children,
@@ -371,6 +939,7 @@ function LiquidBubble({
   emojiOnly,
   radius,
   theme,
+  accentColor,
   style,
 }: {
   children: React.ReactNode;
@@ -382,10 +951,11 @@ function LiquidBubble({
     borderBottomLeftRadius: number;
     borderBottomRightRadius: number;
   };
-  theme: (typeof THEMES)[number];
+  theme: ThemeDef;
+  accentColor: string;
   style?: any;
 }) {
-  const baseColor = own ? theme.bubbleOwn : theme.bubbleOther;
+  const baseColor = own ? accentColor : theme.bubbleOther;
   return (
     <View
       style={[
@@ -490,11 +1060,32 @@ export default function ChatOverlay({
     { uri: string; type: string; name: string }[]
   >([]);
   const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
-    // input sizing constants to avoid bounce
-const INPUT_MIN_HEIGHT = 20; // smaller when empty
-const INPUT_MAX_HEIGHT = 140;
-
+// input sizing constants to avoid bounce
+const INPUT_MIN_HEIGHT = 46;  // was 20; 44 prevents first-line clipping
+const INPUT_MAX_HEIGHT = 160; // ~5–6 lines with 16/20 typography
 const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
+
+// add this right after inputHeight state:
+const lastMeasuredHeightRef = useRef<number>(INPUT_MIN_HEIGHT);
+
+// Animated container height (smoother than LayoutAnimation on every key)
+const inputHeightAV = useRef(new Animated.Value(INPUT_MIN_HEIGHT)).current;
+
+// Smooth placeholder fade (prevents "selected" flicker)
+const placeholderAnim = useRef(new Animated.Value(1)).current;
+const showPlaceholder = useMemo(
+  () => input.length === 0 && attachmentsToSend.length === 0,
+  [input, attachmentsToSend]
+);
+useEffect(() => {
+  Animated.timing(placeholderAnim, {
+    toValue: showPlaceholder ? 1 : 0,
+    duration: 120,
+    easing: Easing.out(Easing.quad),
+    useNativeDriver: true,
+  }).start();
+}, [showPlaceholder]);
+
 
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const [justSent, setJustSent] = useState(false);
@@ -506,9 +1097,14 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
   // lanes / mode / theme
   const [lanes, setLanes] = useState<Lane[]>([]);
   const [activeLaneId, setActiveLaneId] = useState<string | null>(null);
+
   const [mode, setMode] = useState<ConversationMode>("personal");
+
   const [themeIdx, setThemeIdx] = useState(0);
   const theme = THEMES[themeIdx];
+
+  const [accentColor, setAccentColor] = useState<string>(theme.accent);
+
   const [bgImage, setBgImage] = useState<string | null>(null);
 
   // overlays
@@ -538,9 +1134,8 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
   const seenMsgsRef = useRef<Set<string>>(new Set());
 
   const ensureAnimFor = useCallback(
-    (id: string, isOwn: boolean) => {
-      if (!msgScales[id])
-        msgScales[id] = new Animated.Value(isOwn ? 0.96 : 0.98);
+    (id: string, _isOwn: boolean) => {
+      if (!msgScales[id]) msgScales[id] = new Animated.Value(0.97);
       if (!msgOpacities[id]) msgOpacities[id] = new Animated.Value(0);
       if (!msgPanX[id]) msgPanX[id] = new Animated.Value(0);
     },
@@ -618,11 +1213,12 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
         setConversation(resp.data);
         if (resp.data?.mode) setMode(resp.data.mode);
         if (resp.data?.theme) {
-          const { themeIdx: serverIdx, bgImage: serverBg } =
+          const { themeIdx: serverIdx, bgImage: serverBg, accentColor } =
             resp.data.theme || {};
           if (typeof serverIdx === "number")
             setThemeIdx(Math.min(Math.max(serverIdx, 0), THEMES.length - 1));
-          if (serverBg) setBgImage(serverBg);
+          if (serverBg !== undefined) setBgImage(serverBg || null);
+          if (typeof accentColor === "string") setAccentColor(accentColor);
         }
       } catch {}
       try {
@@ -635,7 +1231,11 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
             );
           if (typeof prefs.activeLaneId === "string")
             setActiveLaneId(prefs.activeLaneId);
-          if (typeof prefs.bgImage === "string") setBgImage(prefs.bgImage);
+          if (typeof prefs.bgImage === "string")
+            setBgImage(prefs.bgImage || null);
+          if (typeof prefs.accentColor === "string")
+            setAccentColor(prefs.accentColor);
+          if (typeof prefs.mode === "string") setMode(prefs.mode);
         }
       } catch {}
     })();
@@ -645,6 +1245,12 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, conversationId]);
+
+  // sync accent when theme changes (unless user already set a custom accent this session)
+  useEffect(() => {
+    setAccentColor((prev) => prev || THEMES[themeIdx].accent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themeIdx]);
 
   // reset guards when closed
   useEffect(() => {
@@ -661,6 +1267,8 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
         themeIdx: number;
         bgImage: string | null;
         activeLaneId: string | null;
+        accentColor: string;
+        mode: ConversationMode;
       }>
     ) => {
       try {
@@ -682,12 +1290,14 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
             theme: {
               themeIdx: patch.themeIdx ?? themeIdx,
               bgImage: patch.bgImage ?? bgImage,
+              accentColor: patch.accentColor ?? accentColor,
             },
+            ...(patch.mode ? { mode: patch.mode } : {}),
           }
         );
       } catch {}
     },
-    [conversationId, themeIdx, bgImage]
+    [conversationId, themeIdx, bgImage, accentColor]
   );
 
   /* lanes fetch/create (ONCE PER OPEN/ID) */
@@ -719,7 +1329,7 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
               {
                 title: "Main",
                 emoji: "chat",
-                color: "#147AFF",
+                color: accentColor,
               }
             );
             if (cancelled) return;
@@ -731,7 +1341,7 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
               id: "default",
               title: "Main",
               emoji: "chat",
-              color: "#147AFF",
+              color: accentColor,
             };
             setLanes([fallback]);
             setActiveLaneId("default");
@@ -743,7 +1353,7 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
           id: "default",
           title: "Main",
           emoji: "chat",
-          color: "#147AFF",
+          color: accentColor,
         };
         setLanes((p) => (p.length ? p : [fallback]));
         setActiveLaneId((prev) => prev ?? "default");
@@ -754,7 +1364,7 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, conversationId]);
+  }, [visible, conversationId, accentColor]);
 
   /* per-lane draft restore/persist */
   const persistDraft = useCallback(
@@ -878,7 +1488,7 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
     },
   });
 
-  /* autoscroll (inverted list) - keep at visual bottom without teleporting to top */
+  /* autoscroll (inverted list) */
   useEffect(() => {
     if (!loadingOlder && flatListRef.current) {
       if (!justSent && !userScrolledUp && loading === false) {
@@ -1000,7 +1610,9 @@ const [inputHeight, setInputHeight] = useState(INPUT_MIN_HEIGHT);
     };
 
     setInput("");
+LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 setInputHeight(INPUT_MIN_HEIGHT);
+
     setAttachmentsToSend([]);
     setReplyingTo(null);
     setLaneDrafts((prev) => ({
@@ -1047,7 +1659,9 @@ setInputHeight(INPUT_MIN_HEIGHT);
 
       setMessages((prev) =>
         prev.map((m) =>
-          m.uuid === optimistic.uuid ? { ...newMessage, context: activeLaneId } : m
+          m.uuid === optimistic.uuid
+            ? { ...newMessage, context: activeLaneId }
+            : m
         )
       );
     } catch {
@@ -1180,6 +1794,22 @@ setInputHeight(INPUT_MIN_HEIGHT);
   const footerTranslate = useRef(new Animated.Value(0)).current;
   const inputDrag = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
 
+  // smooth send button presence
+const sendAnim = useRef(new Animated.Value(0)).current;
+const showSend = useMemo(
+  () => input.trim().length > 0 || attachmentsToSend.length > 0,
+  [input, attachmentsToSend]
+);
+
+useEffect(() => {
+  Animated.timing(sendAnim, {
+    toValue: showSend ? 1 : 0,
+    duration: 160,
+    easing: Easing.out(Easing.quad),
+    useNativeDriver: true,
+  }).start();
+}, [showSend]);
+
   useEffect(() => {
     const bottomPad = Math.max(0, insets.bottom - 4);
 
@@ -1200,7 +1830,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
       }
     };
 
-    const willShow = Keyboard.addListener('keyboardWillShow', (e: any) => {
+    const willShow = Keyboard.addListener("keyboardWillShow", (e: any) => {
       setKeyboardVisible(true);
       const h = e.endCoordinates?.height ?? 0;
       const d = e.duration ?? 260;
@@ -1210,7 +1840,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
       ensureLatestVisible(Math.min(200, d));
     });
 
-    const willHide = Keyboard.addListener('keyboardWillHide', (e: any) => {
+    const willHide = Keyboard.addListener("keyboardWillHide", (e: any) => {
       setKeyboardVisible(false);
       const d = e.duration ?? 220;
       setKeyboardLift(0);
@@ -1225,7 +1855,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
     });
 
     // Android fallback
-    const didShow = Keyboard.addListener('keyboardDidShow', (e: any) => {
+    const didShow = Keyboard.addListener("keyboardDidShow", (e: any) => {
       if (!keyboardVisible) {
         setKeyboardVisible(true);
         const h = e.endCoordinates?.height ?? 0;
@@ -1236,7 +1866,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
       }
     });
 
-    const didHide = Keyboard.addListener('keyboardDidHide', () => {
+    const didHide = Keyboard.addListener("keyboardDidHide", () => {
       if (keyboardVisible) {
         setKeyboardVisible(false);
         setKeyboardLift(0);
@@ -1259,6 +1889,15 @@ setInputHeight(INPUT_MIN_HEIGHT);
     };
   }, [footerTranslate, keyboardVisible, insets.bottom, userScrolledUp]);
 
+  useEffect(() => {
+  if (
+    Platform.OS === "android" &&
+    (UIManager as any).setLayoutAnimationEnabledExperimental
+  ) {
+    (UIManager as any).setLayoutAnimationEnabledExperimental(true);
+  }
+}, []);
+
   const clampX = (x: number, width: number) => {
     const minX = 12;
     const maxX = SCREEN_WIDTH - width - 12;
@@ -1278,8 +1917,6 @@ setInputHeight(INPUT_MIN_HEIGHT);
     const nearBottom = y <= 50; // inverted list
     setUserScrolledUp(!nearBottom);
 
-    // In an inverted list, y decreases while scrolling down toward bottom (latest)
-    // In an inverted list, y increases when you scroll UP to older messages
     if (keyboardVisible && isUserDraggingRef.current && y > lastScrollYRef.current + 8) {
       Keyboard.dismiss();
     }
@@ -1565,7 +2202,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
             haptics="none"
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={styles.branchLine} />
+              <View className="branchLine" style={styles.branchLine} />
               <Text style={styles.parentPreviewText} numberOfLines={1}>
                 {parentMsg.sender_username}: {parentText}
               </Text>
@@ -1619,7 +2256,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
                 own ? styles.messageRowOwn : styles.messageRowOther,
               ]}
             >
-              {/* reactions cluster above bubble like iMessage */}
+              {/* reactions cluster above bubble */}
               {reacts.length > 0 && (
                 <View
                   style={[
@@ -1682,6 +2319,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
                     emojiOnly={false}
                     radius={radius}
                     theme={theme}
+                    accentColor={accentColor}
                   >
                     <Text
                       style={[
@@ -1844,7 +2482,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
               </ImageBackground>
             ) : (
               <LinearGradient
-                colors={theme.bgGradient}
+                colors={theme.bgGradient as any}
                 style={StyleSheet.absoluteFillObject}
               />
             )}
@@ -1979,7 +2617,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
                             {
                               title: "New lane",
                               emoji: "view-agenda",
-                              color: theme.bubbleOwn,
+                              color: accentColor,
                             }
                           );
                           const lane = res.data as Lane;
@@ -1990,7 +2628,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
                             id: `local-${Date.now()}`,
                             title: "New lane",
                             emoji: "view-agenda",
-                            color: theme.bubbleOwn,
+                            color: accentColor,
                           };
                           setLanes((p) => [lane, ...p]);
                           setActiveLaneId(lane.id);
@@ -2072,7 +2710,10 @@ setInputHeight(INPUT_MIN_HEIGHT);
                       style={[
                         styles.lanePill,
                         activeLaneId === item.id
-                          ? styles.lanePillActive
+                          ? [
+                              styles.lanePillActive,
+                              { borderColor: "rgba(255,255,255,0.22)" },
+                            ]
                           : styles.lanePillInactive,
                         { marginRight: 8 },
                       ]}
@@ -2133,19 +2774,26 @@ setInputHeight(INPUT_MIN_HEIGHT);
               onContentSizeChange={() => {
                 if (!userScrolledUp) {
                   requestAnimationFrame(() => {
-                    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                    flatListRef.current?.scrollToOffset({
+                      offset: 0,
+                      animated: false,
+                    });
                   });
                 }
               }}
               removeClippedSubviews
-              onScrollBeginDrag={() => { isUserDraggingRef.current = true; }}
-              onScrollEndDrag={() => { isUserDraggingRef.current = false; }}
-              onMomentumScrollEnd={() => { isUserDraggingRef.current = false; }}
+              onScrollBeginDrag={() => {
+                isUserDraggingRef.current = true;
+              }}
+              onScrollEndDrag={() => {
+                isUserDraggingRef.current = false;
+              }}
+              onMomentumScrollEnd={() => {
+                isUserDraggingRef.current = false;
+              }}
               contentContainerStyle={{
                 paddingHorizontal: 14,
-                // Inverted list: top === visual bottom (latest). Only add space for keyboard lift; footer is already in layout.
-                paddingTop: (keyboardVisible ? keyboardLift : 0) + 2,
-                // Small pad for the visual top (older messages)
+                paddingTop: (keyboardVisible ? keyboardLift : 0) + 5,
                 paddingBottom: 12,
               }}
               keyboardShouldPersistTaps="handled"
@@ -2163,10 +2811,17 @@ setInputHeight(INPUT_MIN_HEIGHT);
               onMomentumScrollBegin={() => {
                 onEndReachedCalledDuringMomentum.current = false;
               }}
+
+              alwaysBounceVertical
+              bounces
+              decelerationRate="normal"
+              overScrollMode="always"
             />
 
             {/* Footer */}
-            <Animated.View style={{ transform: [{ translateY: footerTranslate }] }}>
+            <Animated.View
+              style={{ transform: [{ translateY: footerTranslate }] }}
+            >
               <View
                 onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
                 style={[
@@ -2320,228 +2975,200 @@ setInputHeight(INPUT_MIN_HEIGHT);
                       </View>
                     )}
 
-                    <View style={styles.writeContainer}>
-                      <GlassPressable
-                        onPress={() => {
-                          Haptics.selectionAsync();
-                          keyboardWasOpen.current = keyboardVisible;
-                          Keyboard.dismiss();
-                          setAttachVisible(true);
-                        }}
-                        radius={18}
-                        padH={10}
-                        padV={8}
-                        variant="solid"
-                        style={{ marginRight: 8 }}
-                      >
-                        <MaterialIcons name="add" size={20} color="#EFFFFF" />
-                      </GlassPressable>
+                <View style={styles.writeContainer}>
+<GlassPressable
+  onPress={() => {
+    Haptics.selectionAsync();
+    keyboardWasOpen.current = keyboardVisible;
+    Keyboard.dismiss();
+    setAttachVisible(true);
+  }}
+  radius={18}
+  padH={10}
+  padV={8}
+  variant="solid"
+  style={{ marginRight: 6, marginLeft: -6,  }}
+>
+  <MaterialIcons name="add" size={20} color="#EFFFFF" />
+</GlassPressable>
 
-                      {/* Elastic, bubbly input */}
-                      <PanGestureHandler
-                        activeOffsetX={[-5, 5]}
-                        activeOffsetY={[-5, 5]}
-                        onGestureEvent={Animated.event(
-                          [
-                            {
-                              nativeEvent: {
-                                translationX: inputDrag.x,
-                                translationY: inputDrag.y,
-                              },
-                            },
-                          ],
-                          { useNativeDriver: true }
-                        )}
-                        onHandlerStateChange={(e) => {
-                          const st = (e as any).nativeEvent.state;
-                          if (
-                            st === GestureState.END ||
-                            st === GestureState.CANCELLED ||
-                            st === GestureState.FAILED
-                          ) {
-                            Animated.spring(inputDrag, {
-                              toValue: { x: 0, y: 0 },
-                              useNativeDriver: true,
-                              stiffness: 300,
-                              damping: 20,
-                              mass: 0.4,
-                            }).start();
-                          }
-                        }}
-                      >
-                        <Animated.View
-                          style={[
-                            styles.inputShell,
-                            {
-                              transform: [
-                                {
-                                  translateX: inputDrag.x.interpolate({
-                                    inputRange: [-100, 100],
-                                    outputRange: [-6, 6],
-                                    extrapolate: "clamp",
-                                  }),
-                                },
-                                {
-                                  translateY: inputDrag.y.interpolate({
-                                    inputRange: [-80, 80],
-                                    outputRange: [-4, 4],
-                                    extrapolate: "clamp",
-                                  }),
-                                },
-                                {
-                                  scaleX: inputDrag.x.interpolate({
-                                    inputRange: [-80, 0, 80],
-                                    outputRange: [1.04, 1, 1.04],
-                                    extrapolate: "clamp",
-                                  }),
-                                },
-                                {
-                                  scaleY: inputDrag.y.interpolate({
-                                    inputRange: [-60, 0, 60],
-                                    outputRange: [1.02, 1, 1.02],
-                                    extrapolate: "clamp",
-                                  }),
-                                },
-                              ],
-                            },
-                          ]}
-                        >
-                          <BlurView
-                            intensity={GLASS.blurFooter}
-                            tint="dark"
-                            style={styles.footerBlur}
-                          />
-                          <LinearGradient
-                            colors={[
-                              "rgba(255,255,255,0.08)",
-                              "rgba(255,255,255,0.02)",
-                            ]}
-                            start={{ x: 0.2, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={StyleSheet.absoluteFill}
-                          />
+  {/* Elastic, bubbly input */}
+  <PanGestureHandler
+    activeOffsetX={[-5, 5]}
+    activeOffsetY={[-5, 5]}
+    onGestureEvent={Animated.event(
+  [
+    {
+      nativeEvent: {
+        translationX: drag.x,
+        translationY: drag.y,
+      },
+    },
+  ],
+  {
+    useNativeDriver: true,
+    listener: (e: any) => {
+      const { x, y } = e.nativeEvent || {};
+      if (typeof x === 'number' && typeof y === 'number') moveGlow(x, y);
+      if (!panActiveRef.current) {
+        panActiveRef.current = true;
+        showGlow(true);
+      }
+    },
+  }
+)}
+    onHandlerStateChange={(e) => {
+      const st = (e as any).nativeEvent.state;
+      if (
+        st === GestureState.END ||
+        st === GestureState.CANCELLED ||
+        st === GestureState.FAILED
+      ) {
+        Animated.spring(inputDrag, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: true,
+          stiffness: 300,
+          damping: 20,
+          mass: 0.4,
+        }).start();
+      }
+    }}
+  >
+    <Animated.View
+      style={[
+        styles.inputShell,
+        {
+          height: inputHeight,          // <- animate container height
+          transform: [
+            {
+              translateX: inputDrag.x.interpolate({
+                inputRange: [-100, 100],
+                outputRange: [-6, 6],
+                extrapolate: "clamp",
+              }),
+            },
+            {
+              translateY: inputDrag.y.interpolate({
+                inputRange: [-80, 80],
+                outputRange: [-4, 4],
+                extrapolate: "clamp",
+              }),
+            },
+            {
+              scaleX: inputDrag.x.interpolate({
+                inputRange: [-80, 0, 80],
+                outputRange: [1.04, 1, 1.04],
+                extrapolate: "clamp",
+              }),
+            },
+            {
+              scaleY: inputDrag.y.interpolate({
+                inputRange: [-60, 0, 60],
+                outputRange: [1.02, 1, 1.02],
+                extrapolate: "clamp",
+              }),
+            },
+          ],
+        },
+      ]}
+    >
+      <BlurView
+        intensity={GLASS.blurFooter}
+        tint="dark"
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={[
+          "rgba(255,255,255,0.08)",
+          "rgba(255,255,255,0.04)",
+        ]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
 
-                          {/* drag-follow sheen */}
-                          <Animated.View
-                            pointerEvents="none"
-                            style={[
-                              StyleSheet.absoluteFill,
-                              {
-                                opacity: inputDrag.x.interpolate({
-                                  inputRange: [-40, 0, 40],
-                                  outputRange: [0.35, 0, 0.35],
-                                  extrapolate: "clamp",
-                                }),
-                              },
-                            ]}
-                          >
-                            <Animated.View
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                bottom: 0,
-                                width: 80,
-                                transform: [
-                                  {
-                                    translateX: inputDrag.x.interpolate({
-                                      inputRange: [-120, 120],
-                                      outputRange: [-24, 24],
-                                      extrapolate: "clamp",
-                                    }),
-                                  },
-                                ],
-                              }}
-                            >
-                              <LinearGradient
-                                colors={[
-                                  "rgba(255,255,255,0)",
-                                  GLASS.sheen,
-                                  "rgba(255,255,255,0)",
-                                ]}
-                                start={{ x: 0, y: 0.2 }}
-                                end={{ x: 1, y: 0.8 }}
-                                style={StyleSheet.absoluteFill}
-                              />
-                            </Animated.View>
-                          </Animated.View>
+      {/* input row */}
+      <View style={styles.inputRow}>
+        <GlassInput containerStyle={{ flex: 1 }}
+          ref={inputRef}
+          style={styles.textInput}    // no fixed height here
+          value={input}
+          onChangeText={(t) => {
+            // no LayoutAnimation here; it causes jitter on every keystroke
+            setInput(t);
+            if (activeLaneId) {
+              setLaneDrafts((prev) => ({
+                ...prev,
+                [activeLaneId]: {
+                  input: t,
+                  attachments: prev[activeLaneId]?.attachments ?? [],
+                  replyingToUuid: replyingTo?.uuid || null,
+                },
+              }));
+            }
+          }}
+          onContentSizeChange={(e) => {
+  const rawH = Math.ceil(e.nativeEvent.contentSize.height);
+  const nextH = Math.min(
+    INPUT_MAX_HEIGHT,
+    Math.max(INPUT_MIN_HEIGHT, rawH)
+  );
+  if (nextH !== lastMeasuredHeightRef.current) {
+    lastMeasuredHeightRef.current = nextH;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setInputHeight(nextH);
+  }
+}}
+          placeholder="Message..."                // placeholder handled by overlay
+          multiline
+          scrollEnabled={false}         // let the outer container grow
+          textAlignVertical="top"
+          autoCorrect
+          autoCapitalize="sentences"
+          underlineColorAndroid="transparent"
+          selectTextOnFocus={false}
+          blurOnSubmit={false}
+          onSubmitEditing={() => {
+            if (showSend) handleSend();
+          }}
+          accessibilityLabel="Message input"
+        />
 
-                          <TextInput
-                            ref={inputRef}
-                            style={[
-                              styles.chatInput,
-                              {
-                                minHeight: INPUT_MIN_HEIGHT,
-                                height: Math.min(Math.max(INPUT_MIN_HEIGHT, inputHeight), INPUT_MAX_HEIGHT),
-                                maxHeight: INPUT_MAX_HEIGHT,
-                                paddingTop: 2,
-                                paddingBottom: 2,
-                                fontSize: 16,
-                                lineHeight: 20,
-                                textAlignVertical: Platform.OS === "android" ? "center" : "top",
-                              },
-                            ]}
-                            placeholder={`Message${
-                              lanes.find((l) => l.id === activeLaneId)?.title
-                                ? ` ${
-                                    lanes.find((l) => l.id === activeLaneId)
-                                      ?.title
-                                  }`
-                                : ""
-                            }`}
-                            // placeholderTextColor="#99AAB0"
-                            placeholderTextColor="#AFC7CE"
-                            multiline
-                            onContentSizeChange={(e) => setInputHeight(e.nativeEvent.contentSize.height)}
-                            onFocus={() => Haptics.selectionAsync()}
-                            value={input}
-                            onChangeText={(t) => {
-                              setInput(t);
-                              if (activeLaneId) {
-                                setLaneDrafts((prev) => ({
-                                  ...prev,
-                                  [activeLaneId]: {
-                                    input: t,
-                                    attachments:
-                                      prev[activeLaneId]?.attachments ?? [],
-                                    replyingToUuid: replyingTo?.uuid || null,
-                                  },
-                                }));
-                              }
-                            }}
-                            multiline
-                            onContentSizeChange={(e) => {
-                              if (justSent) return; // avoid brief post-send bounce
-                              const h = Math.round(e.nativeEvent.contentSize.height);
-                              setInputHeight(Math.min(Math.max(INPUT_MIN_HEIGHT, h), INPUT_MAX_HEIGHT));
-                            }}
-                            returnKeyType="send"
-                            onSubmitEditing={() => {
-                              if (input.trim() || attachmentsToSend.length)
-                                handleSend();
-                            }}
-                          />
-                        </Animated.View>
-                      </PanGestureHandler>
-
-                      {input.trim() !== "" && (
-                        <GlassPressable
-                          onPress={handleSend}
-                          style={styles.sendButton}
-                          accessibilityLabel="Send message"
-                          radius={23}
-                          padH={12}
-                          padV={12}
-                          variant="solid"
-                          haptics="light"
-                        >
-                          <FontAwesome
-                            name="send"
-                            size={18}
-                            color="rgba(255,255,255,0.95)"
-                          />
-                        </GlassPressable>
-                      )}
-                    </View>
+        
+      </View>
+    </Animated.View>
+  </PanGestureHandler>
+  {input.trim() !== "" && (
+  <Animated.View
+          style={[
+            styles.sendBtnWrap,
+            {
+              opacity: sendAnim,
+              transform: [
+                {
+                  scale: sendAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.9, 1],
+                  }),
+                },
+              ],
+            },
+          ]}
+          pointerEvents={showSend ? "auto" : "none"}
+        >
+          <GlassPressable
+            onPress={handleSend}
+            radius={16}
+            padH={10}
+            padV={8}
+            variant="solid"
+            haptics="light"
+          >
+            <MaterialIcons name="send" size={18} color="#EFFFFF" />
+          </GlassPressable>
+        </Animated.View>
+                )}
+</View>
                   </View>
                 )}
               </View>
@@ -2554,7 +3181,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
             layout={overlayLayout}
             message={focusedMessage}
             theme={{
-              bubbleOwn: theme.bubbleOwn,
+              bubbleOwn: accentColor,
               bubbleOther: theme.bubbleOther,
               textOnOwn: theme.textOnOwn,
               textOnOther: theme.textOnOther,
@@ -2623,7 +3250,8 @@ setInputHeight(INPUT_MIN_HEIGHT);
             onCycleTheme={() => {
               const next = (themeIdx + 1) % THEMES.length;
               setThemeIdx(next);
-              persistPrefs({ themeIdx: next });
+              setAccentColor(THEMES[next].accent);
+              persistPrefs({ themeIdx: next, accentColor: THEMES[next].accent });
             }}
             onStartPoll={() => Alert.alert("Poll", "Coming soon")}
             onStartVoice={() => Alert.alert("Voice note", "Coming soon")}
@@ -2650,7 +3278,7 @@ setInputHeight(INPUT_MIN_HEIGHT);
                   {
                     title,
                     emoji: "view-agenda",
-                    color: theme.bubbleOwn,
+                    color: accentColor,
                   }
                 );
                 const lane = res.data as Lane;
@@ -2669,10 +3297,39 @@ setInputHeight(INPUT_MIN_HEIGHT);
             }}
             onDeleteLane={apiDeleteLane}
             themeName={THEMES[themeIdx].name}
-            onCycleTheme={() => {
-              const next = (themeIdx + 1) % THEMES.length;
-              setThemeIdx(next);
-              persistPrefs({ themeIdx: next });
+            // NEW: explicit theme/app/appearance handlers
+            onApplyTheme={(id) => {
+              const idx = Math.max(
+                0,
+                THEMES.findIndex((t) => t.id === id)
+              );
+              setThemeIdx(idx);
+              const nextAccent = THEMES[idx].accent;
+              setAccentColor(nextAccent);
+              persistPrefs({ themeIdx: idx, accentColor: nextAccent });
+            }}
+            onPickBackground={async () => {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsMultipleSelection: false,
+              });
+              if (!result.canceled && result.assets[0]?.uri) {
+                setBgImage(result.assets[0].uri);
+                persistPrefs({ bgImage: result.assets[0].uri });
+              }
+            }}
+            onUseDefaultBlack={() => {
+              setBgImage(null);
+              persistPrefs({ bgImage: null });
+            }}
+            onSetAccent={(hex) => {
+              setAccentColor(hex);
+              persistPrefs({ accentColor: hex });
+            }}
+            mode={mode}
+            onSetMode={(m) => {
+              setMode(m);
+              persistPrefs({ mode: m });
             }}
           />
         </View>
@@ -2929,7 +3586,7 @@ const styles = StyleSheet.create({
   },
 
   footerWrap: {
-    paddingHorizontal: 6,
+    paddingHorizontal: 0,
     paddingVertical: 6,
   },
   replyingBanner: {
@@ -2943,25 +3600,43 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  writeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+writeContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  backgroundColor: 'transparent',
+},
 
-  inputShell: {
-    flex: 1,
-    minHeight: 44,
-    maxHeight: 140,
-    borderRadius: 18,
-    overflow: "hidden",
-    borderWidth: StyleSheet.hairlineWidth,
-    // borderColor: "rgba(255,255,255,0.18)",
-    // backgroundColor: "rgba(255,255,255,0.06)",
-    borderColor: "rgba(255,255,255,0.22)",
-backgroundColor: "rgba(255,255,255,0.08)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
+inputRow: {
+  position: "relative",
+  flexDirection: "row",
+  alignItems: "center",
+},
+writeInput: {
+  flex: 1,
+  paddingHorizontal: 12,
+  paddingTop: 8,
+  paddingBottom: 8,
+  fontSize: 16,
+  lineHeight: 20,
+  color: '#FFF',
+  includeFontPadding: false,   // Android: removes extra top padding
+  textAlign: 'left',
+  textAlignVertical: 'center',    // default; we override dynamically when empty
+},
+
+inputShell: {
+  flex: 1,
+  borderRadius: 20,
+  overflow: "hidden",
+  minHeight: 44,
+  maxHeight: 160,
+  paddingHorizontal: 10,
+  paddingVertical: 0,
+  justifyContent: "center",
+},
+
   footerBlur: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 18,
@@ -2975,4 +3650,34 @@ backgroundColor: "rgba(255,255,255,0.08)",
     marginLeft: 8,
     alignSelf: "flex-end",
   },
+
+textInput: {
+  flex: 1,
+  paddingTop: 12,
+  paddingBottom: 12,
+  paddingHorizontal: 0,
+  fontSize: 16,
+  lineHeight: 20,
+  color: "#EFFFFF",
+  includeFontPadding: false,
+  // backgroundColor: 'red',
+},
+
+// placeholderOverlay: {
+//   position: "absolute",
+//   left: 8,
+//   right: 44, // room for send button
+//   top: 0,
+//   bottom: 0,
+//   justifyContent: "center",
+// },
+
+// placeholderText: {
+//   fontSize: 16,
+//   color: "rgba(231, 255, 255, 0.6)",
+// },
+
+sendBtnWrap: {
+  marginLeft: 6,
+},
 });

@@ -11,7 +11,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
-import { GlassView } from "./GlassView";
+import { GlassView } from "./LiquidGlass";
 import { PlusIcon, PaperPlaneIcon, MicIcon } from "./icons";
 
 type Props = {
