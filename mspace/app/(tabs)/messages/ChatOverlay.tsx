@@ -223,16 +223,16 @@ function isEmojiOnlyMessage(text: string) {
 
 const GLASS = {
   // dial back blur/intensity to avoid frosty look
-  blurBtn: Platform.select({ ios: 12, android: 8, default: 12 }),
-  blurHeader: Platform.select({ ios: 20, android: 10, default: 14 }),
-  // slightly more blur for footer so glass stands out a touch more
-  blurFooter: Platform.select({ ios: 20, android: 10, default: 14 }),
+  blurBtn: Platform.select({ ios: 8, android: 6, default: 8 }),
+  blurHeader: Platform.select({ ios: 16, android: 8, default: 12 }),
+  // slightly less blur for footer for readability but not frosty
+  blurFooter: Platform.select({ ios: 18, android: 8, default: 12 }),
   // soften stroke/sheen so it doesn't read like a box shadow
-  strokeSoft: "rgba(255,255,255,0.14)",
-  sheen: "rgba(255,255,255,0.18)",
-  // slightly stronger fills for a more liquid, less frosted look
-  fillGhost: "rgba(255,255,255,0.05)",
-  fillSolid: "rgba(255,255,255,0.12)",
+  strokeSoft: "rgba(255,255,255,0.10)",
+  sheen: "rgba(255,255,255,0.12)",
+  // lighter fills for a more liquid, less frosted look
+  fillGhost: "rgba(255,255,255,0.025)",
+  fillSolid: "rgba(255,255,255,0.08)",
 };
 
 // --- Legacy compat shim ---------------------------------------------
@@ -473,30 +473,62 @@ const showGlow = useCallback((on: boolean) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, [haptics]);
 
-  // Normalize children: wrap any bare strings/numbers (even inside Fragments/arrays)
-  const wrapTextNodesDeep = (node: any): any => {
-    if (node == null || node === false) return null;
-    if (typeof node === 'string' || typeof node === 'number') {
-      return <Text>{String(node)}</Text>;
-    }
-    if (Array.isArray(node)) {
-      return node.map((n, i) => (
-        <React.Fragment key={i}>{wrapTextNodesDeep(n)}</React.Fragment>
-      ));
-    }
-    if (React.isValidElement(node)) {
-      // Only dive into Fragments; do not touch other element types
-      if ((node as any).type === React.Fragment) {
-        return (
-          <React.Fragment>{wrapTextNodesDeep((node as any).props?.children)}</React.Fragment>
-        );
+  // Normalize children deeply: wrap ANY bare strings/numbers in <Text>,
+  // but do not recurse into existing <Text> nodes.
+  const normalizedChildren = useMemo(() => {
+    const wrapStringsDeep = (node: any, keyPrefix = 'gp') : any => {
+      if (node == null || typeof node === 'boolean') return null;
+      if (typeof node === 'string' || typeof node === 'number') {
+        return <Text key={`${keyPrefix}_txt_${String(Math.random()).slice(2)}`}>{String(node)}</Text>;
+      }
+      if (Array.isArray(node)) {
+        return node.map((n, i) => (
+          <React.Fragment key={`${keyPrefix}_frag_${i}`}>
+            {wrapStringsDeep(n, `${keyPrefix}_${i}`)}
+          </React.Fragment>
+        ));
+      }
+      if (React.isValidElement(node)) {
+        // If it's already a <Text>, leave its children alone (strings are valid there)
+        if (node.type === Text) return node;
+        const child = (node.props as any)?.children;
+        if (child === undefined) return node;
+        const wrappedChild = wrapStringsDeep(child, keyPrefix);
+        if (wrappedChild === child) return node;
+        return React.cloneElement(node, { ...(node.props as any), children: wrappedChild });
       }
       return node;
-    }
-    return node;
-  };
+    };
 
-  const normalizedChildren = wrapTextNodesDeep(children);
+    return wrapStringsDeep(React.Children.toArray(children), 'gp');
+  }, [children]);
+
+  // DEV guard: warn + trace if a raw string is passed to GlassPressable
+  useEffect(() => {
+    if (!__DEV__) return;
+    const arr = React.Children.toArray(children);
+    let found = false;
+    arr.forEach((c) => {
+      if (typeof c === 'string' || typeof c === 'number') {
+        found = true;
+        // eslint-disable-next-line no-console
+        console.warn('[GlassPressable] Raw text child received (will be auto-wrapped):', c);
+      }
+    });
+    if (found) {
+      // eslint-disable-next-line no-console
+      console.trace('[GlassPressable] Callsite for raw text child');
+    }
+    // Helpful: list immediate child element types
+    arr.forEach((c) => {
+      if (React.isValidElement(c)) {
+        const t: any = c.type as any;
+        const name = t?.displayName || t?.name || String(t);
+        // eslint-disable-next-line no-console
+        console.log('[GlassPressable] immediate child element:', name);
+      }
+    });
+  }, [children]);
 
   return (
     <Animated.View
@@ -505,11 +537,13 @@ const showGlow = useCallback((on: boolean) => {
           borderRadius: radius,
           transform: [
             { translateX: Animated.multiply(pullTX, anchorDomX) },
-            { translateY: Animated.multiply(pullTY, anchorDomY) },
+{ translateY: Animated.multiply(pullTY, anchorDomY) },
             { translateX: Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeX, anchorScaleX), anchorDomX), anchorEngageX) },
             { translateY: Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeY, anchorScaleY), anchorDomY), anchorEngageY) },
             { scaleX: scaleXGated },
-            { scaleY: scaleYGated },
+{ scaleY: scaleYGated },
+            { skewX },
+            { skewY },
             { translateX: Animated.multiply(Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeX, anchorScaleX), anchorDomX), anchorEngageX), -1) },
             { translateY: Animated.multiply(Animated.multiply(Animated.multiply(Animated.multiply(anchorEdgeY, anchorScaleY), anchorDomY), anchorEngageY), -1) },
           ],
@@ -652,9 +686,8 @@ edgeFeatherAV.setValue(1);
                 glowY.setValue(yc);
               }
               showGlow(true);
-              // start neutral; dominant axis will be chosen by gesture hysteresis
-              anchorDomX.setValue(0);
-              anchorDomY.setValue(0);
+              anchorDomX.setValue(1);
+              anchorDomY.setValue(1);
               Animated.spring(press, {
                 toValue: 1,
                 useNativeDriver: true,
@@ -713,7 +746,7 @@ edgeFeatherAV.setValue(1);
                   style={StyleSheet.absoluteFill}
                 />
                 {/* finger-follow spotlight */}
-<Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: Animated.multiply(glowOpacity, edgeFeatherAV) }]}>                  {/* very soft outer halo to avoid hard-edged read */}
+<Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: Animated.multiply(glowOpacity, edgeFeatherAV) }]}>{/* very soft outer halo to avoid hard-edged read */}
                   <Animated.View
                     style={{
                       position: 'absolute',
@@ -726,8 +759,8 @@ edgeFeatherAV.setValue(1);
                     <Svg width="100%" height="100%">
                       <Defs>
                         <RadialGradient id="halo" cx="50%" cy="50%" r="50%">
-<Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.08}/>
-<Stop offset="60%"  stopColor="#FFFFFF" stopOpacity={0.04}/>
+                         <Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.06}/>
+<Stop offset="60%"  stopColor="#FFFFFF" stopOpacity={0.03}/>
 <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.00}/>
                         </RadialGradient>
                       </Defs>
@@ -751,9 +784,9 @@ edgeFeatherAV.setValue(1);
                     <Svg width="100%" height="100%">
                       <Defs>
                         <RadialGradient id="spot" cx="50%" cy="50%" r="50%">
-<Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.44}/>
-<Stop offset="35%"  stopColor="#FFFFFF" stopOpacity={0.22}/>
-<Stop offset="65%"  stopColor="#FFFFFF" stopOpacity={0.08}/>
+                          <Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.36}/>
+<Stop offset="35%"  stopColor="#FFFFFF" stopOpacity={0.18}/>
+<Stop offset="65%"  stopColor="#FFFFFF" stopOpacity={0.06}/>
 <Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.00}/>
                         </RadialGradient>
                       </Defs>
@@ -778,8 +811,8 @@ edgeFeatherAV.setValue(1);
                     <Svg width="100%" height="100%">
                       <Defs>
                         <RadialGradient id="hot" cx="50%" cy="50%" r="50%">
-<Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.48}/>
-<Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.12}/>
+                          <Stop offset="0%"   stopColor="#FFFFFF" stopOpacity={0.40}/>
+<Stop offset="100%" stopColor="#FFFFFF" stopOpacity={0.10}/>
                         </RadialGradient>
                       </Defs>
                       <Circle cx="50%" cy="50%" r="50%" fill="url(#hot)" />
