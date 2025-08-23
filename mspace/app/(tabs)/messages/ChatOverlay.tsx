@@ -34,7 +34,6 @@ import Svg, {
   Rect,
   Stop,
 } from "react-native-svg";
-import { Animated as RNAnimated } from "react-native";
 
 import * as Haptics from "expo-haptics";
 import * as Clipboard from "expo-clipboard";
@@ -240,16 +239,6 @@ const GLASS = {
   fillSolid: "rgba(255,255,255,0.08)",
 };
 
-// --- Legacy compat shim ---------------------------------------------
-// Some older codepaths used a module-scope `drag` (Animated.ValueXY) and
-// accessed `drag.x` / `drag.y`. After refactors to `dragX`/`dragY`, any
-// missed reference can crash Hermes with: "Property 'drag' doesn't exist".
-// Provide a harmless, always-present fallback so those stale refs no-op.
-const __LEGACY_DRAG_X__ = new Animated.Value(0);
-const __LEGACY_DRAG_Y__ = new Animated.Value(0);
-// @ts-ignore – expose as read-only shape compatible with old callsites
-const drag = { x: __LEGACY_DRAG_X__, y: __LEGACY_DRAG_Y__ } as const;
-// ---------------------------------------------------------------------
 
 function GlassPressable({
   children,
@@ -553,35 +542,6 @@ function GlassPressable({
     return wrapStringsDeep(React.Children.toArray(children), "gp");
   }, [children]);
 
-  // DEV guard: warn + trace if a raw string is passed to GlassPressable
-  useEffect(() => {
-    if (!__DEV__) return;
-    const arr = React.Children.toArray(children);
-    let found = false;
-    arr.forEach((c) => {
-      if (typeof c === "string" || typeof c === "number") {
-        found = true;
-        // eslint-disable-next-line no-console
-        console.warn(
-          "[GlassPressable] Raw text child received (will be auto-wrapped):",
-          c
-        );
-      }
-    });
-    if (found) {
-      // eslint-disable-next-line no-console
-      console.trace("[GlassPressable] Callsite for raw text child");
-    }
-    // Helpful: list immediate child element types
-    arr.forEach((c) => {
-      if (React.isValidElement(c)) {
-        const t: any = c.type as any;
-        const name = t?.displayName || t?.name || String(t);
-        // eslint-disable-next-line no-console
-        console.log("[GlassPressable] immediate child element:", name);
-      }
-    });
-  }, [children]);
 
   return (
     <Animated.View
@@ -1414,6 +1374,9 @@ export default function ChatOverlay({
   const [showDetails, setShowDetails] = useState(false);
   const [attachVisible, setAttachVisible] = useState(false);
 
+  const [headerH, setHeaderH] = useState(0);
+const headerSpacer = headerH || insets.top + 56; // fallback before first measure
+
   const flatListRef = useRef<FlatList<MessageType>>(null);
   const inputRef = useRef<TextInput>(null);
   const bubbleRefs = useRef<Record<string, View | null>>({});
@@ -2095,6 +2058,8 @@ export default function ChatOverlay({
   // smooth footer raise/lower with keyboard + elastic input drag
   const footerTranslate = useRef(new Animated.Value(0)).current;
   const inputDrag = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  // Backward-compat: alias legacy `drag.x`/`drag.y` usages to the local inputDrag
+  const drag = inputDrag;
 
   // smooth send button presence
   const sendAnim = useRef(new Animated.Value(0)).current;
@@ -2889,7 +2854,10 @@ export default function ChatOverlay({
                 padH={10}
                 padV={5}
                 variant="ghost"
-                style={styles.identityBar}
+                style={[
+                  styles.identityBar,
+                  { flexDirection: 'row'}
+                ]}
                 haptics="selection"
                 block
               >
@@ -2909,7 +2877,13 @@ export default function ChatOverlay({
                     </View>
                   ))}
                 </View>
-                <View style={styles.identityTextCol}>
+                <View 
+                onLayout={(e) => setHeaderH(e.nativeEvent.layout.height)}
+                style={[
+                  styles.identityTextCol,
+                  
+                  { zIndex: 20, elevation: 20 } // ensure header sits on top visually
+                ]}>
                   <Text style={styles.chatHeaderName} numberOfLines={1}>
                     {nameLine || "Conversation"}
                   </Text>
@@ -3677,14 +3651,17 @@ const styles = StyleSheet.create({
   },
   identityBar: {
     flex: 1,
+    flexGrow: 1,
     flexDirection: "row",
     alignItems: "center",
     paddingRight: 10,
+    // backgroundColor: 'blue',
   },
   avatarGroupWide: {
     width: 64,
     height: 32,
     marginLeft: 8,
+    // backgroundColor: 'red',
   },
   avatarWrapper: {
     position: "absolute",
@@ -3703,6 +3680,7 @@ const styles = StyleSheet.create({
   identityTextCol: {
     flex: 1,
     marginLeft: 28,
+    // backgroundColor: 'green',
   },
   chatHeaderName: {
     color: "#EFFFFF",
@@ -3989,21 +3967,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     textAlignVertical: 'top',
   },
-
-  // placeholderOverlay: {
-  //   position: "absolute",
-  //   left: 8,
-  //   right: 44, // room for send button
-  //   top: 0,
-  //   bottom: 0,
-  //   justifyContent: "center",
-  // },
-
-  // placeholderText: {
-  //   fontSize: 16,
-  //   color: "rgba(231, 255, 255, 0.6)",
-  // },
-
   sendBtnWrap: {
     marginLeft: 6,
   },
