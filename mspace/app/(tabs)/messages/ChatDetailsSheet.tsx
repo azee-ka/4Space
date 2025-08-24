@@ -1,1486 +1,644 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
   Easing,
-  FlatList,
-  Image,
   Modal,
-  PanResponder,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  Platform,
-  InteractionManager,
-  Linking,
-  Switch,
+  Image,
 } from "react-native";
-import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import { Swipeable } from "react-native-gesture-handler";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import useApi from "@/hooks/useApi";
-import type { Lane } from "@/app/(tabs)/messages/ChatOverlay";
+import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
 
-const { width: W, height: H } = Dimensions.get("window");
+// Reuse your GlassPressable if you colocate this file with ChatOverlay.tsx
+// Otherwise uncomment and adjust import
+// import { GlassPressable } from "@/components/GlassPrimitives";
 
-/* =========================
-   Liquid Glass tokens (NOT frosty)
-========================= */
-const ACCENT_DEFAULT = "#17D4FF";
-const BLUR = {
-  backdrop: Platform.select({ ios: 32, android: 18, default: 22 }),
-  sheet: Platform.select({ ios: 18, android: 12, default: 14 }),
-  chip: Platform.select({ ios: 10, android: 8, default: 9 }),
-} as const;
-
-const COLORS = {
-  textPrimary: "#EAF6F8",
-  textSecondary: "#A1B8C2",
-  textMuted: "#8FA1AB",
-  border: "rgba(255,255,255,0.12)",
-  ghostOverlay: "rgba(255,255,255,0.03)", // almost clear
-  solidOverlay: "rgba(23,212,255,0.18)", // liquid cyan tint when active
-  focus: "#7FD1FF",
-  danger: "#FF6B6B",
-  black: "#000000",
-};
-
-/* =========================
-   Types
-========================= */
-type Summary = {
-  media: { id: string; url: string; mime_type: string }[];
-  files: { id: string; name: string; url: string }[];
-  links: { id: string; url: string; title?: string }[];
-};
-
-type Mode =
-  | "personal"
-  | "work"
-  | "family"
-  | "dating"
-  | "travel"
-  | "events"
-  | "wellness";
-
-type Props = {
-  visible: boolean;
-  onClose: () => void;
-
-  conversation: any;
-  conversationId: string;
-
-  lanes: Lane[];
-  activeLaneId: string | null;
-  onSetActiveLane: (id: string) => void;
-  onCreateLane: (title: string) => void;
-  onArchiveLane: (id: string) => void;
-  onUpdateLane: (
-    id: string,
-    patch: Partial<
-      Lane & {
-        mute?: boolean;
-        ephemeralSeconds?: number | null;
-        autoArchiveDays?: number | null;
-        pinned?: boolean;
-        color?: string;
-      }
-    >
-  ) => void;
-  onDeleteLane: (id: string) => void;
-
-  themeName: string;
-
-  // theme + appearance hooks (wired from ChatOverlay)
-  onApplyTheme: (id: string) => void; // set theme by id
-  onPickBackground: () => void; // open picker, set bg
-  onUseDefaultBlack: () => void; // set bg to default black
-  onSetAccent: (hex: string) => void; // set accent color
-
-  mode: Mode;
-  onSetMode?: (m: Mode) => void; // safe setter (no crash if missing)
-};
-
-const TABS = [
-  "Profile",
-  "Media",
-  "Files",
-  "Links",
-  "Lanes",
-  "Theme",
-  "Settings",
-] as const;
-
-/* =========================
-   Liquid Glass Pressable — compact pills
-========================= */
+// Lightweight inline GlassPressable clone so this file is drop-in
 function GlassPressable({
   children,
   onPress,
-  onLongPress,
-  onLayout,
-  style,
-  radius = 18,
-  padH = 16,
+  radius = 16,
+  padH = 12,
   padV = 10,
-  accessibilityLabel,
   variant = "ghost",
+  style,
 }: {
   children: React.ReactNode;
   onPress?: () => void;
-  onLongPress?: () => void;
-  onLayout?: (e: any) => void;
-  style?: any;
   radius?: number;
   padH?: number;
   padV?: number;
-  accessibilityLabel?: string;
   variant?: "solid" | "ghost";
+  style?: any;
 }) {
   const a = useRef(new Animated.Value(0)).current;
-  const scale = a.interpolate({ inputRange: [0, 1], outputRange: [1, 0.985] });
-  const ink = a.interpolate({ inputRange: [0, 1], outputRange: [0, 0.08] });
-
-  const onIn = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Animated.spring(a, {
-      toValue: 1,
-      useNativeDriver: true,
-      stiffness: 320,
-      damping: 22,
-      mass: 0.25,
-    }).start();
-  };
-  const onOut = () => {
-    Animated.spring(a, {
-      toValue: 0,
-      useNativeDriver: true,
-      stiffness: 320,
-      damping: 22,
-      mass: 0.25,
-    }).start();
-  };
-
-  const overlayColor =
-    variant === "solid" ? COLORS.solidOverlay : COLORS.ghostOverlay;
-
+  const scale = a.interpolate({ inputRange: [0, 1], outputRange: [1, 0.97] });
   return (
-    <Animated.View style={[{ transform: [{ scale }], borderRadius: radius }, style]}>
+    <Animated.View style={[{ transform: [{ scale }], opacity: 1 }, style]}>
       <Pressable
-        onPress={onPress}
-        onLongPress={onLongPress}
-        onPressIn={onIn}
-        onPressOut={onOut}
-        onLayout={onLayout}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        style={{
-          borderRadius: radius,
-          overflow: "hidden",
-          paddingHorizontal: padH,
-          paddingVertical: padV,
-          backgroundColor: "transparent",
+        onPress={() => {
+          Animated.spring(a, { toValue: 1, useNativeDriver: true, stiffness: 360, damping: 22, mass: 0.3 }).start(() =>
+            Animated.spring(a, { toValue: 0, useNativeDriver: true, stiffness: 360, damping: 22, mass: 0.3 }).start()
+          );
+          Haptics.selectionAsync();
+          onPress?.();
         }}
+        style={{ borderRadius: radius, overflow: "hidden", paddingHorizontal: padH, paddingVertical: padV }}
       >
-        {/* Liquid background (no frost) */}
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <BlurView intensity={BLUR.chip} tint="light" style={StyleSheet.absoluteFill} />
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor }]} />
-          <View
-            pointerEvents="none"
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                borderRadius: radius,
-                borderWidth: StyleSheet.hairlineWidth,
-                borderColor: COLORS.border,
-              },
-            ]}
-          />
-          {/* subtle diagonal specular sweep */}
-          <LinearGradient
-            colors={[
-              "rgba(255,255,255,0)",
-              "rgba(255,255,255,0.22)",
-              "rgba(255,255,255,0)",
-            ]}
-            start={{ x: 0, y: 0.1 }}
-            end={{ x: 1, y: 0.9 }}
-            style={{
-              position: "absolute",
-              left: -60,
-              right: -60,
-              top: 0,
-              bottom: 0,
-              opacity: variant === "solid" ? 0.22 : 0.1,
-            }}
-          />
-          {/* press ink */}
-          <Animated.View
-            style={[StyleSheet.absoluteFill, { backgroundColor: "#fff", opacity: ink }]}
-          />
-        </View>
-        {children}
+        <BlurView intensity={variant === "solid" ? 18 : 10} tint="light" style={StyleSheet.absoluteFill} />
+        <LinearGradient
+          colors={variant === "solid" ? ["rgba(255,255,255,0.12)", "rgba(255,255,255,0.04)"] : ["rgba(255,255,255,0.05)", "rgba(255,255,255,0.01)"]}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={{ borderRadius: radius }}>{children}</View>
       </Pressable>
     </Animated.View>
   );
 }
 
-export default function ChatDetailsSheet({
+const { height: SH } = Dimensions.get("window");
+
+// Theme type matches your THEMES[] shape in ChatOverlay
+export type ThemeDef = {
+  id: string;
+  name: string;
+  accent: string;
+  bgGradient: string[];
+  bubbleOther: string;
+  textOnOwn: string;
+  textOnOther: string;
+  backdropTintIntensity: number;
+};
+
+// Storage helpers
+const S = {
+  get: async <T,>(k: string, fallback: T): Promise<T> => {
+    try {
+      const v = await AsyncStorage.getItem(k);
+      if (v == null) return fallback;
+      return JSON.parse(v) as T;
+    } catch {
+      return fallback;
+    }
+  },
+  set: async (k: string, v: any) => {
+    try {
+      await AsyncStorage.setItem(k, JSON.stringify(v));
+    } catch {}
+  },
+};
+
+// Reusable rows
+function SectionHeader({ title }: { title: string }) {
+  return <Text style={styles.sectionHeader}>{title}</Text>;
+}
+
+function SettingRow({
+  icon,
+  title,
+  subtitle,
+  right,
+  onPress,
+  danger,
+}: {
+  icon?: keyof typeof MaterialIcons.glyphMap;
+  title: string;
+  subtitle?: string;
+  right?: React.ReactNode;
+  onPress?: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <Pressable onPress={onPress} disabled={!onPress} style={styles.row}>
+      {icon && (
+        <View style={styles.rowIcon}>
+          <MaterialIcons name={icon} size={20} color={danger ? "#FF6666" : "#EFFFFF"} />
+        </View>
+      )}
+      <View style={styles.rowTextWrap}>
+        <Text style={[styles.rowTitle, danger && { color: "#FF6666" }]} numberOfLines={1}>
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text style={styles.rowSubtitle} numberOfLines={2}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
+      <View style={{ marginLeft: 10 }}>{right}</View>
+    </Pressable>
+  );
+}
+
+function SettingToggle({ value, onValueChange }: { value: boolean; onValueChange: (v: boolean) => void }) {
+  return <CustomSwitch value={value} onValueChange={onValueChange} />;
+}
+
+function ColorSwatch({ color, selected, onPress }: { color: string; selected?: boolean; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={[styles.colorDot, { backgroundColor: color, borderWidth: selected ? 2 : StyleSheet.hairlineWidth }]} />
+  );
+}
+
+function CustomSwitch({ value, onValueChange }: { value: boolean; onValueChange: (v: boolean) => void }) {
+  const a = useRef(new Animated.Value(value ? 1 : 0)).current;
+  useEffect(() => {
+    Animated.spring(a, { toValue: value ? 1 : 0, useNativeDriver: false, stiffness: 320, damping: 22, mass: 0.45 }).start();
+  }, [value]);
+
+  const trackBg = a.interpolate({ inputRange: [0, 1], outputRange: ["rgba(255,255,255,0.08)", "rgba(255,255,255,0.96)"] });
+  const knobTX = a.interpolate({ inputRange: [0, 1], outputRange: [2, 22] });
+
+  return (
+    <Pressable onPress={() => onValueChange(!value)} accessibilityRole="switch" accessibilityState={{ checked: value }} style={{ width: 44, height: 28, borderRadius: 16, overflow: "hidden", justifyContent: "center" }}>
+      <Animated.View style={[StyleSheet.absoluteFill, { borderRadius: 16, backgroundColor: trackBg }]} />
+      <LinearGradient pointerEvents="none" colors={["rgba(255,255,255,0.20)", "rgba(255,255,255,0.05)"]} style={[StyleSheet.absoluteFill]} />
+      <Animated.View style={{ width: 24, height: 24, borderRadius: 12, transform: [{ translateX: knobTX }], backgroundColor: "#001410" }} />
+    </Pressable>
+  );
+}
+
+function TextSizeControl({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const opts = [0, 1, 2, 3];
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      {opts.map((v) => (
+        <Pressable key={v} onPress={() => onChange(v)} style={{ marginLeft: v === 0 ? 0 : 6 }}>
+          <GlassPressable radius={12} padH={10} padV={6} variant={value === v ? "solid" : "ghost"}>
+            <Text style={{ fontWeight: "900", color: value === v ? "#001410" : "#cfe5e9", fontSize: 12 + v * 2 }}>A</Text>
+          </GlassPressable>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+// Tabs
+const TABS = [
+  { key: "account", label: "Account", icon: "person" as const },
+  { key: "privacy", label: "Privacy", icon: "lock" as const },
+  { key: "notifications", label: "Notifications", icon: "notifications" as const },
+  { key: "appearance", label: "Appearance", icon: "palette" as const },
+  { key: "chat", label: "Chat", icon: "chat" as const },
+  { key: "storage", label: "Data", icon: "cloud" as const },
+  { key: "accessibility", label: "Accessibility", icon: "accessibility" as const },
+  { key: "advanced", label: "Advanced", icon: "developer-mode" as const },
+  { key: "about", label: "About", icon: "info" as const },
+] as const;
+
+export type SettingsTabKey = typeof TABS[number]["key"];
+
+export default function SettingsOverlay({
   visible,
   onClose,
-  conversation,
-  conversationId,
-  lanes,
-  activeLaneId,
-  onSetActiveLane,
-  onCreateLane,
-  onArchiveLane,
-  onUpdateLane,
-  onDeleteLane,
-  themeName,
-  onApplyTheme,
-  onPickBackground,
-  onUseDefaultBlack,
-  onSetAccent,
-  mode,
-  onSetMode,
-}: Props) {
-  const { callApi } = useApi();
+  version = "",
+  themes,
+  currentThemeId,
+  accentColor,
+  backgroundImage,
+  onSetBackgroundImage,
+  presetWallpapers,
+  onChangeTheme,
+  onChangeAccent,
+  onOpenLicenses,
+  onOpenTerms,
+  onOpenPrivacy,
+  onContactSupport,
+  onSignOut,
+  onDeleteAccount,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  version?: string;
+  themes?: ThemeDef[];
+  currentThemeId?: string;
+  accentColor?: string;
+  backgroundImage?: string | null;
+  onSetBackgroundImage?: (uri: string | null) => void;
+  presetWallpapers?: string[];
+  onChangeTheme?: (id: string) => void;
+  onChangeAccent?: (hex: string) => void;
+  onOpenLicenses?: () => void;
+  onOpenTerms?: () => void;
+  onOpenPrivacy?: () => void;
+  onContactSupport?: () => void;
+  onSignOut?: () => void;
+  onDeleteAccount?: () => void;
+}) {
   const insets = useSafeAreaInsets();
+  const slide = useRef(new Animated.Value(SH)).current;
+  const [tab, setTab] = useState<SettingsTabKey>("account");
+  const [bgImage, setBgImage] = useState<string | null>(backgroundImage ?? null);
 
-  // open + drag
-  const open = useRef(new Animated.Value(0)).current;
-  const dragY = useRef(new Animated.Value(0)).current;
+  // Local persisted toggles (examples)
+  const [toggles, setToggles] = useState({
+    // privacy
+    readReceipts: true,
+    showTyping: true,
+    lastSeen: "friends", // everyone | friends | nobody
+    allowScreenshots: true,
+    safeContentFilter: true,
 
-  // tabs + summary + scroll memory
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Profile");
-  const [summary, setSummary] = useState<Summary>({
-    media: [],
-    files: [],
-    links: [],
-  });
-  const tabsScrollRef = useRef<ScrollView>(null);
-  const tabsScrollX = useRef(0);
-  const tabsViewportW = useRef(W);
-  const tabsContentW = useRef(0);
-  const tabScrollY = useRef<Record<string, number>>({}).current;
+    // notifications
+    pushEnabled: true,
+    previewInPush: true,
+    soundEnabled: true,
+    hapticsEnabled: true,
 
-  // conversation-ish local settings
-  const [readReceipts, setReadReceipts] = useState<boolean>(
-    conversation?.settings?.read_receipts ?? true
-  );
-  const [showPresence, setShowPresence] = useState<boolean>(
-    conversation?.settings?.show_presence ?? true
-  );
-  const [lastSeenAt, setLastSeenAt] = useState<string | null>(
-    conversation?.last_seen_at ?? null
-  );
+    // chat
+    enterToSend: false,
+    linkPreviews: true,
+    autoCap: true,
+    smartPunct: true,
 
-  // appearance local
-  const [accent, setAccent] = useState<string>(ACCENT_DEFAULT);
-  const [selectedTheme, setSelectedTheme] = useState<string>(themeName);
+    // data
+    autoDownloadWifi: true,
+    autoDownloadCell: false,
+    lowDataMode: false,
 
-  // Mode (safe locally)
-  const [localMode, setLocalMode] = useState<Mode>(mode);
-  const setModeSafe = (m: Mode) => {
-    setLocalMode(m);
-    if (typeof onSetMode === "function") onSetMode(m);
-  };
+    // accessibility
+    reduceMotion: false,
+    highContrast: false,
+    largerText: 0, // 0..3
 
-  // media preview
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // settings sub-pages
-  type SettingsPage = "root" | "general" | "privacy" | "notifications" | "advanced";
-  const [settingsPage, setSettingsPage] = useState<SettingsPage>("root");
-
-  // transforms
-  const topAnchor = Math.max(insets.top + 56, H * 0.16);
-  const translateY = Animated.add(
-    open.interpolate({ inputRange: [0, 1], outputRange: [H, topAnchor] }),
-    dragY
-  );
-  const backdropOpacity = open.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-  const containerScale = open.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.985, 1],
+    // advanced
+    devMode: false,
   });
 
-  // open/close
-  useEffect(() => {
-    Animated.timing(open, {
-      toValue: visible ? 1 : 0,
-      duration: visible ? 300 : 180,
-      easing: visible ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (!visible && finished) dragY.setValue(0);
+  const setT = useCallback((patch: Partial<typeof toggles>) => {
+    setToggles((p) => {
+      const n = { ...p, ...patch };
+      S.set("app:settings", n);
+      return n;
     });
+  }, []);
+
+  // load
+  useEffect(() => {
+    if (visible) {
+      (async () => {
+        const t = await S.get("app:settings", toggles);
+        setToggles(t);
+        const savedBg = await S.get<string | null>("app:appearance:bgImage", backgroundImage ?? null);
+        setBgImage(savedBg);
+      })();
+      slide.setValue(SH);
+      Animated.timing(slide, { toValue: 0, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    }
   }, [visible]);
 
-  const animateClose = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Animated.timing(open, {
-      toValue: 0,
-      duration: 160,
-      easing: Easing.in(Easing.cubic),
-      useNativeDriver: true,
-    }).start(onClose);
-  };
-
-  // swipe to close
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, g) =>
-        Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx) * 1.05,
-      onPanResponderMove: (_, g) => dragY.setValue(g.dy > 0 ? g.dy : 0),
-      onPanResponderRelease: (_, g) => {
-        const shouldClose = g.vy > 1.0 || g.dy > H * 0.18;
-        if (shouldClose) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          animateClose();
-        } else {
-          Haptics.selectionAsync();
-          Animated.spring(dragY, {
-            toValue: 0,
-            useNativeDriver: true,
-            bounciness: 4,
-            speed: 20,
-          }).start();
-        }
-      },
-      onPanResponderTerminate: () => {
-        Animated.spring(dragY, {
-          toValue: 0,
-          useNativeDriver: true,
-          bounciness: 4,
-          speed: 20,
-        }).start();
-      },
-    })
-  ).current;
-
-  // fetch media/files/links summary (Links tab now lists links from chat)
-  useEffect(() => {
-    if (!visible) return;
-    let mounted = true;
-    const task = InteractionManager.runAfterInteractions(() => {
-      (async () => {
-        try {
-          const res = await callApi(`messages/summary/${conversationId}/`);
-          if (mounted)
-            setSummary(res.data || { media: [], files: [], links: [] });
-        } catch {
-          if (mounted) setSummary({ media: [], files: [], links: [] });
-        }
-      })();
-    });
-    return () => {
-      mounted = false;
-      task.cancel?.();
-    };
-  }, [visible, conversationId]);
-
-  // PATCH helper (guarded)
-  const updateSettings = async (patch: any) => {
-    try {
-      await callApi(
-        `messages/conversations/${conversationId}/settings/`,
-        "PATCH",
-        patch
-      );
-    } catch {
-      // optional backend; ignore failure
-    }
-  };
-
-  const openUrl = (url: string) => Linking.openURL(url).catch(() => {});
-
-  /* ============ UI bits ============ */
-
-  const TabsPill = React.memo(
-    ({
-      label,
-      active,
-      onPress,
-      icon,
-    }: {
-      label: string;
-      active?: boolean;
-      onPress: () => void;
-      icon?: keyof typeof MaterialIcons.glyphMap;
-    }) => (
-      <GlassPressable
-        variant={active ? "solid" : "ghost"}
-        onPress={() => {
-          Haptics.selectionAsync();
-          onPress();
-        }}
-        radius={18}
-        padH={16}
-        padV={10}
-        style={{ marginHorizontal: 6 }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          {icon ? (
-            <MaterialIcons
-              name={icon}
-              size={16}
-              color={COLORS.textPrimary}
-              style={{ marginRight: 8, opacity: 0.9 }}
-            />
-          ) : null}
-          <Text style={styles.pillText}>{label}</Text>
-        </View>
-      </GlassPressable>
-    )
-  );
-
-  const Empty = ({ text }: { text: string }) => (
-    <View style={styles.emptyWrap}>
-      <MaterialIcons name="inbox" size={22} color="#9aa0a6" />
-      <Text style={styles.emptyText}>{text}</Text>
-    </View>
-  );
-
-  const TabsBar = () => (
-    <View style={styles.tabsBar}>
-      <ScrollView
-        ref={tabsScrollRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabsContent}
-        automaticallyAdjustContentInsets={false}
-        contentInsetAdjustmentBehavior="never"
-        onScroll={(e) => (tabsScrollX.current = e.nativeEvent.contentOffset.x)}
-        onMomentumScrollEnd={(e) => (tabsScrollX.current = e.nativeEvent.contentOffset.x)}
-        onScrollEndDrag={(e) => (tabsScrollX.current = e.nativeEvent.contentOffset.x)}
-        scrollEventThrottle={16}
-        onLayout={(e) => {
-          tabsViewportW.current = e.nativeEvent.layout.width;
-        }}
-        onContentSizeChange={(w) => {
-          tabsContentW.current = w;
-        }}
-      >
-        {TABS.map((t) => (
-          <TabsPill key={t} label={t} active={tab === t} onPress={() => setTab(t)} />
-        ))}
-      </ScrollView>
-    </View>
-  );
-
-  // keep tab-bar position stable (don’t auto-scroll it on tab change)
-  useEffect(() => {
-    const ref = tabsScrollRef.current;
-    if (ref) ref.scrollTo({ x: tabsScrollX.current || 0, animated: false });
-  }, [tab]);
-
-  /* ============ Sections ============ */
-
-  const ProfileTab = () => (
-    <ScrollView
-      contentContainerStyle={styles.sectionContent}
-      onScroll={(e) => (tabScrollY["Profile"] = e.nativeEvent.contentOffset.y)}
-      scrollEventThrottle={16}
-      contentOffset={{ x: 0, y: tabScrollY["Profile"] || 0 }}
-    >
-      <View style={styles.sectionHeader}>
-        <MaterialIcons name="groups" size={20} color={COLORS.textSecondary} />
-        <Text style={styles.sectionHeaderText}>Participants</Text>
-      </View>
-
-      {conversation?.participants?.map((p: any) => (
-        <View key={p.user.id} style={styles.personRow}>
-          <View style={styles.avatarRing}>
-            <View style={styles.avatar} />
-          </View>
-          <View style={{ marginLeft: 10 }}>
-            <Text style={styles.personName}>
-              {p.user.first_name} {p.user.last_name}
-            </Text>
-            <Text style={styles.personHandle}>@{p.user.username}</Text>
-          </View>
-        </View>
-      ))}
-
-      {(!conversation?.participants || conversation.participants.length === 0) && (
-        <Empty text="No participants" />
-      )}
-    </ScrollView>
-  );
-
-  const MediaTab = () => (
-    <>
-      <FlatList
-        contentContainerStyle={styles.mediaGrid}
-        numColumns={3}
-        data={summary.media}
-        keyExtractor={(m) => m.id}
-        renderItem={({ item }) => (
-          <Pressable onPress={() => setImagePreview(item.url)} style={styles.mediaThumbWrap}>
-            <Image source={{ uri: item.url }} style={styles.mediaThumb} />
-          </Pressable>
-        )}
-        ListEmptyComponent={<Empty text="No media yet" />}
-      />
-      <Modal
-        transparent
-        visible={!!imagePreview}
-        animationType="fade"
-        onRequestClose={() => setImagePreview(null)}
-      >
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => setImagePreview(null)}>
-          <BlurView intensity={BLUR.backdrop} tint="dark" style={StyleSheet.absoluteFill} />
-          {imagePreview ? (
-            <View style={styles.previewWrap}>
-              <Image source={{ uri: imagePreview }} style={styles.previewImage} resizeMode="contain" />
-            </View>
-          ) : null}
-        </Pressable>
-      </Modal>
-    </>
-  );
-
-  const FilesTab = () => (
-    <ScrollView
-      contentContainerStyle={styles.sectionContent}
-      onScroll={(e) => (tabScrollY["Files"] = e.nativeEvent.contentOffset.y)}
-      scrollEventThrottle={16}
-      contentOffset={{ x: 0, y: tabScrollY["Files"] || 0 }}
-    >
-      <View style={styles.sectionHeader}>
-        <MaterialIcons name="insert-drive-file" size={20} color={COLORS.textSecondary} />
-        <Text style={styles.sectionHeaderText}>Files</Text>
-      </View>
-      {summary.files.length === 0 ? (
-        <Empty text="No files yet" />
-      ) : (
-        summary.files.map((f) => (
-          <GlassPressable
-            key={f.id}
-            radius={14}
-            padH={12}
-            padV={12}
-            style={{ marginBottom: 10 }}
-            variant="solid"
-            onPress={() => openUrl(f.url)}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons
-                name="insert-drive-file"
-                size={20}
-                color={COLORS.textPrimary}
-                style={{ marginRight: 10 }}
-              />
-              <Text style={styles.rowText} numberOfLines={1}>
-                {f.name}
-              </Text>
-            </View>
-          </GlassPressable>
-        ))
-      )}
-    </ScrollView>
-  );
-
-  const LinksTab = () => (
-    <ScrollView
-      contentContainerStyle={styles.sectionContent}
-      onScroll={(e) => (tabScrollY["Links"] = e.nativeEvent.contentOffset.y)}
-      scrollEventThrottle={16}
-      contentOffset={{ x: 0, y: tabScrollY["Links"] || 0 }}
-    >
-      <View style={styles.sectionHeader}>
-        <MaterialIcons name="link" size={20} color={COLORS.textSecondary} />
-        <Text style={styles.sectionHeaderText}>Links</Text>
-      </View>
-
-      {summary.links.length === 0 ? (
-        <Empty text="No links yet" />
-      ) : (
-        summary.links.map((l) => (
-          <GlassPressable
-            key={l.id}
-            radius={14}
-            padH={12}
-            padV={12}
-            style={{ marginBottom: 10 }}
-            variant="solid"
-            onPress={() => openUrl(l.url)}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons
-                name="link"
-                size={20}
-                color={COLORS.textPrimary}
-                style={{ marginRight: 10 }}
-              />
-              <Text style={styles.rowText} numberOfLines={1}>
-                {l.title || l.url}
-              </Text>
-            </View>
-          </GlassPressable>
-        ))
-      )}
-    </ScrollView>
-  );
-
-  const LaneRules = ({ lane }: { lane: Lane }) => {
-    const [mute, setMute] = useState<boolean>((lane as any).mute ?? false);
-    const [pinned, setPinned] = useState<boolean>((lane as any).pinned ?? false);
-    const [ephemeralSeconds, setEphemeralSeconds] = useState<number | null>(
-      (lane as any).ephemeralSeconds ?? null
-    );
-    const [autoArchiveDays, setAutoArchiveDays] = useState<number | null>(
-      (lane as any).autoArchiveDays ?? null
-    );
-
-    useEffect(() => {
-      setMute((lane as any).mute ?? false);
-      setPinned((lane as any).pinned ?? false);
-      setEphemeralSeconds((lane as any).ephemeralSeconds ?? null);
-      setAutoArchiveDays((lane as any).autoArchiveDays ?? null);
-    }, [lane]);
-
-    const savePatch = (patch: any) => onUpdateLane(lane.id, patch);
-
-    return (
-      <View style={styles.rulesCard}>
-        <View style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Mute notifications</Text>
-          <Switch
-            value={mute}
-            onValueChange={(v) => {
-              setMute(v);
-              savePatch({ mute: v });
-            }}
-          />
-        </View>
-        <View style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Pin lane</Text>
-          <Switch
-            value={pinned}
-            onValueChange={(v) => {
-              setPinned(v);
-              savePatch({ pinned: v });
-            }}
-          />
-        </View>
-
-        <View style={{ height: 10 }} />
-
-        <Text style={styles.sectionLabel}>Ephemeral messages</Text>
-        <View style={styles.segmentRow}>
-          {[null, 3600, 21600, 86400].map((s, idx) => (
-            <GlassPressable
-              key={idx}
-              variant={ephemeralSeconds === s ? "solid" : "ghost"}
-              onPress={() => {
-                setEphemeralSeconds(s);
-                savePatch({ ephemeralSeconds: s });
-              }}
-              radius={14}
-              padH={12}
-              padV={8}
-              style={{ marginRight: 8, marginBottom: 8 }}
-            >
-              <Text style={styles.rowText}>
-                {s === null ? "Off" : s === 3600 ? "1 hr" : s === 21600 ? "6 hr" : "24 hr"}
-              </Text>
-            </GlassPressable>
-          ))}
-        </View>
-
-        <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Auto-archive after</Text>
-        <View style={styles.segmentRow}>
-          {[null, 3, 7, 30].map((d, idx) => (
-            <GlassPressable
-              key={idx}
-              variant={autoArchiveDays === d ? "solid" : "ghost"}
-              onPress={() => {
-                setAutoArchiveDays(d);
-                savePatch({ autoArchiveDays: d });
-              }}
-              radius={14}
-              padH={12}
-              padV={8}
-              style={{ marginRight: 8, marginBottom: 8 }}
-            >
-              <Text style={styles.rowText}>{d === null ? "Never" : `${d} days`}</Text>
-            </GlassPressable>
-          ))}
-        </View>
-      </View>
-    );
-  };
-
-  const LaneRow = ({ lane, isActive }: { lane: Lane; isActive: boolean }) => {
-    const [editing, setEditing] = useState(false);
-    const [title, setTitle] = useState(lane.title);
-    const [iconName, setIconName] = useState<keyof typeof MaterialIcons.glyphMap>(
-      (lane.emoji as any) || "view-agenda"
-    );
-
-    const RightActions = () => (
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Pressable onPress={() => onArchiveLane(lane.id)} style={styles.swipeAction}>
-          <MaterialIcons name="archive" size={20} color={COLORS.textPrimary} />
-          <Text style={styles.swipeText}>Archive</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => onDeleteLane(lane.id)}
-          style={[styles.swipeAction, { backgroundColor: "rgba(255,0,0,0.16)" }]}
-        >
-          <MaterialIcons name="delete" size={20} color={COLORS.danger} />
-          <Text style={[styles.swipeText, { color: COLORS.danger }]}>Delete</Text>
-        </Pressable>
-      </View>
-    );
-
-    return (
-      <Swipeable
-        renderRightActions={RightActions}
-        overshootRight={false}
-        friction={1.2}
-        rightThreshold={28}
-      >
-        <View style={styles.laneRow}>
-          <Pressable
-            onPress={() => onSetActiveLane(lane.id)}
-            style={[styles.laneBadge, isActive && { backgroundColor: COLORS.solidOverlay }]}
-          >
-            <MaterialIcons
-              name={iconName as any}
-              size={16}
-              color={COLORS.textPrimary}
-              style={{ marginRight: 6, opacity: 0.9 }}
-            />
-            <Text style={styles.laneText}>{lane.title}</Text>
-          </Pressable>
-          <View style={{ flexDirection: "row" }}>
-            <GlassPressable
-              radius={12}
-              padH={10}
-              padV={8}
-              style={{ marginRight: 8 }}
-              onPress={() => setEditing((e) => !e)}
-            >
-              <MaterialIcons name="edit" size={18} color={COLORS.textPrimary} />
-            </GlassPressable>
-            <GlassPressable
-              radius={12}
-              padH={10}
-              padV={8}
-              onPress={() => onArchiveLane(lane.id)}
-            >
-              <MaterialIcons name="archive" size={18} color={COLORS.textPrimary} />
-            </GlassPressable>
-          </View>
-        </View>
-        {editing && (
-          <View style={styles.editorCard}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialIcons
-                name={iconName as any}
-                size={22}
-                color={COLORS.textPrimary}
-                style={{ marginRight: 8 }}
-              />
-              <TextInput
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Lane name"
-                placeholderTextColor={COLORS.textMuted}
-                style={styles.titleInput}
-              />
-            </View>
-            <View style={{ flexDirection: "row", marginTop: 8 }}>
-              <GlassPressable
-                onPress={() => {
-                  onUpdateLane(lane.id, { title, emoji: iconName as string });
-                  setEditing(false);
-                }}
-                radius={12}
-                padH={12}
-                padV={10}
-                style={{ marginRight: 8 }}
-                variant="solid"
-              >
-                <Text style={styles.rowText}>Save</Text>
-              </GlassPressable>
-              <GlassPressable
-                onPress={() => setEditing(false)}
-                radius={12}
-                padH={12}
-                padV={10}
-              >
-                <Text style={styles.rowText}>Cancel</Text>
-              </GlassPressable>
-            </View>
-
-            <LaneRules lane={lane} />
-          </View>
-        )}
-      </Swipeable>
-    );
-  };
-
-  const LanesTab = () => (
-    <ScrollView
-      contentContainerStyle={styles.sectionContent}
-      onScroll={(e) => (tabScrollY["Lanes"] = e.nativeEvent.contentOffset.y)}
-      scrollEventThrottle={16}
-      contentOffset={{ x: 0, y: tabScrollY["Lanes"] || 0 }}
-    >
-      <View style={styles.sectionHeader}>
-        <MaterialIcons name="view-agenda" size={20} color={COLORS.textSecondary} />
-        <Text style={styles.sectionHeaderText}>Context lanes</Text>
-      </View>
-
-      {lanes.length === 0 ? (
-        <Empty text="No lanes yet" />
-      ) : (
-        lanes.map((lane) => (
-          <LaneRow key={lane.id} lane={lane} isActive={activeLaneId === lane.id} />
-        ))
-      )}
-
-      <GlassPressable
-        onPress={() => onCreateLane("New lane")}
-        radius={999}
-        padH={12}
-        padV={9}
-        style={{ alignSelf: "flex-start", marginTop: 12 }}
-        variant="solid"
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="add" size={18} color={COLORS.textPrimary} style={{ marginRight: 6 }} />
-          <Text style={styles.rowText}>Add lane</Text>
-        </View>
-      </GlassPressable>
-    </ScrollView>
-  );
-
-  const ThemeTab = () => {
-    const THEMES = [
-      { id: "midnight", name: "Midnight", accent: "#17D4FF", preview: ["#05080D", "#071019"] },
-      { id: "violet", name: "Violet", accent: "#A07CFE", preview: ["#0E0B1A", "#140F26"] },
-      { id: "emerald", name: "Emerald", accent: "#19C37D", preview: ["#071411", "#0C201A"] },
-      { id: "sunset", name: "Sunset", accent: "#FF6B4A", preview: ["#1a0c0e", "#2a111a"] },
-      { id: "aurora", name: "Aurora", accent: "#00E3D8", preview: ["#091322", "#0a1e2e"] },
-    ];
-
-    const applyTheme = (id: string) => {
-      setSelectedTheme(id);
-      onApplyTheme(id);
-    };
-
-    const accents = ["#17D4FF", "#A07CFE", "#19C37D", "#FFD14A", "#FF6B4A", "#00E3D8"];
-
-    return (
-      <ScrollView
-        contentContainerStyle={styles.sectionContent}
-        onScroll={(e) => (tabScrollY["Theme"] = e.nativeEvent.contentOffset.y)}
-        scrollEventThrottle={16}
-        contentOffset={{ x: 0, y: tabScrollY["Theme"] || 0 }}
-      >
-        <Text style={styles.sectionLabel}>Theme</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 6 }}>
-          {THEMES.map((t) => (
-            <Pressable
-              key={t.id}
-              onPress={() => applyTheme(t.id)}
-              style={[styles.themeCard, selectedTheme === t.id && styles.themeCardActive]}
-            >
-              <LinearGradient
-                colors={t.preview as any}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={styles.themeBubbleRow}>
-                <View style={[styles.themeBubble, { backgroundColor: t.accent }]} />
-                <View style={[styles.themeBubble, { backgroundColor: "rgba(255,255,255,0.2)" }]} />
-                <View style={[styles.themeBubble, { backgroundColor: "rgba(255,255,255,0.08)" }]} />
-              </View>
-              <Text style={styles.themeName}>{t.name}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Accent</Text>
-        <View style={{ flexDirection: "row", paddingVertical: 4, flexWrap: "wrap" }}>
-          {accents.map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => {
-                setAccent(c);
-                onSetAccent(c);
-              }}
-              style={[styles.accentDot, { backgroundColor: c }, accent === c && styles.accentDotActive]}
-            />
-          ))}
-        </View>
-
-        <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Background</Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          <GlassPressable
-            onPress={onUseDefaultBlack}
-            radius={14}
-            padH={12}
-            padV={10}
-            variant="solid"
-            style={{ marginRight: 8, marginBottom: 8 }}
-          >
-            <Text style={styles.rowText}>Use Default Black</Text>
-          </GlassPressable>
-          <GlassPressable
-            onPress={onPickBackground}
-            radius={14}
-            padH={12}
-            padV={10}
-            style={{ marginBottom: 8 }}
-          >
-            <Text style={styles.rowText}>Pick Wallpaper</Text>
-          </GlassPressable>
-        </View>
-      </ScrollView>
-    );
-  };
-
-  const SettingsRoot = () => (
-    <ScrollView
-      contentContainerStyle={styles.sectionContent}
-      onScroll={(e) => (tabScrollY["Settings"] = e.nativeEvent.contentOffset.y)}
-      scrollEventThrottle={16}
-      contentOffset={{ x: 0, y: tabScrollY["Settings"] || 0 }}
-    >
-      <Text style={styles.sectionLabel}>Settings</Text>
-      <View style={{ height: 6 }} />
-      <GlassPressable
-        variant="solid"
-        radius={14}
-        padH={12}
-        padV={12}
-        onPress={() => setSettingsPage("general")}
-        style={{ marginBottom: 8 }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="tune" size={20} color={COLORS.textPrimary} style={{ marginRight: 10 }} />
-          <Text style={styles.rowText}>General</Text>
-        </View>
-      </GlassPressable>
-      <GlassPressable
-        variant="solid"
-        radius={14}
-        padH={12}
-        padV={12}
-        onPress={() => setSettingsPage("privacy")}
-        style={{ marginBottom: 8 }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="privacy-tip" size={20} color={COLORS.textPrimary} style={{ marginRight: 10 }} />
-          <Text style={styles.rowText}>Privacy</Text>
-        </View>
-      </GlassPressable>
-      <GlassPressable
-        variant="solid"
-        radius={14}
-        padH={12}
-        padV={12}
-        onPress={() => setSettingsPage("notifications")}
-        style={{ marginBottom: 8 }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons
-            name="notifications-active"
-            size={20}
-            color={COLORS.textPrimary}
-            style={{ marginRight: 10 }}
-          />
-          <Text style={styles.rowText}>Notifications</Text>
-        </View>
-      </GlassPressable>
-      <GlassPressable
-        variant="solid"
-        radius={14}
-        padH={12}
-        padV={12}
-        onPress={() => setSettingsPage("advanced")}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="construction" size={20} color={COLORS.textPrimary} style={{ marginRight: 10 }} />
-          <Text style={styles.rowText}>Advanced</Text>
-        </View>
-      </GlassPressable>
-    </ScrollView>
-  );
-
-  const SettingsGeneral = () => {
-    const modes: Mode[] = useMemo(
-      () => ["personal", "work", "family", "dating", "travel", "events", "wellness"],
-      []
-    );
-    return (
-      <ScrollView contentContainerStyle={styles.sectionContent}>
-        <View style={styles.headerRowWithBack}>
-          <Pressable onPress={() => setSettingsPage("root")} style={{ padding: 6, marginRight: 6 }}>
-            <MaterialIcons name="chevron-left" size={22} color={COLORS.textPrimary} />
-          </Pressable>
-          <Text style={styles.sectionHeaderText}>General</Text>
-        </View>
-
-        <Text style={styles.sectionLabel}>Mode</Text>
-        <View style={[styles.segmentRow, { marginBottom: 8 }]}>
-          {modes.map((m) => (
-            <GlassPressable
-              key={m}
-              variant={(localMode || mode) === m ? "solid" : "ghost"}
-              onPress={() => setModeSafe(m)}
-              radius={16}
-              padH={14}
-              padV={8}
-              style={{ marginRight: 8, marginBottom: 8 }}
-            >
-              <Text style={styles.rowText}>{m.toUpperCase()}</Text>
-            </GlassPressable>
-          ))}
-        </View>
-
-        <Text style={styles.sectionLabel}>Appearance</Text>
-        <View style={styles.segmentRow}>
-          <GlassPressable variant="solid" radius={14} padH={12} padV={10} onPress={() => setTab("Theme")}>
-            <Text style={styles.rowText}>Open Theme</Text>
-          </GlassPressable>
-        </View>
-      </ScrollView>
-    );
-  };
-
-  const SettingsPrivacy = () => {
-    const toggleReadReceipts = async (v: boolean) => {
-      setReadReceipts(v);
-      await updateSettings({ read_receipts: v });
-    };
-    const togglePresence = async (v: boolean) => {
-      setShowPresence(v);
-      await updateSettings({ show_presence: v });
-    };
-    return (
-      <ScrollView contentContainerStyle={styles.sectionContent}>
-        <View style={styles.headerRowWithBack}>
-          <Pressable onPress={() => setSettingsPage("root")} style={{ padding: 6, marginRight: 6 }}>
-            <MaterialIcons name="chevron-left" size={22} color={COLORS.textPrimary} />
-          </Pressable>
-          <Text style={styles.sectionHeaderText}>Privacy</Text>
-        </View>
-
-        <View style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Read receipts</Text>
-          <Switch value={readReceipts} onValueChange={toggleReadReceipts} />
-        </View>
-        <View style={styles.settingRow}>
-          <Text style={styles.settingLabel}>Show “Seen now”</Text>
-          <Switch value={showPresence} onValueChange={togglePresence} />
-        </View>
-        {showPresence && lastSeenAt ? (
-          <Text style={styles.settingHint}>Last seen: {new Date(lastSeenAt).toLocaleString()}</Text>
-        ) : null}
-      </ScrollView>
-    );
-  };
-
-  const SettingsNotifications = () => (
-    <ScrollView contentContainerStyle={styles.sectionContent}>
-      <View style={styles.headerRowWithBack}>
-        <Pressable onPress={() => setSettingsPage("root")} style={{ padding: 6, marginRight: 6 }}>
-          <MaterialIcons name="chevron-left" size={22} color={COLORS.textPrimary} />
-        </Pressable>
-        <Text style={styles.sectionHeaderText}>Notifications</Text>
-      </View>
-
-      <View style={styles.settingRow}>
-        <Text style={styles.settingLabel}>Message notifications</Text>
-        <Switch value={true} onValueChange={() => Haptics.selectionAsync()} />
-      </View>
-      <View style={styles.settingRow}>
-        <Text style={styles.settingLabel}>Mentions only</Text>
-        <Switch value={false} onValueChange={() => Haptics.selectionAsync()} />
-      </View>
-      <Text style={styles.settingHint}>
-        Lane-level mute can be set inside each lane’s editor.
-      </Text>
-    </ScrollView>
-  );
-
-  const SettingsAdvanced = () => (
-    <ScrollView contentContainerStyle={styles.sectionContent}>
-      <View style={styles.headerRowWithBack}>
-        <Pressable onPress={() => setSettingsPage("root")} style={{ padding: 6, marginRight: 6 }}>
-          <MaterialIcons name="chevron-left" size={22} color={COLORS.textPrimary} />
-        </Pressable>
-        <Text style={styles.sectionHeaderText}>Advanced</Text>
-      </View>
-
-      <GlassPressable
-        variant="solid"
-        radius={14}
-        padH={12}
-        padV={12}
-        onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-        style={{ marginBottom: 8 }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="ios-share" size={20} color={COLORS.textPrimary} style={{ marginRight: 10 }} />
-          <Text style={styles.rowText}>Export chat (coming soon)</Text>
-        </View>
-      </GlassPressable>
-      <GlassPressable
-        variant="ghost"
-        radius={14}
-        padH={12}
-        padV={12}
-        onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialIcons name="delete-forever" size={20} color={COLORS.danger} style={{ marginRight: 10 }} />
-          <Text style={[styles.rowText, { color: COLORS.danger }]}>
-            Clear cached media (coming soon)
-          </Text>
-        </View>
-      </GlassPressable>
-    </ScrollView>
-  );
-
-  const SettingsTab = () => {
-    switch (settingsPage) {
-      case "root":
-        return <SettingsRoot />;
-      case "general":
-        return <SettingsGeneral />;
-      case "privacy":
-        return <SettingsPrivacy />;
-      case "notifications":
-        return <SettingsNotifications />;
-      case "advanced":
-        return <SettingsAdvanced />;
-      default:
-        return null;
-    }
-  };
-
-  const Body = () => {
-    switch (tab) {
-      case "Profile":
-        return <ProfileTab />;
-      case "Media":
-        return <MediaTab />;
-      case "Files":
-        return <FilesTab />;
-      case "Links":
-        return <LinksTab />;
-      case "Lanes":
-        return <LanesTab />;
-      case "Theme":
-        return <ThemeTab />;
-      case "Settings":
-        return <SettingsTab />;
-      default:
-        return null;
-    }
-  };
+  const dismiss = useCallback(() => {
+    Animated.timing(slide, { toValue: SH, duration: 220, easing: Easing.in(Easing.quad), useNativeDriver: true }).start(onClose);
+  }, [onClose]);
 
   if (!visible) return null;
 
-  return (
-    <Modal
-      transparent
-      animationType="none"
-      visible={visible}
-      onRequestClose={animateClose}
-      statusBarTranslucent
-      presentationStyle="overFullScreen"
-    >
-      {/* backdrop — blur appears immediately */}
-      <Animated.View
-        style={[StyleSheet.absoluteFill, { opacity: backdropOpacity }]}
-        pointerEvents="none"
-      >
-        <BlurView tint="dark" intensity={BLUR.backdrop} style={StyleSheet.absoluteFill} />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.18)" }]} />
-      </Animated.View>
+  const wallpapers = useMemo(
+    () =>
+      (presetWallpapers && presetWallpapers.length ? presetWallpapers : [
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1200&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=1200&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1517816743773-6e0fd518b4a6?w=1200&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=1200&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80",
+      ]),
+    [presetWallpapers]
+  );
 
-      {/* tap outside to close */}
-      <Pressable style={StyleSheet.absoluteFill} onPress={animateClose} />
+  const setBackgroundAndPersist = useCallback((uri: string | null) => {
+    setBgImage(uri);
+    S.set("app:appearance:bgImage", uri);
+    onSetBackgroundImage?.(uri);
+  }, [onSetBackgroundImage]);
 
-      {/* sheet */}
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.sheetWrap,
-          {
-            paddingBottom: Math.max(insets.bottom, 12),
-            transform: [{ translateY }, { scale: containerScale }],
-          },
-        ]}
-      >
-        <View style={styles.sheetInner}>
-          {/* Liquid glass scaffold */}
-          <View pointerEvents="none" style={styles.sheetGlass}>
-            <BlurView intensity={BLUR.sheet} tint="light" style={StyleSheet.absoluteFill} />
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: COLORS.ghostOverlay }]} />
-            <LinearGradient
-              colors={["rgba(255,255,255,0.20)", "rgba(255,255,255,0)"]}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 0.2 }}
-              style={{ position: "absolute", left: 0, right: 0, top: 0, height: 24 }}
+  const pickBackgroundFromLibrary = useCallback(async () => {
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.9 });
+      if (!res.canceled && res.assets && res.assets[0]?.uri) {
+        setBackgroundAndPersist(res.assets[0].uri);
+      }
+    } catch {}
+  }, [setBackgroundAndPersist]);
+
+  const themeList: ThemeDef[] = useMemo(
+    () =>
+      themes ?? [
+        {
+          id: "midnight",
+          name: "Midnight",
+          accent: "#17D4FF",
+          bgGradient: ["#05080D", "#071019", "#000000"],
+          bubbleOther: "rgba(30,31,36,0.35)",
+          textOnOwn: "#FFFFFF",
+          textOnOther: "#EAFBFF",
+          backdropTintIntensity: 50,
+        },
+        {
+          id: "emerald",
+          name: "Emerald",
+          accent: "#19C37D",
+          bgGradient: ["#071411", "#0C201A"],
+          bubbleOther: "rgba(18,34,28,0.36)",
+          textOnOwn: "#00120A",
+          textOnOther: "#E7F7F0",
+          backdropTintIntensity: 45,
+        },
+        {
+          id: "violet",
+          name: "Violet",
+          accent: "#A07CFE",
+          bgGradient: ["#0E0B1A", "#140F26"],
+          bubbleOther: "rgba(36,30,54,0.36)",
+          textOnOwn: "#0C0914",
+          textOnOther: "#EFE9FF",
+          backdropTintIntensity: 44,
+        },
+      ],
+    [themes]
+  );
+
+  // Tab content
+  const RenderTab = () => {
+    switch (tab) {
+      case "account":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Profile" />
+            <SettingRow icon="person" title="Edit profile" subtitle="Name, handle, bio, avatar" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={() => {}} />
+            <SettingRow icon="security" title="Two-factor authentication" subtitle="Keep your account secure" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={() => {}} />
+            <SettingRow icon="block" title="Blocked users" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={() => {}} />
+
+            <SectionHeader title="Account actions" />
+            <SettingRow icon="logout" title="Sign out" onPress={onSignOut} right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} />
+            <SettingRow icon="delete-forever" title="Delete account" danger onPress={onDeleteAccount} right={<MaterialIcons name="chevron-right" size={20} color="#FF6666" />} />
+          </ScrollView>
+        );
+      case "privacy":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Privacy & Safety" />
+            <SettingRow title="Read receipts" subtitle="Allow others to see when you've read their messages" right={<SettingToggle value={toggles.readReceipts} onValueChange={(v) => setT({ readReceipts: v })} />} />
+            <SettingRow title="Typing indicators" right={<SettingToggle value={toggles.showTyping} onValueChange={(v) => setT({ showTyping: v })} />} />
+            <SettingRow title="Allow screenshots of disappearing messages" right={<SettingToggle value={toggles.allowScreenshots} onValueChange={(v) => setT({ allowScreenshots: v })} />} />
+            <SettingRow title="Safe content filter" subtitle="Blur suspicious images and flag unsafe links" right={<SettingToggle value={toggles.safeContentFilter} onValueChange={(v) => setT({ safeContentFilter: v })} />} />
+
+            <SectionHeader title="Last seen" />
+            {(["everyone", "friends", "nobody"] as const).map((opt) => (
+              <SettingRow key={opt} title={opt === "everyone" ? "Everyone" : opt === "friends" ? "Friends only" : "Nobody"} right={toggles.lastSeen === opt ? <MaterialIcons name="radio-button-checked" size={20} color="#EFFFFF" /> : <MaterialIcons name="radio-button-unchecked" size={20} color="#cfe5e9" />} onPress={() => setT({ lastSeen: opt })} />
+            ))}
+          </ScrollView>
+        );
+      case "notifications":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Push" />
+            <SettingRow title="Enable push notifications" right={<SettingToggle value={toggles.pushEnabled} onValueChange={(v) => setT({ pushEnabled: v })} />} />
+            <SettingRow title="Show previews" subtitle="Display message text in notifications" right={<SettingToggle value={toggles.previewInPush} onValueChange={(v) => setT({ previewInPush: v })} />} />
+
+            <SectionHeader title="In-app" />
+            <SettingRow title="Sounds" right={<SettingToggle value={toggles.soundEnabled} onValueChange={(v) => setT({ soundEnabled: v })} />} />
+            <SettingRow title="Haptics" right={<SettingToggle value={toggles.hapticsEnabled} onValueChange={(v) => setT({ hapticsEnabled: v })} />} />
+          </ScrollView>
+        );
+      case "appearance":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Theme" />
+            <View style={styles.grid3}>
+              {themeList.map((t) => (
+                <View key={t.id} style={{ padding: 6, width: "33.33%" }}>
+                  <GlassPressable
+                    radius={14}
+                    padH={10}
+                    padV={10}
+                    variant={currentThemeId === t.id ? "solid" : "ghost"}
+                    onPress={() => onChangeTheme?.(t.id)}
+                  >
+                    <LinearGradient colors={t.bgGradient as any} style={{ height: 68, borderRadius: 12 }} />
+                    <Text style={styles.gridLabel}>{t.name}</Text>
+                  </GlassPressable>
+                </View>
+              ))}
+            </View>
+
+            <SectionHeader title="Accent color" />
+            <View style={{ flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 4 }}>
+              {["#17D4FF", "#19C37D", "#A07CFE", "#FF6B4A", "#00E3D8", "#FFC107", "#FF3B30", "#00B8D9", "#36B37E", "#6554C0", "#FF5630", "#FFAB00", "#F06292", "#4DB6AC", "#90CAF9", "#B39DDB"].map((c) => (
+                <ColorSwatch key={c} color={c} selected={accentColor === c} onPress={() => onChangeAccent?.(c)} />
+              ))}
+            </View>
+
+            <SectionHeader title="Background" />
+            <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+              {wallpapers.map((uri) => (
+                <View key={uri} style={{ width: "33.33%", padding: 6 }}>
+                  <Pressable onPress={() => setBackgroundAndPersist(uri)} style={{ borderRadius: 12, overflow: "hidden" }}>
+                    <Image source={{ uri }} style={{ width: "100%", height: 72 }} />
+                    {bgImage === uri ? (
+                      <View style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, borderWidth: 2, borderColor: "#EFFFFF", borderRadius: 12 }} />
+                    ) : null}
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+            <View style={{ flexDirection: "row", marginTop: 8 }}>
+              <GlassPressable variant="solid" radius={14} padH={12} padV={10} onPress={pickBackgroundFromLibrary} style={{ marginRight: 8 }}>
+                <Text style={{ color: "#001410", fontWeight: "900" }}>Choose Photo…</Text>
+              </GlassPressable>
+              {bgImage ? (
+                <GlassPressable variant="ghost" radius={14} padH={12} padV={10} onPress={() => setBackgroundAndPersist(null)}>
+                  <Text style={{ color: "#cfe5e9", fontWeight: "900" }}>Clear Background</Text>
+                </GlassPressable>
+              ) : null}
+            </View>
+
+            <SectionHeader title="Display" />
+            <SettingRow title="Reduce motion" right={<SettingToggle value={toggles.reduceMotion} onValueChange={(v) => setT({ reduceMotion: v })} />} />
+            <SettingRow title="High contrast text" right={<SettingToggle value={toggles.highContrast} onValueChange={(v) => setT({ highContrast: v })} />} />
+          </ScrollView>
+        );
+      case "chat":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Composer" />
+            <SettingRow title="Enter to send" right={<SettingToggle value={toggles.enterToSend} onValueChange={(v) => setT({ enterToSend: v })} />} />
+            <SettingRow title="Auto-capitalization" right={<SettingToggle value={toggles.autoCap} onValueChange={(v) => setT({ autoCap: v })} />} />
+            <SettingRow title="Smart punctuation" right={<SettingToggle value={toggles.smartPunct} onValueChange={(v) => setT({ smartPunct: v })} />} />
+
+            <SectionHeader title="Messages" />
+            <SettingRow title="Link previews" right={<SettingToggle value={toggles.linkPreviews} onValueChange={(v) => setT({ linkPreviews: v })} />} />
+          </ScrollView>
+        );
+      case "storage":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Data usage" />
+            <SettingRow title="Auto-download on Wi‑Fi" right={<SettingToggle value={toggles.autoDownloadWifi} onValueChange={(v) => setT({ autoDownloadWifi: v })} />} />
+            <SettingRow title="Auto-download on Cellular" right={<SettingToggle value={toggles.autoDownloadCell} onValueChange={(v) => setT({ autoDownloadCell: v })} />} />
+            <SettingRow title="Low data mode" right={<SettingToggle value={toggles.lowDataMode} onValueChange={(v) => setT({ lowDataMode: v })} />} />
+
+            <SectionHeader title="Storage" />
+            <SettingRow icon="delete-sweep" title="Clear cache" subtitle="Frees space; does not delete your messages" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={() => {}} />
+          </ScrollView>
+        );
+      case "accessibility":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Accessibility" />
+            <SettingRow
+              title="Larger text"
+              subtitle={["System default", "+1", "+2", "+3"][toggles.largerText]}
+              right={<TextSizeControl value={toggles.largerText} onChange={(v) => setT({ largerText: v })} />}
             />
-            <View style={styles.sheetBorder} />
-          </View>
+            <SettingRow title="Reduce motion" right={<SettingToggle value={toggles.reduceMotion} onValueChange={(v) => setT({ reduceMotion: v })} />} />
+            <SettingRow title="High contrast text" right={<SettingToggle value={toggles.highContrast} onValueChange={(v) => setT({ highContrast: v })} />} />
+          </ScrollView>
+        );
+      case "advanced":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="Developer" />
+            <SettingRow title="Enable developer mode" right={<SettingToggle value={toggles.devMode} onValueChange={(v) => setT({ devMode: v })} />} />
+            <SettingRow icon="bug-report" title="Send debug log" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={() => {}} />
+            <SettingRow icon="refresh" title="Reset local state" danger right={<MaterialIcons name="chevron-right" size={20} color="#FF6666" />} onPress={() => {}} />
+          </ScrollView>
+        );
+      case "about":
+        return (
+          <ScrollView contentContainerStyle={styles.padded} showsVerticalScrollIndicator={false}>
+            <SectionHeader title="About" />
+            <SettingRow title="Version" subtitle={version || ""} />
+            <SettingRow title="Licenses" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={onOpenLicenses} />
+            <SettingRow title="Privacy Policy" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={onOpenPrivacy} />
+            <SettingRow title="Terms of Service" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={onOpenTerms} />
+            <SettingRow icon="support-agent" title="Contact support" right={<MaterialIcons name="chevron-right" size={20} color="#cfe5e9" />} onPress={onContactSupport} />
+          </ScrollView>
+        );
+    }
+  };
 
-          <View style={styles.handleWrap}>
-            <View style={styles.handle} />
-          </View>
-
+  return (
+    <Modal animationType="none" transparent visible={visible} onRequestClose={dismiss}>
+      <View style={{ flex: 1 }}>
+        {/* Backdrop */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={dismiss} />
+        <Animated.View
+          style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 12), transform: [{ translateY: slide }] }]}
+        >
+          {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Chat Details</Text>
+            <GlassPressable radius={14} padH={10} padV={8} onPress={dismiss}>
+              <MaterialIcons name="close" size={20} color="#EFFFFF" />
+            </GlassPressable>
+            <Text style={styles.headerTitle}>Settings</Text>
+            <View style={{ width: 36 }} />
           </View>
 
-          <TabsBar />
-          <Body />
-        </View>
-      </Animated.View>
+          {/* Tabs */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[ styles.tabs ]} >
+            {TABS.map((t) => (
+              <Pressable
+                key={t.key}
+                onPress={() => setTab(t.key)}
+                style={[styles.tabBtn, tab === t.key ? styles.tabBtnActive : styles.tabBtnInactive]}
+              >
+                <MaterialIcons
+                  name={t.icon}
+                  size={16}
+                  color={tab === t.key ? "#001410" : "#cfe5e9"}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={[styles.tabText, tab === t.key ? styles.tabTextActive : styles.tabTextInactive]}>
+                  {t.label}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+
+          {/* Content */}
+          <View  style={{ flex: 1 }}>
+            <RenderTab />
+          </View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
 
-/* =========================
-   STYLES — Liquid Glass & compact UI
-========================= */
 const styles = StyleSheet.create({
-  sheetWrap: {
+  sheet: {
     position: "absolute",
     left: 0,
     right: 0,
-    top: 0,
-    zIndex: 9999,
-    elevation: 1000,
-  },
-  sheetInner: {
-    height: H * 0.84,
-    backgroundColor: "transparent",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    bottom: 0,
+    top: Platform.select({ ios: 60, android: 12, default: 24 }),
+    backgroundColor: "rgba(8,12,16,0.86)",
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
     overflow: "hidden",
   },
-
-  sheetGlass: {
-    ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: "hidden",
-  },
-  sheetBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.border,
-  },
-
-  handleWrap: {
-    paddingTop: 10,
-    paddingBottom: 6,
-    alignItems: "center",
-    backgroundColor: "transparent",
-  },
-  handle: {
-    width: 58,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: "rgba(255,255,255,0.35)",
-  },
-
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  title: {
-    color: COLORS.textPrimary,
-    fontWeight: "800",
-    fontSize: 16,
-    letterSpacing: 0.3,
-  },
-
-  // Tabs
-  tabsBar: { paddingBottom: 6 },
-  tabsContent: { alignItems: "center", paddingHorizontal: 12, paddingVertical: 8 },
-  pillText: {
-    color: COLORS.textPrimary,
-    fontWeight: "800",
-    fontSize: 14,
-    letterSpacing: 0.2,
-  },
-
-  // Sections
-  headerRowWithBack: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  sectionContent: { padding: 16, paddingBottom: 24 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  sectionHeaderText: { color: COLORS.textSecondary, marginLeft: 6, fontWeight: "700", letterSpacing: 0.2 },
-
-  // People
-  avatarRing: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  },
-  avatar: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#2b2f3a" },
-
-  personRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
-  personName: { color: COLORS.textPrimary, fontWeight: "800" },
-  personHandle: { color: COLORS.textMuted, fontWeight: "700" },
-
-  // Media
-  mediaGrid: { padding: 12 },
-  mediaThumbWrap: {
-    width: (W - 48) / 3,
-    height: (W - 48) / 3,
-    borderRadius: 12,
-    margin: 6,
-    overflow: "hidden",
-    backgroundColor: "rgba(10,10,12,0.35)",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.border,
-  },
-  mediaThumb: { width: "100%", height: "100%" },
-  previewWrap: { flex: 1, alignItems: "center", justifyContent: "center" },
-  previewImage: { width: W, height: H, maxHeight: H, maxWidth: W },
-
-  rowText: {
-    color: COLORS.textPrimary,
-    fontWeight: "800",
-    flexShrink: 1,
-  },
-
-  // Lanes
-  laneRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  laneBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.border,
-  },
-  laneText: { color: COLORS.textPrimary, fontWeight: "800" },
-
-  // Editor + rules
-  editorCard: {
-    marginTop: 8,
-    padding: 12,
-    backgroundColor: "transparent",
-    borderRadius: 12,
-    borderWidth: 0,
-  },
-  rulesCard: {
-    marginTop: 10,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.border,
-  },
-  titleInput: {
-    flex: 1,
-    height: 42,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    color: COLORS.textPrimary,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.border,
-  },
-
-  sectionLabel: {
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-  },
-
-  // Settings
-  segmentRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center" },
-  settingRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  settingLabel: { color: COLORS.textPrimary, fontWeight: "700" },
-  settingHint: { color: COLORS.textMuted, marginTop: 6 },
-
-  // Empty
-  emptyWrap: { alignItems: "center", justifyContent: "center", paddingVertical: 30 },
-  emptyText: { color: "#9aa0a6", fontWeight: "700" },
-
-  // Swipe actions
-  swipeAction: {
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: 12,
-    marginHorizontal: 4,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  headerTitle: { color: "#EFFFFF", fontWeight: "900", fontSize: 18,  },
+  tabs: { paddingHorizontal: 8, paddingVertical: 2, maxHeight: 40, backgroundColor: 'transparent' },
+  tabBtn: {
+    flexDirection: "row",
     alignItems: "center",
+    marginHorizontal: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
   },
-  swipeText: { color: COLORS.textPrimary, fontWeight: "700", marginTop: 4 },
+  tabBtnActive: { backgroundColor: "rgba(255,255,255,0.96)" },
+  tabBtnInactive: { backgroundColor: "rgba(255,255,255,0.08)" },
+  tabText: { fontWeight: "900" },
+  tabTextActive: { color: "#001410" },
+  tabTextInactive: { color: "#cfe5e9" },
 
-  // Theme previews
-  themeCard: {
-    width: 140,
-    height: 88,
-    borderRadius: 14,
-    overflow: "hidden",
-    marginRight: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.border,
-    padding: 10,
+  padded: { paddingHorizontal: 14, paddingBottom: 18 },
+  sectionHeader: {
+    color: "#EFFFFF",
+    fontWeight: "900",
+    fontSize: 14,
+    marginTop: 14,
+    marginBottom: 8,
+    opacity: 0.95,
   },
-  themeCardActive: { borderColor: COLORS.focus },
-  themeBubbleRow: { flexDirection: "row", marginBottom: 8 },
-  themeBubble: { width: 14, height: 14, borderRadius: 7, marginRight: 6 },
-  themeName: { color: COLORS.textPrimary, fontWeight: "800" },
-
-  accentDot: {
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  rowIcon: { width: 28, alignItems: "center", marginRight: 10 },
+  rowTextWrap: { flex: 1 },
+  rowTitle: { color: "#EFFFFF", fontWeight: "800", fontSize: 16 },
+  rowSubtitle: { color: "#b9d2d9", fontSize: 12, marginTop: 2 },
+  grid3: { flexDirection: "row", flexWrap: "wrap" },
+  gridLabel: { color: "#EFFFFF", marginTop: 6, fontWeight: "800", textAlign: "center" },
+  colorDot: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    marginRight: 10,
-    marginBottom: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.border,
+    margin: 6,
+    borderColor: "rgba(255,255,255,0.85)",
   },
-  accentDotActive: { borderColor: COLORS.focus },
 });
