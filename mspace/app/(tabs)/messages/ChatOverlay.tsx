@@ -1,3 +1,4 @@
+// app/(tabs)/messages/ChatOverlay.tsx
 import React, {
   useCallback,
   useEffect,
@@ -15,7 +16,6 @@ import {
   Image,
   ImageBackground,
   Keyboard,
-  LayoutAnimation,
   Linking,
   Modal,
   Platform,
@@ -23,14 +23,21 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  InputAccessoryView, // (optional) if you later want to move the composer into an accessory view on iOS
   UIManager,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
+import Svg, {
+  Circle,
+  Defs,
+  RadialGradient,
+  Stop,
+  Rect,
+  ClipPath,
+  Path,
+} from "react-native-svg";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import * as Clipboard from "expo-clipboard";
@@ -46,19 +53,27 @@ import {
 
 import ProfilePicture from "@/utils/getProfilePicture";
 
-// Project hooks (assumed existing in your app)
+// Project hooks
 import useWebSocket from "@/hooks/useWebSocket";
 import useApi from "@/hooks/useApi";
 import useAuth from "@/hooks/useAuth";
 import SettingsOverlay from "./SettingsOverlay";
 import AttachMenu from "./AttachMenu";
+import ReactionOverlay from "./ReactionOverlay";
+
+// ————————————————————————————————————————————
+// Dimensions + constants
+// ————————————————————————————————————————————
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const BUBBLE_MAX_W = Math.floor(SCREEN_WIDTH * 0.78);
+const EXTRA_FOOTER_SPACING = 10; // lift footer a bit above bottom & keyboard
+const EXTRA_KEYBOARD_CLEARANCE = 15; // extra lift so footer clears keyboard
+const KBD_EASING = Easing.bezier(0.25, 0.1, 0.25, 1); // closer to system ease-in-out
+const ANDROID_FALLBACK_DURATION = 140; // snappy default when Android doesn't report duration
 
 // ————————————————————————————————————————————
 // Types
 // ————————————————————————————————————————————
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const BUBBLE_MAX_W = Math.floor(SCREEN_WIDTH * 0.78);
-
 type AttachmentType = {
   id: string;
   mime_type: string;
@@ -109,7 +124,7 @@ type ConversationType = {
 export type Lane = {
   id: string;
   title: string;
-  emoji?: string; // MaterialIcons name if present
+  emoji?: string; // MaterialIcons name or actual emoji
   color?: string;
   rules?: {
     mute?: boolean;
@@ -132,7 +147,6 @@ export type ConversationMode =
 // ————————————————————————————————————————————
 // Theme
 // ————————————————————————————————————————————
-
 const THEMES = [
   {
     id: "midnight",
@@ -198,6 +212,9 @@ const GLASS = {
   fillSolid: "rgba(255,255,255,0.08)",
 };
 
+// ————————————————————————————————————————————
+// Helpers
+// ————————————————————————————————————————————
 function isEmojiOnlyMessage(text: string) {
   const cleaned = text.replace(/[\s\u200B]/g, "");
   if (!cleaned) return false;
@@ -213,10 +230,291 @@ function isEmojiOnlyMessage(text: string) {
   return emojiOnlyRegex.test(cleaned);
 }
 
+// —— Icon / Emoji helper to avoid invalid Material icon warnings ——
+const isValidMaterialIconName = (s?: string) =>
+  !!s && /^[a-z0-9_\-]+$/i.test(s);
+const isEmoji = (s?: string) => !!s && /\p{Extended_Pictographic}/u.test(s);
+function IconOrEmoji({
+  name,
+  size,
+  color,
+  style,
+}: {
+  name?: string;
+  size: number;
+  color: string;
+  style?: any;
+}) {
+  if (isValidMaterialIconName(name || "")) {
+    return (
+      <MaterialIcons
+        name={name as any}
+        size={size}
+        color={color}
+        style={style}
+      />
+    );
+  }
+  if (isEmoji(name)) {
+    return <Text style={[{ fontSize: size, color }, style]}>{name}</Text>;
+  }
+  return (
+    <MaterialIcons name="view-agenda" size={size} color={color} style={style} />
+  );
+}
+
+// ————————————————————————————————————————————
+// Goo system (light-weight metaball bridges)
+// ————————————————————————————————————————————
+type GooNode = {
+  id: string;
+  ref: any;
+  group: string;
+  active: boolean;
+  center: { x: number; y: number };
+  radius: number;
+};
+
+const GooContext = React.createContext<{
+  nodes: Record<string, GooNode>;
+  register: (id: string, ref: any, group: string) => void;
+  unregister: (id: string) => void;
+  update: (id: string, patch: Partial<GooNode>) => void;
+} | null>(null);
+
+function GooProvider({ children }: { children: React.ReactNode }) {
+  const [nodes, setNodes] = useState<Record<string, GooNode>>({});
+
+  // Keep a ref so our measuring interval doesn't depend on `nodes`
+  const nodesRef = useRef(nodes);
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  const register = useCallback((id: string, ref: any, group: string) => {
+    setNodes((n) => {
+      const existing = n[id];
+      if (existing) {
+        // Update only if ref/group changed
+        if (existing.ref === ref && existing.group === group) return n;
+        return { ...n, [id]: { ...existing, ref, group } };
+      }
+      return {
+        ...n,
+        [id]: {
+          id,
+          ref,
+          group,
+          active: false,
+          center: { x: 0, y: 0 },
+          radius: 20,
+        },
+      };
+    });
+  }, []);
+
+  const unregister = useCallback((id: string) => {
+    setNodes((n) => {
+      if (!n[id]) return n;
+      const next = { ...n };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
+  const update = useCallback((id: string, patch: Partial<GooNode>) => {
+    setNodes((n) => {
+      const ex = n[id];
+      if (!ex) return n;
+      const next = { ...ex, ...patch };
+      const same =
+        next.active === ex.active &&
+        next.group === ex.group &&
+        next.ref === ex.ref &&
+        next.radius === ex.radius &&
+        next.center.x === ex.center.x &&
+        next.center.y === ex.center.y;
+      if (same) return n;
+      return { ...n, [id]: next };
+    });
+  }, []);
+
+  // Cheap measurement refresher — run once; only update when values change
+  useEffect(() => {
+    const tick = setInterval(() => {
+      const snapshot = nodesRef.current;
+      Object.values(snapshot).forEach((node) => {
+        node?.ref?.measureInWindow?.(
+          (x: number, y: number, w: number, h: number) => {
+            const center = { x: x + w / 2, y: y + h / 2 };
+            const radius = Math.max(18, Math.min(w, h) / 2);
+            setNodes((n) => {
+              const cur = n[node.id];
+              if (!cur) return n;
+              const sameCenter =
+                Math.abs(cur.center.x - center.x) < 0.5 &&
+                Math.abs(cur.center.y - center.y) < 0.5;
+              const sameRadius = Math.abs((cur.radius ?? 0) - radius) < 0.5;
+              if (sameCenter && sameRadius) return n;
+              return {
+                ...n,
+                [node.id]: { ...cur, center, radius },
+              };
+            });
+          }
+        );
+      });
+    }, 120);
+    return () => clearInterval(tick);
+  }, []);
+
+  return (
+    <GooContext.Provider value={{ nodes, register, unregister, update }}>
+      {children}
+    </GooContext.Provider>
+  );
+}
+
+function metaballPath(
+  x1: number,
+  y1: number,
+  r1: number,
+  x2: number,
+  y2: number,
+  r2: number,
+  handleLenRate = 2.4,
+  v = 0.5,
+  maxDistance = 180
+) {
+  const d = Math.hypot(x2 - x1, y2 - y1);
+  if (d > maxDistance || d <= Math.abs(r1 - r2) || d === 0) return "";
+
+  const u1 = Math.acos((r1 - r2) / d);
+  const u2 = Math.acos((r1 + r2) / d);
+  const angleBetween = Math.atan2(y2 - y1, x2 - x1);
+
+  const angle1 = angleBetween + u1 + (u2 - u1) * v;
+  const angle2 = angleBetween - u1 - (u2 - u1) * v + Math.PI;
+
+  const p1a = { x: x1 + r1 * Math.cos(angle1), y: y1 + r1 * Math.sin(angle1) };
+  const p1b = { x: x1 + r1 * Math.cos(angle2), y: y1 + r1 * Math.sin(angle2) };
+  const p2a = { x: x2 + r2 * Math.cos(angle1), y: y2 + r2 * Math.sin(angle1) };
+  const p2b = { x: x2 + r2 * Math.cos(angle2), y: y2 + r2 * Math.sin(angle2) };
+
+  const totalRadius = r1 + r2;
+  const d2 = Math.min(
+    v * handleLenRate,
+    Math.hypot(p1a.x - p2a.x, p1a.y - p2a.y) / totalRadius
+  );
+
+  const h1 = d2 * r1;
+  const h2 = d2 * r2;
+
+  const c1a = {
+    x: p1a.x + h1 * Math.sin(angle1),
+    y: p1a.y - h1 * Math.cos(angle1),
+  };
+  const c2a = {
+    x: p2a.x + h2 * Math.sin(angle1),
+    y: p2a.y - h2 * Math.cos(angle1),
+  };
+  const c1b = {
+    x: p1b.x - h1 * Math.sin(angle2),
+    y: p1b.y + h1 * Math.cos(angle2),
+  };
+  const c2b = {
+    x: p2b.x - h2 * Math.sin(angle2),
+    y: p2b.y + h2 * Math.cos(angle2),
+  };
+
+  return `M ${p1a.x} ${p1a.y}
+          C ${c1a.x} ${c1a.y} ${c2a.x} ${c2a.y} ${p2a.x} ${p2a.y}
+          A ${r2} ${r2} 0 0 1 ${p2b.x} ${p2b.y}
+          C ${c2b.x} ${c2b.y} ${c1b.x} ${c1b.y} ${p1b.x} ${p1b.y}
+          A ${r1} ${r1} 0 0 1 ${p1a.x} ${p1a.y} Z`;
+}
+
+function GooSurface({
+  nodes,
+  accentColor = "#ffffff",
+}: {
+  nodes: Record<string, GooNode>;
+  accentColor?: string;
+}) {
+  const entries = Object.values(nodes);
+  if (entries.length < 2) return null;
+
+  const pairs: Array<[GooNode, GooNode]> = [];
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const a = entries[i];
+      const b = entries[j];
+      if (a.group !== b.group) continue;
+      const d = Math.hypot(a.center.x - b.center.x, a.center.y - b.center.y);
+      if ((a.active || b.active) && d <= 180) pairs.push([a, b]);
+    }
+  }
+  if (!pairs.length) return null;
+
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+        <Defs>
+          <RadialGradient id="__gooGlow" cx="50%" cy="50%" r="50%">
+            <Stop offset="0%" stopColor={accentColor} stopOpacity={0.2} />
+            <Stop offset="100%" stopColor={accentColor} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        {pairs.map(([a, b], idx) => {
+          const d = metaballPath(
+            a.center.x,
+            a.center.y,
+            a.radius,
+            b.center.x,
+            b.center.y,
+            b.radius,
+            2.2,
+            0.5,
+            180
+          );
+          if (!d) return null;
+          return (
+            <React.Fragment key={`goo-${idx}`}>
+              <Circle
+                cx={a.center.x}
+                cy={a.center.y}
+                r={a.radius}
+                fill="url(#__gooGlow)"
+              />
+              <Circle
+                cx={b.center.x}
+                cy={b.center.y}
+                r={b.radius}
+                fill="url(#__gooGlow)"
+              />
+              <Path d={d} fill={accentColor} opacity={0.06} />
+            </React.Fragment>
+          );
+        })}
+      </Svg>
+    </View>
+  );
+}
+
+// wrap so it reads context inside Provider (prevents stale reads)
+function GooLayer({ accentColor }: { accentColor: string }) {
+  const goo = React.useContext(GooContext);
+  return (
+    <GooSurface
+      nodes={(goo?.nodes as Record<string, GooNode>) || {}}
+      accentColor={accentColor}
+    />
+  );
+}
+
 // ————————————————————————————————————————————
 // Core Liquid primitives — GlassPressable / GlassInput / LiquidBubble
 // ————————————————————————————————————————————
-
 function GlassPressable({
   children,
   onPress,
@@ -231,6 +529,8 @@ function GlassPressable({
   block = false,
   elastic = true,
   showBackground = true,
+  gooGroup = "default",
+  rigid = false,
 }: {
   children: React.ReactNode;
   onPress?: () => void;
@@ -245,11 +545,13 @@ function GlassPressable({
   block?: boolean;
   elastic?: boolean;
   showBackground?: boolean;
+  gooGroup?: string;
+  rigid?: boolean;
 }) {
   const press = useRef(new Animated.Value(0)).current;
   const scale = press.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.97],
+    outputRange: [1, 1.03], // pop on press
   });
   const opacity = press.interpolate({
     inputRange: [0, 1],
@@ -261,12 +563,23 @@ function GlassPressable({
   const dragY = useRef(new Animated.Value(0)).current;
   const stretchX = dragX.interpolate({
     inputRange: [-120, 0, 120],
-    outputRange: [0.96, 1, 1.06],
+    outputRange: [0.88, 1, 1.12],
     extrapolate: "clamp",
   });
   const stretchY = dragY.interpolate({
     inputRange: [-120, 0, 120],
-    outputRange: [0.96, 1, 1.06],
+    outputRange: [0.88, 1, 1.12],
+    extrapolate: "clamp",
+  });
+  // Directional pull (anchor opposite edge)
+  const edgePullX = dragX.interpolate({
+    inputRange: [-120, 0, 120],
+    outputRange: [-16, 0, 16],
+    extrapolate: "clamp",
+  });
+  const edgePullY = dragY.interpolate({
+    inputRange: [-120, 0, 120],
+    outputRange: [-12, 0, 12],
     extrapolate: "clamp",
   });
 
@@ -274,6 +587,31 @@ function GlassPressable({
   const glowX = useRef(new Animated.Value(0)).current;
   const glowY = useRef(new Animated.Value(0)).current;
   const glowOpacity = useRef(new Animated.Value(0)).current;
+  const HL_R = 90;
+
+  // Measure container to clamp the moving highlight within rounded edges
+  const sizeRef = useRef({ w: 0, h: 0 });
+  const onLayoutContainer = useCallback((e: any) => {
+    const { width, height } = e?.nativeEvent?.layout || {};
+    if (typeof width === "number" && typeof height === "number") {
+      sizeRef.current = { w: width, h: height };
+    }
+  }, []);
+
+  const clamp = (v: number, min: number, max: number) =>
+    Math.max(min, Math.min(max, v));
+  const clampHL = useCallback((x: number, y: number) => {
+    const w = sizeRef.current.w || 1;
+    const h = sizeRef.current.h || 1;
+    const minX = HL_R;
+    const maxX = Math.max(HL_R, w - HL_R);
+    const minY = HL_R;
+    const maxY = Math.max(HL_R, h - HL_R);
+    return { cx: clamp(x, minX, maxX), cy: clamp(y, minY, maxY) };
+  }, []);
+
+  const highlightLeft = Animated.subtract(glowX, HL_R);
+  const highlightTop = Animated.subtract(glowY, HL_R);
   const showGlow = useCallback(
     (on: boolean) => {
       glowOpacity.stopAnimation();
@@ -295,35 +633,58 @@ function GlassPressable({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, [haptics]);
 
+  // Goo registration
+  const selfIdRef = useRef(`gp-${Math.random().toString(36).slice(2)}`);
+  const wrapRef = useRef<View | null>(null);
+  const goo = React.useContext(GooContext);
+  useEffect(() => {
+    if (!goo) return;
+    const id = selfIdRef.current;
+    goo.register(id, wrapRef.current, gooGroup);
+    return () => goo.unregister(id);
+  }, [gooGroup, goo?.register, goo?.unregister]);
+
   return (
     <Animated.View
+      ref={wrapRef as any}
       style={[
         {
           borderRadius: radius,
-          transform: [{ scaleX: stretchX }, { scaleY: stretchY }, { scale }],
+          transform: [
+            ...(rigid
+              ? []
+              : [
+                  { translateX: edgePullX },
+                  { translateY: edgePullY },
+                  { scaleX: stretchX },
+                  { scaleY: stretchY },
+                ]),
+            { scale },
+          ],
           opacity,
-        },
+          // Fix dark square artifacts during alpha compositing
+          backfaceVisibility: "hidden",
+          renderToHardwareTextureAndroid: true,
+          needsOffscreenAlphaCompositing: true,
+        } as any,
         style,
       ]}
     >
       <PanGestureHandler
-        enabled={elastic}
-        activeOffsetX={[-2, 2]}
-        activeOffsetY={[-2, 2]}
-        onGestureEvent={Animated.event(
-          [
-            {
-              nativeEvent: {
-                translationX: dragX,
-                translationY: dragY,
-                x: glowX,
-                y: glowY,
-              },
-            },
-          ],
-          { useNativeDriver: true }
-        )}
+        enabled={elastic && !rigid}
+        activeOffsetY={[-10, 10]}
+        failOffsetX={[-8, 8]}
+        onGestureEvent={(e) => {
+          if (rigid || !elastic) return;
+          const ne: any = (e as any).nativeEvent || {};
+          dragX.setValue(ne.translationX || 0);
+          dragY.setValue(ne.translationY || 0);
+          const { cx, cy } = clampHL(ne.x || 0, ne.y || 0);
+          glowX.setValue(cx);
+          glowY.setValue(cy);
+        }}
         onHandlerStateChange={(e) => {
+          if (rigid || !elastic) return; // no elastic state changes for rigid/disabled
           const st = (e as any).nativeEvent.state;
           if (st === GestureState.BEGAN || st === GestureState.ACTIVE)
             showGlow(true);
@@ -365,11 +726,13 @@ function GlassPressable({
             }}
             onPressIn={(evt) => {
               const { locationX, locationY } = (evt as any).nativeEvent || {};
-              if (typeof locationX === "number") {
-                glowX.setValue(locationX);
-                glowY.setValue(locationY);
+              if (!rigid && typeof locationX === "number") {
+                const { cx, cy } = clampHL(locationX, locationY);
+                glowX.setValue(cx);
+                glowY.setValue(cy);
               }
-              showGlow(true);
+              if (!rigid) showGlow(true);
+              if (goo) goo.update(selfIdRef.current, { active: true });
               Animated.spring(press, {
                 toValue: 1,
                 useNativeDriver: true,
@@ -379,7 +742,8 @@ function GlassPressable({
               }).start();
             }}
             onPressOut={() => {
-              showGlow(false);
+              if (!rigid) showGlow(false);
+              if (goo) goo.update(selfIdRef.current, { active: false });
               Animated.spring(press, {
                 toValue: 0,
                 useNativeDriver: true,
@@ -390,6 +754,7 @@ function GlassPressable({
             }}
             accessibilityRole="button"
             accessibilityLabel={accessibilityLabel}
+            onLayout={onLayoutContainer}
             style={{
               borderRadius: radius,
               overflow: showBackground ? "hidden" : "visible",
@@ -459,6 +824,136 @@ function GlassPressable({
                       right: -60,
                       top: 0,
                       bottom: 0,
+                    }}
+                  />
+                </Animated.View>
+
+                {/* Edge lighting & inner shadow to simulate thickness */}
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+                  <Defs>
+                    <ClipPath id="__clipGlassBtn">
+                      <Rect
+                        x="0"
+                        y="0"
+                        width="100%"
+                        height="100%"
+                        rx={radius}
+                        ry={radius}
+                      />
+                    </ClipPath>
+                    <RadialGradient
+                      id="__glassInnerShadow"
+                      cx="50%"
+                      cy="50%"
+                      r="60%"
+                    >
+                      <Stop offset="60%" stopColor="#000000" stopOpacity={0} />
+                      <Stop
+                        offset="100%"
+                        stopColor="#000000"
+                        stopOpacity={0.22}
+                      />
+                    </RadialGradient>
+                  </Defs>
+                  <Rect
+                    x="0"
+                    y="0"
+                    width="100%"
+                    height="100%"
+                    clipPath="url(#__clipGlassBtn)"
+                    fill="url(#__glassInnerShadow)"
+                  />
+                </Svg>
+
+                {/* Specular hotspot that follows touch (disabled for rigid buttons) */}
+                {!rigid && (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[StyleSheet.absoluteFill, { opacity: glowOpacity }]}
+                  >
+                    <Animated.View
+                      style={{
+                        position: "absolute",
+                        width: HL_R * 2,
+                        height: HL_R * 2,
+                        transform: [
+                          { translateX: highlightLeft as unknown as any },
+                          { translateY: highlightTop as unknown as any },
+                          {
+                            scale: press.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [1, 1.15],
+                            }),
+                          },
+                        ],
+                      }}
+                    >
+                      <Svg width="100%" height="100%">
+                        <Defs>
+                          <RadialGradient
+                            id="__specHotspot"
+                            cx="50%"
+                            cy="50%"
+                            r="50%"
+                          >
+                            <Stop
+                              offset="0%"
+                              stopColor="#ffffff"
+                              stopOpacity={0.38}
+                            />
+                            <Stop
+                              offset="45%"
+                              stopColor="#ffffff"
+                              stopOpacity={0.16}
+                            />
+                            <Stop
+                              offset="100%"
+                              stopColor="#ffffff"
+                              stopOpacity={0}
+                            />
+                          </RadialGradient>
+                        </Defs>
+                        <Rect
+                          x="0"
+                          y="0"
+                          width="100%"
+                          height="100%"
+                          fill="url(#__specHotspot)"
+                        />
+                      </Svg>
+                    </Animated.View>
+                  </Animated.View>
+                )}
+
+                {/* Soft rim pulse on press */}
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    StyleSheet.absoluteFill,
+                    {
+                      opacity: press.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 0.28],
+                      }),
+                      transform: [
+                        {
+                          scale: press.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.98, 1.06],
+                          }),
+                        },
+                      ],
+                      borderRadius: radius,
+                    } as any,
+                  ]}
+                >
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      ...StyleSheet.absoluteFillObject,
+                      borderRadius: radius,
+                      borderWidth: StyleSheet.hairlineWidth,
+                      borderColor: "rgba(255,255,255,0.30)",
                     }}
                   />
                 </Animated.View>
@@ -533,6 +1028,8 @@ const GlassInput = React.forwardRef<TextInput, any>((props, ref) => {
           overflow: "hidden",
           alignSelf: "stretch",
           justifyContent: isCollapsed ? "center" : "flex-start",
+          renderToHardwareTextureAndroid: true,
+          needsOffscreenAlphaCompositing: true,
         },
       ]}
     >
@@ -630,9 +1127,11 @@ function LiquidBubble({
         style,
       ]}
     >
-      {!own && (
-        <BlurView intensity={6} tint="light" style={StyleSheet.absoluteFill} />
-      )}
+      <BlurView
+        intensity={own ? 10 : 6}
+        tint="light"
+        style={StyleSheet.absoluteFill}
+      />
       <LinearGradient
         colors={
           own
@@ -643,12 +1142,30 @@ function LiquidBubble({
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
+      {/* subtle edge lighting */}
       <LinearGradient
-        colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0.00)"]}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
+        colors={["rgba(255,255,255,0.14)", "rgba(255,255,255,0.00)"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0.95, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
+      {/* inner shadow to imply thickness */}
+      <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+        <Defs>
+          <RadialGradient id="__bubbleInnerShadow" cx="50%" cy="50%" r="65%">
+            <Stop offset="70%" stopColor="#000000" stopOpacity={0} />
+            <Stop offset="100%" stopColor="#000000" stopOpacity={0.2} />
+          </RadialGradient>
+        </Defs>
+        <Rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="url(#__bubbleInnerShadow)"
+        />
+      </Svg>
+      {/* crisp rim */}
       <View
         pointerEvents="none"
         style={[
@@ -656,8 +1173,8 @@ function LiquidBubble({
           {
             borderWidth: StyleSheet.hairlineWidth,
             borderColor: own
-              ? "rgba(255,255,255,0.18)"
-              : "rgba(255,255,255,0.12)",
+              ? "rgba(255,255,255,0.22)"
+              : "rgba(255,255,255,0.14)",
             borderRadius: 18,
           },
         ]}
@@ -666,6 +1183,7 @@ function LiquidBubble({
         style={{
           paddingHorizontal: emojiOnly ? 0 : 14,
           paddingVertical: emojiOnly ? 0 : 10,
+          maxWidth: BUBBLE_MAX_W,
         }}
       >
         {children}
@@ -717,7 +1235,7 @@ function OrbitalNav({
     }
   }, [visible, fade, ring]);
 
-  if (!visible) return null;
+  // if (!visible) return null;
 
   const R = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.32;
   const cx = SCREEN_WIDTH / 2;
@@ -770,6 +1288,7 @@ function OrbitalNav({
           const theta = (Math.PI * 2 * idx) / N - Math.PI / 2;
           const x = cx + R * Math.cos(theta);
           const y = cy + R * Math.sin(theta);
+          const active = activeLaneId === lane.id;
           return (
             <Animated.View
               key={lane.id}
@@ -788,23 +1307,19 @@ function OrbitalNav({
                 }}
                 style={[
                   styles.orbitPill,
-                  activeLaneId === lane.id
-                    ? styles.orbitPillActive
-                    : styles.orbitPillInactive,
+                  active ? styles.orbitPillActive : styles.orbitPillInactive,
                 ]}
               >
-                <MaterialIcons
-                  name={(lane.emoji as any) || "view-agenda"}
-                  color={activeLaneId === lane.id ? "#EFFFFF" : "#d7e7ea"}
+                <IconOrEmoji
+                  name={lane.emoji as any}
                   size={16}
+                  color={active ? "#EFFFFF" : "#d7e7ea"}
                   style={{ marginRight: 6 }}
                 />
                 <Text
                   style={[
                     styles.orbitText,
-                    activeLaneId === lane.id
-                      ? styles.orbitTextActive
-                      : styles.orbitTextInactive,
+                    active ? styles.orbitTextActive : styles.orbitTextInactive,
                   ]}
                 >
                   {lane.title}
@@ -813,143 +1328,6 @@ function OrbitalNav({
             </Animated.View>
           );
         })}
-      </View>
-    </Animated.View>
-  );
-}
-
-// ————————————————————————————————————————————
-// Reaction Overlay
-// ————————————————————————————————————————————
-function ReactionOverlay({
-  visible,
-  layout,
-  message,
-  theme,
-  insets,
-  currentUsername,
-  isOwn,
-  onClose,
-  onReply,
-  onCopy,
-  onUnsend,
-  onToggleReaction,
-}: {
-  visible: boolean;
-  layout: { x: number; y: number; width: number; height: number } | null;
-  message: MessageType | null;
-  theme: {
-    bubbleOwn: string;
-    bubbleOther: string;
-    textOnOwn: string;
-    textOnOther: string;
-    backdropTintIntensity: number;
-  };
-  insets: any;
-  currentUsername: string;
-  isOwn: boolean;
-  onClose: () => void;
-  onReply: () => void;
-  onCopy: () => void;
-  onUnsend: () => void;
-  onToggleReaction: (type: ReactionType["reaction_type"]) => void;
-}) {
-  const fade = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    if (visible) {
-      fade.setValue(0);
-      Animated.timing(fade, {
-        toValue: 1,
-        duration: 120,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible, fade]);
-  if (!visible || !layout || !message) return null;
-  const buttons: Array<{ key: ReactionType["reaction_type"]; label: string }> =
-    [
-      { key: "like", label: "👍" },
-      { key: "love", label: "❤️" },
-      { key: "laugh", label: "😂" },
-      { key: "sad", label: "😢" },
-      { key: "angry", label: "😡" },
-    ];
-  return (
-    <Animated.View style={[StyleSheet.absoluteFill, { opacity: fade }]}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-      <View
-        style={{
-          position: "absolute",
-          left: Math.max(12, layout.x - 20),
-          top: Math.max(insets.top + 8, layout.y - 54),
-        }}
-      >
-        <GlassPressable
-          radius={18}
-          padH={12}
-          padV={10}
-          variant="solid"
-          haptics="none"
-        >
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {buttons.map((b) => (
-              <Pressable
-                key={b.key}
-                onPress={() => {
-                  onToggleReaction(b.key);
-                  Haptics.selectionAsync();
-                }}
-                style={{ paddingHorizontal: 8 }}
-              >
-                <Text style={{ fontSize: 22 }}>{b.label}</Text>
-              </Pressable>
-            ))}
-            <View style={{ width: 10 }} />
-            {!isOwn && (
-              <GlassPressable
-                radius={12}
-                padH={10}
-                padV={6}
-                variant="ghost"
-                haptics="selection"
-                onPress={onReply}
-              >
-                <Text style={{ color: "#EFFFFF", fontWeight: "800" }}>
-                  Reply
-                </Text>
-              </GlassPressable>
-            )}
-            {!!message.text && (
-              <GlassPressable
-                radius={12}
-                padH={10}
-                padV={6}
-                variant="ghost"
-                haptics="selection"
-                onPress={onCopy}
-              >
-                <Text style={{ color: "#EFFFFF", fontWeight: "800" }}>
-                  Copy
-                </Text>
-              </GlassPressable>
-            )}
-            {isOwn && (
-              <GlassPressable
-                radius={12}
-                padH={10}
-                padV={6}
-                variant="ghost"
-                haptics="light"
-                onPress={onUnsend}
-              >
-                <Text style={{ color: "#FFB3AE", fontWeight: "900" }}>
-                  Unsend
-                </Text>
-              </GlassPressable>
-            )}
-          </View>
-        </GlassPressable>
       </View>
     </Animated.View>
   );
@@ -1014,7 +1392,21 @@ export default function ChatOverlay({
   const bubbleRefs = useRef<Record<string, View | null>>({});
 
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  const footerTranslate = useRef(new Animated.Value(0)).current;
+
+  // Keyboard progress (in pixels) – 0 when closed, >0 as it opens
+  const kbdLift = useRef(new Animated.Value(0)).current;
+
+  // Keep your “a bit higher” spacing OUTSIDE the keyboard animation so the
+  // footer moves the exact same distance as the keyboard over the same time.
+  const footerExtraOffset = useRef(
+    new Animated.Value(-(EXTRA_FOOTER_SPACING + EXTRA_KEYBOARD_CLEARANCE))
+  ).current;
+
+  // Final Y transform for the footer
+  const footerTranslateY = Animated.add(
+    Animated.multiply(kbdLift, -1),
+    footerExtraOffset
+  );
 
   const [input, setInput] = useState("");
   const inputRef = useRef<TextInput>(null);
@@ -1026,6 +1418,8 @@ export default function ChatOverlay({
   const lastScrollYRef = useRef(0);
   const isDraggingRef = useRef(false);
   const dragStartYRef = useRef(0);
+
+  
 
   const lastScrollTSRef = useRef(0);
   const lastVelocityRef = useRef(0);
@@ -1113,7 +1507,7 @@ export default function ChatOverlay({
           if (
             Object.prototype.hasOwnProperty.call(resp.data.theme, "bgImage")
           ) {
-            setBgImage(serverBg ?? null); // allow explicit null from server
+            setBgImage(serverBg ?? null);
           }
           if (typeof accentColor === "string") setAccentColor(accentColor);
         }
@@ -1286,109 +1680,78 @@ export default function ChatOverlay({
     },
   });
 
-  // Keyboard + footer sync (fixed)
+  // Keyboard + footer sync (match keyboard's timeline exactly)
   useEffect(() => {
-    // iOS: mirror the system's interactive dismissal via frame changes.
-    if (Platform.OS === "ios") {
-      const bottomPad = Math.max(0, insets.bottom - 4);
-
-      const frameSub = Keyboard.addListener(
-        "keyboardWillChangeFrame",
-        (e: any) => {
-          const end = e?.endCoordinates;
-          if (!end) return;
-          const lift = Math.max(0, SCREEN_HEIGHT - end.screenY - bottomPad);
-          const dur = e?.duration ?? 160;
-
-          footerTranslate.stopAnimation(() => {
-            Animated.timing(footerTranslate, {
-              toValue: -lift,
-              duration: Math.max(80, dur),
-              easing: Easing.out(Easing.cubic),
-              useNativeDriver: true,
-            }).start();
-          });
-
-          const visible = lift > 1;
-          setKeyboardVisible(visible);
-          controlRef.current = visible ? "keyboard" : "idle";
-        }
-      );
-
-      const willHide = Keyboard.addListener("keyboardWillHide", () => {
-        footerTranslate.stopAnimation(() => {
-          Animated.timing(footerTranslate, {
-            toValue: 0,
-            duration: 180,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }).start(() => {
-            setKeyboardVisible(false);
-            keyboardHeightRef.current = 0;
-            controlRef.current = "idle";
-          });
-        });
-      });
-
-      return () => {
-        frameSub.remove();
-        willHide.remove();
-      };
-    }
-
-    // ANDROID: explicit show/hide
     const bottomPad = Math.max(0, insets.bottom - 4);
 
-    const onShow = (e: any) => {
-      const h = e?.endCoordinates?.height ?? 0;
-      const lift = Math.max(0, h - bottomPad);
-      footerTranslate.stopAnimation(() => {
-        Animated.timing(footerTranslate, {
-          toValue: -lift,
-          duration: Math.min(200, e?.duration ?? 200),
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }).start();
-      });
-      keyboardHeightRef.current = lift;
-      setKeyboardVisible(true);
-      controlRef.current = "keyboard";
-    };
-
-    const onHide = (e: any) => {
-      footerTranslate.stopAnimation(() => {
-        Animated.timing(footerTranslate, {
-          toValue: 0,
-          duration: Math.min(220, e?.duration ?? 220),
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }).start(() => {
-          setKeyboardVisible(false);
-          keyboardHeightRef.current = 0;
-          controlRef.current = "idle";
-        });
+    const animateKbd = (from: number, to: number, duration?: number) => {
+      kbdLift.stopAnimation();
+      kbdLift.setValue(from); // start exactly where the keyboard starts
+      Animated.timing(kbdLift, {
+        toValue: to,
+        duration: Math.max(1, duration ?? ANDROID_FALLBACK_DURATION),
+        easing: KBD_EASING, // iOS keyboard curve equivalent
+        useNativeDriver: true,
+      }).start(() => {
+        keyboardHeightRef.current = to;
+        setKeyboardVisible(to > 1);
+        controlRef.current = to > 0 ? "keyboard" : "idle";
       });
     };
 
-    const didShow = Keyboard.addListener("keyboardDidShow", onShow);
-    const didHide = Keyboard.addListener("keyboardDidHide", onHide);
-
-    return () => {
-      didShow.remove();
-      didHide.remove();
-    };
-  }, [insets.bottom, footerTranslate]);
-
-  useEffect(() => {
-    if (
-      Platform.OS === "android" &&
-      (UIManager as any).setLayoutAnimationEnabledExperimental
-    ) {
-      (UIManager as any).setLayoutAnimationEnabledExperimental(true);
+    if (Platform.OS === "ios") {
+      // Will-change frame gives us both start & end frames + duration
+      const sub = Keyboard.addListener("keyboardWillChangeFrame", (e: any) => {
+        const startY = e?.startCoordinates?.screenY ?? SCREEN_HEIGHT;
+        const endY = e?.endCoordinates?.screenY ?? SCREEN_HEIGHT;
+        const startLift = Math.max(0, SCREEN_HEIGHT - startY - bottomPad);
+        const endLift = Math.max(0, SCREEN_HEIGHT - endY - bottomPad);
+        const dur = e?.duration ?? 160;
+        animateKbd(startLift, endLift, dur);
+      });
+      return () => sub.remove();
     }
-  }, []);
 
-  // Helpers
+    // ANDROID — approximate with will/did events
+    const willShow = (e: any) => {
+      const endH = e?.endCoordinates?.height ?? 0;
+      const endLift = Math.max(0, endH - bottomPad);
+      const dur = e?.duration ?? ANDROID_FALLBACK_DURATION;
+      const startLift = keyboardHeightRef.current || 0;
+      animateKbd(startLift, endLift, dur);
+    };
+    const didShow = (e: any) => {
+      if (controlRef.current === "keyboard") return;
+      const endH = e?.endCoordinates?.height ?? 0;
+      const endLift = Math.max(0, endH - bottomPad);
+      animateKbd(
+        keyboardHeightRef.current || 0,
+        endLift,
+        ANDROID_FALLBACK_DURATION
+      );
+    };
+    const willHide = (e: any) => {
+      const start = keyboardHeightRef.current || 0;
+      const dur = e?.duration ?? ANDROID_FALLBACK_DURATION;
+      animateKbd(start, 0, dur);
+    };
+    const didHide = () => {
+      animateKbd(keyboardHeightRef.current || 0, 0, ANDROID_FALLBACK_DURATION);
+    };
+
+    const s1 = Keyboard.addListener("keyboardWillShow", willShow as any);
+    const s2 = Keyboard.addListener("keyboardDidShow", didShow);
+    const s3 = Keyboard.addListener("keyboardWillHide", willHide as any);
+    const s4 = Keyboard.addListener("keyboardDidHide", didHide);
+    return () => {
+      s1.remove();
+      s2.remove();
+      s3.remove();
+      s4.remove();
+    };
+  }, [insets.bottom, kbdLift]);
+
+  // Participants helpers
   const participantsUsers = useMemo(
     () =>
       (conversation?.participants ?? []).map((p: any) =>
@@ -1437,7 +1800,7 @@ export default function ChatOverlay({
     return Math.abs((t1.getTime() - t0.getTime()) / 60000) >= 30;
   };
 
-  // Open overlay (placed before renderer to avoid TDZ issues)
+  // Overlay opener
   const openOverlayFor = (message: MessageType) => {
     const ref = bubbleRefs.current[message.uuid];
     if (!ref) return;
@@ -1565,6 +1928,7 @@ export default function ChatOverlay({
             color="#EFFFFF"
             style={{ marginRight: 10 }}
           />
+          <Text style={{ color: "#EFFFFF" }}>Attachment</Text>
         </View>
       </GlassPressable>
     );
@@ -1580,7 +1944,7 @@ export default function ChatOverlay({
     const prev = messages[index + 1];
     const next = messages[index - 1];
     const own = isOwnMessage(item);
-    const plainText = item.text.replace(/<\/?[^>]+(>|$)/g, "").trim();
+    const plainText = (item.text || "").replace(/<\/?[^>]+(>|$)/g, "").trim();
     const emojiOnly = isEmojiOnlyMessage(plainText);
     const msgDate = new Date(item.sent_at);
     const showDateSeparator = needsTimeSeparator(item, prev);
@@ -1637,6 +2001,16 @@ export default function ChatOverlay({
     const timeOpacity = panX.interpolate({
       inputRange: [-80, -10],
       outputRange: [1, 0],
+      extrapolate: "clamp",
+    });
+    const squishX = panX.interpolate({
+      inputRange: [-120, 0, 120],
+      outputRange: [0.98, 1, 1.06],
+      extrapolate: "clamp",
+    });
+    const squishY = panX.interpolate({
+      inputRange: [-120, 0, 120],
+      outputRange: [1.06, 1, 0.98],
       extrapolate: "clamp",
     });
 
@@ -1763,6 +2137,8 @@ export default function ChatOverlay({
               transform: [
                 { translateX: bubbleTranslateX },
                 { scale: msgScales[item.uuid] },
+                { scaleX: squishX },
+                { scaleY: squishY },
               ],
               opacity: msgOpacities[item.uuid],
             }}
@@ -1806,7 +2182,7 @@ export default function ChatOverlay({
                 </View>
               )}
 
-              {emojiOnly ? (
+              {isEmojiOnlyMessage(item.text || "") ? (
                 <Pressable
                   ref={(ref) => (bubbleRefs.current[item.uuid] = ref)}
                   delayLongPress={160}
@@ -2016,60 +2392,18 @@ export default function ChatOverlay({
     }
   };
 
-  // Scroll handler (Android-only interactive footer tracking)
-  const onScroll = (e: any) => {
-    const prevY = lastScrollYRef.current || 0;
-    const y = e?.nativeEvent?.contentOffset?.y ?? 0;
-    wasAtHardBottomRef.current = y <= 2;
-
-    const now = Date.now();
-    const dy = y - prevY;
-    const dt = now - (lastScrollTSRef.current || now);
-    if (dt > 0) {
-      lastVelocityRef.current = (dy / dt) * 1000; // px/s
-    }
-    lastScrollTSRef.current = now;
-    lastScrollYRef.current = y;
-
-    // Keep reaction overlay anchored
-    if (focusedMessage) {
-      const ref = bubbleRefs.current[focusedMessage.uuid];
-      ref?.measureInWindow?.((mx, winY, w, h) => {
-        const clampX = (cx: number, w0: number) =>
-          Math.max(12, Math.min(cx, SCREEN_WIDTH - w0 - 12));
-        const clampY = (cy: number, h0: number) =>
-          Math.max(
-            insets.top + 12,
-            Math.min(cy, SCREEN_HEIGHT - insets.bottom - 12 - h0)
-          );
-        setOverlayLayout({
-          x: clampX(mx, w),
-          y: clampY(winY, h),
-          width: w,
-          height: h,
-        });
-      });
-    }
-
-    // Android interactive dismissal mirror (safe + strictly Android)
-    if (
-      Platform.OS === "android" &&
-      keyboardVisible &&
-      isDraggingRef.current &&
-      controlRef.current === "scroll" &&
-      keyboardHeightRef.current > 0
-    ) {
-      const delta = Math.max(0, y - (dragStartYRef.current || 0));
-      const remaining = Math.max(0, keyboardHeightRef.current - delta);
-
-      footerTranslate.stopAnimation();
-      footerTranslate.setValue(-remaining);
-
-      if (remaining <= 0.5) {
-        ignoreKbdOnceRef.current = true;
+  // Scroll handler: on iOS we rely on `keyboardDismissMode="interactive"`.
+  // On Android, dismiss the keyboard once the user drags upward a bit.
+  const onScroll = (e?: any) => {
+    try {
+      const y = e?.nativeEvent?.contentOffset?.y ?? 0;
+      const dy = y - (lastScrollYRef.current || 0);
+      lastScrollYRef.current = y;
+      if (Platform.OS !== "ios" && keyboardVisible && dy > 2) {
+        // approximate interactive dismissal on Android
         Keyboard.dismiss();
       }
-    }
+    } catch {}
   };
 
   if (loading && !conversation) return null;
@@ -2079,9 +2413,9 @@ export default function ChatOverlay({
     bubbleOther: theme.bubbleOther,
     textOnOwn: theme.textOnOwn,
     textOnOther: theme.textOnOther,
-    backdropTintIntensity: theme.backdropTintIntensity,
+    backdropTintIntensity: (theme as any).backdropTintIntensity ?? 40,
   };
-  const bottomInset = Math.max(8, footerHeight + 8);
+  const bottomInset = 15; //Math.max(12, footerHeight + 12 + EXTRA_FOOTER_SPACING);
 
   return (
     <Modal
@@ -2091,604 +2425,427 @@ export default function ChatOverlay({
       onRequestClose={triggerClose}
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.containerWithoutOverflow}>
-          <Pressable style={styles.backdrop} onPress={triggerClose} />
-          <Animated.View
-            style={[
-              styles.sheetContainer,
-              {
-                top: insets.top + 16,
-                bottom: 0,
-                transform: [{ translateY }],
-              } as any,
-            ]}
-          >
-            {/* background */}
-            {bgImage ? (
-              <ImageBackground
-                source={{ uri: bgImage }}
-                resizeMode="cover"
-                style={StyleSheet.absoluteFillObject}
-              >
-                <LinearGradient
-                  colors={["rgba(0,0,0,0.45)", "rgba(0,0,0,0.82)"]}
-                  style={StyleSheet.absoluteFillObject}
-                />
-              </ImageBackground>
-            ) : (
-              <LinearGradient
-                colors={(theme as ThemeDef).bgGradient as any}
-                style={StyleSheet.absoluteFillObject}
-              />
-            )}
-
-            {/* Header */}
-            <View
-              style={{
-                paddingHorizontal: 6,
-                marginTop: 6,
-                flexDirection: "row",
-                gap: 10,
-              }}
-            >
-              <GlassPressable
-                onPress={triggerClose}
-                radius={16}
-                padH={10}
-                padV={9}
-                style={{ marginLeft: 10, alignSelf: "center" }}
-                haptics="light"
-              >
-                <MaterialIcons name="chevron-left" size={24} color="#EFFFFF" />
-              </GlassPressable>
-
-              <GlassPressable
-                onPress={() => setShowSettings(true)}
-                radius={18}
-                padH={10}
-                padV={6}
-                variant="ghost"
-                style={styles.identityBar}
-                haptics="selection"
-                block
-              >
-                <View style={styles.avatarGroupWide}>
-                  {shownPeople.slice(0, 3).map((u: any, idx: number) => (
-                    <View
-                      key={`${u?.id ?? u?.username ?? idx}-${idx}`}
-                      style={[
-                        styles.avatarWrapper,
-                        { left: idx * 18, zIndex: 3 - idx },
-                      ]}
-                    >
-                      <ProfilePicture
-                        src={u?.profile_image}
-                        style={styles.stackedAvatar}
-                      />
-                    </View>
-                  ))}
-                </View>
-                <View style={styles.identityTextCol}>
-                  <Text style={styles.chatHeaderName} numberOfLines={1}>
-                    {nameLine || "Conversation"}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Text style={styles.chatHeaderUsername} numberOfLines={1}>
-                      {handleLine}
-                    </Text>
-                    <MaterialIcons
-                      name="expand-more"
-                      size={18}
-                      color="#EFFFFF"
-                    />
-                  </View>
-                </View>
-              </GlassPressable>
-
-              <GlassPressable
-                radius={16}
-                padH={10}
-                padV={9}
-                onPress={() => setOrbitalOpen(true)}
-                haptics="selection"
-              >
-                <MaterialIcons name="blur-on" size={22} color={accentColor} />
-              </GlassPressable>
-            </View>
-
-            {/* Inline lanes rail */}
-            <View style={{ paddingVertical: 6 }}>
-              <FlatList
-                data={[
-                  ...lanes.filter((l) => !l.is_archived),
-                  { id: "__new__", title: "New", emoji: "add" } as any,
-                ]}
-                keyExtractor={(i: any) => i.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 12 }}
-                keyboardShouldPersistTaps="always"
-                keyboardDismissMode={
-                  Platform.OS === "ios" ? "interactive" : "on-drag"
-                }
-                renderItem={({ item }: { item: any }) =>
-                  item.id === "__new__" ? (
-                    <GlassPressable
-                      onPress={async () => {
-                        Haptics.selectionAsync();
-                        try {
-                          const res = await callApiRef.current(
-                            `messages/contexts/${conversationId}/`,
-                            "POST",
-                            {
-                              title: "New lane",
-                              emoji: "view-agenda",
-                              color: accentColor,
-                            }
-                          );
-                          const lane = res.data as Lane;
-                          setLanes((p) => [lane, ...p]);
-                          setActiveLaneId(lane.id);
-                        } catch {
-                          const lane: Lane = {
-                            id: `local-${Date.now()}`,
-                            title: "New lane",
-                            emoji: "view-agenda",
-                            color: accentColor,
-                          };
-                          setLanes((p) => [lane, ...p]);
-                          setActiveLaneId(lane.id);
-                        }
-                      }}
-                      radius={16}
-                      padH={12}
-                      padV={8}
-                      variant="solid"
-                      haptics="selection"
-                      style={{ marginRight: 8 }}
-                    >
-                      <View
-                        style={{ flexDirection: "row", alignItems: "center" }}
-                      >
-                        <MaterialIcons
-                          name="add"
-                          size={16}
-                          color="#EFFFFF"
-                          style={{ marginRight: 6 }}
-                        />
-                        <Text style={{ color: "#EFFFFF", fontWeight: "900" }}>
-                          New
-                        </Text>
-                      </View>
-                    </GlassPressable>
-                  ) : (
-                    <Pressable
-                      onPress={() => {
-                        if (activeLaneId !== item.id) {
-                          Haptics.selectionAsync();
-                          setActiveLaneId(item.id);
-                          persistPrefs({ activeLaneId: item.id });
-                        }
-                      }}
-                      onLongPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        Alert.alert(`${item.title}`, "Manage lane", [
-                          {
-                            text: "Rename / Edit",
-                            onPress: () => setShowSettings(true),
-                          },
-                          {
-                            text: item.is_archived ? "Unarchive" : "Archive",
-                            onPress: async () => {
-                              try {
-                                await callApiRef.current(
-                                  `messages/contexts/${conversationId}/${item.id}/`,
-                                  "PATCH",
-                                  { is_archived: !item.is_archived }
-                                );
-                              } catch {}
-                              setLanes((prev) =>
-                                prev.map((l) =>
-                                  l.id === item.id
-                                    ? { ...l, is_archived: !item.is_archived }
-                                    : l
-                                )
-                              );
-                              if (
-                                !item.is_archived &&
-                                activeLaneId === item.id
-                              ) {
-                                const firstActive = lanes.find(
-                                  (l) => l.id !== item.id && !l.is_archived
-                                );
-                                setActiveLaneId(firstActive?.id ?? null);
-                              }
-                            },
-                          },
-                          {
-                            text: "Delete",
-                            style: "destructive",
-                            onPress: () =>
-                              Alert.alert(
-                                "Delete lane?",
-                                "This only removes the lane context. Messages remain in the conversation history.",
-                                [
-                                  { text: "Cancel", style: "cancel" },
-                                  {
-                                    text: "Delete",
-                                    style: "destructive",
-                                    onPress: async () => {
-                                      try {
-                                        await callApiRef.current(
-                                          `messages/contexts/${conversationId}/${item.id}/`,
-                                          "DELETE"
-                                        );
-                                      } catch {}
-                                      setLanes((p) =>
-                                        p.filter((l) => l.id !== item.id)
-                                      );
-                                      if (activeLaneId === item.id) {
-                                        const firstActive = lanes.find(
-                                          (l) =>
-                                            l.id !== item.id && !l.is_archived
-                                        );
-                                        setActiveLaneId(
-                                          firstActive?.id ?? null
-                                        );
-                                      }
-                                    },
-                                  },
-                                ]
-                              ),
-                          },
-                          { text: "Cancel", style: "cancel" },
-                        ]);
-                      }}
-                      style={[
-                        styles.lanePill,
-                        activeLaneId === item.id
-                          ? styles.lanePillActive
-                          : styles.lanePillInactive,
-                        { marginRight: 8 },
-                      ]}
-                    >
-                      <MaterialIcons
-                        name={(item.emoji as any) || "view-agenda"}
-                        size={16}
-                        color={activeLaneId === item.id ? "#EFFFFF" : "#d7e7ea"}
-                        style={{ marginRight: 6, opacity: 0.95 }}
-                      />
-                      <Text
-                        style={[
-                          styles.laneText,
-                          activeLaneId === item.id
-                            ? styles.laneTextActive
-                            : styles.laneTextInactive,
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {item.title}
-                      </Text>
-                    </Pressable>
-                  )
-                }
-              />
-            </View>
-
-            {/* Messages */}
-            <FlatList
-              ref={flatListRef}
-              data={messages}
-              keyExtractor={(m) => m.uuid}
-              renderItem={renderMessageItem}
-              inverted
-              maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
-              onScroll={onScroll}
-              scrollEventThrottle={16}
-              keyboardDismissMode={
-                Platform.OS === "ios" ? "interactive" : "on-drag"
-              }
-              keyboardShouldPersistTaps="handled"
-              onEndReachedThreshold={0.4}
-              onEndReached={() => {
-                if (hasMore && !loadingOlder) {
-                  fetchMessages(page);
-                }
-              }}
-              onScrollBeginDrag={(e) => {
-                isDraggingRef.current = true;
-                controlRef.current = "scroll";
-                dragStartYRef.current =
-                  e?.nativeEvent?.contentOffset?.y ?? 0;
-              }}
-              onScrollEndDrag={() => {
-                isDraggingRef.current = false;
-                if (Platform.OS === "android" && keyboardVisible) {
-                  ignoreKbdOnceRef.current = true;
-                  Keyboard.dismiss();
-                }
-              }}
-              onMomentumScrollEnd={() => {
-                isDraggingRef.current = false;
-                if (Platform.OS === "android" && keyboardVisible) {
-                  ignoreKbdOnceRef.current = true;
-                  Keyboard.dismiss();
-                }
-              }}
-              ListFooterComponent={
-                loadingOlder ? (
-                  <View style={{ paddingVertical: 16 }}>
-                    <ActivityIndicator color="#cde8ef" />
-                  </View>
-                ) : null
-              }
-              ListHeaderComponent={<View style={{ height: bottomInset }} />}
-              contentContainerStyle={{
-                paddingHorizontal: 12,
-                // small spacer for the visual top (older messages) in inverted mode
-                paddingBottom: 6,
-              }}
-              // Make the scroll bar avoid the composer too
-              scrollIndicatorInsets={{ top: bottomInset }}
-            />
-
-            {/* Footer / Composer */}
+        <GooProvider>
+          <View style={styles.containerWithoutOverflow}>
+            <Pressable style={styles.backdrop} onPress={triggerClose} />
             <Animated.View
               style={[
-                styles.footer,
-                { paddingBottom: Math.max(8, insets.bottom + 6) },
-                { transform: [{ translateY: footerTranslate }] },
+                styles.sheetContainer,
+                {
+                  top: insets.top + 16,
+                  bottom: 0,
+                  transform: [{ translateY }],
+                } as any,
               ]}
-              onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
             >
-              {replyingTo && (
-                <View style={styles.replyBar}>
-                  <MaterialIcons
-                    name="reply"
-                    size={16}
-                    color="#EFFFFF"
-                    style={{ marginRight: 6 }}
+              {/* background */}
+              {bgImage ? (
+                <ImageBackground
+                  source={{ uri: bgImage }}
+                  resizeMode="cover"
+                  style={StyleSheet.absoluteFillObject}
+                >
+                  <LinearGradient
+                    colors={["rgba(0,0,0,0.45)", "rgba(0,0,0,0.82)"]}
+                    style={StyleSheet.absoluteFillObject}
                   />
-                  <Text style={styles.replyText} numberOfLines={1}>
-                    Replying to {replyingTo.sender_username}:{" "}
-                    {replyingTo.text || "Attachment"}
-                  </Text>
-                  <Pressable
-                    onPress={() => setReplyingTo(null)}
-                    style={styles.replyClose}
-                  >
-                    <MaterialIcons name="close" size={16} color="#EFFFFF" />
-                  </Pressable>
-                </View>
+                </ImageBackground>
+              ) : (
+                <LinearGradient
+                  colors={(theme as ThemeDef).bgGradient as any}
+                  style={StyleSheet.absoluteFillObject}
+                />
               )}
 
-              {attachmentsToSend.length > 0 && (
+              {/* Header */}
+              <View
+                style={{
+                  paddingHorizontal: 6,
+                  marginTop: 6,
+                  flexDirection: "row",
+                  gap: 10,
+                }}
+              >
+                <GlassPressable
+                  gooGroup="header"
+                  onPress={triggerClose}
+                  radius={16}
+                  padH={10}
+                  padV={9}
+                  style={{ marginLeft: 10, alignSelf: "center" }}
+                  haptics="light"
+                >
+                  <MaterialIcons
+                    name="chevron-left"
+                    size={24}
+                    color="#EFFFFF"
+                  />
+                </GlassPressable>
+
+                <GlassPressable
+                  gooGroup="header"
+                  onPress={() => setShowSettings(true)}
+                  radius={18}
+                  padH={10}
+                  padV={6}
+                  variant="ghost"
+                  style={styles.identityBar}
+                  haptics="selection"
+                  block
+                >
+                  <View style={styles.avatarGroupWide}>
+                    {shownPeople.slice(0, 3).map((u: any, idx: number) => (
+                      <View
+                        key={`${u?.id ?? u?.username ?? idx}-${idx}`}
+                        style={[
+                          styles.avatarWrapper,
+                          { left: idx * 18, zIndex: 3 - idx },
+                        ]}
+                      >
+                        <ProfilePicture
+                          src={u?.profile_image}
+                          style={styles.stackedAvatar}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                  <View style={styles.identityTextCol}>
+                    <Text style={styles.chatHeaderName} numberOfLines={1}>
+                      {nameLine || "Conversation"}
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Text style={styles.chatHeaderUsername} numberOfLines={1}>
+                        {handleLine}
+                      </Text>
+                      <MaterialIcons
+                        name="expand-more"
+                        size={18}
+                        color="#EFFFFF"
+                      />
+                    </View>
+                  </View>
+                </GlassPressable>
+
+                <GlassPressable
+                  gooGroup="header"
+                  radius={16}
+                  padH={10}
+                  padV={9}
+                  onPress={() => setOrbitalOpen(true)}
+                  haptics="selection"
+                >
+                  <MaterialIcons name="blur-on" size={22} color={accentColor} />
+                </GlassPressable>
+              </View>
+
+              {/* Inline lanes rail */}
+              <View style={{ paddingVertical: 6 }}>
+                <FlatList
+                  horizontal
+                  data={[
+                    ...lanes.filter((l) => !l.is_archived),
+                    { id: "__new__", title: "New", emoji: "add" } as any,
+                  ]}
+                  keyExtractor={(item: any) => item.id}
+                  contentContainerStyle={{ paddingHorizontal: 10, gap: 8 }}
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({ item }: { item: any }) => {
+                    if (item.id === "__new__") {
+                      return (
+                        <GlassPressable
+                          radius={14}
+                          padH={10}
+                          padV={6}
+                          variant="ghost"
+                          onPress={() => setOrbitalOpen(true)}
+                          haptics="selection"
+                          gooGroup="header"
+                        >
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                            }}
+                          >
+                            <MaterialIcons
+                              name="add"
+                              size={16}
+                              color="#d7e7ea"
+                              style={{ marginRight: 6, opacity: 0.95 }}
+                            />
+                            <Text style={styles.lanePillTextInactive}>
+                              New Lane
+                            </Text>
+                          </View>
+                        </GlassPressable>
+                      );
+                    }
+                    const active = activeLaneId === item.id;
+                    return (
+                      <GlassPressable
+                        radius={14}
+                        padH={10}
+                        padV={6}
+                        variant={active ? "solid" : "ghost"}
+                        onPress={() => {
+                          setActiveLaneId(item.id);
+                          persistPrefs({ activeLaneId: item.id });
+                        }}
+                        haptics="selection"
+                        gooGroup="header"
+                      >
+                        <View
+                          style={{ flexDirection: "row", alignItems: "center" }}
+                        >
+                          <IconOrEmoji
+                            name={item.emoji as any}
+                            size={16}
+                            color={active ? "#EFFFFF" : "#d7e7ea"}
+                            style={{ marginRight: 6, opacity: 0.95 }}
+                          />
+                          <Text
+                            style={
+                              active
+                                ? styles.lanePillTextActive
+                                : styles.lanePillTextInactive
+                            }
+                            numberOfLines={1}
+                          >
+                            {item.title}
+                          </Text>
+                        </View>
+                      </GlassPressable>
+                    );
+                  }}
+                />
+              </View>
+
+              {/* Messages */}
+              <View style={{ flex: 1 }}>
+                {loading ? (
+                  <View
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ActivityIndicator color={accentColor} />
+                  </View>
+                ) : (
+                  <FlatList
+                    ref={flatListRef}
+                    data={messages}
+                    keyExtractor={(m) => m.uuid}
+                    renderItem={renderMessageItem}
+                    onEndReachedThreshold={0.2}
+                    onEndReached={() => {
+                      if (!loadingOlder && hasMore) fetchMessages(page);
+                    }}
+                    ListFooterComponent={
+                      loadingOlder ? (
+                        <View style={{ paddingVertical: 12 }}>
+                          <ActivityIndicator color={accentColor} />
+                        </View>
+                      ) : null
+                    }
+                    style={{ flex: 1 }}
+                    // contentContainerStyle={{
+                    //   paddingHorizontal: 12,
+                    //   paddingBottom: bottomInset + 80,
+                    // }}
+
+                    inverted
+                    automaticallyAdjustKeyboardInsets={false}
+                    contentInsetAdjustmentBehavior="never"
+                    keyboardDismissMode={
+                      Platform.OS === "ios" ? "interactive" : "on-drag"
+                    }
+                    maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
+                    onScroll={onScroll}
+                    scrollEventThrottle={16}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{
+                      paddingHorizontal: 12,
+                      paddingTop: 8,
+                      paddingBottom: bottomInset,
+                    }}
+                    scrollIndicatorInsets={{
+                      bottom: Math.max(24, footerHeight),
+                    }}
+                  />
+                )}
+              </View>
+
+              {/* Footer composer */}
+              {/* Bottom scrim to close messages visually under the footer */}
+              <LinearGradient
+                pointerEvents="none"
+                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.28)"]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                style={[
+                  styles.bottomScrim,
+                  { height: Math.max(24, footerHeight + insets.bottom) }, // follows your measured footer height
+                ]}
+              />
+              <Animated.View
+                style={{
+                  transform: [{ translateY: footerTranslateY }],
+                }}
+                onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+              >
+                {replyingTo && (
+                  <View style={{ paddingHorizontal: 12, paddingBottom: 6 }}>
+                    <GlassPressable
+                      radius={12}
+                      padH={10}
+                      padV={6}
+                      variant="ghost"
+                      haptics="none"
+                      onLongPress={() => setReplyingTo(null)}
+                    >
+                      <Text style={{ color: "#cfe6eb" }}>
+                        Replying to @{replyingTo.sender_username} — tap &amp;
+                        hold to cancel
+                      </Text>
+                    </GlassPressable>
+                  </View>
+                )}
                 <View
                   style={{
                     flexDirection: "row",
-                    paddingHorizontal: 6,
-                    paddingBottom: 6,
+                    alignItems: "flex-end",
+                    paddingTop: 30,
+                    paddingBottom: 10,
+                    paddingHorizontal: 15,
+                    gap: 8,
+                    boxSizing: "border-box",
                   }}
                 >
-                  <FlatList
-                    data={attachmentsToSend}
-                    keyExtractor={(f) => f.uri}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    renderItem={({ item, index }) => (
-                      <View
-                        style={{
-                          marginRight: 8,
-                          position: "relative",
-                          borderRadius: 12,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Image
-                          source={{ uri: item.uri }}
-                          style={styles.attachPreviewThumb}
-                        />
-                        <Pressable
-                          onPress={() =>
-                            setAttachmentsToSend((prev) =>
-                              prev.filter((f) => f.uri !== item.uri)
-                            )
-                          }
-                          style={styles.attachPreviewClose}
-                        >
-                          <MaterialIcons
-                            name="close"
-                            size={14}
-                            color="#EFFFFF"
-                          />
-                        </Pressable>
-                      </View>
-                    )}
+                  <GlassPressable
+                    radius={16}
+                    padH={10}
+                    padV={9}
+                    onPress={() => setAttachVisible(true)}
+                    haptics="selection"
+                  >
+                    <MaterialIcons name="add" size={20} color="#EFFFFF" />
+                  </GlassPressable>
+
+                  <GlassInput
+                    ref={inputRef}
+                    value={input}
+                    onChangeText={setInput}
+                    placeholder="Message"
+                    maxLines={8}
+                    style={{ color: "#EAFBFF", fontSize: 16 }}
+                    containerStyle={{ flex: 1 }}
+                    onSubmitEditing={handleSend}
                   />
+
+                  <GlassPressable
+                    radius={16}
+                    padH={12}
+                    padV={10}
+                    onPress={handleSend}
+                    haptics="light"
+                    variant="solid"
+                  >
+                    <MaterialIcons name="send" size={20} color="#EFFFFF" />
+                  </GlassPressable>
                 </View>
-              )}
+              </Animated.View>
 
-              <View style={styles.composerRow}>
-                <GlassPressable
-                  radius={16}
-                  padH={10}
-                  padV={10}
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setAttachVisible(true);
-                  }}
-                  style={styles.attachBtn}
-                >
-                  <MaterialIcons name="add" size={22} color="#EFFFFF" />
-                </GlassPressable>
+              {/* Overlays */}
+              <ReactionOverlay
+                visible={!!focusedMessage}
+                layout={overlayLayout}
+                message={focusedMessage}
+                theme={reactionTheme}
+                insets={insets}
+                currentUsername={currentUsername}
+                isOwn={
+                  focusedMessage
+                    ? focusedMessage.sender_username === currentUsername
+                    : false
+                }
+                onClose={() => setFocusedMessage(null)}
+                onReply={() => {
+                  if (focusedMessage) setReplyingTo(focusedMessage);
+                  setFocusedMessage(null);
+                }}
+                onCopy={() => {
+                  if (focusedMessage?.text)
+                    Clipboard.setStringAsync(focusedMessage.text);
+                  setFocusedMessage(null);
+                }}
+                onUnsend={() => {
+                  if (focusedMessage) handleUnsend(focusedMessage);
+                  setFocusedMessage(null);
+                }}
+                onToggleReaction={(type) => {
+                  if (focusedMessage)
+                    handleToggleReaction(focusedMessage, type);
+                }}
+              />
 
-                <GlassInput
-                  ref={inputRef}
-                  value={input}
-                  onChangeText={setInput}
-                  placeholder="Message..."
-                  maxLines={15}
-                  containerStyle={styles.inputContainer}
-                  style={styles.inputBox}
-                  onSubmitEditing={handleSend}
-                />
+              <OrbitalNav
+                visible={orbitalOpen}
+                lanes={lanes}
+                activeLaneId={activeLaneId}
+                onPick={(id) => {
+                  setActiveLaneId(id);
+                  persistPrefs({ activeLaneId: id });
+                }}
+                onClose={() => setOrbitalOpen(false)}
+                accentColor={accentColor}
+              />
 
-                <GlassPressable
-                  radius={16}
-                  padH={12}
-                  padV={10}
-                  onPress={handleSend}
-                  style={styles.sendBtn}
-                  haptics="light"
-                >
-                  <MaterialIcons name="send" size={18} color="white" />
-                </GlassPressable>
-              </View>
+              {/* Goo bridges layer (under overlays) */}
+              <GooLayer accentColor={accentColor} />
             </Animated.View>
+          </View>
 
-            {/* Overlays */}
-            <ReactionOverlay
-              visible={!!focusedMessage && !!overlayLayout}
-              layout={overlayLayout}
-              message={focusedMessage}
-              theme={reactionTheme}
-              insets={insets}
-              currentUsername={currentUsername}
-              isOwn={focusedMessage ? isOwnMessage(focusedMessage) : false}
-              onClose={() => setFocusedMessage(null)}
-              onReply={() => {
-                if (focusedMessage) setReplyingTo(focusedMessage);
-                setFocusedMessage(null);
-              }}
-              onCopy={() => {
-                if (focusedMessage?.text)
-                  Clipboard.setStringAsync(focusedMessage.text);
-                setFocusedMessage(null);
-              }}
-              onUnsend={() => {
-                if (focusedMessage) handleUnsend(focusedMessage);
-                setFocusedMessage(null);
-              }}
-              onToggleReaction={(type) => {
-                if (focusedMessage) handleToggleReaction(focusedMessage, type);
-                setFocusedMessage(null);
-              }}
-            />
+          {/* External overlays */}
+          <SettingsOverlay
+            visible={showSettings}
+            onClose={() => setShowSettings(false)}
+            version=""
+            themes={THEMES}
+            currentThemeId={THEMES[themeIdx].id}
+            accentColor={accentColor}
+            backgroundImage={bgImage}
+            onSetBackgroundImage={(uri) => {
+              setBgImage(uri);
+              persistPrefs({ bgImage: uri });
+            }}
+            onChangeTheme={(id) => {
+              const idx = THEMES.findIndex((t) => t.id === id);
+              const nextIdx = idx >= 0 ? idx : 0;
+              setThemeIdx(nextIdx);
+              const nextAccent = THEMES[nextIdx].accent;
+              setAccentColor(nextAccent);
+              persistPrefs({ themeIdx: nextIdx, accentColor: nextAccent });
+            }}
+            onChangeAccent={(hex) => {
+              setAccentColor(hex);
+              persistPrefs({ accentColor: hex });
+            }}
+          />
 
-            <OrbitalNav
-              visible={orbitalOpen}
-              lanes={lanes}
-              activeLaneId={activeLaneId}
-              onPick={(id) => {
-                setActiveLaneId(id);
-                persistPrefs({ activeLaneId: id });
-              }}
-              onClose={() => setOrbitalOpen(false)}
-              accentColor={accentColor}
-            />
-
-            <SettingsOverlay
-              visible={showSettings}
-              onDismiss={() => setShowSettings(false)}
-              themeIdx={themeIdx}
-              setThemeIdx={(idx: number) => {
-                setThemeIdx(idx);
-                setAccentColor(THEMES[idx].accent);
-                persistPrefs({ themeIdx: idx, accentColor: THEMES[idx].accent });
-              }}
-              bgImage={bgImage}
-              setBgImage={(uri: string | null) => {
-                setBgImage(uri);
-                persistPrefs({ bgImage: uri });
-              }}
-              mode={mode}
-              setMode={(m: ConversationMode) => {
-                setMode(m);
-                persistPrefs({ mode: m });
-              }}
-            />
-
-            <AttachMenu
-              visible={attachVisible}
-              onDismiss={() => setAttachVisible(false)}
-              onPickMedia={async () => {
-                await handleMediaPick();
-                setAttachVisible(false);
-              }}
-              onSetBackground={async () => {
-                const res = await ImagePicker.launchImageLibraryAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                  quality: 0.8,
-                  selectionLimit: 1,
-                });
-                if (!res.canceled && res.assets?.[0]?.uri) {
-                  setBgImage(res.assets[0].uri);
-                  persistPrefs({ bgImage: res.assets[0].uri });
-                }
-                setAttachVisible(false);
-              }}
-              onCycleTheme={() => {
-                const next = (themeIdx + 1) % THEMES.length;
-                setThemeIdx(next);
-                setAccentColor(THEMES[next].accent);
-                persistPrefs({ themeIdx: next, accentColor: THEMES[next].accent });
-                setAttachVisible(false);
-              }}
-              onStartPoll={() => {
-                Haptics.selectionAsync();
-                Alert.alert("Poll", "Coming soon ✨");
-                setAttachVisible(false);
-              }}
-              onStartVoice={() => {
-                Haptics.selectionAsync();
-                Alert.alert("Voice", "Coming soon ✨");
-                setAttachVisible(false);
-              }}
-              onShareLocation={() => {
-                Haptics.selectionAsync();
-                Alert.alert("Location", "Coming soon ✨");
-                setAttachVisible(false);
-              }}
-              onSchedule={() => {
-                Haptics.selectionAsync();
-                Alert.alert("Schedule", "Coming soon ✨");
-                setAttachVisible(false);
-              }}
-              onCamera={async () => {
-                const { status } =
-                  await ImagePicker.requestCameraPermissionsAsync();
-                if (status === "granted") {
-                  const cap = await ImagePicker.launchCameraAsync({
-                    quality: 0.8,
-                  });
-                  if (!cap.canceled && cap.assets?.[0]) {
-                    const a = cap.assets[0];
-                    setAttachmentsToSend((prev) => [
-                      ...prev,
-                      {
-                        uri: a.uri,
-                        type: (a as any).mimeType || "image/jpeg",
-                        name: (a as any).fileName || `camera-${Date.now()}`,
-                      },
-                    ]);
-                  }
-                }
-                setAttachVisible(false);
-              }}
-              onDocument={() => {
-                Haptics.selectionAsync();
-                Alert.alert("Documents", "Coming soon ✨");
-                setAttachVisible(false);
-              }}
-            />
-          </Animated.View>
-        </View>
+          <AttachMenu
+            visible={attachVisible}
+            onClose={() => setAttachVisible(false)}
+            onPickMedia={handleMediaPick}
+          />
+        </GooProvider>
       </GestureHandlerRootView>
     </Modal>
   );
@@ -2697,7 +2854,7 @@ export default function ChatOverlay({
 const styles = StyleSheet.create({
   containerWithoutOverflow: {
     flex: 1,
-    backgroundColor: "transparent",
+    overflow: "hidden",
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -2707,234 +2864,137 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
     overflow: "hidden",
   },
 
-  // Header / identity
+  // Header identity
   identityBar: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    overflow: "hidden",
+    gap: 10,
   },
   avatarGroupWide: {
-    width: 64,
-    height: 32,
-    marginLeft: 4,
+    width: 70,
+    height: 40,
+    position: "relative",
   },
   avatarWrapper: {
     position: "absolute",
-    top: 2,
     width: 28,
     height: 28,
     borderRadius: 14,
     overflow: "hidden",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   stackedAvatar: { width: 28, height: 28 },
-  identityTextCol: { flex: 1, marginLeft: 16, paddingRight: 8 },
+  identityTextCol: { flex: 1, paddingRight: 6 },
   chatHeaderName: {
     color: "#EFFFFF",
-    fontWeight: "900",
-    fontSize: 14,
-    marginBottom: 2,
+    fontSize: 15,
+    fontWeight: "800",
   },
   chatHeaderUsername: {
-    color: "#cde8ef",
+    color: "#b8cfd6",
     fontSize: 12,
-    opacity: 0.8,
   },
 
   // Lanes
-  lanePill: {
+  lanePillTextActive: { color: "#EFFFFF", fontWeight: "800" },
+  lanePillTextInactive: { color: "#d7e7ea", fontWeight: "700" },
+
+  // Orbit
+  orbitPill: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
-  lanePillActive: {
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderColor: "rgba(255,255,255,0.22)",
+  orbitPillActive: {
+    backgroundColor: "rgba(255,255,255,0.16)",
   },
-  lanePillInactive: {
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderColor: "rgba(255,255,255,0.12)",
+  orbitPillInactive: {
+    backgroundColor: "rgba(255,255,255,0.08)",
   },
-  laneText: { fontSize: 12, fontWeight: "800" },
-  laneTextActive: { color: "#EFFFFF" },
-  laneTextInactive: { color: "#d7e7ea" },
-
-  // Messages
-  dateSeparatorText: {
-    color: "#cde8ef",
-    fontSize: 11,
+  orbitText: {
+    fontSize: 13,
     fontWeight: "800",
-    letterSpacing: 0.2,
   },
-  branchLine: {
-    width: 2,
-    height: 16,
-    borderRadius: 1,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    marginRight: 8,
-  },
-  parentPreviewText: {
-    color: "#cde8ef",
-    fontSize: 12,
-    maxWidth: SCREEN_WIDTH * 0.7,
-  },
-  bubbleWrap: {
-    maxWidth: BUBBLE_MAX_W,
-    alignSelf: "flex-start",
-  },
-  messageRowOwn: {
-    alignSelf: "flex-end",
-  },
-  messageRowOther: {
-    alignSelf: "flex-start",
-  },
-  reactCluster: {
-    position: "absolute",
-    top: -12,
-    flexDirection: "row",
-    zIndex: 10,
-  },
-  reactClusterOwn: { right: 8 },
-  reactClusterOther: { left: 8 },
-  reactChip: {
-    backgroundColor: "rgba(255,255,255,0.12)",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginRight: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.18)",
-  },
-  reactionPillText: { color: "#EFFFFF", fontSize: 11, fontWeight: "900" },
-  emojiText: {
-    fontSize: 42,
-    lineHeight: 46,
-    paddingHorizontal: 2,
-    paddingVertical: 2,
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: "600",
-  },
+  orbitTextActive: { color: "#EFFFFF" },
+  orbitTextInactive: { color: "#d7e7ea" },
+
+  // Bubbles
+  bubbleWrap: { marginHorizontal: 6 },
+  messageRowOwn: { alignSelf: "flex-end" },
+  messageRowOther: { alignSelf: "flex-start" },
+  messageText: { fontSize: 16, lineHeight: 21, fontWeight: "500" },
+  emojiText: { fontSize: 34, lineHeight: 38 },
+
   timeChip: {
     position: "absolute",
     bottom: -18,
     right: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
+    backgroundColor: "rgba(0,0,0,0.25)",
     borderRadius: 8,
-    backgroundColor: "rgba(0,0,0,0.22)",
   },
-  timeChipText: { color: "#e7f7f0", fontSize: 10, fontWeight: "800" },
+  timeChipText: { color: "#cfe6eb", fontSize: 10, fontWeight: "700" },
+
+  reactCluster: {
+    flexDirection: "row",
+    position: "absolute",
+    top: -14,
+    gap: 4,
+  },
+  reactClusterOwn: { right: 8 },
+  reactClusterOther: { left: 8 },
+  reactChip: {
+    backgroundColor: "rgba(0,0,0,0.25)",
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  reactionPillText: { color: "#fff", fontSize: 12 },
+
   mediaBubbleContainer: {
     marginTop: 6,
-    borderRadius: 12,
-    overflow: "hidden",
+    gap: 6,
   },
-  mediaBubbleOwn: { alignSelf: "flex-end" },
-  mediaBubbleOther: { alignSelf: "flex-start" },
+  mediaBubbleOwn: { alignItems: "flex-end" },
+  mediaBubbleOther: { alignItems: "flex-start" },
   largeMediaFull: {
-    width: Math.min(SCREEN_WIDTH * 0.8, 340),
-    height: Math.min(SCREEN_WIDTH * 0.8, 340),
+    width: Math.min(SCREEN_WIDTH * 0.75, 320),
+    height: Math.min(SCREEN_WIDTH * 0.75, 320),
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.06)",
   },
 
-  // Footer / composer
-  footer: {
+  branchLine: {
+    width: 3,
+    height: 18,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderRadius: 2,
+    marginRight: 6,
+  },
+  parentPreviewText: {
+    color: "#d0e7ec",
+    maxWidth: SCREEN_WIDTH * 0.75,
+  },
+
+  dateSeparatorText: {
+    color: "#cfe6eb",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+  },
+  bottomScrim: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    paddingTop: 6,
-    paddingHorizontal: 10,
-    backgroundColor: "transparent",
+    // height set dynamically where it's used
   },
-  replyBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "stretch",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    marginBottom: 6,
-    overflow: "hidden",
-  },
-  replyText: { color: "#EFFFFF", flex: 1, fontSize: 12, opacity: 0.9 },
-  replyClose: {
-    padding: 6,
-    marginLeft: 8,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
-  composerRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 8,
-    width: '100%',
-    flex: 1,
-    // backgroundColor: "red",
-  },
-  attachBtn: { alignSelf: "flex-end" },
-  sendBtn: {
-    backgroundColor: "rgba(239, 255, 255, 0)",
-    borderRadius: 16,
-  },
-  inputContainer: {
-    flex: 1, 
-    backgroundColor: "rgba(0,0,0,0)",
-  },
-  inputBox: {
-    flex: 1,
-    flexGrow: 1,
-    fontSize: 16,
-    minHeight: 40,
-    maxHeight: 200,
-    borderRadius: 16,
-    // backgroundColor: "blue",
-  },
-  attachPreviewThumb: {
-    width: 66,
-    height: 66,
-  },
-  attachPreviewClose: {
-    position: "absolute",
-    top: 4,
-    right: 4,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 10,
-    padding: 3,
-  },
-
-  // Orbital
-  orbitPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  orbitPillActive: {
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderColor: "rgba(255,255,255,0.22)",
-  },
-  orbitPillInactive: {
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderColor: "rgba(255,255,255,0.12)",
-  },
-  orbitText: { fontSize: 12, fontWeight: "800" },
-  orbitTextActive: { color: "#EFFFFF" },
-  orbitTextInactive: { color: "#d7e7ea" },
 });

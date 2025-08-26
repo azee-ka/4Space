@@ -601,7 +601,8 @@ export default function Timeline() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+    // backgroundColor: "#121212",
+    backgroundColor: "#000",
   },
 
   // Header & Filters
@@ -611,7 +612,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#121212",
+    // backgroundColor: "#121212",
+    backgroundColor: "#000",
   },
   headerTitle: {
     color: "#19dee8",
@@ -653,7 +655,8 @@ const styles = StyleSheet.create({
 
   // POST CARD
   postCard: {
-    backgroundColor: "#1a1a1a",
+    // backgroundColor: "#1a1a1a",
+    backgroundColor: "#0c0c0cff",
     borderRadius: 12,
     overflow: "hidden",
     marginHorizontal: CARD_HORIZONTAL_MARGIN,

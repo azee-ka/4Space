@@ -368,7 +368,7 @@ const MEDIA_HEIGHT = Math.round(CARD_WIDTH * 0.75);
 
 const styles = StyleSheet.create({
   postCard: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#0c0c0cff",
     borderRadius: 12,
     overflow: "hidden",
     marginHorizontal: CARD_HORIZONTAL_MARGIN,

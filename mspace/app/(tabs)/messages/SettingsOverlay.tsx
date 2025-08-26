@@ -377,6 +377,8 @@ export default function SettingsOverlay({
   onSignOut?: () => void;
   onDeleteAccount?: () => void;
 }) {
+  // Bail out before any hooks to keep hook order stable
+  // if (!visible) return null;
   const insets = useSafeAreaInsets();
   const slide = useRef(new Animated.Value(SH)).current;
   const [tab, setTab] = useState<SettingsTabKey>("account");
@@ -455,7 +457,6 @@ export default function SettingsOverlay({
     }).start(onClose);
   }, [onClose]);
 
-  if (!visible) return null;
 
   const wallpapers = useMemo(
     () =>
@@ -530,7 +531,7 @@ export default function SettingsOverlay({
   );
 
   // Tab content
-  const RenderTab = () => {
+  const renderTab = () => {
     switch (tab) {
       case "account":
         return (
@@ -1167,7 +1168,7 @@ export default function SettingsOverlay({
 
           {/* Content */}
           <View style={{ flex: 1 }}>
-            <RenderTab />
+            {renderTab()}
           </View>
         </Animated.View>
       </View>

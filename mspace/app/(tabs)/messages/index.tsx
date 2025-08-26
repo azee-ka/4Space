@@ -143,7 +143,10 @@ export default function MessagesIndex() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#121212" },
+  container: { flex: 1, 
+    // backgroundColor: "#121212" 
+    backgroundColor: "#000",
+  },
   header: {
     // height: 56,
     // backgroundColor: "#1E1E1E",
@@ -156,7 +159,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#1E1E1E",
+    // backgroundColor: "#1E1E1E",
+    backgroundColor: "#000",
   },
   headerTitle: { 
     color: "#19dee8",
@@ -165,7 +169,8 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: "row",
-    backgroundColor: "#121212",
+    // backgroundColor: "#121212",
+    backgroundColor: "#000",
     borderBottomColor: "rgba(255,255,255,0.08)",
     borderBottomWidth: 1,
     height: 48,

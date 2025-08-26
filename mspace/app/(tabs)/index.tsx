@@ -161,7 +161,9 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: "#121212",
+    // backgroundColor: "#121212",
+    backgroundColor: "#000",
+
   },
   container: {
     flex: 1,
@@ -178,7 +180,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "#121212",
+    // backgroundColor: "#121212",
+    backgroundColor: "#000",
     zIndex: 10,
   },
   headerTitle: {

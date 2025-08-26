@@ -19,7 +19,9 @@ export default function Navbar({
         style={[
           styles.leftSection,
           styles.leftAboveSidebar,
-          sidebarOpen && { backgroundColor: '#161617' },
+          sidebarOpen && { 
+            backgroundColor: '#0b0b0bff' 
+          },
         ]}
       >
         <SidebarMenuIcon sidebarOpen={sidebarOpen} onPress={onOpenSidebar} />
@@ -55,7 +57,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     height: 54,
-    backgroundColor: '#121212',
+    // backgroundColor: '#121212',
+    backgroundColor: "#000",
     paddingHorizontal: 5,
     borderBottomWidth: 0.5,
     borderColor: '#333',
@@ -73,7 +76,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     zIndex: 100,             
-    backgroundColor: '#121212',
+    // backgroundColor: '#121212',
+    backgroundColor: "#000",
     paddingHorizontal: 0,
   },
   centerSection: {
