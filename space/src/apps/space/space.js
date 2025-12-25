@@ -1,56 +1,340 @@
 import React, { useState } from 'react';
 import './space.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FaCode, FaCalculator, FaChartLine, FaBookReader, FaPalette,
+  FaGamepad, FaGraduationCap, FaRobot, FaMicroscope, FaFlask,
+  FaBriefcase, FaUsers, FaShare, FaCog, FaPlus, FaTimes,
+  FaEdit, FaTrash, FaExpand, FaLink, FaLock, FaGlobe,
+  FaFolder, FaFileAlt, FaImage, FaVideo, FaMusic, FaComments,
+  FaTasks, FaCalendar, FaBell, FaChartBar, FaCloud, FaLightbulb,
+  FaPencilAlt, FaNewspaper, FaMoneyBill, FaBitcoin, FaHeartbeat
+} from 'react-icons/fa';
 
 const Space = () => {
   const [spaces, setSpaces] = useState([
     { 
-      id: 'main', 
-      name: 'Main Workspace', 
+      id: 'personal', 
+      name: 'Personal Hub', 
       accentColor: '#00f0ff',
-      definition: 'Your primary creative and productivity hub',
-      features: ['Rich Editor', 'Code Space', 'File Manager', 'Notes'],
-      widgets: ['calendar', 'tasks', 'quick-links']
+      definition: 'Your personal everything space - life, work, creativity',
+      type: 'personal',
+      collaborators: [],
+      widgets: []
     },
     { 
-      id: 'social', 
-      name: 'Social Hub', 
+      id: 'work', 
+      name: 'Engineering', 
       accentColor: '#ff006e',
-      definition: 'Connect across all your social platforms',
-      features: ['Twitter Feed', 'Instagram', 'Communities', 'Messages'],
-      widgets: ['notifications', 'trending', 'connections']
+      definition: 'Development workspace with tools and repositories',
+      type: 'work',
+      collaborators: [],
+      widgets: []
     },
     { 
-      id: 'creative', 
-      name: 'Creative Studio', 
+      id: 'collab', 
+      name: 'Shared Space', 
       accentColor: '#8b5cf6',
-      definition: 'Design, create, and collaborate on visual projects',
-      features: ['Canvas', 'Gallery', 'Templates', 'Assets Library'],
-      widgets: ['recent-projects', 'inspiration', 'color-palette']
+      definition: 'Collaborative space with friends/team',
+      type: 'collaborative',
+      collaborators: ['user1@example.com', 'user2@example.com'],
+      widgets: []
     }
   ]);
 
   const [activeSpace, setActiveSpace] = useState(spaces[0]);
   const [isCreating, setIsCreating] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   const accentColors = [
     '#00f0ff', '#ff006e', '#8b5cf6', '#10b981', '#f59e0b', 
     '#ec4899', '#06b6d4', '#84cc16', '#6366f1', '#f97316'
   ];
 
-  const availableFeatures = [
-    'Rich Editor', 'Code Space', 'File Manager', 'Notes', 'Calendar',
-    'Twitter Feed', 'Instagram', 'Communities', 'Messages', 'Canvas',
-    'Gallery', 'Templates', 'Assets Library', 'Analytics', 'Dashboard',
-    'Video Calls', 'Screen Share', 'Whiteboard', 'Tasks', 'Goals'
+  // Widget Categories and Templates
+  const widgetCategories = [
+    { id: 'all', name: 'All Widgets', icon: FaFolder },
+    { id: 'engineering', name: 'Engineering', icon: FaCode },
+    { id: 'finance', name: 'Finance & Trading', icon: FaMoneyBill },
+    { id: 'creative', name: 'Creative', icon: FaPalette },
+    { id: 'education', name: 'Education', icon: FaGraduationCap },
+    { id: 'productivity', name: 'Productivity', icon: FaTasks },
+    { id: 'collaboration', name: 'Collaboration', icon: FaUsers },
+    { id: 'analytics', name: 'Analytics', icon: FaChartBar },
+    { id: 'health', name: 'Health & Wellness', icon: FaHeartbeat }
   ];
 
-  const availableWidgets = [
-    'calendar', 'tasks', 'quick-links', 'notifications', 'trending',
-    'connections', 'recent-projects', 'inspiration', 'color-palette',
-    'analytics', 'weather', 'news', 'music', 'timer', 'notes'
+  const widgetLibrary = [
+    // Engineering Tools
+    { 
+      id: 'code-editor', 
+      name: 'Code Editor', 
+      icon: FaCode, 
+      category: 'engineering',
+      description: 'Full-featured IDE with syntax highlighting',
+      customizable: ['theme', 'language', 'layout'],
+      size: 'large'
+    },
+    { 
+      id: 'terminal', 
+      name: 'Terminal', 
+      icon: FaCode, 
+      category: 'engineering',
+      description: 'Embedded terminal for command execution',
+      customizable: ['shell', 'theme'],
+      size: 'medium'
+    },
+    { 
+      id: 'github-activity', 
+      name: 'GitHub Activity', 
+      icon: FaCode, 
+      category: 'engineering',
+      description: 'Monitor repository activity and commits',
+      customizable: ['repos', 'refresh-rate'],
+      size: 'medium'
+    },
+    { 
+      id: 'latex-editor', 
+      name: 'LaTeX Editor', 
+      icon: FaFlask, 
+      category: 'engineering',
+      description: 'Write mathematical and scientific documents',
+      customizable: ['template', 'packages'],
+      size: 'large'
+    },
+    { 
+      id: 'circuit-designer', 
+      name: 'Circuit Designer', 
+      icon: FaMicroscope, 
+      category: 'engineering',
+      description: 'Design and simulate electronic circuits',
+      customizable: ['components', 'simulation-speed'],
+      size: 'large'
+    },
+    
+    // Finance & Trading
+    { 
+      id: 'portfolio-tracker', 
+      name: 'Portfolio Tracker', 
+      icon: FaChartLine, 
+      category: 'finance',
+      description: 'Track stocks, crypto, and investments',
+      customizable: ['assets', 'timeframe', 'chart-type'],
+      size: 'large'
+    },
+    { 
+      id: 'trading-terminal', 
+      name: 'Trading Terminal', 
+      icon: FaBitcoin, 
+      category: 'finance',
+      description: 'Execute trades and analyze markets',
+      customizable: ['exchange', 'pairs', 'indicators'],
+      size: 'large'
+    },
+    { 
+      id: 'budget-planner', 
+      name: 'Budget Planner', 
+      icon: FaMoneyBill, 
+      category: 'finance',
+      description: 'Personal budgeting and expense tracking',
+      customizable: ['categories', 'period'],
+      size: 'medium'
+    },
+    { 
+      id: 'crypto-ticker', 
+      name: 'Crypto Ticker', 
+      icon: FaBitcoin, 
+      category: 'finance',
+      description: 'Real-time cryptocurrency prices',
+      customizable: ['currencies', 'update-frequency'],
+      size: 'small'
+    },
+    
+    // Creative Tools
+    { 
+      id: 'canvas', 
+      name: 'Drawing Canvas', 
+      icon: FaPalette, 
+      category: 'creative',
+      description: 'Digital canvas for sketching and design',
+      customizable: ['brushes', 'canvas-size'],
+      size: 'large'
+    },
+    { 
+      id: 'gallery', 
+      name: 'Photo Gallery', 
+      icon: FaImage, 
+      category: 'creative',
+      description: 'Organize and share photos',
+      customizable: ['layout', 'filters'],
+      size: 'medium'
+    },
+    { 
+      id: 'video-library', 
+      name: 'Video Library', 
+      icon: FaVideo, 
+      category: 'creative',
+      description: 'Curate and share video content',
+      customizable: ['sources', 'playlist'],
+      size: 'large'
+    },
+    { 
+      id: 'music-player', 
+      name: 'Music Player', 
+      icon: FaMusic, 
+      category: 'creative',
+      description: 'Organize and play music',
+      customizable: ['playlists', 'visualizer'],
+      size: 'medium'
+    },
+    
+    // Education
+    { 
+      id: 'note-taking', 
+      name: 'Smart Notes', 
+      icon: FaPencilAlt, 
+      category: 'education',
+      description: 'AI-enhanced note-taking with linking',
+      customizable: ['format', 'tags', 'templates'],
+      size: 'large'
+    },
+    { 
+      id: 'flashcards', 
+      name: 'Flashcards', 
+      icon: FaGraduationCap, 
+      category: 'education',
+      description: 'Spaced repetition learning system',
+      customizable: ['deck', 'algorithm'],
+      size: 'medium'
+    },
+    { 
+      id: 'research-papers', 
+      name: 'Research Library', 
+      icon: FaBookReader, 
+      category: 'education',
+      description: 'Organize and annotate research papers',
+      customizable: ['tags', 'citations'],
+      size: 'large'
+    },
+    { 
+      id: 'calculator', 
+      name: 'Scientific Calculator', 
+      icon: FaCalculator, 
+      category: 'education',
+      description: 'Advanced mathematical calculations',
+      customizable: ['mode', 'precision'],
+      size: 'small'
+    },
+    
+    // Productivity
+    { 
+      id: 'tasks', 
+      name: 'Task Manager', 
+      icon: FaTasks, 
+      category: 'productivity',
+      description: 'Organize tasks and projects',
+      customizable: ['view', 'priority', 'tags'],
+      size: 'medium'
+    },
+    { 
+      id: 'calendar', 
+      name: 'Calendar', 
+      icon: FaCalendar, 
+      category: 'productivity',
+      description: 'Schedule and manage events',
+      customizable: ['view', 'integrations'],
+      size: 'medium'
+    },
+    { 
+      id: 'quick-links', 
+      name: 'Quick Links', 
+      icon: FaLink, 
+      category: 'productivity',
+      description: 'Bookmarks and frequent links',
+      customizable: ['categories', 'icons'],
+      size: 'small'
+    },
+    { 
+      id: 'journal', 
+      name: 'Daily Journal', 
+      icon: FaFileAlt, 
+      category: 'productivity',
+      description: 'Daily reflections and logging',
+      customizable: ['prompts', 'privacy'],
+      size: 'medium'
+    },
+    
+    // Collaboration
+    { 
+      id: 'chat', 
+      name: 'Team Chat', 
+      icon: FaComments, 
+      category: 'collaboration',
+      description: 'Real-time messaging',
+      customizable: ['channels', 'notifications'],
+      size: 'large'
+    },
+    { 
+      id: 'shared-links', 
+      name: 'Shared Links', 
+      icon: FaShare, 
+      category: 'collaboration',
+      description: 'Collaborative link sharing',
+      customizable: ['permissions', 'categories'],
+      size: 'medium'
+    },
+    { 
+      id: 'whiteboard', 
+      name: 'Whiteboard', 
+      icon: FaPalette, 
+      category: 'collaboration',
+      description: 'Collaborative drawing board',
+      customizable: ['tools', 'permissions'],
+      size: 'large'
+    },
+    
+    // Analytics
+    { 
+      id: 'activity-tracker', 
+      name: 'Activity Tracker', 
+      icon: FaChartBar, 
+      category: 'analytics',
+      description: 'Track your productivity and habits',
+      customizable: ['metrics', 'timeframe'],
+      size: 'medium'
+    },
+    { 
+      id: 'analytics-dashboard', 
+      name: 'Analytics Dashboard', 
+      icon: FaChartLine, 
+      category: 'analytics',
+      description: 'Visualize data and metrics',
+      customizable: ['data-sources', 'charts'],
+      size: 'large'
+    },
+    
+    // Health
+    { 
+      id: 'fitness-tracker', 
+      name: 'Fitness Tracker', 
+      icon: FaHeartbeat, 
+      category: 'health',
+      description: 'Track workouts and health metrics',
+      customizable: ['goals', 'metrics'],
+      size: 'medium'
+    },
+    { 
+      id: 'meditation', 
+      name: 'Meditation Timer', 
+      icon: FaHeartbeat, 
+      category: 'health',
+      description: 'Guided meditation and mindfulness',
+      customizable: ['duration', 'sounds'],
+      size: 'small'
+    }
   ];
 
   const createNewSpace = () => {
@@ -60,7 +344,8 @@ const Space = () => {
         name: newSpaceName,
         accentColor: accentColors[Math.floor(Math.random() * accentColors.length)],
         definition: 'Define your space purpose...',
-        features: [],
+        type: 'personal',
+        collaborators: [],
         widgets: []
       };
       setSpaces([...spaces, newSpace]);
@@ -70,38 +355,42 @@ const Space = () => {
     }
   };
 
-  const updateSpaceFeatures = (feature) => {
+  const addWidget = (widget) => {
     const updated = { ...activeSpace };
-    if (updated.features.includes(feature)) {
-      updated.features = updated.features.filter(f => f !== feature);
-    } else {
-      updated.features = [...updated.features, feature];
-    }
+    const newWidget = {
+      ...widget,
+      instanceId: `${widget.id}-${Date.now()}`,
+      config: {},
+      position: { x: 0, y: 0 },
+      size: widget.size
+    };
+    updated.widgets = [...updated.widgets, newWidget];
+    setActiveSpace(updated);
+    setSpaces(spaces.map(s => s.id === updated.id ? updated : s));
+    setShowWidgetLibrary(false);
+  };
+
+  const removeWidget = (instanceId) => {
+    const updated = { ...activeSpace };
+    updated.widgets = updated.widgets.filter(w => w.instanceId !== instanceId);
     setActiveSpace(updated);
     setSpaces(spaces.map(s => s.id === updated.id ? updated : s));
   };
 
-  const updateSpaceWidgets = (widget) => {
-    const updated = { ...activeSpace };
-    if (updated.widgets.includes(widget)) {
-      updated.widgets = updated.widgets.filter(w => w !== widget);
-    } else {
-      updated.widgets = [...updated.widgets, widget];
-    }
-    setActiveSpace(updated);
-    setSpaces(spaces.map(s => s.id === updated.id ? updated : s));
-  };
+  const filteredWidgets = selectedCategory === 'all' 
+    ? widgetLibrary 
+    : widgetLibrary.filter(w => w.category === selectedCategory);
 
   return (
     <div className="space-wrapper">
-      {/* Background grid effect */}
+      {/* Background effects
       <div className="bg-grid"></div>
       <div className="bg-glow" style={{ 
         background: `radial-gradient(circle at 20% 30%, ${activeSpace.accentColor}15 0%, transparent 50%)` 
       }}></div>
       <div className="bg-glow-2" style={{ 
         background: `radial-gradient(circle at 80% 70%, ${activeSpace.accentColor}10 0%, transparent 50%)` 
-      }}></div>
+      }}></div> */}
 
       {/* Top Navigation */}
       <nav className="top-nav">
@@ -121,8 +410,11 @@ const Space = () => {
             >
               <span className="tab-glow" style={{ background: space.accentColor }}></span>
               <span className="tab-label">{space.name}</span>
-              {space.features.length > 0 && (
-                <span className="tab-count">{space.features.length}</span>
+              {space.collaborators.length > 0 && (
+                <FaUsers style={{ fontSize: '10px', opacity: 0.6 }} />
+              )}
+              {space.widgets.length > 0 && (
+                <span className="tab-count">{space.widgets.length}</span>
               )}
             </motion.button>
           ))}
@@ -132,7 +424,8 @@ const Space = () => {
             onClick={() => setIsCreating(true)}
             whileHover={{ y: -1 }}
           >
-            <span className="tab-label">+ New</span>
+            <FaPlus style={{ fontSize: '10px' }} />
+            <span className="tab-label">New</span>
           </motion.button>
         </div>
 
@@ -140,10 +433,13 @@ const Space = () => {
           <button 
             className={`nav-icon-btn ${showConfig ? 'active' : ''}`}
             onClick={() => setShowConfig(!showConfig)}
+            title="Configure Space"
           >
-            ⚙
+            <FaCog />
           </button>
-          <button className="nav-icon-btn">↗</button>
+          <button className="nav-icon-btn" title="Share Space">
+            <FaShare />
+          </button>
         </div>
       </nav>
 
@@ -168,11 +464,22 @@ const Space = () => {
                 <div>
                   <h1 className="space-name">{activeSpace.name}</h1>
                   <p className="space-desc">{activeSpace.definition}</p>
+                  {activeSpace.collaborators.length > 0 && (
+                    <div className="space-collaborators">
+                      <FaUsers style={{ fontSize: '12px' }} />
+                      <span>{activeSpace.collaborators.length} collaborators</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <button className="header-action" onClick={() => setShowConfig(true)}>
-                Configure Space
-              </button>
+              <div className="header-actions">
+                <button className="header-action" onClick={() => setShowWidgetLibrary(true)}>
+                  <FaPlus /> Add Widget
+                </button>
+                <button className="header-action" onClick={() => setShowConfig(true)}>
+                  <FaCog /> Configure
+                </button>
+              </div>
             </div>
 
             {/* Widgets Section */}
@@ -182,28 +489,42 @@ const Space = () => {
                   <span className="title-accent" style={{ color: activeSpace.accentColor }}>∎</span>
                   Active Widgets
                 </h2>
-                <button className="action-link" onClick={() => setShowConfig(true)}>
-                  Add Widget →
-                </button>
               </div>
 
               <div className="widgets-container">
                 {activeSpace.widgets.map((widget, index) => (
                   <motion.div
-                    key={widget}
-                    className="widget-card"
+                    key={widget.instanceId}
+                    className={`widget-card size-${widget.size}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
                     <div className="widget-edge" style={{ background: activeSpace.accentColor }}></div>
                     <div className="widget-header">
-                      <span className="widget-icon">{getWidgetIcon(widget)}</span>
-                      <span className="widget-title">{formatWidgetName(widget)}</span>
+                      <span className="widget-icon">
+                        {React.createElement(widget.icon)}
+                      </span>
+                      <span className="widget-title">{widget.name}</span>
+                      <div className="widget-actions">
+                        <button className="widget-action-btn" title="Expand">
+                          <FaExpand />
+                        </button>
+                        <button className="widget-action-btn" title="Configure">
+                          <FaCog />
+                        </button>
+                        <button 
+                          className="widget-action-btn" 
+                          title="Remove"
+                          onClick={() => removeWidget(widget.instanceId)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
                     </div>
                     <div className="widget-body">
                       <div className="widget-placeholder">
-                        {formatWidgetName(widget)} content
+                        {widget.description}
                       </div>
                     </div>
                     <div className="widget-glow" style={{ 
@@ -214,44 +535,11 @@ const Space = () => {
 
                 {activeSpace.widgets.length === 0 && (
                   <div className="empty-message">
-                    <div className="empty-icon">∅</div>
-                    <p>No widgets configured</p>
-                    <button className="empty-btn" onClick={() => setShowConfig(true)}>
-                      Add your first widget
+                    <div className="empty-icon"><FaLightbulb /></div>
+                    <p>No widgets configured yet</p>
+                    <button className="empty-btn" onClick={() => setShowWidgetLibrary(true)}>
+                      <FaPlus /> Add your first widget
                     </button>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Features Section */}
-            <section className="content-section">
-              <div className="section-head">
-                <h2 className="section-title">
-                  <span className="title-accent" style={{ color: activeSpace.accentColor }}>∎</span>
-                  Enabled Features
-                </h2>
-                <span className="feature-badge">{activeSpace.features.length} active</span>
-              </div>
-
-              <div className="features-grid">
-                {activeSpace.features.map((feature, index) => (
-                  <motion.div
-                    key={feature}
-                    className="feature-card"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                  >
-                    <div className="feature-dot" style={{ background: activeSpace.accentColor }}></div>
-                    <span className="feature-label">{feature}</span>
-                    <button className="feature-launch">Launch</button>
-                  </motion.div>
-                ))}
-
-                {activeSpace.features.length === 0 && (
-                  <div className="empty-message">
-                    <p>Enable features to unlock functionality</p>
                   </div>
                 )}
               </div>
@@ -259,6 +547,73 @@ const Space = () => {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Widget Library Modal */}
+      <AnimatePresence>
+        {showWidgetLibrary && (
+          <motion.div
+            className="overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowWidgetLibrary(false)}
+          >
+            <motion.div
+              className="widget-library-modal"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2>Widget Library</h2>
+                <button className="close-btn" onClick={() => setShowWidgetLibrary(false)}>
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="widget-categories">
+                {widgetCategories.map(cat => (
+                  <button
+                    key={cat.id}
+                    className={`category-btn ${selectedCategory === cat.id ? 'active' : ''}`}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    style={selectedCategory === cat.id ? {
+                      borderColor: activeSpace.accentColor,
+                      background: `${activeSpace.accentColor}20`
+                    } : {}}
+                  >
+                    {React.createElement(cat.icon, { style: { marginRight: '8px' } })}
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+
+              <div className="widget-grid">
+                {filteredWidgets.map(widget => (
+                  <div
+                    key={widget.id}
+                    className="widget-library-item"
+                    onClick={() => addWidget(widget)}
+                  >
+                    <div className="widget-lib-icon">
+                      {React.createElement(widget.icon)}
+                    </div>
+                    <h4>{widget.name}</h4>
+                    <p>{widget.description}</p>
+                    <div className="widget-lib-footer">
+                      <span className="widget-size-badge">{widget.size}</span>
+                      <button className="add-widget-btn">
+                        <FaPlus /> Add
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Config Panel */}
       <AnimatePresence>
@@ -280,11 +635,12 @@ const Space = () => {
             >
               <div className="panel-header">
                 <h2 className="panel-title">Configure Space</h2>
-                <button className="panel-close" onClick={() => setShowConfig(false)}>✕</button>
+                <button className="panel-close" onClick={() => setShowConfig(false)}>
+                  <FaTimes />
+                </button>
               </div>
 
               <div className="panel-content">
-                {/* Space Details */}
                 <div className="config-group">
                   <label className="config-label">Space Name</label>
                   <input
@@ -314,6 +670,24 @@ const Space = () => {
                 </div>
 
                 <div className="config-group">
+                  <label className="config-label">Space Type</label>
+                  <select 
+                    className="config-input"
+                    value={activeSpace.type}
+                    onChange={(e) => {
+                      const updated = { ...activeSpace, type: e.target.value };
+                      setActiveSpace(updated);
+                      setSpaces(spaces.map(s => s.id === updated.id ? updated : s));
+                    }}
+                  >
+                    <option value="personal">Personal</option>
+                    <option value="work">Work</option>
+                    <option value="collaborative">Collaborative</option>
+                    <option value="educational">Educational</option>
+                  </select>
+                </div>
+
+                <div className="config-group">
                   <label className="config-label">Accent Color</label>
                   <div className="color-grid">
                     {accentColors.map((color) => (
@@ -335,45 +709,41 @@ const Space = () => {
 
                 <div className="config-divider"></div>
 
-                {/* Features */}
                 <div className="config-group">
-                  <label className="config-label">Features ({activeSpace.features.length})</label>
-                  <div className="chip-grid">
-                    {availableFeatures.map(feature => (
-                      <button
-                        key={feature}
-                        className={`chip ${activeSpace.features.includes(feature) ? 'active' : ''}`}
-                        onClick={() => updateSpaceFeatures(feature)}
-                        style={activeSpace.features.includes(feature) ? {
-                          borderColor: activeSpace.accentColor,
-                          background: `${activeSpace.accentColor}20`
-                        } : {}}
-                      >
-                        {feature}
-                      </button>
+                  <label className="config-label">
+                    <FaUsers style={{ marginRight: '8px' }} />
+                    Collaborators
+                  </label>
+                  <div className="collaborators-list">
+                    {activeSpace.collaborators.map((collab, idx) => (
+                      <div key={idx} className="collaborator-item">
+                        <span>{collab}</span>
+                        <button className="remove-collab-btn">
+                          <FaTimes />
+                        </button>
+                      </div>
                     ))}
+                    <button className="add-collab-btn">
+                      <FaPlus /> Add Collaborator
+                    </button>
                   </div>
                 </div>
 
-                <div className="config-divider"></div>
-
-                {/* Widgets */}
                 <div className="config-group">
-                  <label className="config-label">Widgets ({activeSpace.widgets.length})</label>
-                  <div className="chip-grid">
-                    {availableWidgets.map(widget => (
-                      <button
-                        key={widget}
-                        className={`chip ${activeSpace.widgets.includes(widget) ? 'active' : ''}`}
-                        onClick={() => updateSpaceWidgets(widget)}
-                        style={activeSpace.widgets.includes(widget) ? {
-                          borderColor: activeSpace.accentColor,
-                          background: `${activeSpace.accentColor}20`
-                        } : {}}
-                      >
-                        {getWidgetIcon(widget)} {formatWidgetName(widget)}
-                      </button>
-                    ))}
+                  <label className="config-label">
+                    <FaLock style={{ marginRight: '8px' }} />
+                    Privacy
+                  </label>
+                  <div className="privacy-options">
+                    <button className="privacy-btn">
+                      <FaLock /> Private
+                    </button>
+                    <button className="privacy-btn">
+                      <FaUsers /> Team
+                    </button>
+                    <button className="privacy-btn">
+                      <FaGlobe /> Public
+                    </button>
                   </div>
                 </div>
               </div>
@@ -426,32 +796,6 @@ const Space = () => {
       </AnimatePresence>
     </div>
   );
-};
-
-// Helper functions
-const getWidgetIcon = (widget) => {
-  const icons = {
-    calendar: '📅',
-    tasks: '✓',
-    'quick-links': '🔗',
-    notifications: '🔔',
-    trending: '📈',
-    connections: '👥',
-    'recent-projects': '📂',
-    inspiration: '💡',
-    'color-palette': '🎨',
-    analytics: '📊',
-    weather: '🌤',
-    news: '📰',
-    music: '🎵',
-    timer: '⏱',
-    notes: '📝'
-  };
-  return icons[widget] || '◈';
-};
-
-const formatWidgetName = (widget) => {
-  return widget.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 };
 
 export default Space;

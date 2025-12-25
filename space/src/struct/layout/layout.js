@@ -11,11 +11,13 @@ import { usePostContext } from '../../context/PostContext';
 import Post from '../../apps/home/post/post';
 import { useLocation } from 'react-router-dom';
 import { useDevice } from '../../context/DeviceContext';
+import { useDisplaySettings } from '../../context/DisplaySettingsContext';
 
 function Layout({ children }) {
     const { isAuthenticated } = useAuth();
 
     const { expandPostIdReciever } = usePostContext();
+    const { settings } = useDisplaySettings();
 
     const { minimalProfileData: profileData } = useProfile();
 
@@ -86,6 +88,8 @@ function Layout({ children }) {
     if (isD || isT) {
         return (
             <div className={`parent-layout`} onClick={() => handleCloseOverlays()}>
+                      {/* Background effects */}
+      <div className="bg-grid"></div>
                 {showNavbar && (
                     <div className='layout-navbar'>
                         <Navbar
