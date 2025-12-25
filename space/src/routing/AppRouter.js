@@ -32,8 +32,10 @@ import CreateCommunity from '../apps/communities/createCommunity/createCommunity
 import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
 import PublicationDetail from '../apps/communities/community/tabs/research/publicationsTab/publicationDetail/publicationDetail';
+
+import Space from '../apps/space/space';
 import SpaceDashboard from '../apps/space/workspace/dashboard/dashboard';
-import Space from '../apps/space/workspace/space/space';
+import SpaceWorkspace from '../apps/space/workspace/spaceWorkspace/spaceWorkspace';
 import SpaceTools from '../apps/space/workspace/tools/tools';
 import SpaceProjects from '../apps/space/workspace/projects/projects';
 import SpacePortfolio from '../apps/space/workspace/portfolio/portfolio';
@@ -95,7 +97,8 @@ const AppRouter = () => {
 
         // Space
         // Workspace sub-app
-{ name: 'Space Home', path: '/space/workspace', component: <Space />, key: 'SpaceHome' },
+{ name: 'Space', path: '/space', component: <Space />, key: 'SpaceHome' },
+{ name: 'Space Home', path: '/space/workspace', component: <SpaceWorkspace />, key: 'SpaceHome' },
 { name: 'Space Dashboard', path: '/space/workspace/dashboard', component: <SpaceDashboard />, key: 'SpaceDashboard' },
 { name: 'Space Projects', path: '/space/workspace/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
 { name: 'Space Library', path: '/space/workspace/library', component: <SpaceLibrary />, key: 'SpaceLibrary' },

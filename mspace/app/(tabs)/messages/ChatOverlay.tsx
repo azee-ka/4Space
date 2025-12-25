@@ -67,7 +67,7 @@ import ReactionOverlay from "./ReactionOverlay";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const BUBBLE_MAX_W = Math.floor(SCREEN_WIDTH * 0.78);
 const EXTRA_FOOTER_SPACING = 10; // lift footer a bit above bottom & keyboard
-const EXTRA_KEYBOARD_CLEARANCE = 15; // extra lift so footer clears keyboard
+const EXTRA_KEYBOARD_CLEARANCE = 80; // extra lift so footer clears keyboard
 const KBD_EASING = Easing.bezier(0.25, 0.1, 0.25, 1); // closer to system ease-in-out
 const ANDROID_FALLBACK_DURATION = 140; // snappy default when Android doesn't report duration
 
@@ -1399,7 +1399,7 @@ export default function ChatOverlay({
   // Keep your “a bit higher” spacing OUTSIDE the keyboard animation so the
   // footer moves the exact same distance as the keyboard over the same time.
   const footerExtraOffset = useRef(
-    new Animated.Value(-(EXTRA_FOOTER_SPACING + EXTRA_KEYBOARD_CLEARANCE))
+    new Animated.Value(-EXTRA_FOOTER_SPACING)
   ).current;
 
   // Final Y transform for the footer
@@ -1415,16 +1415,61 @@ export default function ChatOverlay({
   const wasAtHardBottomRef = useRef(true);
 
   const keyboardHeightRef = useRef(0);
-  const lastScrollYRef = useRef(0);
-  const isDraggingRef = useRef(false);
-  const dragStartYRef = useRef(0);
 
-  
-
-  const lastScrollTSRef = useRef(0);
-  const lastVelocityRef = useRef(0);
   const controlRef = useRef<"idle" | "keyboard" | "scroll" | "settle">("idle");
-  const ignoreKbdOnceRef = useRef(false);
+
+  // state
+  const [bottomGap, setBottomGap] = useState(15);
+  const atBottomRef = useRef(true);
+  const lastScrollYRef = useRef(0);
+
+  // single computation
+  const computeBottomGap = useCallback(
+    (kbd: number) => {
+      const base = 8;
+      const closedTarget = atBottomRef.current
+        ? Math.max(base, Math.max(0, footerHeight - 2)) // no EXTRA_FOOTER_SPACING here
+        : base;
+      return kbd > 0
+        ? Math.max(base, kbd + EXTRA_KEYBOARD_CLEARANCE)
+        : closedTarget;
+    },
+    [footerHeight]
+  );
+
+  // also recompute when footer height changes (keyboard closed)
+  useEffect(() => {
+    if (!keyboardVisible) setBottomGap(computeBottomGap(0));
+  }, [footerHeight, keyboardVisible, computeBottomGap]);
+
+  // seed once
+  useEffect(() => {
+    setBottomGap(computeBottomGap(keyboardHeightRef.current || 0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // onScroll with hysteresis + fixed braces
+  const onScroll = (e?: any) => {
+    try {
+      const y = e?.nativeEvent?.contentOffset?.y ?? 0;
+      const wasAtBottom = atBottomRef.current;
+      // hysteresis: widen the “sticky” band
+      const nowAtBottom = wasAtBottom ? y <= 12 : y <= 4;
+      wasAtHardBottomRef.current = nowAtBottom;
+
+      if (wasAtBottom !== nowAtBottom) {
+        atBottomRef.current = nowAtBottom;
+        if (!keyboardVisible) setBottomGap(computeBottomGap(0));
+      }
+
+      const dy = y - (lastScrollYRef.current || 0);
+      lastScrollYRef.current = y;
+
+      if (Platform.OS !== "ios" && keyboardVisible && dy > 2) {
+        Keyboard.dismiss();
+      }
+    } catch {}
+  };
 
   // Message animations per id
   const msgScales = useRef<Record<string, Animated.Value>>({}).current;
@@ -1687,6 +1732,11 @@ export default function ChatOverlay({
     const animateKbd = (from: number, to: number, duration?: number) => {
       kbdLift.stopAnimation();
       kbdLift.setValue(from); // start exactly where the keyboard starts
+
+      // Shrink/grow the messages container in lockstep with the keyboard
+      setBottomGap(computeBottomGap(to));
+      // When keyboard opens, remove resting pad; when it closes, restore if we're at bottom.
+
       Animated.timing(kbdLift, {
         toValue: to,
         duration: Math.max(1, duration ?? ANDROID_FALLBACK_DURATION),
@@ -2392,20 +2442,6 @@ export default function ChatOverlay({
     }
   };
 
-  // Scroll handler: on iOS we rely on `keyboardDismissMode="interactive"`.
-  // On Android, dismiss the keyboard once the user drags upward a bit.
-  const onScroll = (e?: any) => {
-    try {
-      const y = e?.nativeEvent?.contentOffset?.y ?? 0;
-      const dy = y - (lastScrollYRef.current || 0);
-      lastScrollYRef.current = y;
-      if (Platform.OS !== "ios" && keyboardVisible && dy > 2) {
-        // approximate interactive dismissal on Android
-        Keyboard.dismiss();
-      }
-    } catch {}
-  };
-
   if (loading && !conversation) return null;
 
   const reactionTheme = {
@@ -2415,7 +2451,6 @@ export default function ChatOverlay({
     textOnOther: theme.textOnOther,
     backdropTintIntensity: (theme as any).backdropTintIntensity ?? 40,
   };
-  const bottomInset = 15; //Math.max(12, footerHeight + 12 + EXTRA_FOOTER_SPACING);
 
   return (
     <Modal
@@ -2627,7 +2662,7 @@ export default function ChatOverlay({
               </View>
 
               {/* Messages */}
-              <View style={{ flex: 1 }}>
+              <Animated.View style={{ flex: 1 }}>
                 {loading ? (
                   <View
                     style={{
@@ -2656,50 +2691,40 @@ export default function ChatOverlay({
                       ) : null
                     }
                     style={{ flex: 1 }}
-                    // contentContainerStyle={{
-                    //   paddingHorizontal: 12,
-                    //   paddingBottom: bottomInset + 80,
-                    // }}
-
                     inverted
                     automaticallyAdjustKeyboardInsets={false}
                     contentInsetAdjustmentBehavior="never"
-                    keyboardDismissMode={
-                      Platform.OS === "ios" ? "interactive" : "on-drag"
-                    }
-                    maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
                     onScroll={onScroll}
                     scrollEventThrottle={16}
                     keyboardShouldPersistTaps="handled"
                     contentContainerStyle={{
                       paddingHorizontal: 12,
-                      paddingTop: 8,
-                      paddingBottom: bottomInset,
+                      paddingTop: bottomGap, // <-- single source of truth for visual bottom space
+                      paddingBottom: 8, // small cushion for top edge (visual top)
                     }}
                     scrollIndicatorInsets={{
-                      bottom: Math.max(24, footerHeight),
+                      bottom: Math.max(8, footerHeight + insets.bottom),
                     }}
+                    keyboardDismissMode={
+                      Platform.OS === "ios" ? "interactive" : "on-drag"
+                    }
                   />
                 )}
-              </View>
+              </Animated.View>
 
               {/* Footer composer */}
-              {/* Bottom scrim to close messages visually under the footer */}
-              <LinearGradient
-                pointerEvents="none"
-                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.28)"]}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
-                style={[
-                  styles.bottomScrim,
-                  { height: Math.max(24, footerHeight + insets.bottom) }, // follows your measured footer height
-                ]}
-              />
               <Animated.View
                 style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
                   transform: [{ translateY: footerTranslateY }],
                 }}
-                onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+                // onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+                onLayout={(e) =>
+                  setFooterHeight(Math.round(e.nativeEvent.layout.height))
+                }
               >
                 {replyingTo && (
                   <View style={{ paddingHorizontal: 12, paddingBottom: 6 }}>
@@ -2722,7 +2747,7 @@ export default function ChatOverlay({
                   style={{
                     flexDirection: "row",
                     alignItems: "flex-end",
-                    paddingTop: 30,
+                    paddingTop: 20,
                     paddingBottom: 10,
                     paddingHorizontal: 15,
                     gap: 8,
@@ -2842,7 +2867,7 @@ export default function ChatOverlay({
 
           <AttachMenu
             visible={attachVisible}
-            onClose={() => setAttachVisible(false)}
+            onDismiss={() => setAttachVisible(false)}
             onPickMedia={handleMediaPick}
           />
         </GooProvider>

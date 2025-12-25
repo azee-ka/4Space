@@ -55,6 +55,8 @@ COMMUNITY_TEMPLATES = {
             "milestones",
             "tools",
             "timeline",
+            "startupHome",
+            "funding",
         ]
     },
     "writing": {

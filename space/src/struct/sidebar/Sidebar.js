@@ -20,6 +20,7 @@ function Sidebar({ isOpen, onClose }) {
 
     // Dynamic sub-apps under "Space"
     const spaceSubApps = [
+        { label: 'Space', path: '/space' },
         { label: 'Workspace', path: '/space/workspace' },
         { label: 'Finance / Investing', path: '/space/finance/dashboard' },
     ];
@@ -34,7 +35,7 @@ function Sidebar({ isOpen, onClose }) {
 
     const handleSpaceClick = (e) => {
         e.preventDefault();
-        navigate('/space/workspace'); // default
+        navigate('/space'); // default
         onClose();
     };
 

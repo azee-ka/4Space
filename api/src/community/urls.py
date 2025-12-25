@@ -27,4 +27,5 @@ urlpatterns = [
     # Include sub-apps
     path('', include('src.community.general.urls')),
     path('research/', include('src.community.research.urls')),
+    path('startup/', include('src.community.startup.urls')),
 ]

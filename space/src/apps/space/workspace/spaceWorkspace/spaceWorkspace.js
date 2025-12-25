@@ -4,7 +4,7 @@ import ModalOverlay from './ModalOverlay';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ArrowLeft, Settings, Trash2, Copy, Send, User, Cpu } from 'lucide-react';
-import './space.css';
+import './spaceWorkspace.css';
 import './modal.css';
 import { formatDateTime } from '../../../../utils/formatDateTime';
 import { useAuth } from '../../../../hooks/useAuth';
@@ -19,7 +19,7 @@ import { SPACE_COPILOT_PROJECTS, SPACE_WORKFLOW } from '../../../../services/que
 
 const MAX_PARALLEL = 1;
 
-export default function Space() {
+export default function SpaceWorkspace() {
   const { authState } = useAuth();
   const queryClient = useQueryClient();
 

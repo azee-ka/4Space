@@ -7,9 +7,7 @@ import PeerReviewTab from './research/peerReviewTab/peerReviewTab';
 import PreprintsTab from './research/preprintsTab/preprintsTab';
 import DatasetsTab from './research/datasetsTab/datasetsTab';
 import CollaborationTab from './research/collaborationTab/collaborationTab';
-
-// import CommunityFunding from './startup/funding/funding';
-
+import StartupHome from './startup/home/startupHome';
 
 export const TAB_COMPONENT_CATEGORIES = {
   general: {
@@ -83,15 +81,15 @@ export const TAB_COMPONENT_CATEGORIES = {
     },
   },
 
-  // startup: {
-  //   funding: {
-  //     key: 'funding',
-  //     label: 'Funding',
-  //     Component: CommunityFunding,
-  //     icon: '💸',
-  //     category: 'startup',
-  //   },
-  // },
+  startup: {
+    startupHome: {
+      key: 'startupHome',
+      label: 'Startup Home',
+      Component: StartupHome,
+      icon: '💸',
+      category: 'startup',
+    },
+  },
 };
 
 

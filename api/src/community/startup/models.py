@@ -1,6 +1,19 @@
 from django.db import models
-from community.models import Community
+from src.community.models import Community
 import uuid
+
+
+class Startup(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='startups')
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    founded_on = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-founded_on']
+
 
 class FundingRound(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

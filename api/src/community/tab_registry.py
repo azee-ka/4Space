@@ -8,6 +8,10 @@ from .general.serializers import ExchangePostSerializer
 from .research.models import ResearchPublication, PeerReview, Preprint, Dataset, CollaborationCall
 from .research.serializers import ResearchPublicationSerializer
 
+from .startup.models import Startup
+from .startup.serializers import StartupSerializer
+from .startup.views import list_startups
+
 TAB_REGISTRY = {
     "general": {
         "exchange": {
@@ -77,6 +81,16 @@ TAB_REGISTRY = {
             "serializer": CommunityAssignmentSerializer,
             "view": get_assignments,
             "route": "school/<uuid:community_id>/collaboration/"
+        },
+    },
+    "startup": {
+        "startupHome": {
+            "label": "Startup Home",
+            "icon": "📚",
+            "model": Startup,
+            "serializer": StartupSerializer,
+            "view": list_startups,
+            "route": "startup/<uuid:community_id>/home/"
         },
     },
 }
