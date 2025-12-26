@@ -1,4 +1,4 @@
-// space/config/widgetRegistry.js
+// space/widgetRegistry.js
 import {
     FaCode, FaCalculator, FaChartLine, FaBookReader, FaPalette,
     FaGamepad, FaGraduationCap, FaRobot, FaMicroscope, FaFlask,

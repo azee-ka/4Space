@@ -10,7 +10,7 @@ import {
   patchRepository,
   deleteRepository,
   uploadRepoFiles,
-  inviteCollaborator,
+  inviteRepositoryCollaborator,
   postRepoItem,
 } from "../../../../../services/space";
 import { SPACE_REPOSITORY } from "../../../../../services/queryKeys";
@@ -73,7 +73,7 @@ export default function RepositoryView() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: ({ email }) => inviteCollaborator({ repositoryId, email }),
+    mutationFn: ({ email }) => inviteRepositoryCollaborator({ repositoryId, email }),
     onSuccess: () => queryClient.invalidateQueries(SPACE_REPOSITORY(repositoryId)),
   });
 

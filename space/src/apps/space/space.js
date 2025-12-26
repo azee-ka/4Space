@@ -3,144 +3,22 @@ import './space.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  FaCode, FaCalculator, FaChartLine, FaBookReader, FaPalette,
-  FaGamepad, FaGraduationCap, FaRobot, FaMicroscope, FaFlask,
-  FaBriefcase, FaUsers, FaShare, FaCog, FaPlus, FaTimes,
-  FaEdit, FaTrash, FaExpand, FaLink, FaLock, FaGlobe,
-  FaFolder, FaFileAlt, FaImage, FaVideo, FaMusic, FaComments,
-  FaTasks, FaCalendar, FaBell, FaChartBar, FaCloud, FaLightbulb,
-  FaPencilAlt, FaNewspaper, FaMoneyBill, FaBitcoin, FaHeartbeat,
-  FaSpinner, FaRocket, FaPen, FaTerminal, FaDatabase
+  FaCog, FaPlus, FaTimes, FaTrash, FaExpand,
+  FaLock, FaGlobe, FaFolder, FaLightbulb,
+  FaSpinner, FaCheck, FaBan, FaPaperPlane, FaUserPlus, 
+  FaCrown, FaUsers, FaShare
 } from 'react-icons/fa';
 import {
-  fetchSpaces,
-  createSpace,
-  updateSpace,
-  deleteSpace,
-  addSpaceWidget,
-  removeSpaceWidget,
-  inviteCollaborator,
-  removeCollaborator as removeCollaboratorAPI
+  fetchSpaces, createSpace, updateSpace, deleteSpace,
+  addSpaceWidget, removeSpaceWidget,
+  inviteSpaceCollaborator, removeSpaceCollaborator
 } from '../../services/space';
-
-// ============================================
-// CONFIGURATION & REGISTRY
-// ============================================
-
-const ACCENT_COLORS = [
-  '#00f0ff', '#ff006e', '#8b5cf6', '#10b981', '#f59e0b', 
-  '#ec4899', '#06b6d4', '#84cc16', '#6366f1', '#f97316'
-];
-
-const WIDGET_CATEGORIES = [
-  { id: 'all', name: 'All Widgets', icon: FaFolder },
-  { id: 'engineering', name: 'Engineering', icon: FaCode },
-  { id: 'finance', name: 'Finance', icon: FaMoneyBill },
-  { id: 'creative', name: 'Creative', icon: FaPalette },
-  { id: 'education', name: 'Education', icon: FaGraduationCap },
-  { id: 'productivity', name: 'Productivity', icon: FaTasks },
-  { id: 'collaboration', name: 'Collaboration', icon: FaUsers },
-  { id: 'analytics', name: 'Analytics', icon: FaChartBar },
-  { id: 'health', name: 'Health', icon: FaHeartbeat }
-];
-
-const WIDGET_REGISTRY = [
-  // Engineering
-  { id: 'code-editor', name: 'Code Editor', icon: FaCode, category: 'engineering', description: 'Full IDE with syntax highlighting', size: 'large' },
-  { id: 'terminal', name: 'Terminal', icon: FaTerminal, category: 'engineering', description: 'Command line interface', size: 'medium' },
-  { id: 'github-activity', name: 'GitHub', icon: FaCode, category: 'engineering', description: 'Track repository activity', size: 'medium' },
-  { id: 'database', name: 'Database Manager', icon: FaDatabase, category: 'engineering', description: 'Manage databases', size: 'large' },
-  
-  // Finance
-  { id: 'portfolio', name: 'Portfolio', icon: FaChartLine, category: 'finance', description: 'Track investments', size: 'large' },
-  { id: 'trading', name: 'Trading Terminal', icon: FaBitcoin, category: 'finance', description: 'Execute trades', size: 'large' },
-  { id: 'budget', name: 'Budget', icon: FaMoneyBill, category: 'finance', description: 'Track expenses', size: 'medium' },
-  { id: 'crypto-ticker', name: 'Crypto Ticker', icon: FaBitcoin, category: 'finance', description: 'Live crypto prices', size: 'small' },
-  
-  // Creative
-  { id: 'canvas', name: 'Canvas', icon: FaPalette, category: 'creative', description: 'Digital drawing', size: 'large' },
-  { id: 'gallery', name: 'Gallery', icon: FaImage, category: 'creative', description: 'Photo collection', size: 'medium' },
-  { id: 'video', name: 'Videos', icon: FaVideo, category: 'creative', description: 'Video library', size: 'large' },
-  { id: 'music', name: 'Music', icon: FaMusic, category: 'creative', description: 'Music player', size: 'medium' },
-  
-  // Education
-  { id: 'notes', name: 'Notes', icon: FaPencilAlt, category: 'education', description: 'Smart note-taking', size: 'large' },
-  { id: 'flashcards', name: 'Flashcards', icon: FaGraduationCap, category: 'education', description: 'Study with flashcards', size: 'medium' },
-  { id: 'research', name: 'Research', icon: FaBookReader, category: 'education', description: 'Organize papers', size: 'large' },
-  { id: 'calculator', name: 'Calculator', icon: FaCalculator, category: 'education', description: 'Scientific calculator', size: 'small' },
-  
-  // Productivity
-  { id: 'tasks', name: 'Tasks', icon: FaTasks, category: 'productivity', description: 'Task management', size: 'medium' },
-  { id: 'calendar', name: 'Calendar', icon: FaCalendar, category: 'productivity', description: 'Schedule events', size: 'medium' },
-  { id: 'links', name: 'Quick Links', icon: FaLink, category: 'productivity', description: 'Bookmarks', size: 'small' },
-  { id: 'journal', name: 'Journal', icon: FaFileAlt, category: 'productivity', description: 'Daily journal', size: 'medium' },
-  
-  // Collaboration
-  { id: 'chat', name: 'Chat', icon: FaComments, category: 'collaboration', description: 'Team messaging', size: 'large' },
-  { id: 'shared-links', name: 'Shared Links', icon: FaShare, category: 'collaboration', description: 'Share resources', size: 'medium' },
-  { id: 'whiteboard', name: 'Whiteboard', icon: FaPalette, category: 'collaboration', description: 'Collaborative board', size: 'large' },
-  
-  // Analytics
-  { id: 'activity', name: 'Activity', icon: FaChartBar, category: 'analytics', description: 'Track productivity', size: 'medium' },
-  { id: 'analytics', name: 'Analytics', icon: FaChartLine, category: 'analytics', description: 'Data visualization', size: 'large' },
-  
-  // Health
-  { id: 'fitness', name: 'Fitness', icon: FaHeartbeat, category: 'health', description: 'Track workouts', size: 'medium' },
-  { id: 'meditation', name: 'Meditation', icon: FaHeartbeat, category: 'health', description: 'Mindfulness timer', size: 'small' }
-];
-
-const SPACE_TEMPLATES = [
-  {
-    id: 'developer',
-    name: 'Developer Workspace',
-    icon: FaCode,
-    description: 'Complete dev environment',
-    type: 'work',
-    accentColor: '#00f0ff',
-    definition: 'Your development command center',
-    widgets: ['code-editor', 'terminal', 'github-activity', 'tasks', 'links']
-  },
-  {
-    id: 'trader',
-    name: 'Trading Desk',
-    icon: FaBitcoin,
-    description: 'Professional trading setup',
-    type: 'finance',
-    accentColor: '#10b981',
-    definition: 'Your trading command center',
-    widgets: ['trading', 'portfolio', 'crypto-ticker', 'analytics']
-  },
-  {
-    id: 'student',
-    name: 'Study Space',
-    icon: FaGraduationCap,
-    description: 'Optimized for learning',
-    type: 'educational',
-    accentColor: '#8b5cf6',
-    definition: 'Your study sanctuary',
-    widgets: ['notes', 'flashcards', 'research', 'tasks', 'calendar']
-  },
-  {
-    id: 'creative',
-    name: 'Creative Studio',
-    icon: FaPalette,
-    description: 'For artists and designers',
-    type: 'creative',
-    accentColor: '#ec4899',
-    definition: 'Creative workspace',
-    widgets: ['canvas', 'gallery', 'music']
-  },
-  {
-    id: 'blank',
-    name: 'Blank Canvas',
-    icon: FaPlus,
-    description: 'Start from scratch',
-    type: 'personal',
-    accentColor: '#00f0ff',
-    definition: 'Build your own space',
-    widgets: []
-  }
-];
+import { 
+  WIDGET_REGISTRY, 
+  WIDGET_CATEGORIES, 
+  SPACE_TEMPLATES, 
+  ACCENT_COLORS 
+} from './widgetRegistry';
 
 // ============================================
 // MAIN COMPONENT
@@ -149,6 +27,7 @@ const SPACE_TEMPLATES = [
 const Space = () => {
   const queryClient = useQueryClient();
   const [activeSpace, setActiveSpace] = useState(null);
+  const [filter, setFilter] = useState('all'); // 'all', 'owned', 'shared'
   const [isCreating, setIsCreating] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
@@ -157,6 +36,7 @@ const Space = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [collaboratorEmail, setCollaboratorEmail] = useState('');
+  const [showInviteStatus, setShowInviteStatus] = useState(false);
 
   // Fetch spaces from API
   const { data: spaces = [], isLoading, error } = useQuery({
@@ -165,12 +45,19 @@ const Space = () => {
     refetchOnWindowFocus: false
   });
 
+  // Filter spaces
+  const filteredSpaces = spaces.filter(s => {
+    if (filter === 'owned') return s.is_owner;
+    if (filter === 'shared') return s.is_collaborator && !s.is_owner;
+    return true;
+  });
+
   // Set active space when spaces load
   useEffect(() => {
-    if (spaces.length > 0 && !activeSpace) {
-      setActiveSpace(spaces[0]);
+    if (filteredSpaces.length > 0 && !activeSpace) {
+      setActiveSpace(filteredSpaces[0]);
     }
-  }, [spaces]);
+  }, [filteredSpaces]);
 
   // Update active space when spaces change
   useEffect(() => {
@@ -191,7 +78,7 @@ const Space = () => {
       setIsCreating(false);
       setShowTemplates(false);
       
-      // Add template widgets
+      // ✨ AUTO-ADD TEMPLATE WIDGETS
       if (selectedTemplate) {
         const template = SPACE_TEMPLATES.find(t => t.id === selectedTemplate);
         if (template?.widgets) {
@@ -203,7 +90,7 @@ const Space = () => {
                 name: widget.name,
                 description: widget.description,
                 size: widget.size,
-                config: {}
+                config: widget.defaultConfig || {}
               });
             }
           }
@@ -232,7 +119,7 @@ const Space = () => {
       name: widget.name,
       description: widget.description,
       size: widget.size,
-      config: {}
+      config: widget.defaultConfig || {}
     }),
     onSuccess: () => {
       queryClient.invalidateQueries(['spaces']);
@@ -246,16 +133,20 @@ const Space = () => {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: ({ spaceId, email }) => inviteCollaborator(spaceId, email),
+    mutationFn: ({ spaceId, email }) => inviteSpaceCollaborator(spaceId, email),
     onSuccess: () => {
       queryClient.invalidateQueries(['spaces']);
       setCollaboratorEmail('');
-      alert('Invited!');
+      setShowInviteStatus(true);
+      setTimeout(() => setShowInviteStatus(false), 3000);
+    },
+    onError: (error) => {
+      console.error('Invite failed:', error);
     }
   });
 
   const removeCollabMutation = useMutation({
-    mutationFn: ({ spaceId, userId }) => removeCollaboratorAPI(spaceId, userId),
+    mutationFn: ({ spaceId, userId }) => removeSpaceCollaborator(spaceId, userId),
     onSuccess: () => queryClient.invalidateQueries(['spaces'])
   });
 
@@ -315,12 +206,12 @@ const Space = () => {
     return (
       <div className="space-wrapper">
         <div style={{ padding: '80px 40px', textAlign: 'center' }}>
-          <div className="empty-icon"><FaRocket /></div>
+          <div className="empty-icon">🚀</div>
           <h2 style={{ marginBottom: '8px' }}>Welcome to Spaces</h2>
           <p style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.6)' }}>Create your first space</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button className="empty-btn" onClick={() => setShowTemplates(true)}>
-              <FaRocket /> Use Template
+              🎨 Use Template
             </button>
             <button className="empty-btn" onClick={() => setIsCreating(true)}>
               <FaPlus /> Start from Scratch
@@ -388,7 +279,7 @@ const Space = () => {
   // Main UI (with activeSpace)
   return (
     <div className="space-wrapper">
-      {/* Background */}
+      {/* ✨ ANIMATED BACKGROUNDS */}
       <div className="bg-grid"></div>
       <div className="bg-glow" style={{ background: `radial-gradient(circle at 20% 30%, ${currentAccentColor}15 0%, transparent 50%)` }}></div>
       <div className="bg-glow-2" style={{ background: `radial-gradient(circle at 80% 70%, ${currentAccentColor}10 0%, transparent 50%)` }}></div>
@@ -399,12 +290,27 @@ const Space = () => {
           <div className="brand-mark"></div>
           <span className="brand-text">SPACES</span>
         </div>
+
+        {/* ✨ FILTER TABS WITH COUNTS */}
+        <div className="filter-tabs">
+          <button className={`filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
+            <FaFolder /> All ({spaces.length})
+          </button>
+          <button className={`filter-tab ${filter === 'owned' ? 'active' : ''}`} onClick={() => setFilter('owned')}>
+            <FaCrown /> Owned ({spaces.filter(s => s.is_owner).length})
+          </button>
+          <button className={`filter-tab ${filter === 'shared' ? 'active' : ''}`} onClick={() => setFilter('shared')}>
+            <FaUsers /> Shared ({spaces.filter(s => s.is_collaborator && !s.is_owner).length})
+          </button>
+        </div>
+
         <div className="nav-tabs">
-          {spaces.map(s => (
+          {filteredSpaces.map(s => (
             <motion.button key={s.id} className={`nav-tab ${activeSpace?.id === s.id ? 'active' : ''}`} onClick={() => setActiveSpace(s)} whileHover={{ y: -1 }}>
               <span className="tab-glow" style={{ background: s.accent_color || ACCENT_COLORS[0] }}></span>
               <span className="tab-label">{s.name}</span>
-              {s.collaborators?.length > 0 && <FaUsers style={{ fontSize: '10px', opacity: 0.6 }} />}
+              {s.is_owner && <FaCrown style={{ fontSize: '10px', opacity: 0.6, color: '#ffd700' }} />}
+              {s.is_collaborator && !s.is_owner && <FaUsers style={{ fontSize: '10px', opacity: 0.6 }} />}
               {s.widgets?.length > 0 && <span className="tab-count">{s.widgets.length}</span>}
             </motion.button>
           ))}
@@ -422,6 +328,7 @@ const Space = () => {
       {/* Main Content */}
       {activeSpace && (
         <main className="space-main">
+          {/* ✨ SMOOTH PAGE TRANSITIONS */}
           <AnimatePresence mode="wait">
             <motion.div key={activeSpace.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
               
@@ -432,19 +339,25 @@ const Space = () => {
                     <div className="indicator-inner" style={{ background: currentAccentColor }}></div>
                   </div>
                   <div>
-                    <h1 className="space-name">{activeSpace.name}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <h1 className="space-name">{activeSpace.name}</h1>
+                      {activeSpace.is_owner && <span className="owner-badge"><FaCrown /> Owner</span>}
+                      {activeSpace.is_collaborator && !activeSpace.is_owner && <span className="collab-badge"><FaUsers /> Collaborator</span>}
+                    </div>
                     <p className="space-desc">{activeSpace.definition}</p>
                     {activeSpace.collaborators?.length > 0 && (
                       <div className="space-collaborators">
                         <FaUsers style={{ fontSize: '12px' }} />
-                        <span>{activeSpace.collaborators.length} collaborators</span>
+                        <span>{activeSpace.collaborators.length} collaborator{activeSpace.collaborators.length !== 1 ? 's' : ''}</span>
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="header-actions">
                   <button className="header-action" onClick={() => setShowWidgetLibrary(true)}><FaPlus /> Add Widget</button>
-                  <button className="header-action" onClick={() => setShowConfig(true)}><FaCog /> Configure</button>
+                  {activeSpace.is_owner && (
+                    <button className="header-action" onClick={() => setShowConfig(true)}><FaCog /> Settings</button>
+                  )}
                 </div>
               </div>
 
@@ -474,6 +387,7 @@ const Space = () => {
                         <div className="widget-body">
                           <div className="widget-placeholder">{w.description}</div>
                         </div>
+                        {/* ✨ WIDGET GLOW EFFECT */}
                         <div className="widget-glow" style={{ background: `radial-gradient(circle at 50% 100%, ${currentAccentColor}15 0%, transparent 70%)` }}></div>
                       </motion.div>
                     );
@@ -500,16 +414,25 @@ const Space = () => {
                 <h2>Widget Library</h2>
                 <button className="close-btn" onClick={() => setShowWidgetLibrary(false)}><FaTimes /></button>
               </div>
+              
+              {/* ✨ CATEGORY FILTERS WITH COUNTS */}
               <div className="widget-categories">
                 {WIDGET_CATEGORIES.map(c => {
                   const Icon = c.icon;
+                  const count = c.id === 'all' ? WIDGET_REGISTRY.length : WIDGET_REGISTRY.filter(w => w.category === c.id).length;
                   return (
-                    <button key={c.id} className={`category-btn ${selectedCategory === c.id ? 'active' : ''}`} onClick={() => setSelectedCategory(c.id)} style={selectedCategory === c.id ? { borderColor: currentAccentColor, background: `${currentAccentColor}20` } : {}}>
-                      <Icon style={{ marginRight: '8px' }} />{c.name}
+                    <button 
+                      key={c.id} 
+                      className={`category-btn ${selectedCategory === c.id ? 'active' : ''}`} 
+                      onClick={() => setSelectedCategory(c.id)}
+                      style={selectedCategory === c.id ? { borderColor: currentAccentColor, background: `${currentAccentColor}20` } : {}}
+                    >
+                      <Icon style={{ marginRight: '8px' }} /> {c.name} ({count})
                     </button>
                   );
                 })}
               </div>
+
               <div className="widget-grid">
                 {filteredWidgets.map(w => {
                   const Icon = w.icon;
@@ -533,11 +456,11 @@ const Space = () => {
 
       {/* Config Panel */}
       <AnimatePresence>
-        {showConfig && activeSpace && (
+        {showConfig && activeSpace && activeSpace.is_owner && (
           <motion.div className="overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowConfig(false)}>
             <motion.aside className="config-panel" initial={{ x: 400 }} animate={{ x: 0 }} exit={{ x: 400 }} onClick={(e) => e.stopPropagation()}>
               <div className="panel-header">
-                <h2 className="panel-title">Configure</h2>
+                <h2 className="panel-title">Settings</h2>
                 <button className="panel-close" onClick={() => setShowConfig(false)}><FaTimes /></button>
               </div>
               <div className="panel-content">
@@ -545,10 +468,12 @@ const Space = () => {
                   <label className="config-label">Name</label>
                   <input className="config-input" value={activeSpace.name} onChange={(e) => updateMutation.mutate({ spaceId: activeSpace.id, updates: { name: e.target.value } })} />
                 </div>
+                
                 <div className="config-group">
                   <label className="config-label">Definition</label>
                   <textarea className="config-textarea" value={activeSpace.definition} onChange={(e) => updateMutation.mutate({ spaceId: activeSpace.id, updates: { definition: e.target.value } })} rows={3} />
                 </div>
+
                 <div className="config-group">
                   <label className="config-label">Type</label>
                   <select className="config-input" value={activeSpace.type} onChange={(e) => updateMutation.mutate({ spaceId: activeSpace.id, updates: { type: e.target.value } })}>
@@ -560,6 +485,7 @@ const Space = () => {
                     <option value="finance">Finance</option>
                   </select>
                 </div>
+
                 <div className="config-group">
                   <label className="config-label">Color</label>
                   <div className="color-grid">
@@ -570,35 +496,88 @@ const Space = () => {
                     ))}
                   </div>
                 </div>
+
                 <div className="config-divider"></div>
+
+                {/* ✨ INVITE SYSTEM WITH STATUS */}
                 <div className="config-group">
-                  <label className="config-label"><FaUsers style={{ marginRight: '8px' }} />Collaborators</label>
+                  <label className="config-label"><FaUserPlus /> Invite Collaborators</label>
+                  
+                  <AnimatePresence>
+                    {showInviteStatus && (
+                      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="invite-status success">
+                        <FaCheck /> Invitation sent!
+                      </motion.div>
+                    )}
+                    {inviteMutation.isError && (
+                      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="invite-status error">
+                        <FaBan /> {inviteMutation.error?.response?.data?.detail || 'Failed to send invitation'}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                    <input 
+                      className="config-input" 
+                      placeholder="Email address" 
+                      value={collaboratorEmail} 
+                      onChange={(e) => setCollaboratorEmail(e.target.value)} 
+                      onKeyPress={(e) => e.key === 'Enter' && collaboratorEmail.trim() && inviteMutation.mutate({ spaceId: activeSpace.id, email: collaboratorEmail })} 
+                    />
+                    <button 
+                      className="header-action" 
+                      onClick={() => collaboratorEmail.trim() && inviteMutation.mutate({ spaceId: activeSpace.id, email: collaboratorEmail })} 
+                      disabled={inviteMutation.isLoading || !collaboratorEmail.trim()}
+                    >
+                      {inviteMutation.isLoading ? <FaSpinner className="spinner" /> : <FaPaperPlane />}
+                    </button>
+                  </div>
+
+                  {/* ✨ COLLABORATORS LIST */}
+                  <label className="config-label" style={{ marginTop: '24px' }}><FaUsers /> Collaborators ({activeSpace.collaborators?.length || 0})</label>
                   <div className="collaborators-list">
-                    {activeSpace.collaborators?.map(c => (
-                      <div key={c.id} className="collaborator-item">
-                        <span>{c.username || c.email}</span>
-                        <button className="remove-collab-btn" onClick={() => window.confirm('Remove?') && removeCollabMutation.mutate({ spaceId: activeSpace.id, userId: c.id })}><FaTimes /></button>
+                    {activeSpace.collaborators && activeSpace.collaborators.length > 0 ? (
+                      activeSpace.collaborators.map(c => (
+                        <div key={c.id} className="collaborator-item">
+                          <div className="collab-info">
+                            <span className="collab-name">{c.username}</span>
+                            <span className="collab-email">{c.email}</span>
+                          </div>
+                          <button className="remove-collab-btn" onClick={() => window.confirm(`Remove ${c.username}?`) && removeCollabMutation.mutate({ spaceId: activeSpace.id, userId: c.id })}>
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="empty-collaborators">
+                        <FaUsers style={{ fontSize: '24px', opacity: 0.2, marginBottom: '8px' }} />
+                        <p>No collaborators yet</p>
                       </div>
-                    ))}
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                      <input className="config-input" placeholder="Email" value={collaboratorEmail} onChange={(e) => setCollaboratorEmail(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && collaboratorEmail.trim() && inviteMutation.mutate({ spaceId: activeSpace.id, email: collaboratorEmail })} />
-                      <button className="header-action" onClick={() => collaboratorEmail.trim() && inviteMutation.mutate({ spaceId: activeSpace.id, email: collaboratorEmail })} disabled={inviteMutation.isLoading}>
-                        {inviteMutation.isLoading ? <FaSpinner className="spinner" /> : <FaPlus />}
-                      </button>
-                    </div>
+                    )}
                   </div>
                 </div>
-                <div className="config-group">
-                  <label className="config-label"><FaLock style={{ marginRight: '8px' }} />Privacy</label>
-                  <div className="privacy-options">
-                    <button className={`privacy-btn ${activeSpace.privacy === 'private' ? 'active' : ''}`} onClick={() => updateMutation.mutate({ spaceId: activeSpace.id, updates: { privacy: 'private' } })}><FaLock /> Private</button>
-                    <button className={`privacy-btn ${activeSpace.privacy === 'team' ? 'active' : ''}`} onClick={() => updateMutation.mutate({ spaceId: activeSpace.id, updates: { privacy: 'team' } })}><FaUsers /> Team</button>
-                    <button className={`privacy-btn ${activeSpace.privacy === 'public' ? 'active' : ''}`} onClick={() => updateMutation.mutate({ spaceId: activeSpace.id, updates: { privacy: 'public' } })}><FaGlobe /> Public</button>
-                  </div>
-                </div>
+
                 <div className="config-divider"></div>
+
                 <div className="config-group">
-                  <button className="header-action" style={{ width: '100%', justifyContent: 'center', background: 'rgba(255,0,0,0.1)', borderColor: 'rgba(255,0,0,0.3)' }} onClick={() => window.confirm(`Delete "${activeSpace.name}"?`) && deleteMutation.mutate(activeSpace.id)}>
+                  <label className="config-label"><FaLock /> Privacy</label>
+                  <div className="privacy-options">
+                    <button className={`privacy-btn ${activeSpace.privacy === 'private' ? 'active' : ''}`} onClick={() => updateMutation.mutate({ spaceId: activeSpace.id, updates: { privacy: 'private' } })}>
+                      <FaLock /> Private
+                    </button>
+                    <button className={`privacy-btn ${activeSpace.privacy === 'team' ? 'active' : ''}`} onClick={() => updateMutation.mutate({ spaceId: activeSpace.id, updates: { privacy: 'team' } })}>
+                      <FaUsers /> Team
+                    </button>
+                    <button className={`privacy-btn ${activeSpace.privacy === 'public' ? 'active' : ''}`} onClick={() => updateMutation.mutate({ spaceId: activeSpace.id, updates: { privacy: 'public' } })}>
+                      <FaGlobe /> Public
+                    </button>
+                  </div>
+                </div>
+
+                <div className="config-divider"></div>
+
+                <div className="config-group">
+                  <button className="header-action danger" style={{ width: '100%', justifyContent: 'center' }} onClick={() => window.confirm(`Delete "${activeSpace.name}"?`) && deleteMutation.mutate(activeSpace.id)}>
                     <FaTrash /> Delete Space
                   </button>
                 </div>
@@ -665,7 +644,7 @@ const Space = () => {
   );
 };
 
-// CSS for spinner
+// CSS for spinner animation
 const style = document.createElement('style');
 style.textContent = `.spinner { animation: spin 1s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
 document.head.appendChild(style);

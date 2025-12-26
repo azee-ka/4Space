@@ -2,7 +2,7 @@
 import apiCall from "../utils/api";
 
 // ============================================================================
-// SPACE CRUD OPERATIONS
+// SPACE CRUD OPERATIONS (New Feature - Custom Workspaces)
 // ============================================================================
 
 /**
@@ -23,7 +23,7 @@ export const fetchSpaces = async (params = {}) => {
  * @returns {Promise<Object>} Space object with widgets
  */
 export const fetchSpace = async (spaceId) => {
-  const res = await apiCall(`space/space/${spaceId}/`, 'GET');
+  const res = await apiCall(`space/spaceWspaceorkspace/${spaceId}/`, 'GET');
   return res.data;
 };
 
@@ -58,7 +58,7 @@ export const deleteSpace = async (spaceId) => {
 };
 
 // ============================================================================
-// WIDGET OPERATIONS
+// WIDGET OPERATIONS (New Feature)
 // ============================================================================
 
 /**
@@ -105,34 +105,30 @@ export const removeSpaceWidget = async (spaceId, widgetId) => {
 };
 
 // ============================================================================
-// COLLABORATION
+// SPACE COLLABORATION (New Feature)
 // ============================================================================
 
 /**
- * Invite a collaborator to a space
+ * Invite a collaborator to a SPACE (not repository)
  * @param {string} spaceId - UUID of the space
  * @param {string} email - Email of user to invite
  * @returns {Promise<Object>} Invitation object
  */
-export const inviteCollaboratorSpace = async (spaceId, email) => {
+export const inviteSpaceCollaborator = async (spaceId, email) => {
   const res = await apiCall(`space/space/${spaceId}/invite/`, 'POST', { email });
   return res.data;
 };
 
 /**
- * Remove a collaborator from a space
+ * Remove a collaborator from a SPACE
  * @param {string} spaceId - UUID of the space
  * @param {string} userId - UUID of user to remove
  * @returns {Promise<Object>} Response message
  */
-export const removeCollaborator = async (spaceId, userId) => {
+export const removeSpaceCollaborator = async (spaceId, userId) => {
   const res = await apiCall(`space/space/${spaceId}/remove-collaborator/`, 'POST', { user_id: userId });
   return res.data;
 };
-
-// ============================================================================
-// ACTIVITY LOG
-// ============================================================================
 
 /**
  * Fetch activity log for a space
@@ -144,18 +140,14 @@ export const fetchSpaceActivity = async (spaceId) => {
   return res.data || [];
 };
 
-
-
-
-
-
-
-
+// ============================================================================
+// LIBRARY (Existing Feature)
+// ============================================================================
 
 // Get library items for a folder (id=null means root)
 export const fetchLibraryItems = async (folderId) => {
   const suffix = folderId ? `?parent=${folderId}` : "";
-  const res = await apiCall(`space/library${suffix}`, "GET");
+  const res = await apiCall(`space/workspace/library${suffix}`, "GET");
   return res.data || [];
 };
 
@@ -164,64 +156,62 @@ export const uploadLibraryFile = async ({ file, folderId }) => {
   const fd = new FormData();
   fd.append("file", file);
   if (folderId) fd.append("parent", folderId);
-  await apiCall("space/library/upload/", "POST", fd, "multipart/form-data");
+  await apiCall("workspace/library/upload/", "POST", fd, "multipart/form-data");
 };
 
 // Create new folder
 export const createLibraryFolder = async ({ name, folderId }) => {
   const payload = { title: name };
   if (folderId) payload.parent = folderId;
-  await apiCall("space/library/folder/", "POST", payload);
+  await apiCall("workspace/library/folder/", "POST", payload);
 };
 
-
-
-
-
-
-
+// ============================================================================
+// PROJECTS (Existing Feature)
+// ============================================================================
 
 export const fetchProjects = async () => {
-  const res = await apiCall('space/projects/', 'GET');
+  const res = await apiCall('space/workspace/projects/', 'GET');
   return res.data || [];
 };
 
-
-
+// ============================================================================
+// REPOSITORIES (Existing Feature - Different from Spaces!)
+// ============================================================================
 
 // Fetch all repositories
 export const fetchRepositories = async () => {
-  const res = await apiCall('space/repositories/', 'GET');
+  const res = await apiCall('space/workspace/repositories/', 'GET');
   return res.data || [];
 };
 
 // Create new repository
 export const createRepository = async (data) => {
-  const res = await apiCall('space/repositories/', 'POST', data);
+  const res = await apiCall('space/workspace/repositories/', 'POST', data);
   return res.data;
 };
 
 // Fetch single repository by ID
 export const fetchRepository = async (id) => {
-  const res = await apiCall(`space/repositories/repository/${id}/`);
+  const res = await apiCall(`space/workspace/repositories/repository/${id}/`);
   return res.data;
 };
 
 // Update repository (PATCH)
 export const patchRepository = async ({ id, ...data }) => {
-  const res = await apiCall(`space/repositories/${id}/`, 'PATCH', data);
+  const res = await apiCall(`space/workspace/repositories/${id}/`, 'PATCH', data);
   return res.data;
 };
 
 // Delete repository
 export const deleteRepository = async (id) => {
-  return await apiCall(`space/repositories/${id}/`, 'DELETE');
+  return await apiCall(`space/workspace/repositories/${id}/`, 'DELETE');
 };
 
 // Upload files to a repo
 export const uploadRepoFiles = async ({ repositoryId, formData }) => {
   const res = await apiCall(
-    `space/repositories/repository/${repositoryId}/upload-structure/`,
+    `space/workspace/repositories/repository/${repositoryId}/upload-structure/`,
     'POST',
     formData,
     'multipart/form-data'
@@ -229,86 +219,78 @@ export const uploadRepoFiles = async ({ repositoryId, formData }) => {
   return res.data;
 };
 
-// Invite collaborator
-export const inviteCollaborator = async ({ repositoryId, email }) => {
-  return await apiCall(`space/repositories/${repositoryId}/invite/`, 'POST', { email });
+/**
+ * Invite collaborator to a REPOSITORY (not Space)
+ * @param {Object} params - { repositoryId, email }
+ * @returns {Promise<Object>}
+ */
+export const inviteRepositoryCollaborator = async ({ repositoryId, email }) => {
+  return await apiCall(`space/workspace/repositories/${repositoryId}/invite/`, 'POST', { email });
 };
 
 // Boards, issues, discussions, etc
 export const postRepoItem = async ({ repositoryId, tab, data }) => {
-  return await apiCall(`space/repositories/${repositoryId}/${tab}/`, 'POST', data);
+  return await apiCall(`space/workspace/repositories/${repositoryId}/${tab}/`, 'POST', data);
 };
 
+// ============================================================================
+// WORKSPACE / AI FEATURES (Existing)
+// ============================================================================
 
-
-
-
-
-// Fetch all projects
+// Fetch all projects (AI workspace)
 export const fetchSpaceProjects = async () => {
-  const res = await apiCall('space/space/projects/', 'GET');
+  const res = await apiCall('space/spaceWorkspace/projects/', 'GET');
   return Array.isArray(res.data) ? res.data : [];
 };
 
 // Run a workflow (POST prompt)
 export const runSpaceWorkflow = async ({ prompt }) => {
-  const res = await apiCall('space/space/workflow/', 'POST', { prompt });
+  const res = await apiCall('space/spaceWorkspace/workflow/', 'POST', { prompt });
   return res.data;
 };
 
 // Poll workflow by ID
 export const fetchSpaceWorkflowStatus = async (workflowId) => {
-  const res = await apiCall(`space/space/workflow/${workflowId}`, 'GET');
+  const res = await apiCall(`space/spaceWorkspace/workflow/${workflowId}`, 'GET');
   return res.data;
 };
 
 // Project chat (POST)
 export const postSpaceProjectChat = async ({ project, message }) => {
-  const res = await apiCall('space/space/project_chat/', 'POST', { project, message });
+  const res = await apiCall('space/spaceWorkspace/project_chat/', 'POST', { project, message });
   return res.data;
 };
 
-
-
-
-
-
-
-
+// ============================================================================
+// PROJECT TOOLS (Existing)
+// ============================================================================
 
 // Fetch rich text content
 export const fetchRichTextContent = async (projectId) => {
-  const res = await apiCall(`space/projects/tools/${projectId}/richtext/`);
+  const res = await apiCall(`space/workspace/projects/tools/${projectId}/richtext/`);
   return res.data?.content || "";
 };
 
 // Save rich text content
 export const saveRichTextContent = async ({ projectId, content }) => {
   const res = await apiCall(
-    `space/projects/tools/${projectId}/richtext/`,
+    `space/workspace/projects/tools/${projectId}/richtext/`,
     "PUT",
     { content }
   );
   return res.data;
 };
 
-
-
-
-
-
-
-
 // List all files for a code project
 export const fetchCodeFiles = async (projectId) => {
-  const res = await apiCall(`space/projects/tools/${projectId}/code/files/`);
+  const res = await apiCall(`space/workspace/projects/tools/${projectId}/code/files/`);
   return res.data || [];
 };
 
 // Create a new file
 export const createCodeFile = async ({ projectId, filename, language }) => {
   const res = await apiCall(
-    `space/projects/tools/${projectId}/code/files/`,
+    `space/workspace/projects/tools/${projectId}/code/files/`,
     "POST",
     { filename, language, content: "" }
   );
@@ -318,30 +300,22 @@ export const createCodeFile = async ({ projectId, filename, language }) => {
 // Save/update a file's content
 export const saveCodeFileContent = async ({ projectId, fileId, content }) => {
   const res = await apiCall(
-    `space/projects/tools/${projectId}/code/files/${fileId}/`,
+    `space/workspace/projects/tools/${projectId}/code/files/${fileId}/`,
     "PUT",
     { content }
   );
   return res.data;
 };
 
-
-
-
-
-
-
-
-
 // Fetch LaTeX content for a project
 export const fetchLatexContent = async (projectId) => {
-  const res = await apiCall(`space/projects/tools/${projectId}/latex/`);
+  const res = await apiCall(`space/workspace/projects/tools/${projectId}/latex/`);
   return res.data.content || "";
 };
 
 // Save LaTeX content
 export const saveLatexContent = async ({ projectId, content }) => {
-  await apiCall(`space/projects/tools/${projectId}/latex/`, 'PUT', { content });
+  await apiCall(`space/workspace/projects/tools/${projectId}/latex/`, 'PUT', { content });
 };
 
 // Compile to PDF (returns blob)
@@ -352,7 +326,7 @@ export const compileLatexPDF = async ({ projectId, latex, customFiles }) => {
   formData.append("tex", file);
   (customFiles || []).forEach(f => formData.append("files", f));
   const response = await apiCall(
-    `space/projects/tools/${projectId}/latex/render/`,
+    `space/workspace/projects/tools/${projectId}/latex/render/`,
     "POST",
     formData,
     "multipart/form-data",
@@ -362,38 +336,27 @@ export const compileLatexPDF = async ({ projectId, latex, customFiles }) => {
   return response.data; // BLOB
 };
 
-
-
-
-
-
 // Fetch markdown content for a project
 export const fetchMarkdownContent = async (projectId) => {
   const res = await apiCall(`/api/tools/${projectId}/markdown/`);
   return res.data.content || "";
 };
+
 // Save markdown content for a project
 export const saveMarkdownContent = async ({ projectId, content }) => {
   await apiCall(`/api/tools/${projectId}/markdown/`, 'PUT', { content });
 };
-
-
-
-
 
 // Fetch notebook cells for a project
 export const fetchNotebookCells = async (projectId) => {
   const res = await apiCall(`/api/tools/${projectId}/notebook/`);
   return res.data.cells || [];
 };
+
 // Save notebook cells for a project
 export const saveNotebookCells = async ({ projectId, cells }) => {
   await apiCall(`/api/tools/${projectId}/notebook/`, 'PUT', { cells });
 };
-
-
-
-
 
 // Create a new Space project for a tool
 export const createSpaceProject = async ({ toolType, toolName }) => {
@@ -401,6 +364,6 @@ export const createSpaceProject = async ({ toolType, toolName }) => {
     title: `${toolName} - ${new Date().toISOString()}`,
     tool_type: toolType,
   };
-  const response = await apiCall('space/projects/', 'POST', data);
+  const response = await apiCall('space/workspace/projects/', 'POST', data);
   return response.data;
 };
