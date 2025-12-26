@@ -22,11 +22,17 @@ export const ModeProvider = ({ children }) => {
                 setMode('communities');
                 setSubMode(null);
             } else if (pathname.startsWith('/space')) {
-                setMode('space');
+                if (pathname.includes('/workspace')) {
+                    setMode('space');
+                    setSubMode('workspace');
+                } else {
+                    setMode('space');
+                    setSubMode(null);
+                }
 
                 // Determine subMode inside /space/
                 const spaceSegments = pathname.split('/'); // e.g., ['', 'space', 'finance', 'dashboard']
-                const maybeSubMode = spaceSegments[2] || 'workspace';
+                const maybeSubMode = spaceSegments[2] || 'space';
                 setSubMode(maybeSubMode); // workspace | finance | etc.
             } else {
                 setMode('home');

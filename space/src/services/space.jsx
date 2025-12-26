@@ -1,4 +1,152 @@
+// space/src/services/space.js
 import apiCall from "../utils/api";
+
+// ============================================================================
+// SPACE CRUD OPERATIONS
+// ============================================================================
+
+/**
+ * Fetch all spaces for the current user
+ * @param {Object} params - Query parameters { type, exclude_archived }
+ * @returns {Promise<Array>} Array of spaces
+ */
+export const fetchSpaces = async (params = {}) => {
+  const queryParams = new URLSearchParams(params).toString();
+  const url = `space/space/${queryParams ? `?${queryParams}` : ''}`;
+  const res = await apiCall(url, 'GET');
+  return res.data || [];
+};
+
+/**
+ * Fetch a single space by ID
+ * @param {string} spaceId - UUID of the space
+ * @returns {Promise<Object>} Space object with widgets
+ */
+export const fetchSpace = async (spaceId) => {
+  const res = await apiCall(`space/space/${spaceId}/`, 'GET');
+  return res.data;
+};
+
+/**
+ * Create a new space
+ * @param {Object} spaceData - { name, definition, type, privacy, accent_color, config }
+ * @returns {Promise<Object>} Created space
+ */
+export const createSpace = async (spaceData) => {
+  const res = await apiCall('space/space/', 'POST', spaceData);
+  return res.data;
+};
+
+/**
+ * Update a space
+ * @param {string} spaceId - UUID of the space
+ * @param {Object} updates - Fields to update
+ * @returns {Promise<Object>} Updated space
+ */
+export const updateSpace = async (spaceId, updates) => {
+  const res = await apiCall(`space/space/${spaceId}/`, 'PATCH', updates);
+  return res.data;
+};
+
+/**
+ * Delete a space
+ * @param {string} spaceId - UUID of the space
+ * @returns {Promise<void>}
+ */
+export const deleteSpace = async (spaceId) => {
+  await apiCall(`space/space/${spaceId}/`, 'DELETE');
+};
+
+// ============================================================================
+// WIDGET OPERATIONS
+// ============================================================================
+
+/**
+ * Fetch all widgets for a space
+ * @param {string} spaceId - UUID of the space
+ * @returns {Promise<Array>} Array of widgets
+ */
+export const fetchSpaceWidgets = async (spaceId) => {
+  const res = await apiCall(`space/space/${spaceId}/widgets/`, 'GET');
+  return res.data || [];
+};
+
+/**
+ * Add a widget to a space
+ * @param {string} spaceId - UUID of the space
+ * @param {Object} widgetData - { widget_type, name, description, size, config, position_x, position_y, order }
+ * @returns {Promise<Object>} Created widget
+ */
+export const addSpaceWidget = async (spaceId, widgetData) => {
+  const res = await apiCall(`space/space/${spaceId}/widgets/`, 'POST', widgetData);
+  return res.data;
+};
+
+/**
+ * Update a widget
+ * @param {string} spaceId - UUID of the space
+ * @param {string} widgetId - UUID of the widget
+ * @param {Object} updates - Fields to update
+ * @returns {Promise<Object>} Updated widget
+ */
+export const updateSpaceWidget = async (spaceId, widgetId, updates) => {
+  const res = await apiCall(`space/space/${spaceId}/widgets/${widgetId}/`, 'PATCH', updates);
+  return res.data;
+};
+
+/**
+ * Remove a widget from a space
+ * @param {string} spaceId - UUID of the space
+ * @param {string} widgetId - UUID of the widget
+ * @returns {Promise<void>}
+ */
+export const removeSpaceWidget = async (spaceId, widgetId) => {
+  await apiCall(`space/space/${spaceId}/widgets/${widgetId}/`, 'DELETE');
+};
+
+// ============================================================================
+// COLLABORATION
+// ============================================================================
+
+/**
+ * Invite a collaborator to a space
+ * @param {string} spaceId - UUID of the space
+ * @param {string} email - Email of user to invite
+ * @returns {Promise<Object>} Invitation object
+ */
+export const inviteCollaboratorSpace = async (spaceId, email) => {
+  const res = await apiCall(`space/space/${spaceId}/invite/`, 'POST', { email });
+  return res.data;
+};
+
+/**
+ * Remove a collaborator from a space
+ * @param {string} spaceId - UUID of the space
+ * @param {string} userId - UUID of user to remove
+ * @returns {Promise<Object>} Response message
+ */
+export const removeCollaborator = async (spaceId, userId) => {
+  const res = await apiCall(`space/space/${spaceId}/remove-collaborator/`, 'POST', { user_id: userId });
+  return res.data;
+};
+
+// ============================================================================
+// ACTIVITY LOG
+// ============================================================================
+
+/**
+ * Fetch activity log for a space
+ * @param {string} spaceId - UUID of the space
+ * @returns {Promise<Array>} Array of activity entries
+ */
+export const fetchSpaceActivity = async (spaceId) => {
+  const res = await apiCall(`space/space/${spaceId}/activity/`, 'GET');
+  return res.data || [];
+};
+
+
+
+
 
 
 

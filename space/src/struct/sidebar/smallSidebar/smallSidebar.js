@@ -76,8 +76,11 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
 
     // --- SPACE SUBCONTEXTS ---
     const spaceSidebars = {
+        space: [
+            { icon: <WorkspaceIcon mode={theme} />, label: 'Space', path: '/space', type: 'link' },
+        ],
         workspace: [
-            { icon: <WorkspaceIcon mode={theme} />, label: 'Space', path: '/space/workspace', type: 'link' },
+            { icon: <WorkspaceIcon mode={theme} />, label: 'Workspace', path: '/space/workspace', type: 'link' },
             { icon: <DashboardIcon mode={theme} />, label: 'Dashboard', path: '/space/workspace/dashboard', type: 'link' },
             { icon: <ProjectsIcon mode={theme} />, label: 'Projects', path: '/space/workspace/projects', type: 'link' },
             { icon: <LibraryIcon mode={theme} />, label: 'Library', path: '/space/workspace/library', type: 'link' },
@@ -165,7 +168,7 @@ const SmallSidebar = ({ setSearchSidebarOpen, searchSidebarOpen }) => {
     if (mode === 'communities') {
         sidebarBtns = communitiesIcons;
     } else if (mode === 'space') {
-        sidebarBtns = spaceSidebars[subMode] || spaceSidebars['workspace'];
+        sidebarBtns = spaceSidebars[subMode] || spaceSidebars['space'];
     } else {
         sidebarBtns = homeIcons;
     }

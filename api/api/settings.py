@@ -77,7 +77,8 @@ INSTALLED_APPS = [
     'src.space.workspace.projects',
     'src.space.workspace.library',
     'src.space.workspace.repos',
-    'src.space.workspace.space',
+    'src.space.workspace.spaceWorkspace',
+    'src.space.space',
     
     'src.settings',
     'src.central.collection.apps.CollectionConfig',
