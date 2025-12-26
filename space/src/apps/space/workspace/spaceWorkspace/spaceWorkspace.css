@@ -3,7 +3,7 @@
 /* -------------------
    GLOBAL & LAYOUT
    ------------------- */
-.space-wrapper {
+.space-workspace-wrapper {
   display: flex;
   height: 100%;
   width: 100%;
@@ -11,7 +11,7 @@
   box-sizing: border-box;
 }
 
-.space-wrapper * {
+.space-workspace-wrapper * {
   box-sizing: border-box;
 }
 

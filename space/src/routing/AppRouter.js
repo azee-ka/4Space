@@ -33,7 +33,7 @@ import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
 import PublicationDetail from '../apps/communities/community/tabs/research/publicationsTab/publicationDetail/publicationDetail';
 
-import Space from '../apps/space/space';
+import Space from '../apps/space/space/space';
 import SpaceDashboard from '../apps/space/workspace/dashboard/dashboard';
 import SpaceWorkspace from '../apps/space/workspace/spaceWorkspace/spaceWorkspace';
 import SpaceTools from '../apps/space/workspace/tools/tools';

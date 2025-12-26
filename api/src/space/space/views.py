@@ -181,6 +181,32 @@ def space_widgets(request, space_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def spaces_list_with_widgets(request):
+    """
+    GET: List all spaces with their widgets
+    """
+    exclude_archived = request.GET.get('exclude_archived', 'false').lower() == 'true'
+    space_type = request.GET.get('type')
+    
+    # Get owned and collaborative spaces
+    spaces = Space.objects.filter(
+        Q(owner=request.user) | Q(collaborators=request.user)
+    ).distinct().prefetch_related('widgets', 'collaborators', 'owner')
+    
+    if exclude_archived:
+        spaces = spaces.filter(is_archived=False)
+    
+    if space_type:
+        spaces = spaces.filter(type=space_type)
+    
+    # Use DetailSerializer which includes widgets
+    serializer = SpaceDetailSerializer(spaces, many=True, context={'request': request})
+    return Response(serializer.data)
+
+
+
 @api_view(['GET', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def widget_detail(request, space_id, widget_id):

@@ -181,7 +181,7 @@ export default function SpaceWorkspace() {
   }
 
   return (
-    <div className="space-wrapper">
+    <div className="space-workspace-wrapper">
       <aside className="copilot-panel glass">
         <h2 className="copilot-title">Copilot</h2>
         <textarea

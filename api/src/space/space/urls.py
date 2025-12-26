@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     # Space CRUD
     path('', views.spaces_list_create, name='spaces-list-create'),
+    path('with-widgets/', views.spaces_list_with_widgets, name='spaces-list-with-widgets'),  # ← ADD THIS
     path('<uuid:space_id>/', views.space_detail, name='space-detail'),
     
     # Widget operations
