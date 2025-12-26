@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import './space.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 import { 
   FaCog, FaPlus, FaFolder, FaSpinner,
-  FaCrown, FaUsers, FaShare
+  FaCrown, FaUsers, FaShare, FaLock, FaUnlock
 } from 'react-icons/fa';
 import {
   fetchSpaces, createSpace, updateSpace, deleteSpace,
-  addSpaceWidget, removeSpaceWidget,
-  inviteSpaceCollaborator, removeSpaceCollaborator
+  addSpaceWidget, removeSpaceWidget, updateSpaceWidget,
+  inviteSpaceCollaborator, removeSpaceCollaborator,
+  updateWidgetLayouts
 } from '../../../services/space';
 import { WIDGET_REGISTRY, SPACE_TEMPLATES, ACCENT_COLORS } from './widgetRegistry';
-import WidgetInteraction from './WidgetInteraction';
-
+import WidgetInteraction from './modals/WidgetInteraction';
 import WidgetLibraryModal from './modals/WidgetLibraryModal';
 import SettingsPanel from './modals/SettingsPanel';
 import CreateSpaceModal from './modals/CreateSpaceModal';
@@ -31,6 +35,28 @@ const Space = () => {
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showInviteStatus, setShowInviteStatus] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(1600);
+  const [editModeLayout, setEditModeLayout] = useState(null);
+
+  // Ref for measuring container width
+  const containerRef = useRef(null);
+  
+  // Ref to store the current displayed layout
+  const currentDisplayedLayoutRef = useRef([]);
+
+  // Measure container width
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   // Fetch spaces
   const { data: spaces = [], isLoading, error } = useQuery({
@@ -53,13 +79,160 @@ const Space = () => {
     }
   }, [filteredSpaces]);
 
-  // Update active space when spaces change
+  // Update active space when spaces change (but not during edit mode)
   useEffect(() => {
-    if (activeSpace && spaces.length > 0) {
+    if (activeSpace && spaces.length > 0 && !isEditMode) {
       const updated = spaces.find(s => s.id === activeSpace.id);
-      if (updated) setActiveSpace(updated);
+      if (updated) {
+        setActiveSpace(updated);
+      }
     }
-  }, [spaces]);
+  }, [spaces, isEditMode]);
+
+  // ============================================
+  // GRID LAYOUT FUNCTIONS
+  // ============================================
+
+  const getGridSize = (size) => {
+    switch(size) {
+      case 'small': return { w: 3, h: 3, minW: 2, minH: 2 };
+      case 'medium': return { w: 4, h: 4, minW: 3, minH: 3 };
+      case 'large': return { w: 6, h: 5, minW: 4, minH: 4 };
+      default: return { w: 4, h: 4, minW: 3, minH: 3 };
+    }
+  };
+
+  const generateLayout = (widgets) => {
+    if (!widgets) return [];
+    
+    return widgets.map((widget, index) => {
+      // Use stored grid positions if available, otherwise calculate from old position fields
+      const x = widget.grid_x !== undefined && widget.grid_x !== null 
+        ? widget.grid_x 
+        : (widget.position_x !== undefined && widget.position_x !== null 
+            ? widget.position_x 
+            : (index % 3) * 4);
+      
+      const y = widget.grid_y !== undefined && widget.grid_y !== null
+        ? widget.grid_y
+        : (widget.position_y !== undefined && widget.position_y !== null
+            ? widget.position_y
+            : Math.floor(index / 3) * 4);
+      
+      const w = widget.grid_w !== undefined && widget.grid_w !== null
+        ? widget.grid_w
+        : getGridSize(widget.size).w;
+      
+      const h = widget.grid_h !== undefined && widget.grid_h !== null
+        ? widget.grid_h
+        : getGridSize(widget.size).h;
+      
+      const gridSize = getGridSize(widget.size);
+      
+      return {
+        i: widget.id,
+        x,
+        y,
+        w,
+        h,
+        minW: gridSize.minW,
+        minH: gridSize.minH,
+        maxW: 12,
+        maxH: 10
+      };
+    });
+  };
+
+  // Batch update mutation
+  const updateLayoutsMutation = useMutation({
+    mutationFn: ({ spaceId, layouts }) => updateWidgetLayouts(spaceId, layouts),
+    onSuccess: (data) => {
+      // Clear edit mode layout
+      setEditModeLayout(null);
+      
+      // Update the query cache with new data
+      queryClient.setQueryData(['spaces'], (oldSpaces) => {
+        if (!oldSpaces) return oldSpaces;
+        
+        return oldSpaces.map(space => {
+          if (space.id === activeSpace?.id && data?.widgets) {
+            return {
+              ...space,
+              widgets: data.widgets
+            };
+          }
+          return space;
+        });
+      });
+      
+      // Refetch to ensure consistency
+      queryClient.invalidateQueries(['spaces']);
+    },
+    onError: (error) => {
+      console.error('Failed to update layouts:', error);
+      alert('Failed to save layout changes. Please try again.');
+      // Clear edit mode layout on error
+      setEditModeLayout(null);
+    }
+  });
+
+  const handleLayoutChange = (layout) => {
+    if (!isEditMode) return;
+    
+    // Update both the edit mode layout and the ref
+    setEditModeLayout(layout);
+    currentDisplayedLayoutRef.current = layout;
+  };
+
+  // Save all changes when exiting edit mode
+  const handleToggleEditMode = () => {
+    if (isEditMode) {
+      // Exiting edit mode - save ALL changes at once
+      if (editModeLayout && editModeLayout.length > 0) {
+        const layoutUpdates = editModeLayout.map(item => ({
+          widget_id: item.i,
+          grid_x: item.x,
+          grid_y: item.y,
+          grid_w: item.w,
+          grid_h: item.h
+        }));
+        
+        updateLayoutsMutation.mutate({
+          spaceId: activeSpace.id,
+          layouts: layoutUpdates
+        });
+      }
+      setIsEditMode(false);
+    } else {
+      // Entering edit mode - capture the CURRENT displayed layout
+      const currentLayout = currentDisplayedLayoutRef.current.length > 0 
+        ? currentDisplayedLayoutRef.current 
+        : generateLayout(activeSpace?.widgets || []);
+      
+      setEditModeLayout(currentLayout);
+      setIsEditMode(true);
+    }
+  };
+
+  // Generate layout for the grid - this determines what's actually displayed
+  const layout = React.useMemo(() => {
+    let baseLayout;
+    
+    if (isEditMode && editModeLayout) {
+      // In edit mode: use the edit mode layout
+      baseLayout = editModeLayout;
+    } else {
+      // Not in edit mode: use the saved positions from backend
+      baseLayout = generateLayout(activeSpace?.widgets || []);
+      // Update the ref so we know what's currently displayed
+      currentDisplayedLayoutRef.current = baseLayout;
+    }
+    
+    return baseLayout.map(item => ({
+      ...item,
+      static: !isEditMode
+    }));
+  }, [activeSpace?.widgets, isEditMode, editModeLayout]);
 
   // ============================================
   // MUTATIONS
@@ -73,7 +246,6 @@ const Space = () => {
       setIsCreating(false);
       setShowTemplates(false);
       
-      // Add template widgets if selected
       const { selectedTemplate } = variables;
       if (selectedTemplate) {
         const template = SPACE_TEMPLATES.find(t => t.id === selectedTemplate);
@@ -119,7 +291,6 @@ const Space = () => {
       config: widget.defaultConfig || {}
     }),
     onSuccess: async (newWidget, variables) => {
-      // Optimistically update the cache
       queryClient.setQueryData(['spaces'], (oldSpaces) => {
         if (!oldSpaces) return oldSpaces;
         
@@ -134,7 +305,6 @@ const Space = () => {
         });
       });
       
-      // Also update activeSpace state immediately
       if (activeSpace && activeSpace.id === variables.spaceId) {
         setActiveSpace(prev => ({
           ...prev,
@@ -142,9 +312,7 @@ const Space = () => {
         }));
       }
       
-      // Then invalidate to ensure consistency
       await queryClient.invalidateQueries(['spaces']);
-      
       setShowWidgetLibrary(false);
     }
   });
@@ -182,7 +350,7 @@ const Space = () => {
       privacy: 'private',
       accent_color: template?.accentColor || ACCENT_COLORS[0],
       config: {},
-      selectedTemplate // Pass this to onSuccess
+      selectedTemplate
     });
   };
 
@@ -408,7 +576,7 @@ const Space = () => {
 
       {/* Main Content */}
       {activeSpace && (
-        <main className="space-main">
+        <main className="space-main" ref={containerRef}>
           <AnimatePresence mode="wait">
             <motion.div 
               key={activeSpace.id} 
@@ -459,6 +627,22 @@ const Space = () => {
                 </div>
                 <div className="header-actions">
                   <button 
+                    className={`header-action ${isEditMode ? 'active' : ''}`}
+                    onClick={handleToggleEditMode}
+                    style={isEditMode ? { 
+                      background: `${currentAccentColor}20`,
+                      borderColor: currentAccentColor
+                    } : {}}
+                    disabled={updateLayoutsMutation.isLoading}
+                  >
+                    {updateLayoutsMutation.isLoading ? (
+                      <FaSpinner className="spinner" />
+                    ) : (
+                      isEditMode ? <FaUnlock /> : <FaLock />
+                    )} 
+                    {updateLayoutsMutation.isLoading ? 'Saving...' : (isEditMode ? 'Save & Exit' : 'Edit Layout')}
+                  </button>
+                  <button 
                     className="header-action" 
                     onClick={() => setShowWidgetLibrary(true)}
                   >
@@ -487,31 +671,55 @@ const Space = () => {
                     </span>
                     Active Widgets
                   </h2>
-                </div>
-                <div className="widgets-container">
-                  {activeSpace.widgets?.length > 0 ? (
-                    activeSpace.widgets.map((w) => (
-                      <WidgetInteraction
-                        key={w.id}
-                        widget={w}
-                        accentColor={currentAccentColor}
-                        spaceId={activeSpace.id}
-                        onRemove={() => handleRemoveWidget(w.id)}
-                      />
-                    ))
-                  ) : (
-                    <div className="empty-message">
-                      <div className="empty-icon">💡</div>
-                      <p>No widgets yet</p>
-                      <button 
-                        className="empty-btn" 
-                        onClick={() => setShowWidgetLibrary(true)}
-                      >
-                        <FaPlus /> Add Widget
-                      </button>
-                    </div>
+                  {isEditMode && (
+                    <span className="edit-mode-indicator">
+                      Drag to reposition • Resize from bottom-right corner • Click "Save & Exit" to persist changes
+                    </span>
                   )}
                 </div>
+                
+                {activeSpace.widgets?.length > 0 ? (
+                  <ResponsiveGridLayout
+                    className="widgets-grid-layout"
+                    layouts={{ lg: layout }}
+                    breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+                    cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+                    rowHeight={60}
+                    width={containerWidth}
+                    isDraggable={isEditMode}
+                    isResizable={isEditMode}
+                    onLayoutChange={handleLayoutChange}
+                    draggableHandle=".widget-drag-handle"
+                    margin={[16, 16]}
+                    containerPadding={[0, 0]}
+                    compactType="vertical"
+                    preventCollision={false}
+                    useCSSTransforms={true}
+                  >
+                    {activeSpace.widgets.map((w) => (
+                      <div key={w.id} className="grid-widget-wrapper">
+                        <WidgetInteraction
+                          widget={w}
+                          accentColor={currentAccentColor}
+                          spaceId={activeSpace.id}
+                          onRemove={() => handleRemoveWidget(w.id)}
+                          isEditMode={isEditMode}
+                        />
+                      </div>
+                    ))}
+                  </ResponsiveGridLayout>
+                ) : (
+                  <div className="empty-message">
+                    <div className="empty-icon">💡</div>
+                    <p>No widgets yet</p>
+                    <button 
+                      className="empty-btn" 
+                      onClick={() => setShowWidgetLibrary(true)}
+                    >
+                      <FaPlus /> Add Widget
+                    </button>
+                  </div>
+                )}
               </section>
             </motion.div>
           </AnimatePresence>

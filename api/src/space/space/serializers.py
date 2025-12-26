@@ -11,10 +11,31 @@ class SpaceWidgetSerializer(serializers.ModelSerializer):
         model = SpaceWidget
         fields = [
             'id', 'widget_type', 'name', 'description', 'size',
-            'position_x', 'position_y', 'order', 'config',
-            'is_visible', 'created_at', 'updated_at'
+            'position_x', 'position_y', 'order', 
+            'grid_x', 'grid_y', 'grid_w', 'grid_h',  # Added grid fields
+            'config', 'is_visible', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class WidgetLayoutUpdateSerializer(serializers.Serializer):
+    """Serializer for batch updating widget layouts"""
+    widget_id = serializers.UUIDField(required=True)
+    grid_x = serializers.IntegerField(required=True, min_value=0)
+    grid_y = serializers.IntegerField(required=True, min_value=0)
+    grid_w = serializers.IntegerField(required=True, min_value=1)
+    grid_h = serializers.IntegerField(required=True, min_value=1)
+
+
+class BatchLayoutUpdateSerializer(serializers.Serializer):
+    """Serializer for updating multiple widget layouts at once"""
+    layouts = WidgetLayoutUpdateSerializer(many=True, required=True)
+    
+    def validate_layouts(self, value):
+        if not value:
+            raise serializers.ValidationError("At least one layout is required")
+        return value
+    
 
 
 class SpacePermissionSerializer(serializers.ModelSerializer):

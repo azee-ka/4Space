@@ -7,13 +7,15 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
+from django.db import transaction
 from src.user.models import BaseUser, AuthUser
 from src.notifications.models import Notification
 from .models import Space, SpaceWidget, SpaceInvitation, SpaceActivity, SpacePermission
 from .serializers import (
     SpaceListSerializer, SpaceDetailSerializer, SpaceCreateUpdateSerializer,
     SpaceWidgetSerializer, SpaceInvitationSerializer, SpaceActivitySerializer,
-    InviteCollaboratorSerializer, UpdatePermissionsSerializer, SpacePermissionSerializer
+    InviteCollaboratorSerializer, UpdatePermissionsSerializer, SpacePermissionSerializer,
+    BatchLayoutUpdateSerializer
 )
 
 
@@ -679,3 +681,114 @@ def space_activity(request, space_id):
     activities = space.activities.all()[:50]  # Last 50 activities
     serializer = SpaceActivitySerializer(activities, many=True)
     return Response(serializer.data)
+
+
+
+
+
+
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_widget_layouts(request, space_id):
+    """
+    Batch update widget positions and sizes.
+    Used when user drags/resizes widgets in the grid.
+    """
+    space = get_object_or_404(Space, id=space_id)
+    
+    # Check edit permission
+    if not space.can_edit(request.user):
+        return Response(
+            {"detail": "You do not have permission to edit widgets."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    serializer = BatchLayoutUpdateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    layouts = serializer.validated_data['layouts']
+    
+    # Update all widgets in a transaction
+    updated_widgets = []
+    try:
+        with transaction.atomic():
+            for layout_data in layouts:
+                widget_id = layout_data['widget_id']
+                
+                # Get widget and verify it belongs to this space
+                try:
+                    widget = SpaceWidget.objects.select_for_update().get(
+                        id=widget_id,
+                        space=space
+                    )
+                except SpaceWidget.DoesNotExist:
+                    continue
+                
+                # Update grid layout
+                widget.grid_x = layout_data['grid_x']
+                widget.grid_y = layout_data['grid_y']
+                widget.grid_w = layout_data['grid_w']
+                widget.grid_h = layout_data['grid_h']
+                widget.save(update_fields=['grid_x', 'grid_y', 'grid_w', 'grid_h', 'updated_at'])
+                
+                updated_widgets.append(widget)
+        
+        # Log activity
+        SpaceActivity.objects.create(
+            space=space,
+            user=request.user,
+            action='widget_updated',
+            details={'action': 'layout_update', 'count': len(updated_widgets)}
+        )
+        
+        # Return updated widgets
+        response_serializer = SpaceWidgetSerializer(updated_widgets, many=True)
+        return Response({
+            'detail': f'Updated {len(updated_widgets)} widget(s)',
+            'widgets': response_serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {"detail": f"Failed to update layouts: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_widget_config(request, space_id, widget_id):
+    """
+    Update widget-specific configuration (e.g., calculator state, notes content).
+    Separate from layout updates for better performance.
+    """
+    space = get_object_or_404(Space, id=space_id)
+    widget = get_object_or_404(SpaceWidget, id=widget_id, space=space)
+    
+    if not space.can_edit(request.user):
+        return Response(
+            {"detail": "You do not have permission to edit widgets."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    config_data = request.data.get('config')
+    if config_data is None:
+        return Response(
+            {"detail": "config field is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Merge with existing config
+    if isinstance(config_data, dict):
+        widget.config.update(config_data)
+    else:
+        widget.config = config_data
+    
+    widget.save(update_fields=['config', 'updated_at'])
+    
+    serializer = SpaceWidgetSerializer(widget)
+    return Response(serializer.data, status=status.HTTP_200_OK)

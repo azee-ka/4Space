@@ -216,6 +216,22 @@ export const fetchSpaceActivity = async (spaceId) => {
   return res.data || [];
 };
 
+
+
+export const updateWidgetLayouts = async (spaceId, layouts) => {
+  const response = await apiCall(
+    `space/space/${spaceId}/widgets/layouts/`,
+    'PATCH',
+    { layouts }
+  );
+  return response.data;
+};
+
+
+
+
+
+
 // ============================================================================
 // LIBRARY (Existing Feature)
 // ============================================================================

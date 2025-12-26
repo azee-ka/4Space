@@ -122,7 +122,13 @@ class SpaceWidget(models.Model):
     
     size = models.CharField(max_length=20, choices=SIZE_CHOICES, default='medium')
     
-    # Position in grid (for drag-and-drop in future)
+    # Grid layout positions (for react-grid-layout)
+    grid_x = models.IntegerField(default=0, help_text="Grid column position")
+    grid_y = models.IntegerField(default=0, help_text="Grid row position")
+    grid_w = models.IntegerField(default=4, help_text="Grid width in columns")
+    grid_h = models.IntegerField(default=4, help_text="Grid height in rows")
+    
+    # Legacy fields (keep for backward compatibility)
     position_x = models.IntegerField(default=0)
     position_y = models.IntegerField(default=0)
     order = models.IntegerField(default=0)
@@ -138,11 +144,11 @@ class SpaceWidget(models.Model):
         ordering = ['order', 'created_at']
         indexes = [
             models.Index(fields=['space', 'order']),
+            models.Index(fields=['space', 'grid_x', 'grid_y']),
         ]
     
     def __str__(self):
         return f"{self.name} in {self.space.name}"
-
 
 class SpaceInvitation(models.Model):
     """
