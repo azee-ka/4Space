@@ -1,0 +1,14 @@
+/* ========== MODULAR SPACE STYLES ========== */
+/* Import all CSS modules in the correct order */
+
+/* Core styles - Base layout, navigation, and grid system */
+@import './space.css';
+
+/* Component-specific styles */
+@import './widgetCards.css';
+@import './spaceModals.css';
+@import './settingsPanel.css';
+@import './widgetInteraction.css';
+
+/* Responsive styles - Must be loaded last to override base styles */
+@import './responsive.css';

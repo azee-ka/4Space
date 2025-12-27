@@ -33,7 +33,7 @@ import Post from '../apps/home/post/post';
 import ExchangeDetail from '../apps/communities/community/tabs/general/discussionBoard/exchangeDetail/exchangeDetail';
 import PublicationDetail from '../apps/communities/community/tabs/research/publicationsTab/publicationDetail/publicationDetail';
 
-import Space from '../apps/space/space/space';
+import Space from '../apps/space/space/home/space';
 import SpaceDashboard from '../apps/space/workspace/dashboard/dashboard';
 import SpaceWorkspace from '../apps/space/workspace/spaceWorkspace/spaceWorkspace';
 import SpaceTools from '../apps/space/workspace/tools/tools';
@@ -63,6 +63,8 @@ import PortfolioPage from '../apps/space/finance/portfolioPage/portfolioPage';
 import LivePage from '../apps/space/finance/livePage/livePage';
 import BacktestPage from '../apps/space/finance/backtestPage/backtestPage';
 import Anon4Chat from '../pages/messages/anonChat/4chat';
+import SpaceHome from '../apps/space/space/home/spaceHome/spaceHome';
+import JournalApp from '../apps/space/space/journal/journalApp';
 
 
 
@@ -95,9 +97,7 @@ const AppRouter = () => {
         { name: 'Community Publication Detail', path: '/communities/research/:publicationId', component: <PublicationDetail />, key: 'PublicationDetailPage' },
 
 
-        // Space
-        // Workspace sub-app
-{ name: 'Space', path: '/space', component: <Space />, key: 'SpaceHome' },
+                // Workspace sub-app
 { name: 'Space Home', path: '/space/workspace', component: <SpaceWorkspace />, key: 'SpaceHome' },
 { name: 'Space Dashboard', path: '/space/workspace/dashboard', component: <SpaceDashboard />, key: 'SpaceDashboard' },
 { name: 'Space Projects', path: '/space/workspace/projects', component: <SpaceProjects />, key: 'SpaceProjects' },
@@ -122,6 +122,15 @@ const AppRouter = () => {
 { name: 'Finance Portfolio', path: '/space/finance/portfolio', component: <PortfolioPage />, key: 'FinancePortfolio' },
 { name: 'Finance Live', path: '/space/finance/live', component: <LivePage />, key: 'FinanceLive' },
 { name: 'Finance Backtest', path: '/space/finance/backtest', component: <BacktestPage />, key: 'FinanceBacktest' },
+
+
+        // Space
+        { name: 'Space Center', path: '/space', component: <SpaceHome />, key: 'SpaceHome' },
+        { name: 'Space Detail', path: '/space/:spaceParam', component: <Space />, key: 'SpaceDetail' },
+
+
+        // Space sub-apps
+        { name: 'Space Journal', path: '/space/:spaceId/journal/:widgetId', component: <JournalApp />, key: 'Journal' },
 
 
 

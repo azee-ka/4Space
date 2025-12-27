@@ -1,5 +1,5 @@
 # api/src/space/space/urls.py
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -26,4 +26,8 @@ urlpatterns = [
     
     # Activity
     path('<uuid:space_id>/activity/', views.space_activity, name='space-activity'),
+    
+    
+    
+    path('journal/', include('src.space.space.journal.urls')),
 ]

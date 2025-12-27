@@ -1,0 +1,151 @@
+/* ========== WIDGET LIBRARY CARDS - GLASSY FUTURISTIC ========== */
+
+.space-wrapper .widget-library-item {
+  padding: 28px;
+  background: linear-gradient(
+    145deg,
+    rgba(20, 22, 28, 0.85) 0%,
+    rgba(12, 14, 18, 0.95) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.space-wrapper .widget-library-item::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 50%
+  );
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.space-wrapper .widget-library-item:hover::before {
+  opacity: 1;
+}
+
+.space-wrapper .widget-library-item:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(24, 26, 32, 0.9) 0%,
+    rgba(16, 18, 24, 0.97) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-4px);
+}
+
+/* Icon with glow */
+.space-wrapper .widget-lib-icon {
+  font-size: 42px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.space-wrapper .widget-library-item:hover .widget-lib-icon {
+  transform: scale(1.05) translateY(-2px);
+}
+
+.space-wrapper .widget-library-item h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.space-wrapper .widget-library-item p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  flex: 1;
+  line-height: 1.6;
+}
+
+/* Feature tags */
+.space-wrapper .widget-features {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.space-wrapper .feature-tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.space-wrapper .feature-tag::before {
+  content: '▸';
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+}
+
+.space-wrapper .widget-lib-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Size badge */
+.space-wrapper .widget-size-badge {
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Add widget button */
+.space-wrapper .add-widget-btn {
+  padding: 11px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+}
+
+.space-wrapper .add-widget-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.space-wrapper .add-widget-btn:active {
+  transform: translateY(0px);
+}
+
+.space-wrapper .add-widget-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}

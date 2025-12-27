@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import './space.css';
+import { useParams, useNavigate } from 'react-router-dom';
+import './styles/index.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
@@ -8,19 +9,48 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { 
   FaCog, FaPlus, FaFolder, FaSpinner,
-  FaCrown, FaUsers, FaShare, FaLock, FaUnlock
+  FaCrown, FaUsers, FaShare, FaLock, FaUnlock, FaArrowLeft
 } from 'react-icons/fa';
 import {
-  fetchSpaces, createSpace, updateSpace, deleteSpace,
+  fetchSpaces, fetchSpace, createSpace, updateSpace, deleteSpace,
   addSpaceWidget, removeSpaceWidget, updateSpaceWidget,
   inviteSpaceCollaborator, removeSpaceCollaborator,
   updateWidgetLayouts
-} from '../../../services/space';
-import { WIDGET_REGISTRY, SPACE_TEMPLATES, ACCENT_COLORS } from './widgetRegistry';
+} from '../../../../services/space';
+import { WIDGET_REGISTRY, SPACE_TEMPLATES, ACCENT_COLORS } from './widget/widgetRegistry';
 import WidgetInteraction from './modals/WidgetInteraction';
 import WidgetLibraryModal from './modals/WidgetLibraryModal';
 import SettingsPanel from './modals/SettingsPanel';
 import CreateSpaceModal from './modals/CreateSpaceModal';
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+// Generate space path from space object
+const generateSpacePath = (space) => {
+  const slug = space.slug || space.name.toLowerCase().replace(/\s+/g, '-');
+  return `/space/${slug}-${space.id}`;
+};
+
+// Extract space ID from path parameter (format: slug-id)
+const extractSpaceId = (spaceParam) => {
+  if (!spaceParam) return null;
+  
+  // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (36 chars)
+  // URL format: {slug}-{uuid}
+  // Extract the UUID using regex pattern
+  
+  const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const match = spaceParam.match(uuidPattern);
+  
+  if (match) {
+    return match[0]; // Return the full UUID
+  }
+  
+  // Fallback: return entire param if no UUID pattern found
+  return spaceParam;
+};
 
 // ============================================
 // MAIN COMPONENT
@@ -28,7 +58,9 @@ import CreateSpaceModal from './modals/CreateSpaceModal';
 
 const Space = () => {
   const queryClient = useQueryClient();
-  const [activeSpace, setActiveSpace] = useState(null);
+  const navigate = useNavigate();
+  const { spaceParam } = useParams(); // This will be "slug-id" format
+  
   const [filter, setFilter] = useState('all');
   const [isCreating, setIsCreating] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
@@ -58,36 +90,65 @@ const Space = () => {
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  // Fetch spaces
-  const { data: spaces = [], isLoading, error } = useQuery({
+  // Extract space ID from URL
+  const spaceId = extractSpaceId(spaceParam);
+
+  // Fetch all spaces (for navigation tabs)
+  const { data: spaces = [], isLoading: spacesLoading, error: spacesError } = useQuery({
     queryKey: ['spaces'],
     queryFn: () => fetchSpaces({ exclude_archived: 'true' }),
     refetchOnWindowFocus: false
   });
 
-  // Filter spaces
+  // Fetch the specific space by ID
+  const { 
+    data: activeSpace, 
+    isLoading: spaceLoading, 
+    error: spaceError 
+  } = useQuery({
+    queryKey: ['space', spaceId],
+    queryFn: () => fetchSpace(spaceId),
+    enabled: !!spaceId, // Only fetch if we have an ID
+    refetchOnWindowFocus: false,
+    retry: false, // Don't retry on 404
+    onError: (error) => {
+      console.error('Failed to fetch space:', error);
+      // Redirect to space home if space not found
+      navigate('/space', { replace: true });
+    }
+  });
+
+  // Filter spaces for tabs
   const filteredSpaces = spaces.filter(s => {
     if (filter === 'owned') return s.is_owner;
     if (filter === 'shared') return s.is_collaborator && !s.is_owner;
     return true;
   });
 
-  // Set active space
+  // Verify URL format and redirect if needed
   useEffect(() => {
-    if (filteredSpaces.length > 0 && !activeSpace) {
-      setActiveSpace(filteredSpaces[0]);
-    }
-  }, [filteredSpaces]);
-
-  // Update active space when spaces change (but not during edit mode)
-  useEffect(() => {
-    if (activeSpace && spaces.length > 0 && !isEditMode) {
-      const updated = spaces.find(s => s.id === activeSpace.id);
-      if (updated) {
-        setActiveSpace(updated);
+    if (activeSpace && spaceParam) {
+      const correctPath = generateSpacePath(activeSpace);
+      const currentPath = `/space/${spaceParam}`;
+      
+      if (correctPath !== currentPath) {
+        navigate(correctPath, { replace: true });
       }
     }
-  }, [spaces, isEditMode]);
+  }, [activeSpace, spaceParam, navigate]);
+
+  // ============================================
+  // NAVIGATION HELPER
+  // ============================================
+
+  const navigateToSpace = (space) => {
+    const path = generateSpacePath(space);
+    navigate(path);
+  };
+
+  const navigateToSpaceHome = () => {
+    navigate('/space');
+  };
 
   // ============================================
   // GRID LAYOUT FUNCTIONS
@@ -106,7 +167,7 @@ const Space = () => {
     if (!widgets) return [];
     
     return widgets.map((widget, index) => {
-      // Use stored grid positions if available, otherwise calculate from old position fields
+      // Use stored grid positions if available
       const x = widget.grid_x !== undefined && widget.grid_x !== null 
         ? widget.grid_x 
         : (widget.position_x !== undefined && widget.position_x !== null 
@@ -146,48 +207,27 @@ const Space = () => {
   // Batch update mutation
   const updateLayoutsMutation = useMutation({
     mutationFn: ({ spaceId, layouts }) => updateWidgetLayouts(spaceId, layouts),
-    onSuccess: (data) => {
-      // Clear edit mode layout
+    onSuccess: (data, variables) => {
       setEditModeLayout(null);
-      
-      // Update the query cache with new data
-      queryClient.setQueryData(['spaces'], (oldSpaces) => {
-        if (!oldSpaces) return oldSpaces;
-        
-        return oldSpaces.map(space => {
-          if (space.id === activeSpace?.id && data?.widgets) {
-            return {
-              ...space,
-              widgets: data.widgets
-            };
-          }
-          return space;
-        });
-      });
-      
-      // Refetch to ensure consistency
       queryClient.invalidateQueries(['spaces']);
+      queryClient.invalidateQueries(['space', variables.spaceId]);
     },
     onError: (error) => {
       console.error('Failed to update layouts:', error);
       alert('Failed to save layout changes. Please try again.');
-      // Clear edit mode layout on error
       setEditModeLayout(null);
     }
   });
 
   const handleLayoutChange = (layout) => {
     if (!isEditMode) return;
-    
-    // Update both the edit mode layout and the ref
     setEditModeLayout(layout);
     currentDisplayedLayoutRef.current = layout;
   };
 
-  // Save all changes when exiting edit mode
   const handleToggleEditMode = () => {
     if (isEditMode) {
-      // Exiting edit mode - save ALL changes at once
+      // Exiting edit mode - save changes
       if (editModeLayout && editModeLayout.length > 0) {
         const layoutUpdates = editModeLayout.map(item => ({
           widget_id: item.i,
@@ -204,7 +244,7 @@ const Space = () => {
       }
       setIsEditMode(false);
     } else {
-      // Entering edit mode - capture the CURRENT displayed layout
+      // Entering edit mode
       const currentLayout = currentDisplayedLayoutRef.current.length > 0 
         ? currentDisplayedLayoutRef.current 
         : generateLayout(activeSpace?.widgets || []);
@@ -214,17 +254,14 @@ const Space = () => {
     }
   };
 
-  // Generate layout for the grid - this determines what's actually displayed
+  // Generate layout for the grid
   const layout = React.useMemo(() => {
     let baseLayout;
     
     if (isEditMode && editModeLayout) {
-      // In edit mode: use the edit mode layout
       baseLayout = editModeLayout;
     } else {
-      // Not in edit mode: use the saved positions from backend
       baseLayout = generateLayout(activeSpace?.widgets || []);
-      // Update the ref so we know what's currently displayed
       currentDisplayedLayoutRef.current = baseLayout;
     }
     
@@ -242,9 +279,12 @@ const Space = () => {
     mutationFn: createSpace,
     onSuccess: async (newSpace, variables) => {
       await queryClient.invalidateQueries(['spaces']);
-      setActiveSpace(newSpace);
       setIsCreating(false);
       setShowTemplates(false);
+      
+      // Navigate to the new space using slug-id format
+      const path = generateSpacePath(newSpace);
+      navigate(path);
       
       const { selectedTemplate } = variables;
       if (selectedTemplate) {
@@ -270,15 +310,30 @@ const Space = () => {
 
   const updateMutation = useMutation({
     mutationFn: ({ spaceId, updates }) => updateSpace(spaceId, updates),
-    onSuccess: () => queryClient.invalidateQueries(['spaces'])
+    onSuccess: (updatedSpace) => {
+      queryClient.invalidateQueries(['spaces']);
+      queryClient.invalidateQueries(['space', updatedSpace?.id]);
+      
+      // If name or slug was updated, navigate to new URL
+      if (updatedSpace) {
+        const newPath = generateSpacePath(updatedSpace);
+        const currentPath = `/space/${spaceParam}`;
+        
+        if (newPath !== currentPath) {
+          navigate(newPath, { replace: true });
+        }
+      }
+    }
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteSpace,
     onSuccess: () => {
       queryClient.invalidateQueries(['spaces']);
-      setActiveSpace(spaces.length > 1 ? spaces.find(s => s.id !== activeSpace?.id) : null);
       setShowConfig(false);
+      
+      // Navigate back to space home
+      navigate('/space', { replace: true });
     }
   });
 
@@ -291,41 +346,25 @@ const Space = () => {
       config: widget.defaultConfig || {}
     }),
     onSuccess: async (newWidget, variables) => {
-      queryClient.setQueryData(['spaces'], (oldSpaces) => {
-        if (!oldSpaces) return oldSpaces;
-        
-        return oldSpaces.map(space => {
-          if (space.id === variables.spaceId) {
-            return {
-              ...space,
-              widgets: [...(space.widgets || []), newWidget]
-            };
-          }
-          return space;
-        });
-      });
-      
-      if (activeSpace && activeSpace.id === variables.spaceId) {
-        setActiveSpace(prev => ({
-          ...prev,
-          widgets: [...(prev.widgets || []), newWidget]
-        }));
-      }
-      
       await queryClient.invalidateQueries(['spaces']);
+      await queryClient.invalidateQueries(['space', variables.spaceId]);
       setShowWidgetLibrary(false);
     }
   });
 
   const removeWidgetMutation = useMutation({
     mutationFn: ({ spaceId, widgetId }) => removeSpaceWidget(spaceId, widgetId),
-    onSuccess: () => queryClient.invalidateQueries(['spaces'])
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries(['spaces']);
+      queryClient.invalidateQueries(['space', variables.spaceId]);
+    }
   });
 
   const inviteMutation = useMutation({
     mutationFn: ({ spaceId, email }) => inviteSpaceCollaborator(spaceId, email),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['spaces']);
+      queryClient.invalidateQueries(['space', variables.spaceId]);
       setShowInviteStatus(true);
       setTimeout(() => setShowInviteStatus(false), 3000);
     }
@@ -333,7 +372,10 @@ const Space = () => {
 
   const removeCollabMutation = useMutation({
     mutationFn: ({ spaceId, userId }) => removeSpaceCollaborator(spaceId, userId),
-    onSuccess: () => queryClient.invalidateQueries(['spaces'])
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries(['spaces']);
+      queryClient.invalidateQueries(['space', variables.spaceId]);
+    }
   });
 
   // ============================================
@@ -411,6 +453,9 @@ const Space = () => {
   // LOADING & ERROR STATES
   // ============================================
 
+  const isLoading = spacesLoading || spaceLoading;
+  const error = spacesError || spaceError;
+
   if (isLoading) {
     return (
       <div className="space-wrapper">
@@ -426,10 +471,15 @@ const Space = () => {
     return (
       <div className="space-wrapper">
         <div style={{ padding: '80px 40px', textAlign: 'center' }}>
-          <p style={{ color: '#ff006e', marginBottom: '16px' }}>Failed to load</p>
+          <p style={{ color: '#ff006e', marginBottom: '16px' }}>
+            {error.message || 'Failed to load'}
+          </p>
           <button 
             className="empty-btn" 
-            onClick={() => queryClient.invalidateQueries(['spaces'])}
+            onClick={() => {
+              queryClient.invalidateQueries(['spaces']);
+              queryClient.invalidateQueries(['space', spaceId]);
+            }}
           >
             Retry
           </button>
@@ -438,40 +488,20 @@ const Space = () => {
     );
   }
 
-  // ============================================
-  // EMPTY STATE
-  // ============================================
-
-  if (!activeSpace && spaces.length === 0) {
+  // If no space found
+  if (!activeSpace) {
     return (
       <div className="space-wrapper">
         <div style={{ padding: '80px 40px', textAlign: 'center' }}>
-          <div className="empty-icon">🚀</div>
-          <h2 style={{ marginBottom: '8px' }}>Welcome to Spaces</h2>
+          <div className="empty-icon">🔍</div>
+          <h2 style={{ marginBottom: '8px' }}>Space Not Found</h2>
           <p style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.6)' }}>
-            Create your first space
+            The space you're looking for doesn't exist or you don't have access to it.
           </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button className="empty-btn" onClick={() => setShowTemplates(true)}>
-              🎨 Use Template
-            </button>
-            <button className="empty-btn" onClick={() => setIsCreating(true)}>
-              <FaPlus /> Start from Scratch
-            </button>
-          </div>
+          <button className="empty-btn" onClick={navigateToSpaceHome}>
+            <FaArrowLeft /> Back to Spaces
+          </button>
         </div>
-        
-        <CreateSpaceModal
-          isOpen={isCreating || showTemplates}
-          onClose={() => {
-            setIsCreating(false);
-            setShowTemplates(false);
-          }}
-          onCreate={handleCreateSpace}
-          showTemplates={showTemplates}
-          setShowTemplates={setShowTemplates}
-          isLoading={createMutation.isLoading}
-        />
       </div>
     );
   }
@@ -499,6 +529,13 @@ const Space = () => {
       {/* Navigation */}
       <nav className="top-nav">
         <div className="nav-brand">
+          <button 
+            className="back-button"
+            onClick={navigateToSpaceHome}
+            title="Back to Spaces"
+          >
+            <FaArrowLeft />
+          </button>
           <div className="brand-mark"></div>
           <span className="brand-text">SPACES</span>
         </div>
@@ -529,7 +566,7 @@ const Space = () => {
             <motion.button 
               key={s.id} 
               className={`nav-tab ${activeSpace?.id === s.id ? 'active' : ''}`} 
-              onClick={() => setActiveSpace(s)} 
+              onClick={() => navigateToSpace(s)} 
               whileHover={{ y: -1 }}
             >
               <span 
@@ -695,6 +732,10 @@ const Space = () => {
                     compactType="vertical"
                     preventCollision={false}
                     useCSSTransforms={true}
+                    isBounded={true}
+                    bounds="parent"
+                    maxRows={Infinity}
+                    autoSize={true}
                   >
                     {activeSpace.widgets.map((w) => (
                       <div key={w.id} className="grid-widget-wrapper">
