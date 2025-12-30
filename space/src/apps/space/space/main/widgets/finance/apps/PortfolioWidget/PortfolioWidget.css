@@ -1,0 +1,1004 @@
+/* ========== PORTFOLIO WIDGET STYLES ========== */
+
+/* ========== COMPACT MODE ========== */
+
+.portfolio-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+  }
+  
+  .portfolio-compact-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+  
+  .compact-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  .empty-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    font-size: 20px;
+  }
+  
+  .compact-empty-state p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .compact-empty-state span {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .portfolio-value-card {
+    padding: 16px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+  }
+  
+  .value-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .value-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .value-icon {
+    font-size: 14px;
+    color: #10b981;
+  }
+  
+  .value-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 6px;
+  }
+  
+  .value-change {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  .value-change.positive {
+    color: #10b981;
+  }
+  
+  .value-change.negative {
+    color: #ef4444;
+  }
+  
+  .change-percent {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  
+  .portfolio-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  .portfolio-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .portfolio-stat-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .stat-content {
+    flex: 1;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+  }
+  
+  .stat-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+  
+  .compact-accounts-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+  
+  .compact-account-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .compact-account-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(2px);
+  }
+  
+  .account-info .account-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2px;
+  }
+  
+  .account-info .account-type {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+  }
+  
+  .compact-account-item .account-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .compact-view-all {
+    padding: 8px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* ========== MODAL MODE ========== */
+  
+  .portfolio-modal-content {
+    display: flex;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  }
+  
+  /* ========== SIDEBAR ========== */
+  
+  .portfolio-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.4);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    overflow-y: auto;
+  }
+  
+  .portfolio-sidebar .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .portfolio-sidebar .sidebar-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .add-account-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .add-account-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+  
+  .accounts-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .account-filter-btn {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+  }
+  
+  .account-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+  
+  .account-filter-btn.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+  }
+  
+  .account-count {
+    margin-left: auto;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  
+  .account-item {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+  
+  .account-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateX(2px);
+  }
+  
+  .account-item.active {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+  
+  .account-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    flex-shrink: 0;
+  }
+  
+  .account-item .account-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .account-item .account-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .account-item .account-type {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+  }
+  
+  .account-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  
+  .account-details .account-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .account-gain {
+    font-size: 11px;
+    font-weight: 600;
+  }
+  
+  .account-gain.positive {
+    color: #10b981;
+  }
+  
+  .account-gain.negative {
+    color: #ef4444;
+  }
+  
+  .sidebar-actions {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .sidebar-action-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .sidebar-action-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  .sidebar-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .sidebar-open-app-btn {
+    margin: 20px;
+    margin-top: auto;
+    padding: 14px 20px;
+    background: #ffffff;
+    color: #000000;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+  }
+  
+  .sidebar-open-app-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
+  }
+  
+  /* ========== MAIN CONTENT ========== */
+  
+  .portfolio-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .portfolio-tabs-nav {
+    flex-shrink: 0;
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    background: rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .portfolio-tab-btn {
+    padding: 16px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+  }
+  
+  .portfolio-tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: currentColor;
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+  }
+  
+  .portfolio-tab-btn:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .portfolio-tab-btn.active {
+    color: #ffffff;
+  }
+  
+  .portfolio-tab-btn.active::after {
+    transform: scaleX(1);
+  }
+  
+  .tab-count {
+    padding: 3px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  
+  .portfolio-tab-btn.active .tab-count {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  .portfolio-tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  
+  /* ========== OVERVIEW TAB ========== */
+  
+  .overview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .overview-stats-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .overview-stat-large {
+    padding: 24px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+  }
+  
+  .stat-large-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  
+  .stat-large-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 8px;
+  }
+  
+  .stat-large-change {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .stat-large-change.positive {
+    color: #10b981;
+  }
+  
+  .stat-large-change.negative {
+    color: #ef4444;
+  }
+  
+  .overview-stat-card {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+  }
+  
+  .stat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .stat-card-icon {
+    font-size: 14px;
+  }
+  
+  .stat-card-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  
+  .stat-card-value.positive {
+    color: #10b981;
+  }
+  
+  .stat-card-value.negative {
+    color: #ef4444;
+  }
+  
+  .accounts-summary h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  
+  .account-summary-card {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  
+  .account-summary-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+  }
+  
+  .account-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .account-icon-small {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  
+  .account-summary-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .account-summary-type {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+  }
+  
+  .account-summary-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 8px;
+  }
+  
+  .account-summary-change {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .account-summary-change.positive {
+    color: #10b981;
+  }
+  
+  .account-summary-change.negative {
+    color: #ef4444;
+  }
+  
+  .account-summary-cost {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* ========== HOLDINGS TAB ========== */
+  
+  .holdings-table-container {
+    overflow-x: auto;
+  }
+  
+  .holdings-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .holdings-table thead {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .holdings-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .holdings-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.2s ease;
+  }
+  
+  .holdings-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .holdings-table td {
+    padding: 14px 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .holding-symbol {
+    color: #ffffff !important;
+    font-weight: 600;
+  }
+  
+  .holding-name {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+  }
+  
+  .holding-market-value {
+    font-weight: 600;
+  }
+  
+  .holdings-table .positive {
+    color: #10b981;
+    font-weight: 600;
+  }
+  
+  .holdings-table .negative {
+    color: #ef4444;
+    font-weight: 600;
+  }
+  
+  /* ========== PERFORMANCE & ALLOCATION TABS ========== */
+  
+  .performance-content,
+  .allocation-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .performance-chart-placeholder,
+  .allocation-chart-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    text-align: center;
+  }
+  
+  .performance-chart-placeholder svg,
+  .allocation-chart-placeholder svg {
+    font-size: 48px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 16px;
+  }
+  
+  .performance-chart-placeholder h3,
+  .allocation-chart-placeholder h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .performance-chart-placeholder p,
+  .allocation-chart-placeholder p {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .coming-soon-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .performance-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  
+  .metric-card {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    text-align: center;
+  }
+  
+  .metric-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  
+  .metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #10b981;
+  }
+  
+  .allocation-breakdown {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+  }
+  
+  .allocation-breakdown h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  
+  .allocation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .allocation-item:last-child {
+    border-bottom: none;
+  }
+  
+  .allocation-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .allocation-symbol {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .allocation-name {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .allocation-percentage {
+    font-size: 16px;
+    font-weight: 700;
+    color: #10b981;
+  }
+  
+  /* ========== EMPTY & LOADING STATES ========== */
+  
+  .tab-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+  }
+  
+  .empty-state-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    font-size: 36px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 20px;
+  }
+  
+  .tab-empty h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .tab-empty p {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* ========== SCROLLBAR ========== */
+  
+  .portfolio-sidebar::-webkit-scrollbar,
+  .portfolio-tab-content::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .portfolio-sidebar::-webkit-scrollbar-track,
+  .portfolio-tab-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .portfolio-sidebar::-webkit-scrollbar-thumb,
+  .portfolio-tab-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  
+  .portfolio-sidebar::-webkit-scrollbar-thumb:hover,
+  .portfolio-tab-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* ========== RESPONSIVE ========== */
+  
+  @media (max-width: 1024px) {
+    .portfolio-sidebar {
+      width: 280px;
+    }
+    
+    .overview-stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .accounts-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .performance-metrics {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .portfolio-modal-content {
+      flex-direction: column;
+    }
+    
+    .portfolio-sidebar {
+      width: 100%;
+      max-height: 300px;
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .portfolio-tabs-nav {
+      overflow-x: auto;
+    }
+    
+    .holdings-table {
+      min-width: 800px;
+    }
+  }

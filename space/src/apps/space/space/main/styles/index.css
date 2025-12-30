@@ -1,0 +1,17 @@
+/* ========== MODULAR SPACE STYLES - INDEX ========== */
+/* Import all CSS modules in the correct order */
+
+/* Core styles - Base layout, navigation, and grid system */
+@import './space.css';
+
+/* General modal styles - Overlay and shared modal components */
+@import './generalModals.css';
+
+/* Component-specific modal styles */
+@import './createSpaceModal.css';
+@import './widgetLibraryModal.css';
+@import './settingsPanel.css';
+@import './widgetInteraction.css';
+
+/* Responsive styles - Must be loaded last to override base styles */
+@import './responsive.css';

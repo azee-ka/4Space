@@ -1,0 +1,332 @@
+/* ========== WIDGET LIBRARY CARDS - COMPACT WITH GLOWING ACCENTS ========== */
+
+.space-wrapper .widget-library-item {
+  padding: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(18, 20, 26, 0.95) 0%,
+    rgba(10, 12, 16, 0.98) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  min-height: 220px;
+}
+
+/* Subtle gradient overlay on hover */
+.space-wrapper .widget-library-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+.space-wrapper .widget-library-item:hover::before {
+  opacity: 1;
+}
+
+.space-wrapper .widget-library-item:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(22, 24, 30, 0.98) 0%,
+    rgba(14, 16, 20, 1) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Icon wrapper - GLOWING with accent color */
+.space-wrapper .widget-lib-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: visible;
+}
+
+/* GLOWING accent color effect behind icon */
+.space-wrapper .widget-lib-icon-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(
+    circle at center,
+    currentColor 0%,
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: blur(16px);
+  z-index: -1;
+}
+
+.space-wrapper .widget-library-item:hover .widget-lib-icon-wrapper::after {
+  opacity: 0.4; /* Strong glow on hover */
+}
+
+.space-wrapper .widget-library-item:hover .widget-lib-icon-wrapper {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: currentColor;
+  box-shadow: 
+    0 0 20px currentColor,
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.space-wrapper .widget-lib-icon {
+  font-size: 24px;
+  color: inherit; /* Uses accent color from wrapper */
+  transition: all 0.25s ease;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.space-wrapper .widget-library-item:hover .widget-lib-icon {
+  filter: drop-shadow(0 0 12px currentColor);
+  transform: scale(1.05);
+}
+
+/* Header section */
+.space-wrapper .widget-lib-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.space-wrapper .widget-library-item h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
+}
+
+.space-wrapper .widget-library-item p {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Feature tags - compact list */
+.space-wrapper .widget-features {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  flex: 1;
+  overflow: hidden;
+}
+
+.space-wrapper .feature-tag {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.3;
+}
+
+.space-wrapper .feature-tag::before {
+  content: '·';
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+/* Show only first 3 features */
+.space-wrapper .feature-tag:nth-child(n+4) {
+  display: none;
+}
+
+/* Footer with size and button */
+.space-wrapper .widget-lib-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+/* Size badge - minimal */
+.space-wrapper .widget-size-badge {
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+/* Add widget button - with accent glow */
+.space-wrapper .add-widget-btn {
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.space-wrapper .add-widget-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.space-wrapper .add-widget-btn:active {
+  transform: translateY(0);
+}
+
+.space-wrapper .add-widget-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.space-wrapper .add-widget-btn svg {
+  font-size: 10px;
+}
+
+/* Category badge - GLOWING accent */
+.space-wrapper .widget-category-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 3px 7px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.space-wrapper .widget-library-item:hover .widget-category-badge {
+  opacity: 1;
+}
+
+/* Active/added state with GLOW */
+.space-wrapper .widget-library-item.added {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: linear-gradient(
+    145deg,
+    rgba(16, 185, 129, 0.08) 0%,
+    rgba(10, 12, 16, 0.98) 100%
+  );
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.space-wrapper .widget-library-item.added .add-widget-btn {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Compact grid spacing - SMALLER CARDS */
+.space-wrapper .category-widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+/* Premium hover effect - subtle border glow */
+.space-wrapper .widget-library-item::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.space-wrapper .widget-library-item:hover::after {
+  opacity: 1;
+}
+
+/* Smooth entrance animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.space-wrapper .widget-library-item {
+  animation: fadeInUp 0.3s ease-out backwards;
+}
+
+/* Stagger animation */
+.space-wrapper .widget-library-item:nth-child(1) { animation-delay: 0ms; }
+.space-wrapper .widget-library-item:nth-child(2) { animation-delay: 25ms; }
+.space-wrapper .widget-library-item:nth-child(3) { animation-delay: 50ms; }
+.space-wrapper .widget-library-item:nth-child(4) { animation-delay: 75ms; }
+.space-wrapper .widget-library-item:nth-child(5) { animation-delay: 100ms; }
+.space-wrapper .widget-library-item:nth-child(6) { animation-delay: 125ms; }
+.space-wrapper .widget-library-item:nth-child(n+7) { animation-delay: 150ms; }

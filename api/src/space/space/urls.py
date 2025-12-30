@@ -30,4 +30,5 @@ urlpatterns = [
     
     
     path('journal/', include('src.space.space.journal.urls')),
+    path('finance/', include('src.space.space.finance.urls')),
 ]

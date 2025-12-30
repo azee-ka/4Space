@@ -1,0 +1,223 @@
+/* ========== MODALS - GENERAL STYLES ========== */
+/* Shared overlay and base modal styles */
+
+.space-wrapper .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(13px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Base modal container (used by widget library and create space modals) */
+  .space-wrapper .widget-library-modal,
+  .space-wrapper .create-space-modal {
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  /* ========== MODAL HEADER (SHARED) ========== */
+  
+  .space-wrapper .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+  }
+  
+  .space-wrapper .modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  
+  .space-wrapper .close-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .space-wrapper .close-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    border-color: rgba(255, 0, 0, 0.3);
+  }
+  
+  /* ========== TEMPLATES (USED IN CREATE SPACE MODAL) ========== */
+  
+  .space-wrapper .templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+    padding: 0 24px 24px;
+    overflow-y: auto;
+    max-height: 60vh;
+  }
+  
+  .space-wrapper .template-card {
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .space-wrapper .template-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+  }
+  
+  .space-wrapper .template-card.selected {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 20px currentColor;
+  }
+  
+  .space-wrapper .template-icon {
+    font-size: 36px;
+  }
+  
+  .space-wrapper .template-card h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .space-wrapper .template-card p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .space-wrapper .template-badge {
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* ========== MODAL FOOTER (SHARED) ========== */
+  
+  .space-wrapper .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  
+  .space-wrapper .modal-title {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  
+  .space-wrapper .modal-subtitle {
+    margin: 0 0 24px 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .space-wrapper .modal-input {
+    width: 100%;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+  }
+  
+  .space-wrapper .modal-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .space-wrapper .modal-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .space-wrapper .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .space-wrapper .modal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .space-wrapper .modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .space-wrapper .modal-btn.cancel:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+  }
+  
+  .space-wrapper .modal-btn.create {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+  }
+  
+  .space-wrapper .modal-btn.create:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+  }
+  
+  /* ========== SCROLLBARS (SHARED) ========== */
+  
+  .space-wrapper .templates-grid::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .space-wrapper .templates-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .space-wrapper .templates-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  
+  .space-wrapper .templates-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }

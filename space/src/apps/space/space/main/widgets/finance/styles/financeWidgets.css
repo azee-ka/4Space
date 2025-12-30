@@ -1,0 +1,303 @@
+/* ============================================
+   FINANCE WIDGETS INTEGRATION STYLES
+   ============================================ */
+
+/* Finance Widget Card (Compact Mode) */
+.finance-widget-card {
+    width: 100%;
+    height: 100%;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  
+  .finance-widget-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Finance Widget Modal Overlay */
+  .widget-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  /* Finance Widget Modal Container */
+  .widget-modal-container {
+    width: 95%;
+    max-width: 1400px;
+    height: 90vh;
+    background: rgba(10, 10, 10, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Finance Widget Modal Header */
+  .widget-modal-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.4);
+  }
+  
+  .widget-modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  
+  .widget-modal-close {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .widget-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transform: scale(1.05);
+  }
+  
+  /* Finance Widget Modal Content */
+  .widget-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  /* Scrollbar Styling for Modal */
+  .widget-modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .widget-modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .widget-modal-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+  
+  .widget-modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 1024px) {
+    .widget-modal-container {
+      width: 98%;
+      height: 95vh;
+    }
+    
+    .widget-modal-header {
+      padding: 20px 24px;
+    }
+    
+    .widget-modal-header h2 {
+      font-size: 20px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .widget-modal-container {
+      width: 100%;
+      height: 100vh;
+      border-radius: 0;
+    }
+    
+    .widget-modal-header {
+      padding: 16px 20px;
+    }
+    
+    .widget-modal-header h2 {
+      font-size: 18px;
+    }
+    
+    .finance-widget-card {
+      padding: 12px;
+    }
+  }
+  
+  /* Placeholder for non-finance widgets */
+  .widget-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .placeholder-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.3;
+  }
+  
+  .placeholder-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 4px;
+  }
+  
+  .placeholder-subtext {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Ensure finance widgets are properly contained */
+  .grid-widget-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Common widget styling helpers */
+  .positive {
+    color: #10b981;
+  }
+  
+  .negative {
+    color: #ef4444;
+  }
+  
+  .coming-soon-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #3b82f6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .tab-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+  }
+  
+  .tab-empty .empty-state-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    font-size: 36px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 20px;
+  }
+  
+  .tab-empty h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .tab-empty p {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Icon buttons */
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+  
+  /* Table actions */
+  .table-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  /* Spinner animation */
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }

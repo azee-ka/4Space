@@ -1,7 +1,4 @@
 // services/spaceApps/journalServices.jsx
-
-
-// services/spaceApps/journalServices.jsx
 import apiCall from "../../utils/api";
 
 // ============================================================================

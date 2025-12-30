@@ -114,7 +114,7 @@ class JournalEntry(models.Model):
     
     # Content
     title = models.CharField(max_length=500, blank=True)
-    content = models.TextField(help_text="Rich text HTML content")
+    content = models.TextField(blank=True, help_text="Rich text HTML content")
     
     # Metadata
     mood = models.CharField(max_length=20, choices=MOOD_CHOICES, null=True, blank=True)

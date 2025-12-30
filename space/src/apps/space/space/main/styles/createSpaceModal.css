@@ -1,0 +1,963 @@
+/* ========== CREATE SPACE MODAL - STUNNING DESIGN ========== */
+/* All styles prefixed with csm- (Create Space Modal) */
+
+/* Overlay */
+.csm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  /* Container */
+  .csm-container {
+    position: relative;
+    width: 90%;
+    max-width: 1100px;
+    max-height: 85vh;
+    background: linear-gradient(135deg, #0a0a0a 0%, #121212 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Decorative Background Glows */
+  .csm-bg-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(150px);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  .csm-bg-glow-1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, #00f0ff 0%, transparent 70%);
+    top: -200px;
+    right: -100px;
+  }
+  
+  .csm-bg-glow-2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+    bottom: -150px;
+    left: -100px;
+  }
+  
+  /* ========== HEADER ========== */
+  
+  .csm-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  }
+  
+  .csm-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  
+  .csm-back-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .csm-back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: translateX(-3px);
+  }
+  
+  .csm-header-text {
+    flex: 1;
+  }
+  
+  .csm-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .csm-title-icon {
+    font-size: 18px;
+    color: #00f0ff;
+    filter: drop-shadow(0 0 8px #00f0ff);
+    -webkit-text-fill-color: #00f0ff;
+  }
+  
+  .csm-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+  }
+  
+  .csm-close-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .csm-close-btn:hover {
+    background: rgba(255, 0, 0, 0.15);
+    border-color: rgba(255, 0, 0, 0.3);
+    color: #ff4466;
+    transform: rotate(90deg);
+  }
+  
+  /* ========== CONTROLS (SEARCH & FILTERS) ========== */
+  
+  .csm-controls {
+    position: relative;
+    z-index: 2;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.01);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .csm-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .csm-search-bar:focus-within {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.08);
+  }
+  
+  .csm-search-icon {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.4);
+    transition: color 0.3s ease;
+  }
+  
+  .csm-search-bar:focus-within .csm-search-icon {
+    color: #00f0ff;
+  }
+  
+  .csm-search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+  }
+  
+  .csm-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Filters */
+  .csm-filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  
+  .csm-filters::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .csm-filter-chip {
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: capitalize;
+  }
+  
+  .csm-filter-chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+    /* transform: translateY(-2px); */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .csm-filter-chip-active {
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    border-color: rgba(0, 240, 255, 0.3);
+    color: #00f0ff;
+    box-shadow: 
+      0 0 20px rgba(0, 240, 255, 0.2),
+      0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .csm-filter-count {
+    padding: 2px 7px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  
+  .csm-filter-chip-active .csm-filter-count {
+    background: rgba(0, 240, 255, 0.25);
+    color: #ffffff;
+  }
+  
+  /* ========== CONTENT (SCROLLABLE TEMPLATES) ========== */
+  
+  .csm-content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px;
+    min-height: 0;
+  }
+  
+  .csm-content::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  .csm-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+  }
+  
+  .csm-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+  }
+  
+  .csm-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+  
+  /* Empty State */
+  .csm-empty {
+    padding: 60px 20px;
+    text-align: center;
+  }
+  
+  .csm-empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+  }
+  
+  .csm-empty-title {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .csm-empty-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Section */
+  .csm-section {
+    margin-bottom: 32px;
+  }
+  
+  .csm-section:last-child {
+    margin-bottom: 0;
+  }
+  
+  .csm-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.06);
+  }
+  
+  .csm-section-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .csm-section-count {
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  /* ========== TEMPLATES GRID ========== */
+  
+  .csm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  
+  /* Template Card */
+  .csm-card {
+    position: relative;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow: hidden;
+  }
+  
+  .csm-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  .csm-card:hover::before {
+    opacity: 1;
+  }
+  
+  .csm-card:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+  
+  .csm-card-selected {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border-color: var(--accent-color, #00f0ff);
+    box-shadow: 
+      0 0 40px var(--accent-color, #00f0ff)40,
+      0 20px 40px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .csm-card-selected::before {
+    opacity: 1;
+  }
+  
+  /* Card Glow Effect */
+  .csm-card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    height: 200%;
+    opacity: 0;
+    filter: blur(60px);
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  
+  .csm-card-selected .csm-card-glow {
+    opacity: 0.15;
+  }
+  
+  /* Card Icon */
+  .csm-card-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
+  }
+  
+  .csm-card:hover .csm-card-icon {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.8);
+    transform: rotate(-5deg);
+  }
+  
+  .csm-card-selected .csm-card-icon {
+    transform: rotate(-5deg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Card Content */
+  .csm-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .csm-card-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #ffffff;
+    line-height: 1.3;
+  }
+  
+  .csm-card-description {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.5);
+    flex: 1;
+  }
+  
+  .csm-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+  }
+  
+  .csm-card-badge {
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+  }
+  
+  .csm-card-widgets {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+  }
+  
+  /* Check Badge */
+  .csm-card-check {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* ========== NAME INPUT SECTION ========== */
+  
+  .csm-name-section {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    overflow-y: auto;
+  }
+  
+  .csm-name-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .csm-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  
+  .csm-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.3s ease;
+  }
+  
+  .csm-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.08);
+  }
+  
+  .csm-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+  }
+  
+  .csm-hint {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  /* Info Card */
+  .csm-info-card {
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+    border: 1.5px solid rgba(0, 240, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .csm-info-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
+  }
+  
+  .csm-info-content {
+    flex: 1;
+  }
+  
+  .csm-info-title {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  
+  .csm-info-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  /* ========== FOOTER ========== */
+  
+  .csm-footer {
+    position: relative;
+    z-index: 2;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 18px 24px;
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  
+  .csm-btn {
+    padding: 12px 24px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 140px;
+  }
+  
+  .csm-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  
+  .csm-btn-cancel {
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .csm-btn-cancel:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+  
+  .csm-btn-create {
+    background: linear-gradient(135deg, #00f0ff 0%, #8b5cf6 100%);
+    color: #000000;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(0, 240, 255, 0.3);
+  }
+  
+  .csm-btn-create:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 240, 255, 0.4);
+  }
+  
+  .csm-btn-create:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  /* Spinner */
+  .csm-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: csm-spin 0.6s linear infinite;
+  }
+  
+  @keyframes csm-spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* ========== RESPONSIVE ========== */
+  
+  @media (max-width: 1200px) {
+    .csm-grid {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .csm-container {
+      width: 100%;
+      max-width: 100%;
+      max-height: 100vh;
+      border-radius: 0;
+    }
+  
+    .csm-header,
+    .csm-controls,
+    .csm-content,
+    .csm-name-section,
+    .csm-footer {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  
+    .csm-title {
+      font-size: 18px;
+    }
+  
+    .csm-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .csm-footer {
+      flex-direction: column;
+    }
+  
+    .csm-btn {
+      width: 100%;
+    }
+  }
+
+
+
+
+
+  /* Additional styles for multi-space configuration */
+
+/* Configure Content */
+.csm-configure-content {
+    padding: 24px !important;
+    overflow-y: auto;
+    max-height: calc(85vh - 250px);
+  }
+  
+  /* Config Grid */
+  .csm-config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+    width: 100%;
+  }
+  
+  /* Config Card */
+  .csm-config-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .csm-config-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Card Header */
+  .csm-config-card-header {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .csm-config-card-template {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  
+  .csm-config-card-icon {
+    font-size: 32px;
+    opacity: 0.9;
+  }
+  
+  .csm-config-card-template-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 2px;
+  }
+  
+  .csm-config-card-template-type {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: capitalize;
+  }
+  
+  .csm-config-card-remove {
+    background: rgba(255, 60, 60, 0.1);
+    border: 1px solid rgba(255, 60, 60, 0.3);
+    color: #ff3c3c;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+  }
+  
+  .csm-config-card-remove:hover {
+    background: rgba(255, 60, 60, 0.2);
+    border-color: rgba(255, 60, 60, 0.5);
+    transform: rotate(90deg);
+  }
+  
+  /* Card Body */
+  .csm-config-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Config Field */
+  .csm-config-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .csm-config-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .csm-config-input,
+  .csm-config-textarea {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+  
+  .csm-config-input:focus,
+  .csm-config-textarea:focus {
+    outline: none;
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+  
+  .csm-config-input::placeholder,
+  .csm-config-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .csm-config-textarea {
+    resize: vertical;
+    min-height: 70px;
+    max-height: 150px;
+    line-height: 1.5;
+  }
+  
+  /* Config Preview */
+  .csm-config-preview {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 4px;
+  }
+  
+  .csm-config-preview-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  .csm-config-preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .csm-config-preview-content strong {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+  }
+  
+  .csm-config-preview-content span {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+  }
+  
+  .csm-config-preview-widgets {
+    color: rgba(99, 102, 241, 0.8) !important;
+    font-size: 12px !important;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .csm-config-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .csm-configure-content {
+      padding: 16px !important;
+    }
+    
+    .csm-config-card-body {
+      padding: 16px;
+    }
+    
+    .csm-config-grid {
+      gap: 16px;
+    }
+  }
+  
+  /* Loading spinner for create button */
+  .csm-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: csm-spin 0.6s linear infinite;
+  }
+  
+  @keyframes csm-spin {
+    to { transform: rotate(360deg); }
+  }
