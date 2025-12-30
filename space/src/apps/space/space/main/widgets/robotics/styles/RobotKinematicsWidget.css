@@ -1,0 +1,268 @@
+/* RobotKinematicsWidget.css */
+.robot-kinematics-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+  }
+  
+  .compact-canvas {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .compact-canvas canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  .compact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  
+  .info-row span:first-child {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .info-row span:last-child {
+    color: #00f0ff;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+  }
+  
+  .robot-kinematics-modal {
+    display: flex;
+    height: 100%;
+    background: linear-gradient(135deg, #0a1a20 0%, #1a2a3a 100%);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .kinematics-sidebar {
+    width: 350px;
+    background: rgba(0, 0, 0, 0.3);
+    border-right: 1px solid rgba(0, 240, 255, 0.2);
+    overflow-y: auto;
+  }
+  
+  .sidebar-section {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .sidebar-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .dh-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .dh-header, .dh-row {
+    display: grid;
+    grid-template-columns: 40px repeat(4, 1fr);
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.8rem;
+  }
+  
+  .dh-header {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+  }
+  
+  .dh-row input {
+    padding: 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.85rem;
+  }
+  
+  .position-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .pos-value {
+    padding: 0.75rem;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 6px;
+    color: #00f0ff;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+  }
+  
+  .action-btn {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 6px;
+    color: #00f0ff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .action-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  .kinematics-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .kinematics-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .tab {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #00f0ff;
+  }
+  
+  .tab.active {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: #00f0ff;
+    color: #00f0ff;
+  }
+  
+  .tab-content {
+    flex: 1;
+    overflow: auto;
+    padding: 2rem;
+  }
+  
+  .forward-panel, .inverse-panel, .jacobian-panel, .workspace-panel {
+    height: 100%;
+  }
+  
+  .visualization {
+    width: 100%;
+    height: 500px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .visualization canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  .ik-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) auto;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .form-group input {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+  }
+  
+  .solve-btn, .calc-btn {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #00f0ff 0%, #0080ff 100%);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .solve-btn:hover, .calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 240, 255, 0.4);
+  }
+  
+  .matrix-display {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-top: 2rem;
+  }
+  
+  .matrix {
+    font-family: 'Courier New', monospace;
+    color: #00f0ff;
+    font-size: 1.1rem;
+  }
+  
+  .workspace-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .workspace-stats div {
+    padding: 1rem;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 6px;
+    color: #00f0ff;
+  }

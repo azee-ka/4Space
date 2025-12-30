@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import './styles/index.css';
+import './widgets/CommonWidgetStyles.css';
 import './widgets/finance/styles/financeWidgets.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,15 +36,62 @@ import TradingWidget from './widgets/finance/apps/TradingWidget/TradingWidget';
 import InvoicingWidget from './widgets/finance/apps/InvoicingWidget/InvoicingWidget';
 
 // ============================================
+// SPACE & AEROSPACE WIDGET IMPORTS
+// ============================================
+import OrbitalSimulatorWidget from './widgets/spaceScienceWidget/OrbitalSimulatorWidget';
+import DeltaVCalculatorWidget from './widgets/spaceScienceWidget//DeltaVCalculatorWidget';
+import MarsColonyPlannerWidget from './widgets/spaceScienceWidget/MarsColonyPlannerWidget';
+import StarChartWidget from './widgets/spaceScienceWidget/StarChartWidget';
+import PlanetTrackerWidget from './widgets/spaceScienceWidget/PlanetTrackerWidget';
+import TelescopePlannerWidget from './widgets/spaceScienceWidget/TelescopePlannerWidget';
+import LaunchWindowWidget from './widgets/spaceScienceWidget/LaunchWindowWidget';
+import TrajectoryPlannerWidget from './widgets/spaceScienceWidget/TrajectoryPlannerWidget';
+import SpacecraftDesignerWidget from './widgets/spaceScienceWidget/SpacecraftDesignerWidget';
+import RocketDesignerWidget from './widgets/spaceScienceWidget/RocketDesignerWidget';
+
+// ============================================
+// ROBOTICS WIDGET IMPORTS
+// ============================================
+import RobotSimulatorWidget from './widgets/robotics/RobotSimulatorWidget';
+import PathPlannerWidget from './widgets/robotics/PathPlannerWidget';
+import RobotKinematicsWidget from './widgets/robotics/RobotKinematicsWidget';
+import ControlTunerWidget from './widgets/robotics/ControlTunerWidget';
+import SensorFusionWidget from './widgets/robotics/SensorFusionWidget';
+import VisionProcessingWidget from './widgets/robotics/VisionProcessingWidget';
+import SLAMMapperWidget from './widgets/robotics/SLAMMapperWidget';
+
+// ============================================
 // WIDGET COMPONENT MAPPING
 // ============================================
 const WIDGET_COMPONENTS = {
+  // Finance Widgets
   'portfolio-manager': PortfolioWidget,
   'expenses': ExpensesWidget,
   'budget-manager': BudgetWidget,
   'crypto-tracker': CryptoWidget,
   'trading-terminal': TradingWidget,
   'invoicing': InvoicingWidget,
+  
+  // Space & Aerospace Widgets
+  'orbital-sim': OrbitalSimulatorWidget,
+  'delta-v-calc': DeltaVCalculatorWidget,
+  'mars-colony': MarsColonyPlannerWidget,
+  'star-chart': StarChartWidget,
+  'planet-tracker': PlanetTrackerWidget,
+  'telescope-planner': TelescopePlannerWidget,
+  'launch-window': LaunchWindowWidget,
+  'trajectory-planner': TrajectoryPlannerWidget,
+  'spacecraft-design': SpacecraftDesignerWidget,
+  'rocket-design': RocketDesignerWidget,
+  
+  // Robotics & Automation Widgets
+  'robot-sim': RobotSimulatorWidget,
+  'path-planner': PathPlannerWidget,
+  'robot-kinematics': RobotKinematicsWidget,
+  'control-tuner': ControlTunerWidget,
+  'sensor-fusion': SensorFusionWidget,
+  'vision-processing': VisionProcessingWidget,
+  'slam-mapper': SLAMMapperWidget,
 };
 
 // ============================================
@@ -541,7 +589,7 @@ const Space = () => {
     const WidgetComponent = WIDGET_COMPONENTS[widget.widget_type];
     
     if (!WidgetComponent) {
-      // Fallback for non-finance widgets - use WidgetInteraction
+      // Fallback for widgets not yet implemented
       return null;
     }
 
@@ -820,12 +868,12 @@ const Space = () => {
                     {activeSpace.widgets.map((w) => {
                       const widgetContent = renderWidgetContent(w, 'compact');
                       
-                      // If finance widget, wrap in custom container with click handler
+                      // If widget has implementation, wrap in custom container with click handler
                       if (widgetContent) {
                         return (
                           <div key={w.id} className="grid-widget-wrapper">
                             <div 
-                              className="finance-widget-card"
+                              className="widget-card"
                               onClick={() => handleWidgetClick(w)}
                               style={{ cursor: isEditMode ? 'move' : 'pointer' }}
                             >
@@ -835,7 +883,7 @@ const Space = () => {
                         );
                       }
                       
-                      // Otherwise use existing WidgetInteraction
+                      // Otherwise use existing WidgetInteraction fallback
                       return (
                         <div key={w.id} className="grid-widget-wrapper">
                           <WidgetInteraction
@@ -902,7 +950,7 @@ const Space = () => {
         isLoading={createMutation.isLoading}
       />
 
-      {/* Finance Widget Modal */}
+      {/* Widget Modal */}
       {isWidgetModalOpen && selectedWidget && WIDGET_COMPONENTS[selectedWidget.widget_type] && (
         <div className="widget-modal-overlay" onClick={() => setIsWidgetModalOpen(false)}>
           <div className="widget-modal-container" onClick={(e) => e.stopPropagation()}>

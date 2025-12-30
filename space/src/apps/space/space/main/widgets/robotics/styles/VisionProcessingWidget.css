@@ -1,0 +1,65 @@
+/* VisionProcessingWidget.css */
+.vision-processing-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+  }
+  
+  .vision-processing-compact h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .vision-processing-compact div {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+  }
+  
+  .vision-processing-modal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2rem;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+    border-radius: 12px;
+    overflow: auto;
+  }
+  
+  .vision-processing-modal h2 {
+    margin: 0 0 2rem 0;
+    color: #00f0ff;
+    font-size: 1.8rem;
+  }
+  
+  .vision-processing-modal select {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1rem;
+    max-width: 400px;
+    margin-bottom: 2rem;
+  }
+  
+  .vision-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 8px;
+  }
+  
+  .vision-stats div {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.9);
+  }

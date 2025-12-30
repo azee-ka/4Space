@@ -1,0 +1,67 @@
+/* LaunchWindowWidget.css */
+.launch-window-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+  }
+  
+  .launch-window-compact h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .launch-window-compact div {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+  }
+  
+  .launch-window-modal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2rem;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+    border-radius: 12px;
+    overflow: auto;
+  }
+  
+  .launch-window-modal h2 {
+    margin: 0 0 2rem 0;
+    color: #f97316;
+    font-size: 1.8rem;
+  }
+  
+  .launch-window-modal select {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1rem;
+    max-width: 400px;
+    margin-bottom: 2rem;
+  }
+  
+  .window-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: rgba(249, 115, 22, 0.1);
+    border: 1px solid rgba(249, 115, 22, 0.3);
+    border-radius: 8px;
+  }
+  
+  .window-info div {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: space-between;
+  }

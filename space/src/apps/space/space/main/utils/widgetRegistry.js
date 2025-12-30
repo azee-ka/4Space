@@ -1,5 +1,5 @@
-// widgetRegistry.js - COMPLETE WIDGET LIBRARY - ALL 234 WIDGETS FINAL
-// Copy this file to: src/features/space/components/widget/widgetRegistry.js
+// widgetRegistry.js - COMPLETE WIDGET LIBRARY - ALL 310+ WIDGETS
+// Copy this file to: src/features/space/components/widget/utils/widgetRegistry.js
 
 import {
   FaBook, FaCamera, FaTasks, FaCalendar, FaStickyNote, FaLink,
@@ -35,13 +35,17 @@ import {
   FaSwimmer, FaMountain, FaFileImage, FaFilePdf, FaFileWord,
   FaFileExcel, FaFilePowerpoint, FaFileArchive, FaCarrot,
   FaAppleAlt, FaPizzaSlice, FaWineGlass, FaGlobeAmericas,
-  FaDice, FaChess, FaPuzzlePiece, FaTheaterMasks, FaBolt, FaWind
+  FaDice, FaChess, FaPuzzlePiece, FaTheaterMasks, FaBolt, FaWind,
+  FaSatellite, FaMoon, FaSun, FaRocket, FaExclamationTriangle,
+  FaThermometerHalf, FaHandPaper, FaLeaf, FaCalendarAlt
 } from 'react-icons/fa';
 
 export const WIDGET_CATEGORIES = [
   { id: 'all', name: 'All Widgets', icon: FaFolder },
   { id: 'productivity', name: 'Productivity', icon: FaTasks },
   { id: 'finance-trading', name: 'Finance & Trading', icon: FaChartLine },
+  { id: 'space-aerospace', name: 'Space & Aerospace', icon: FaSatellite },
+  { id: 'robotics', name: 'Robotics & Automation', icon: FaRobot },
   { id: 'enterprise', name: 'Enterprise & Business', icon: FaBuilding },
   { id: 'supply-chain', name: 'Supply Chain & Ops', icon: FaTruck },
   { id: 'marketing-sales', name: 'Marketing & Sales', icon: FaBullhorn },
@@ -64,7 +68,9 @@ export const WIDGET_CATEGORIES = [
 ];
 
 export const WIDGET_REGISTRY = [
+  // ============================================
   // PRODUCTIVITY (12)
+  // ============================================
   { id: 'tasks', name: 'Advanced Task Manager', icon: FaTasks, category: 'productivity', description: 'Kanban, Gantt, dependencies', size: 'large', tags: ['tasks', 'kanban'], features: ['Kanban/List/Gantt views', 'Dependencies', 'Time tracking', 'Priority matrix', 'Subtasks', 'Collaboration'] },
   { id: 'notes', name: 'Smart Notes', icon: FaStickyNote, category: 'productivity', description: 'Rich notes with bidirectional links', size: 'large', tags: ['notes', 'pkm'], features: ['Rich text + Markdown', 'Bidirectional links', 'Graph view', 'Tags & folders', 'Templates', 'Search'] },
   { id: 'calendar', name: 'Smart Calendar', icon: FaCalendar, category: 'productivity', description: 'Calendar with time blocking', size: 'large', tags: ['calendar', 'scheduling'], features: ['Month/week/day views', 'Time blocking', 'Smart scheduling', 'Recurring events', 'Reminders', 'Sync'] },
@@ -78,7 +84,9 @@ export const WIDGET_REGISTRY = [
   { id: 'bookmarks', name: 'Bookmark Manager', icon: FaBookmark, category: 'productivity', description: 'Organize bookmarks', size: 'medium', tags: ['bookmarks'], features: ['Tags', 'Collections', 'Search', 'Import/export', 'Preview'] },
   { id: 'quick-capture', name: 'Quick Capture', icon: FaLightbulb, category: 'productivity', description: 'Capture ideas', size: 'small', tags: ['ideas'], features: ['Quick input', 'Voice notes', 'Tags', 'Process later', 'Sync'] },
 
+  // ============================================
   // FINANCE & TRADING (20)
+  // ============================================
   { id: 'trading-terminal', name: 'Trading Terminal', icon: FaChartLine, category: 'finance-trading', description: 'Trading platform', size: 'large', tags: ['trading'], features: ['Real-time charts', 'Order execution', 'Indicators', 'Multi-asset', 'Portfolio', 'Risk tools'] },
   { id: 'market-scanner', name: 'Market Scanner', icon: FaSearch, category: 'finance-trading', description: 'Market screening', size: 'large', tags: ['scanner'], features: ['Custom filters', 'Patterns', 'Screeners', 'Fundamentals', 'Alerts', 'Watchlists'] },
   { id: 'portfolio-manager', name: 'Portfolio Manager', icon: FaChartPie, category: 'finance-trading', description: 'Track investments', size: 'large', tags: ['portfolio'], features: ['Multi-account', 'Analytics', 'Allocation', 'Dividends', 'Tax lots', 'Rebalancing'] },
@@ -100,7 +108,62 @@ export const WIDGET_REGISTRY = [
   { id: 'retirement', name: 'Retirement Planner', icon: FaPiggyBank, category: 'finance-trading', description: 'Retirement planning', size: 'large', tags: ['retirement'], features: ['Projections', '401k/IRA', 'Withdrawals', 'Social security', 'Monte Carlo'] },
   { id: 'credit', name: 'Credit Monitor', icon: FaCreditCard, category: 'finance-trading', description: 'Credit monitoring', size: 'medium', tags: ['credit'], features: ['Score tracking', 'Card mgmt', 'Utilization', 'Reminders', 'Fraud alerts'] },
 
-  // ENTERPRISE (18)
+  // ============================================
+  // SPACE & AEROSPACE (30) - NEW CATEGORY
+  // ============================================
+  { id: 'star-chart', name: 'Interactive Star Chart', icon: FaStar, category: 'space-aerospace', description: 'Real-time sky map', size: 'large', tags: ['astronomy', 'observation'], features: ['Real-time positions', 'Constellation finder', 'Deep sky objects', 'Time travel', 'Location-based', 'AR mode'] },
+  { id: 'planet-tracker', name: 'Planet Tracker', icon: FaGlobeAmericas, category: 'space-aerospace', description: 'Planetary positions', size: 'medium', tags: ['astronomy', 'planets'], features: ['Real-time positions', 'Visibility windows', 'Conjunctions', 'Oppositions', 'Elongations', 'Alerts'] },
+  { id: 'telescope-planner', name: 'Telescope Planner', icon: FaEye, category: 'space-aerospace', description: 'Observation planning', size: 'large', tags: ['astronomy', 'observation'], features: ['Target selector', 'Weather forecast', 'Moon phase', 'Light pollution', 'Equipment setup', 'Session logger'] },
+  { id: 'orbital-sim', name: 'Orbital Simulator', icon: FaSatellite, category: 'space-aerospace', description: '3D orbit visualization', size: 'large', tags: ['orbital-mechanics', 'simulation'], features: ['3D visualization', 'Keplerian elements', 'Perturbations', 'Ground tracks', 'Time propagation', 'TLE support'] },
+  { id: 'launch-window', name: 'Launch Window Calculator', icon: FaRocket, category: 'space-aerospace', description: 'Optimal launch times', size: 'large', tags: ['mission-planning', 'orbital-mechanics'], features: ['Transfer windows', 'Delta-v requirements', 'Pork chop plots', 'Hohmann transfers', 'Bi-elliptic', 'Phasing'] },
+  { id: 'delta-v-calc', name: 'Delta-V Calculator', icon: FaCalculator, category: 'space-aerospace', description: 'Mission delta-v budget', size: 'medium', tags: ['mission-planning', 'propulsion'], features: ['Tsiolkovsky equation', 'Multi-stage rockets', 'Gravity losses', 'Drag losses', 'Mission planner', 'Budget optimizer'] },
+  { id: 'trajectory-planner', name: 'Trajectory Planner', icon: FaRoute, category: 'space-aerospace', description: 'Mission trajectory design', size: 'large', tags: ['mission-planning', 'orbital-mechanics'], features: ['Patched conics', 'Gravity assists', 'Lambert solver', 'Optimization', 'Multiple solutions', '3D visualization'] },
+  { id: 'mars-colony', name: 'Mars Colony Planner', icon: FaMountain, category: 'space-aerospace', description: 'Mars settlement planning', size: 'large', tags: ['mars', 'colonization'], features: ['Resource requirements', 'Habitat design', 'Life support', 'Power systems', 'Population growth', 'Supply missions'] },
+  { id: 'life-support', name: 'Life Support Designer', icon: FaHeart, category: 'space-aerospace', description: 'ECLSS design', size: 'large', tags: ['life-support', 'habitat'], features: ['O2 generation', 'CO2 removal', 'Water recycling', 'Waste management', 'Thermal control', 'Redundancy'] },
+  { id: 'habitat-design', name: 'Habitat Designer', icon: FaHome, category: 'space-aerospace', description: 'Space habitat planning', size: 'large', tags: ['habitat', 'colonization'], features: ['Layout planner', 'Volume calculator', 'Radiation shielding', 'Micrometeorite protection', 'Pressure systems', 'Materials'] },
+  { id: 'resource-isru', name: 'ISRU Planner', icon: FaIndustry, category: 'space-aerospace', description: 'In-situ resource utilization', size: 'large', tags: ['isru', 'resources'], features: ['Propellant production', 'Water extraction', 'Oxygen generation', 'Building materials', 'Power requirements', 'Yield calculator'] },
+  { id: 'spacecraft-design', name: 'Spacecraft Designer', icon: FaSatellite, category: 'space-aerospace', description: 'Spacecraft configuration', size: 'large', tags: ['spacecraft', 'design'], features: ['Component library', 'Mass budget', 'Power budget', 'Link budget', 'Thermal analysis', 'CAD export'] },
+  { id: 'mass-budget', name: 'Mass Budget', icon: FaBalanceScale, category: 'space-aerospace', description: 'Spacecraft mass tracking', size: 'medium', tags: ['spacecraft', 'budget'], features: ['Component tracking', 'Margins', 'Growth allocation', 'Center of mass', 'Moments of inertia', 'Reports'] },
+  { id: 'power-budget', name: 'Power Budget', icon: FaBolt, category: 'space-aerospace', description: 'Electrical power system', size: 'large', tags: ['spacecraft', 'power'], features: ['Component power', 'Solar array sizing', 'Battery capacity', 'Eclipse duration', 'Load profiles', 'Degradation'] },
+  { id: 'link-budget', name: 'Link Budget Calculator', icon: FaNetworkWired, category: 'space-aerospace', description: 'Communications link analysis', size: 'large', tags: ['communications', 'rf'], features: ['Antenna gains', 'Path loss', 'Data rates', 'Modulation', 'Eb/N0', 'Margin analysis'] },
+  { id: 'ground-station', name: 'Ground Station Planner', icon: FaSatellite, category: 'space-aerospace', description: 'Ground station scheduling', size: 'large', tags: ['operations', 'communications'], features: ['Pass predictions', 'Scheduling', 'Antenna pointing', 'Coverage maps', 'Contact windows', 'DSN integration'] },
+  { id: 'rocket-design', name: 'Rocket Designer', icon: FaRocket, category: 'space-aerospace', description: 'Launch vehicle design', size: 'large', tags: ['rockets', 'propulsion'], features: ['Stage configuration', 'Engine selection', 'Propellant mass', 'Performance', 'Stability', 'Cost estimation'] },
+  { id: 'engine-selector', name: 'Engine Database', icon: FaCogs, category: 'space-aerospace', description: 'Rocket engine catalog', size: 'large', tags: ['propulsion', 'engines'], features: ['Engine database', 'Performance specs', 'Comparison', 'Thrust curves', 'Propellant combos', 'Cost data'] },
+  { id: 'staging-optimizer', name: 'Staging Optimizer', icon: FaLayerGroup, category: 'space-aerospace', description: 'Optimal stage sizing', size: 'medium', tags: ['rockets', 'optimization'], features: ['Stage mass ratio', 'Delta-v allocation', 'Payload optimization', 'Multiple stages', 'Constraints', 'Trade studies'] },
+  { id: 'reentry-calc', name: 'Reentry Calculator', icon: FaChartLine, category: 'space-aerospace', description: 'Atmospheric reentry', size: 'medium', tags: ['reentry', 'aerodynamics'], features: ['Heating analysis', 'Trajectory', 'Deceleration', 'Heat shield sizing', 'Entry corridor', 'Landing footprint'] },
+  { id: 'space-weather', name: 'Space Weather Monitor', icon: FaSun, category: 'space-aerospace', description: 'Solar activity tracking', size: 'medium', tags: ['space-weather', 'radiation'], features: ['Solar flares', 'CME alerts', 'Radiation levels', 'Kp index', 'Forecasts', 'Mission impact'] },
+  { id: 'radiation-dose', name: 'Radiation Dosimeter', icon: FaShieldAlt, category: 'space-aerospace', description: 'Radiation exposure tracking', size: 'medium', tags: ['radiation', 'safety'], features: ['Dose tracking', 'Environment models', 'Shielding calculator', 'Mission duration', 'Career limits', 'Alerts'] },
+  { id: 'astronomy-events', name: 'Celestial Events', icon: FaCalendarAlt, category: 'space-aerospace', description: 'Astronomical phenomena', size: 'medium', tags: ['astronomy', 'events'], features: ['Eclipses', 'Transits', 'Occultations', 'Meteor showers', 'Comets', 'Notifications'] },
+  { id: 'exoplanet-db', name: 'Exoplanet Database', icon: FaGlobeAmericas, category: 'space-aerospace', description: 'Catalog of exoplanets', size: 'large', tags: ['astronomy', 'exoplanets'], features: ['Search & filter', 'Properties', 'Habitability', 'Detection method', 'Star system', '3D visualization'] },
+  { id: 'mission-ops', name: 'Mission Operations', icon: FaClipboardList, category: 'space-aerospace', description: 'Mission control dashboard', size: 'large', tags: ['operations', 'mission-control'], features: ['Telemetry', 'Command sequences', 'Alerts', 'Timeline', 'Procedures', 'Anomaly tracking'] },
+  { id: 'attitude-control', name: 'Attitude Control', icon: FaCompass, category: 'space-aerospace', description: 'ADCS simulator', size: 'large', tags: ['spacecraft', 'control'], features: ['Attitude kinematics', 'Control modes', 'Sensor models', 'Actuator models', 'Disturbances', 'Simulation'] },
+  { id: 'propellant-calc', name: 'Propellant Calculator', icon: FaFlask, category: 'space-aerospace', description: 'Propellant properties', size: 'small', tags: ['propulsion', 'chemistry'], features: ['Density', 'Performance', 'Storage', 'Boil-off', 'Combinations', 'Safety'] },
+  { id: 'thermal-analysis', name: 'Thermal Analyzer', icon: FaThermometerHalf, category: 'space-aerospace', description: 'Spacecraft thermal', size: 'large', tags: ['thermal', 'spacecraft'], features: ['Heat balance', 'Radiator sizing', 'Insulation', 'Solar flux', 'Eclipse thermal', 'Component temps'] },
+  { id: 'debris-tracker', name: 'Space Debris Tracker', icon: FaExclamationTriangle, category: 'space-aerospace', description: 'Orbital debris monitoring', size: 'large', tags: ['debris', 'safety'], features: ['Debris catalog', 'Conjunction analysis', 'Collision probability', 'Avoidance maneuvers', 'TLE data', 'Alerts'] },
+  { id: 'lunar-planner', name: 'Lunar Mission Planner', icon: FaMoon, category: 'space-aerospace', description: 'Moon mission planning', size: 'large', tags: ['moon', 'mission-planning'], features: ['Landing sites', 'Transfer trajectories', 'Surface operations', 'Resource mapping', 'Communication windows', 'Power/thermal'] },
+
+  // ============================================
+  // ROBOTICS & AUTOMATION (15) - EXPANDED
+  // ============================================
+  { id: 'robot-kinematics', name: 'Robot Kinematics', icon: FaRobot, category: 'robotics', description: 'Forward/inverse kinematics', size: 'large', tags: ['kinematics', 'motion'], features: ['DH parameters', 'Forward kinematics', 'Inverse kinematics', 'Jacobian', 'Workspace analysis', '3D visualization'] },
+  { id: 'path-planner', name: 'Path Planning', icon: FaRoute, category: 'robotics', description: 'Motion planning algorithms', size: 'large', tags: ['planning', 'navigation'], features: ['A* / Dijkstra', 'RRT / RRT*', 'Potential fields', 'Collision checking', 'Trajectory optimization', 'Visualization'] },
+  { id: 'robot-sim', name: 'Robot Simulator', icon: FaRobot, category: 'robotics', description: '3D robot simulation', size: 'large', tags: ['simulation', 'testing'], features: ['Physics engine', 'Sensor simulation', 'Actuator models', 'Environment builder', 'URDF support', 'ROS integration'] },
+  { id: 'control-tuner', name: 'Control System Tuner', icon: FaCogs, category: 'robotics', description: 'PID & advanced control', size: 'large', tags: ['control', 'tuning'], features: ['PID tuning', 'State space', 'LQR design', 'Step response', 'Bode plots', 'Stability analysis'] },
+  { id: 'sensor-fusion', name: 'Sensor Fusion', icon: FaNetworkWired, category: 'robotics', description: 'Multi-sensor integration', size: 'large', tags: ['sensors', 'estimation'], features: ['Kalman filter', 'Particle filter', 'IMU fusion', 'SLAM', 'Localization', 'Mapping'] },
+  { id: 'vision-processing', name: 'Vision Processing', icon: FaCamera, category: 'robotics', description: 'Computer vision pipeline', size: 'large', tags: ['vision', 'perception'], features: ['Object detection', 'Segmentation', 'Feature extraction', 'Calibration', 'Stereo vision', 'Deep learning'] },
+  { id: 'motor-controller', name: 'Motor Controller', icon: FaBolt, category: 'robotics', description: 'Motor control dashboard', size: 'medium', tags: ['motors', 'control'], features: ['Position control', 'Velocity control', 'Torque control', 'Current monitoring', 'Encoder feedback', 'Tuning'] },
+  { id: 'robot-arm-design', name: 'Robot Arm Designer', icon: FaCube, category: 'robotics', description: 'Manipulator design', size: 'large', tags: ['design', 'manipulator'], features: ['Link configuration', 'Workspace', 'Singularities', 'Payload capacity', 'Dynamics', 'CAD export'] },
+  { id: 'gripper-selector', name: 'Gripper Database', icon: FaHandPaper, category: 'robotics', description: 'End effector catalog', size: 'medium', tags: ['grippers', 'components'], features: ['Gripper types', 'Force capacity', 'Stroke', 'Weight', 'Comparison', 'Integration'] },
+  { id: 'slam-mapper', name: 'SLAM Mapper', icon: FaMapMarkedAlt, category: 'robotics', description: 'Simultaneous localization', size: 'large', tags: ['slam', 'navigation'], features: ['2D/3D SLAM', 'Occupancy grid', 'Feature maps', 'Loop closure', 'Trajectory', 'Export'] },
+  { id: 'collision-check', name: 'Collision Checker', icon: FaExclamationTriangle, category: 'robotics', description: 'Collision detection', size: 'medium', tags: ['safety', 'planning'], features: ['Swept volume', 'Proximity queries', 'Self-collision', 'Environment', 'Bounding volumes', 'GPU acceleration'] },
+  { id: 'ros-monitor', name: 'ROS Monitor', icon: FaNetworkWired, category: 'robotics', description: 'ROS system dashboard', size: 'large', tags: ['ros', 'monitoring'], features: ['Node graph', 'Topic monitor', 'Message inspector', 'TF tree', 'Diagnostics', 'Bag recorder'] },
+  { id: 'robot-calibration', name: 'Robot Calibration', icon: FaRuler, category: 'robotics', description: 'Calibration wizard', size: 'medium', tags: ['calibration', 'accuracy'], features: ['Kinematic calibration', 'Hand-eye calibration', 'Sensor calibration', 'Error analysis', 'Compensation', 'Validation'] },
+  { id: 'trajectory-gen', name: 'Trajectory Generator', icon: FaChartLine, category: 'robotics', description: 'Smooth trajectories', size: 'medium', tags: ['motion', 'trajectory'], features: ['Quintic splines', 'Time optimal', 'Jerk limited', 'Multi-point', 'Blending', 'Constraints'] },
+  { id: 'robot-fleet', name: 'Fleet Manager', icon: FaRobot, category: 'robotics', description: 'Multi-robot coordination', size: 'large', tags: ['fleet', 'coordination'], features: ['Fleet status', 'Task allocation', 'Coordination', 'Charging management', 'Telemetry', 'Analytics'] },
+
+  // ============================================
+  // ENTERPRISE (18) - COMPLETE
+  // ============================================
   { id: 'crm', name: 'CRM Platform', icon: FaUserTie, category: 'enterprise', description: 'Customer management', size: 'large', tags: ['crm'], features: ['Contacts', 'Pipeline', 'Email', 'Activities', 'Fields', 'Reports'] },
   { id: 'erp', name: 'ERP System', icon: FaBuilding, category: 'enterprise', description: 'Enterprise resource planning', size: 'large', tags: ['erp'], features: ['Financial', 'Inventory', 'Orders', 'Procurement', 'Multi-company', 'Workflows'] },
   { id: 'ppm', name: 'Project Management', icon: FaProjectDiagram, category: 'enterprise', description: 'Enterprise PM', size: 'large', tags: ['ppm'], features: ['Portfolio', 'Resources', 'Gantt', 'Budget', 'Risks', 'Stakeholders'] },
@@ -120,7 +183,9 @@ export const WIDGET_REGISTRY = [
   { id: 'risk-mgmt', name: 'Risk Management', icon: FaShieldAlt, category: 'enterprise', description: 'Enterprise risk', size: 'large', tags: ['risk'], features: ['Register', 'Assessment', 'Mitigation', 'Heat maps', 'Monitoring', 'Reports'] },
   { id: 'strategy', name: 'Strategic Planning', icon: FaBullseye, category: 'enterprise', description: 'Strategy planning', size: 'large', tags: ['strategy'], features: ['Goals', 'Initiatives', 'KPIs', 'Scorecard', 'Progress', 'Reporting'] },
 
-  // SUPPLY CHAIN (12)
+  // ============================================
+  // SUPPLY CHAIN (12) - COMPLETE
+  // ============================================
   { id: 'inventory', name: 'Inventory', icon: FaWarehouse, category: 'supply-chain', description: 'Inventory control', size: 'large', tags: ['inventory'], features: ['Stock levels', 'Multi-warehouse', 'Scanning', 'Reorder', 'Lot tracking', 'ABC'] },
   { id: 'procurement', name: 'Procurement', icon: FaShoppingCart, category: 'supply-chain', description: 'Purchase orders', size: 'large', tags: ['procurement'], features: ['Requisitions', 'PO mgmt', 'Vendors', 'Approvals', 'Receiving', 'Analytics'] },
   { id: 'warehouse', name: 'Warehouse', icon: FaBoxes, category: 'supply-chain', description: 'Warehouse ops', size: 'large', tags: ['wms'], features: ['Locations', 'Pick/pack/ship', 'Cycle count', 'Kitting', 'Waves', 'Labor'] },
@@ -134,7 +199,9 @@ export const WIDGET_REGISTRY = [
   { id: 'freight', name: 'Freight', icon: FaShip, category: 'supply-chain', description: 'Freight mgmt', size: 'large', tags: ['freight'], features: ['Quotes', 'Booking', 'Tracking', 'Customs', 'International', 'Analytics'] },
   { id: 'mrp', name: 'MRP', icon: FaCogs, category: 'supply-chain', description: 'Material planning', size: 'large', tags: ['mrp'], features: ['BOM', 'Calculations', 'Suggestions', 'Lead times', 'Shortages', 'Planning'] },
 
-  // MARKETING (15)
+  // ============================================
+  // MARKETING & SALES (15) - COMPLETE
+  // ============================================
   { id: 'marketing-auto', name: 'Marketing Automation', icon: FaBullhorn, category: 'marketing-sales', description: 'Marketing campaigns', size: 'large', tags: ['marketing'], features: ['Campaigns', 'Lead scoring', 'Drips', 'A/B test', 'Analytics', 'Segments'] },
   { id: 'email-mkt', name: 'Email Marketing', icon: FaEnvelope, category: 'marketing-sales', description: 'Email campaigns', size: 'large', tags: ['email'], features: ['Builder', 'Templates', 'Lists', 'Automation', 'Analytics', 'Deliverability'] },
   { id: 'social', name: 'Social Media', icon: FaShare, category: 'marketing-sales', description: 'Social management', size: 'large', tags: ['social'], features: ['Multi-platform', 'Calendar', 'Scheduling', 'Analytics', 'Engagement', 'Team'] },
@@ -151,7 +218,9 @@ export const WIDGET_REGISTRY = [
   { id: 'sms', name: 'SMS Marketing', icon: FaPhoneAlt, category: 'marketing-sales', description: 'SMS campaigns', size: 'medium', tags: ['sms'], features: ['Builder', 'Lists', 'Automation', 'Analytics', 'Compliance', 'Codes'] },
   { id: 'influencers', name: 'Influencers', icon: FaStar, category: 'marketing-sales', description: 'Influencer marketing', size: 'large', tags: ['influencers'], features: ['Discovery', 'Campaigns', 'Approval', 'Tracking', 'Payments', 'ROI'] },
 
-  // HR (15)
+  // ============================================
+  // HR & TEAM MANAGEMENT (15) - COMPLETE
+  // ============================================
   { id: 'hris', name: 'HR System', icon: FaUserFriends, category: 'hr-team', description: 'HRIS platform', size: 'large', tags: ['hr'], features: ['Database', 'Org chart', 'Docs', 'Onboarding', 'Offboarding', 'Compliance'] },
   { id: 'time', name: 'Time & Attendance', icon: FaClock, category: 'hr-team', description: 'Time tracking', size: 'large', tags: ['time'], features: ['Clock', 'Timesheets', 'PTO', 'Overtime', 'Shifts', 'Mobile'] },
   { id: 'ats', name: 'Recruiting (ATS)', icon: FaUserTie, category: 'hr-team', description: 'Applicant tracking', size: 'large', tags: ['recruiting'], features: ['Jobs', 'Resumes', 'Pipeline', 'Interviews', 'Offers', 'Reports'] },
@@ -168,7 +237,9 @@ export const WIDGET_REGISTRY = [
   { id: 'ess', name: 'Self-Service', icon: FaUserTie, category: 'hr-team', description: 'Employee portal', size: 'medium', tags: ['self-service'], features: ['Info updates', 'PTO', 'Payslips', 'Benefits', 'Tax forms', 'Directory'] },
   { id: 'hr-analytics', name: 'HR Analytics', icon: FaChartBar, category: 'hr-team', description: 'People analytics', size: 'large', tags: ['analytics'], features: ['Headcount', 'Turnover', 'Time-to-fill', 'Diversity', 'Comp equity', 'Attrition'] },
 
-  // LEGAL (10)
+  // ============================================
+  // LEGAL & COMPLIANCE (10) - COMPLETE
+  // ============================================
   { id: 'legal-clm', name: 'Contract Lifecycle', icon: FaFileContract, category: 'legal-compliance', description: 'Contract management', size: 'large', tags: ['contracts'], features: ['Repository', 'Lifecycle', 'Approvals', 'Templates', 'E-sign', 'Renewals'] },
   { id: 'legal-matter', name: 'Matter Management', icon: FaGavel, category: 'legal-compliance', description: 'Legal matters', size: 'large', tags: ['legal'], features: ['Matters', 'Time & billing', 'Docs', 'Calendar', 'Portal', 'Reports'] },
   { id: 'ip', name: 'IP Portfolio', icon: FaCertificate, category: 'legal-compliance', description: 'IP management', size: 'large', tags: ['ip'], features: ['Patents', 'Trademarks', 'Renewals', 'Licensing', 'Valuation', 'Reports'] },
@@ -180,7 +251,9 @@ export const WIDGET_REGISTRY = [
   { id: 'ndas', name: 'NDAs', icon: FaFileContract, category: 'legal-compliance', description: 'NDA management', size: 'medium', tags: ['nda'], features: ['Templates', 'Approvals', 'Versions', 'Signatures', 'Expiration', 'Repository'] },
   { id: 'doc-gen', name: 'Doc Generator', icon: FaFileAlt, category: 'legal-compliance', description: 'Document automation', size: 'medium', tags: ['documents'], features: ['Templates', 'Variables', 'Clauses', 'Versions', 'PDF', 'E-sign'] },
 
-  // REAL ESTATE (10)
+  // ============================================
+  // REAL ESTATE (10) - COMPLETE
+  // ============================================
   { id: 'prop-mgmt', name: 'Property Management', icon: FaBuilding, category: 'real-estate', description: 'Property management', size: 'large', tags: ['property'], features: ['Portfolio', 'Units', 'Tenants', 'Maintenance', 'Inspections', 'Reports'] },
   { id: 'leases', name: 'Lease Management', icon: FaFileContract, category: 'real-estate', description: 'Lease tracking', size: 'large', tags: ['leases'], features: ['Tracking', 'Renewals', 'Escalations', 'Terms', 'Docs', 'Reports'] },
   { id: 'maintenance', name: 'Maintenance', icon: FaWrench, category: 'real-estate', description: 'Work orders', size: 'medium', tags: ['maintenance'], features: ['Requests', 'Work orders', 'Vendors', 'Priority', 'Status', 'History'] },
@@ -192,7 +265,9 @@ export const WIDGET_REGISTRY = [
   { id: 're-crm', name: 'Real Estate CRM', icon: FaUserTie, category: 'real-estate', description: 'Client management', size: 'large', tags: ['crm'], features: ['Leads', 'Clients', 'Transactions', 'Comms', 'Tasks', 'Reports'] },
   { id: 'prop-analytics', name: 'Property Analytics', icon: FaChartBar, category: 'real-estate', description: 'Property metrics', size: 'large', tags: ['analytics'], features: ['Occupancy', 'Revenue', 'Expenses', 'ROI', 'Trends', 'Dashboards'] },
 
-  // HEALTHCARE (12)
+  // ============================================
+  // HEALTHCARE (12) - COMPLETE
+  // ============================================
   { id: 'ehr', name: 'EHR', icon: FaHospital, category: 'healthcare', description: 'Electronic health records', size: 'large', tags: ['ehr'], features: ['Demographics', 'History', 'Medications', 'Notes', 'Labs', 'HIPAA'] },
   { id: 'scheduling', name: 'Scheduling', icon: FaCalendar, category: 'healthcare', description: 'Appointments', size: 'large', tags: ['scheduling'], features: ['Calendar', 'Reminders', 'Waitlist', 'Providers', 'No-show', 'Insurance'] },
   { id: 'billing', name: 'Medical Billing', icon: FaFileInvoice, category: 'healthcare', description: 'Healthcare billing', size: 'large', tags: ['billing'], features: ['Claims', 'Insurance', 'Posting', 'Denials', 'Statements', 'Reports'] },
@@ -206,7 +281,9 @@ export const WIDGET_REGISTRY = [
   { id: 'chronic-care', name: 'Chronic Care', icon: FaHeartbeat, category: 'healthcare', description: 'Care management', size: 'large', tags: ['chronic'], features: ['Care plans', 'Goals', 'Education', 'Monitoring', 'Alerts', 'Reports'] },
   { id: 'health-analytics', name: 'Health Analytics', icon: FaChartBar, category: 'healthcare', description: 'Clinical analytics', size: 'large', tags: ['analytics'], features: ['Quality', 'Population', 'Utilization', 'Outcomes', 'Dashboards', 'Reports'] },
 
-  // MANUFACTURING (10)
+  // ============================================
+  // MANUFACTURING (10) - COMPLETE
+  // ============================================
   { id: 'mes', name: 'MES', icon: FaIndustry, category: 'manufacturing', description: 'Manufacturing execution', size: 'large', tags: ['mes'], features: ['Production', 'Work orders', 'Materials', 'Quality', 'Downtime', 'Reports'] },
   { id: 'shop-floor', name: 'Shop Floor', icon: FaCogs, category: 'manufacturing', description: 'Shop floor control', size: 'large', tags: ['shopfloor'], features: ['Scheduling', 'Work centers', 'Capacity', 'Routing', 'Labor', 'Status'] },
   { id: 'cmms', name: 'CMMS', icon: FaWrench, category: 'manufacturing', description: 'Maintenance mgmt', size: 'large', tags: ['maintenance'], features: ['Preventive', 'Work orders', 'Assets', 'Parts', 'Scheduling', 'Reports'] },
@@ -218,7 +295,9 @@ export const WIDGET_REGISTRY = [
   { id: 'downtime', name: 'Downtime', icon: FaClock, category: 'manufacturing', description: 'Downtime tracking', size: 'medium', tags: ['downtime'], features: ['Logging', 'Reasons', 'Duration', 'Pareto', 'Trends', 'Reports'] },
   { id: 'yield', name: 'Yield', icon: FaPercentage, category: 'manufacturing', description: 'Yield tracking', size: 'medium', tags: ['yield'], features: ['Calculations', 'Scrap', 'Rework', 'Costs', 'Trends', 'Reports'] },
 
-  // SCIENCE & MATH (10)
+  // ============================================
+  // SCIENCE & MATH (10) - COMPLETE
+  // ============================================
   { id: 'sci-calc', name: 'Scientific Calculator', icon: FaCalculator, category: 'science-math', description: 'Advanced calculator', size: 'large', tags: ['calculator'], features: ['Functions', 'Graphing', 'Algebra', 'Conversions', 'Matrix', 'Statistics'] },
   { id: 'chemistry', name: 'Chemistry Lab', icon: FaFlask, category: 'science-math', description: 'Chemistry tools', size: 'large', tags: ['chemistry'], features: ['Periodic table', 'Molecular viewer', 'Equations', 'Molarity', 'Reactions', 'Properties'] },
   { id: 'physics', name: 'Physics Simulator', icon: FaAtom, category: 'science-math', description: 'Physics experiments', size: 'large', tags: ['physics'], features: ['Motion sims', 'Forces', 'Waves', 'Optics', 'Circuits', 'Projectile'] },
@@ -230,7 +309,9 @@ export const WIDGET_REGISTRY = [
   { id: 'periodic', name: 'Periodic Table', icon: FaAtom, category: 'science-math', description: 'Interactive periodic table', size: 'large', tags: ['chemistry'], features: ['Properties', 'Electrons', 'Data', 'Trends', 'Groups', 'Search'] },
   { id: 'molecules', name: 'Molecular Viewer', icon: FaVial, category: 'science-math', description: '3D molecules', size: 'large', tags: ['chemistry'], features: ['3D rendering', 'Rotation', 'Bonds', 'Properties', 'Export', 'Library'] },
 
-  // ENGINEERING (10)
+  // ============================================
+  // ENGINEERING (10) - COMPLETE
+  // ============================================
   { id: 'circuit', name: 'Circuit Designer', icon: FaMicrochip, category: 'engineering', description: 'Electronic circuits', size: 'large', tags: ['electronics'], features: ['Components', 'Schematic', 'SPICE sim', 'Oscilloscope', 'PCB', 'Netlist'] },
   { id: 'cad', name: 'CAD Viewer', icon: FaCube, category: 'engineering', description: 'View CAD models', size: 'large', tags: ['cad'], features: ['Import STL/OBJ', '3D navigation', 'Measurements', 'Cross-sections', 'Annotations', 'Export'] },
   { id: 'eng-notebook', name: 'Engineering Notebook', icon: FaPencilRuler, category: 'engineering', description: 'Design documentation', size: 'large', tags: ['documentation'], features: ['Calculations', 'Drawings', 'Photos', 'Units', 'Versions', 'PDF'] },
@@ -242,7 +323,9 @@ export const WIDGET_REGISTRY = [
   { id: 'hvac', name: 'HVAC Design', icon: FaWind, category: 'engineering', description: 'HVAC calculations', size: 'large', tags: ['hvac'], features: ['Load calc', 'Duct sizing', 'Equipment', 'Energy', 'Ventilation', 'Reports'] },
   { id: 'robotics', name: 'Robotics Simulator', icon: FaRobot, category: 'engineering', description: 'Robot simulation', size: 'large', tags: ['robotics'], features: ['Kinematics', 'Path planning', 'Collision', '3D view', 'Programming', 'Export'] },
 
-  // DEVELOPER TOOLS (15)
+  // ============================================
+  // DEVELOPER TOOLS (15) - COMPLETE
+  // ============================================
   { id: 'snippets', name: 'Code Snippets', icon: FaFileCode, category: 'developer-tools', description: 'Snippet manager', size: 'large', tags: ['code'], features: ['Multi-language', 'Syntax highlight', 'Tags', 'Search', 'Execute', 'Share'] },
   { id: 'api', name: 'API Tester', icon: FaNetworkWired, category: 'developer-tools', description: 'Test REST APIs', size: 'large', tags: ['api'], features: ['HTTP methods', 'Headers', 'History', 'Collections', 'Environments', 'Response'] },
   { id: 'regex', name: 'Regex Tester', icon: FaCode, category: 'developer-tools', description: 'Test regex', size: 'medium', tags: ['regex'], features: ['Live matching', 'Groups', 'Patterns', 'Cheat sheet', 'Multi-line'] },
@@ -259,7 +342,9 @@ export const WIDGET_REGISTRY = [
   { id: 'webhook', name: 'Webhook Tester', icon: FaNetworkWired, category: 'developer-tools', description: 'Test webhooks', size: 'medium', tags: ['webhooks'], features: ['Unique URLs', 'Inspection', 'Config', 'History', 'Replay'] },
   { id: 'sql-opt', name: 'SQL Optimizer', icon: FaDatabase, category: 'developer-tools', description: 'Optimize SQL', size: 'medium', tags: ['sql'], features: ['Explain', 'Tips', 'Indexes', 'Format', 'Plan'] },
 
-  // DATA ANALYTICS (10)
+  // ============================================
+  // DATA & ANALYTICS (10) - COMPLETE
+  // ============================================
   { id: 'viz', name: 'Data Visualizer', icon: FaChartBar, category: 'data-analysis', description: 'Create charts', size: 'large', tags: ['charts'], features: ['Bar/line/pie/scatter', 'Import CSV', 'Interactive', 'Styling', 'Export', 'Dashboards'] },
   { id: 'spreadsheet', name: 'Spreadsheet', icon: FaTable, category: 'data-analysis', description: 'Smart spreadsheet', size: 'large', tags: ['spreadsheet'], features: ['Formulas', 'Pivots', 'Charts', 'Validation', 'Import/export', 'Collab'] },
   { id: 'data-clean', name: 'Data Cleaner', icon: FaFilter, category: 'data-analysis', description: 'Clean datasets', size: 'medium', tags: ['cleaning'], features: ['Duplicates', 'Missing values', 'Types', 'Normalization', 'Operations'] },
@@ -271,7 +356,9 @@ export const WIDGET_REGISTRY = [
   { id: 'profiler', name: 'Data Profiler', icon: FaSearch, category: 'data-analysis', description: 'Profile datasets', size: 'medium', tags: ['profiling'], features: ['Summary', 'Missing', 'Distributions', 'Patterns', 'Quality', 'Reports'] },
   { id: 'ml', name: 'Predictive Analytics', icon: FaBrain, category: 'data-analysis', description: 'Predictive modeling', size: 'large', tags: ['ml'], features: ['Training', 'Predictions', 'Features', 'Accuracy', 'Visuals', 'Export'] },
 
-  // RESEARCH (8)
+  // ============================================
+  // RESEARCH (8) - COMPLETE
+  // ============================================
   { id: 'research', name: 'Research Notes', icon: FaMicroscope, category: 'research', description: 'Literature review', size: 'large', tags: ['research'], features: ['Annotations', 'Citations', 'Bibliography', 'Questions', 'Map', 'BibTeX'] },
   { id: 'lab', name: 'Lab Notebook', icon: FaVial, category: 'research', description: 'Electronic lab notebook', size: 'large', tags: ['lab'], features: ['Experiments', 'Protocols', 'Results', 'Photos', 'Versions', 'Compliance'] },
   { id: 'hypothesis', name: 'Hypothesis Tracker', icon: FaLightbulb, category: 'research', description: 'Track hypotheses', size: 'medium', tags: ['hypotheses'], features: ['Logging', 'Predictions', 'Results', 'Statistics', 'Evidence'] },
@@ -281,7 +368,9 @@ export const WIDGET_REGISTRY = [
   { id: 'grants', name: 'Grant Tracker', icon: FaDollarSign, category: 'research', description: 'Track grants', size: 'medium', tags: ['grants'], features: ['Database', 'Deadlines', 'Applications', 'Budget', 'Reports', 'Docs'] },
   { id: 'experiments', name: 'Experiment Planner', icon: FaFlask, category: 'research', description: 'Plan experiments', size: 'large', tags: ['experiments'], features: ['Design', 'Variables', 'Controls', 'Sample size', 'Protocols', 'Checklist'] },
 
-  // DESIGN & CREATIVE (15)
+  // ============================================
+  // DESIGN & CREATIVE (15) - COMPLETE
+  // ============================================
   { id: 'video', name: 'Video Editor', icon: FaVideo, category: 'design-creative', description: 'Video editing', size: 'large', tags: ['video'], features: ['Timeline', 'Transitions', 'Audio', 'Grading', 'Titles', 'Export'] },
   { id: '3d', name: '3D Modeling', icon: FaCube, category: 'design-creative', description: '3D modeling', size: 'large', tags: ['3d'], features: ['Mesh', 'Texturing', 'Lighting', 'Tracing', 'Animation', 'Export'] },
   { id: 'animation', name: 'Animation Tool', icon: FaFilm, category: 'design-creative', description: '2D/3D animation', size: 'large', tags: ['animation'], features: ['Keyframes', 'Rigging', 'Motion', 'Particles', 'Camera', 'Timeline'] },
@@ -298,7 +387,9 @@ export const WIDGET_REGISTRY = [
   { id: 'icons', name: 'Icon Designer', icon: FaStar, category: 'design-creative', description: 'Create icons', size: 'medium', tags: ['icons'], features: ['Vector', 'Grid', 'Export', 'Presets', 'Sets'] },
   { id: 'logo', name: 'Logo Maker', icon: FaPalette, category: 'design-creative', description: 'Design logos', size: 'medium', tags: ['logo'], features: ['Templates', 'Shapes', 'Typography', 'Colors', 'Export', 'Kit'] },
 
-  // COMMUNICATION (10)
+  // ============================================
+  // COMMUNICATION (10) - COMPLETE
+  // ============================================
   { id: 'email-client', name: 'Email Client', icon: FaEnvelope, category: 'communication', description: 'Email management', size: 'large', tags: ['email'], features: ['Multi-account', 'Folders', 'Search', 'Attachments', 'Signatures', 'Templates'] },
   { id: 'messaging', name: 'Team Messaging', icon: FaComments, category: 'communication', description: 'Team chat', size: 'large', tags: ['chat'], features: ['Channels', 'DMs', 'Files', 'Search', 'Notifications', 'Integrations'] },
   { id: 'video-conf', name: 'Video Conferencing', icon: FaVideo, category: 'communication', description: 'Video meetings', size: 'large', tags: ['video'], features: ['HD video', 'Screen share', 'Recording', 'Chat', 'Backgrounds', 'Breakout'] },
@@ -310,7 +401,9 @@ export const WIDGET_REGISTRY = [
   { id: 'chatbot', name: 'Chatbot Builder', icon: FaRobot, category: 'communication', description: 'Build chatbots', size: 'large', tags: ['chatbot'], features: ['Visual', 'Flows', 'Integrations', 'Analytics', 'Multi-channel', 'Templates'] },
   { id: 'comm-analytics', name: 'Comm Analytics', icon: FaChartBar, category: 'communication', description: 'Comm metrics', size: 'medium', tags: ['analytics'], features: ['Email metrics', 'Call analytics', 'Response times', 'Engagement', 'Dashboards', 'Reports'] },
 
-  // PERSONAL LIFE (12)
+  // ============================================
+  // PERSONAL LIFE (13) - COMPLETE (INCLUDES JOURNAL)
+  // ============================================
   { id: 'journal', name: 'Journal', icon: FaBook, category: 'personal-life', description: 'Daily journaling', size: 'large', tags: ['journal'], features: ['Rich text', 'Mood tracking', 'Tags', 'Search', 'Streaks', 'Privacy'] },
   { id: 'habits', name: 'Habit Tracker', icon: FaCheckSquare, category: 'personal-life', description: 'Track habits', size: 'medium', tags: ['habits'], features: ['Custom', 'Check-in', 'Streaks', 'Calendar', 'Reminders'] },
   { id: 'personal-goals', name: 'Goals', icon: FaBullseye, category: 'personal-life', description: 'Personal goals', size: 'medium', tags: ['goals'], features: ['SMART', 'Milestones', 'Progress', 'Deadlines', 'Visual'] },
@@ -324,7 +417,9 @@ export const WIDGET_REGISTRY = [
   { id: 'memory', name: 'Memory Box', icon: FaArchive, category: 'personal-life', description: 'Store memories', size: 'medium', tags: ['memories'], features: ['Photos/docs', 'Notes', 'Categories', 'Timeline', 'Tags', 'Search'] },
   { id: 'wiki', name: 'Personal Wiki', icon: FaBook, category: 'personal-life', description: 'Personal knowledge', size: 'large', tags: ['wiki'], features: ['Pages', 'Links', 'Categories', 'Search', 'Templates', 'Export'] },
 
-  // HEALTH & FITNESS (15)
+  // ============================================
+  // HEALTH & FITNESS (15) - COMPLETE
+  // ============================================
   { id: 'workout', name: 'Workout Logger', icon: FaDumbbell, category: 'health-fitness', description: 'Track workouts', size: 'large', tags: ['fitness'], features: ['Exercise library', 'Sets/reps', 'PRs', 'Charts', 'Timer'] },
   { id: 'meals', name: 'Meal Planner', icon: FaUtensils, category: 'health-fitness', description: 'Plan meals', size: 'large', tags: ['nutrition'], features: ['Planner', 'Recipes', 'Macros', 'Shopping list'] },
   { id: 'water', name: 'Water Tracker', icon: FaGlassMartini, category: 'health-fitness', description: 'Track hydration', size: 'small', tags: ['hydration'], features: ['Goals', 'Quick log', 'Reminders', 'History'] },
@@ -341,7 +436,9 @@ export const WIDGET_REGISTRY = [
   { id: 'strength', name: 'Strength Training', icon: FaDumbbell, category: 'health-fitness', description: 'Strength workouts', size: 'large', tags: ['strength'], features: ['Library', 'Sets/reps', 'Progression', 'Timer', 'PRs', 'Programs'] },
   { id: 'fitness-goals', name: 'Fitness Goals', icon: FaMedal, category: 'health-fitness', description: 'Track fitness goals', size: 'medium', tags: ['goals'], features: ['Goals', 'PRs', 'Achievements', 'Milestones', 'Charts'] },
 
-  // LEARNING (12)
+  // ============================================
+  // LEARNING (12) - COMPLETE
+  // ============================================
   { id: 'flashcards', name: 'Flashcards', icon: FaGraduationCap, category: 'learning', description: 'Spaced repetition', size: 'medium', tags: ['flashcards'], features: ['Decks', 'Spaced repetition', 'Progress', 'Import/export', 'Stats'] },
   { id: 'study', name: 'Study Planner', icon: FaGraduationCap, category: 'learning', description: 'Plan studies', size: 'large', tags: ['studying'], features: ['Schedule', 'Topics', 'Time', 'Exams', 'Resources'] },
   { id: 'skills', name: 'Skill Tracker', icon: FaBullseye, category: 'learning', description: 'Track skills', size: 'medium', tags: ['skills'], features: ['Skills', 'Levels', 'Resources', 'Practice', 'Certificates'] },
@@ -355,7 +452,9 @@ export const WIDGET_REGISTRY = [
   { id: 'learning-path', name: 'Learning Path', icon: FaRoute, category: 'learning', description: 'Plan learning', size: 'large', tags: ['learning'], features: ['Creation', 'Milestones', 'Resources', 'Progress', 'Certs', 'Recommendations'] },
   { id: 'study-group', name: 'Study Group', icon: FaUsers, category: 'learning', description: 'Study groups', size: 'medium', tags: ['study'], features: ['Creation', 'Scheduling', 'Resources', 'Discussion', 'Tasks', 'Calendar'] },
 
-  // UTILITIES (15)
+  // ============================================
+  // UTILITIES (15) - COMPLETE
+  // ============================================
   { id: 'password', name: 'Password Gen', icon: FaCog, category: 'utilities', description: 'Generate passwords', size: 'small', tags: ['security'], features: ['Length', 'Options', 'Strength', 'Copy'] },
   { id: 'timer-util', name: 'Timer', icon: FaClock, category: 'utilities', description: 'Timers', size: 'small', tags: ['timer'], features: ['Multiple', 'Stopwatch', 'Laps', 'Alerts'] },
   { id: 'qr', name: 'QR Generator', icon: FaHashtag, category: 'utilities', description: 'Generate QR codes', size: 'small', tags: ['qr'], features: ['URL to QR', 'Text to QR', 'Size', 'Download'] },
@@ -377,6 +476,10 @@ export const ACCENT_COLORS = ['#00f0ff','#ff006e','#8b5cf6','#10b981','#f59e0b',
 
 export const SPACE_TEMPLATES = [
   { id: 'trading-desk', name: 'Trading Desk', icon: FaChartLine, description: 'Trading workspace', type: 'finance', accentColor: '#10b981', definition: 'Trading command center', widgets: ['trading-terminal', 'market-scanner', 'portfolio-manager', 'econ-calendar', 'crypto-tracker', 'risk-calc'] },
+  { id: 'space-mission', name: 'Space Mission Control', icon: FaSatellite, description: 'Mission operations', type: 'aerospace', accentColor: '#8b5cf6', definition: 'Space mission center', widgets: ['orbital-sim', 'mission-ops', 'ground-station', 'spacecraft-design', 'power-budget', 'link-budget'] },
+  { id: 'mars-colony', name: 'Mars Colony Hub', icon: FaMountain, description: 'Mars settlement', type: 'aerospace', accentColor: '#f97316', definition: 'Mars colonization', widgets: ['mars-colony', 'habitat-design', 'life-support', 'resource-isru', 'power-budget', 'mission-ops'] },
+  { id: 'robot-lab', name: 'Robotics Lab', icon: FaRobot, description: 'Robot development', type: 'robotics', accentColor: '#06b6d4', definition: 'Robotics workspace', widgets: ['robot-sim', 'robot-kinematics', 'path-planner', 'control-tuner', 'sensor-fusion', 'vision-processing'] },
+  { id: 'astronomy-obs', name: 'Astronomy Observatory', icon: FaStar, description: 'Stargazing', type: 'astronomy', accentColor: '#8b5cf6', definition: 'Observation station', widgets: ['star-chart', 'telescope-planner', 'planet-tracker', 'astronomy-events', 'space-weather', 'exoplanet-db'] },
   { id: 'enterprise', name: 'Enterprise Ops', icon: FaBuilding, description: 'Business ops', type: 'enterprise', accentColor: '#6366f1', definition: 'Operations hub', widgets: ['crm', 'ppm', 'workflow', 'helpdesk', 'bi', 'dms'] },
   { id: 'supply-chain', name: 'Supply Chain', icon: FaTruck, description: 'Supply chain', type: 'operations', accentColor: '#f59e0b', definition: 'SC ops', widgets: ['inventory', 'procurement', 'warehouse', 'shipping', 'demand', 'production'] },
   { id: 'marketing', name: 'Marketing Suite', icon: FaBullhorn, description: 'Marketing', type: 'marketing', accentColor: '#ec4899', definition: 'Marketing center', widgets: ['marketing-auto', 'social', 'content', 'seo', 'ads', 'feedback'] },

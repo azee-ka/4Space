@@ -1,0 +1,238 @@
+/* CommonWidgetStyles.css - Shared styles for all widgets */
+
+/* Compact Mode Styles */
+.planet-tracker-compact,
+.telescope-planner-compact,
+.launch-window-compact,
+.trajectory-planner-compact,
+.spacecraft-designer-compact,
+.rocket-designer-compact,
+.control-tuner-compact,
+.sensor-fusion-compact,
+.vision-processing-compact,
+.slam-mapper-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+.planet-tracker-compact h3,
+.telescope-planner-compact h3,
+.launch-window-compact h3,
+.trajectory-planner-compact h3,
+.spacecraft-designer-compact h3,
+.rocket-designer-compact h3,
+.control-tuner-compact h3,
+.sensor-fusion-compact h3,
+.vision-processing-compact h3,
+.slam-mapper-compact h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.planet-tracker-compact select,
+.telescope-planner-compact select,
+.launch-window-compact select,
+.trajectory-planner-compact select {
+  padding: 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.planet-info,
+.telescope-info,
+.window-info,
+.trajectory-info,
+.design-info,
+.rocket-info,
+.tuner-info,
+.fusion-info,
+.vision-info,
+.slam-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+/* Modal Mode Styles */
+.planet-tracker-modal,
+.telescope-planner-modal,
+.launch-window-modal,
+.trajectory-planner-modal,
+.spacecraft-designer-modal,
+.rocket-designer-modal,
+.control-tuner-modal,
+.sensor-fusion-modal,
+.vision-processing-modal,
+.slam-mapper-modal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 2rem;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+  border-radius: 12px;
+  overflow: auto;
+}
+
+.planet-tracker-modal h2,
+.telescope-planner-modal h2,
+.launch-window-modal h2,
+.trajectory-planner-modal h2,
+.spacecraft-designer-modal h2,
+.rocket-designer-modal h2,
+.control-tuner-modal h2,
+.sensor-fusion-modal h2,
+.vision-processing-modal h2,
+.slam-mapper-modal h2 {
+  margin: 0 0 2rem 0;
+  color: #00f0ff;
+  font-size: 1.8rem;
+}
+
+.planets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.planet-card {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.planet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1);
+}
+
+.planet-card h3 {
+  margin: 0 0 1rem 0;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.telescope-form,
+.trajectory-form,
+.designer-form,
+.rocket-form,
+.tuner-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 600px;
+}
+
+.telescope-form label,
+.trajectory-form label,
+.designer-form label,
+.rocket-form label,
+.tuner-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+}
+
+.telescope-form input,
+.trajectory-form input,
+.trajectory-form select,
+.designer-form input,
+.rocket-form input,
+.launch-window-modal select,
+.sensor-fusion-modal select,
+.vision-processing-modal select {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.tuner-controls input[type="range"] {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  -webkit-appearance: none;
+}
+
+.tuner-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #00f0ff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.results,
+.window-info,
+.trajectory-results,
+.design-summary,
+.rocket-stats,
+.fusion-display,
+.vision-stats,
+.slam-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.results div,
+.window-info div,
+.trajectory-results div,
+.design-summary div,
+.rocket-stats div,
+.fusion-display div,
+.vision-stats div,
+.slam-stats div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
+
+.slam-display {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 400px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.2rem;
+}

@@ -1,0 +1,289 @@
+/* RobotSimulatorWidget.css */
+.robot-sim-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+  }
+  
+  .sim-canvas-compact {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .sim-canvas-compact canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  .sim-controls-compact {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .sim-controls-compact select,
+  .sim-controls-compact button {
+    flex: 1;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .sim-controls-compact button:hover,
+  .sim-controls-compact select:hover {
+    background: rgba(0, 240, 255, 0.1);
+    border-color: #00f0ff;
+  }
+  
+  .robot-sim-modal {
+    display: flex;
+    height: 100%;
+    background: linear-gradient(135deg, #0a1020 0%, #1a2030 100%);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .sim-sidebar {
+    width: 300px;
+    background: rgba(0, 0, 0, 0.3);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebar-section {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .sidebar-section h3 {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .sidebar-section select {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+  }
+  
+  .joint-control {
+    margin-bottom: 1rem;
+  }
+  
+  .joint-control label {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+  }
+  
+  .joint-control input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    -webkit-appearance: none;
+  }
+  
+  .joint-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #00f0ff;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .control-btn {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .control-btn:hover {
+    background: rgba(0, 240, 255, 0.1);
+    border-color: #00f0ff;
+    transform: translateY(-2px);
+  }
+  
+  .speed-control {
+    margin-top: 1rem;
+  }
+  
+  .speed-control label {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+  }
+  
+  .speed-control input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    -webkit-appearance: none;
+  }
+  
+  .sim-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sim-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .tab {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #00f0ff;
+  }
+  
+  .tab.active {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: #00f0ff;
+    color: #00f0ff;
+  }
+  
+  .sim-content {
+    flex: 1;
+    overflow: auto;
+  }
+  
+  .sim-viewport {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  
+  .sim-viewport canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  .viewport-info {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+  }
+  
+  .physics-panel,
+  .sensors-panel {
+    padding: 2rem;
+  }
+  
+  .physics-panel h2,
+  .sensors-panel h2 {
+    margin: 0 0 2rem 0;
+    color: #00f0ff;
+  }
+  
+  .params-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .param-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .param-item label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .param-item input {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff;
+  }
+  
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .sensor-card {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+  }
+  
+  .sensor-card h3 {
+    margin: 0 0 1rem 0;
+    color: #00f0ff;
+    font-size: 1.1rem;
+  }
+  
+  .sensor-reading {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+  }
+  
+  .sensor-reading span:first-child {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .sensor-reading span:last-child {
+    color: #00f0ff;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+  }
